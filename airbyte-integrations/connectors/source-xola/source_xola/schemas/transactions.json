@@ -1,0 +1,46 @@
+
+{
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "type":"array",
+   "default":[],
+   "items": {
+        "type": ["null", "object"],
+        "properties": {
+            "id": {
+                "type": ["null", "string"]
+            },
+            "amount": {
+                "type": ["null", "number"]
+            },
+            "balance": {
+                "type": ["null", "number"]
+            },
+            "createdAt": {
+                "type": ["null", "string"]
+            },
+            "createdBy": {
+                "type": ["null", "string"]
+            },
+            "currency": {
+                "type": ["null", "string"]
+            },
+            "method": {
+                "type": ["null", "string"]
+            },
+            "order": {
+                "type": ["null", "string"]
+            },
+            "source": {
+                "type": ["null", "string"]
+            },
+            "type": {
+                "type": ["null", "string"]
+            },
+            "seller": {
+                "type": ["null", "string"]
+            },
+        }
+
+   }
+
+}

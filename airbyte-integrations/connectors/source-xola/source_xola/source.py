@@ -1,3 +1,4 @@
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -7,6 +8,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 import json
+
 
 # Basic full refresh stream
 class XolaStream(HttpStream, ABC):
@@ -20,14 +22,11 @@ class XolaStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
-
         For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
         'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
         The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
@@ -90,9 +89,74 @@ class Orders(XolaStream):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        resp_json = response.json()
-        return resp_json["data"]
+        raw_response = response.json()["data"]
+        modified_response = []
+        for data in raw_response:
+            # Tags._id
+            resp = {"tags": []}
+            for tag in data["tags"]:
+                resp["tags"].append({"id": tag["id"]})
+            # customerName
+            resp["customerName"] = data["customerName"]
+            # customerEmail
+            resp["customerEmail"] = data["customerEmail"]
+            # traverlers
+            resp["travelers"] = data["travelers"]
+            # source
+            resp["source"] = data["source"]
+            # createdBy
+            resp["createdBy"] = data["createdBy"]["id"]
+            # arrivalTime
+            resp["arrivalTime"] = data["arrivalTime"]
+            # quantity
+            resp["quantity"] = data["quantity"]
+            # event
+            resp["event"] = data["event"]["id"]
+            # price
+            resp["price"] = data["price"]
+            modified_response.append(resp)
+        return modified_response
 
+
+class Transactions(XolaStream):
+    primary_key = "id"
+
+    def __init__(self, x_api_key: str, **kwargs):
+        super().__init__(x_api_key, **kwargs)
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "orders". Required.
+        """
+        return "transactions"
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        seller id is returned as a form of parameters
+        """
+        return {}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        raw_response = response.json()["data"]
+        modified_response = []
+        for data in raw_response:
+            resp = {"id": data["id"], "amount": data["amount"], "balance": data["balance"],
+                    "createdAt": data["createdAt"], "createdBy": data["createdBy"]["id"], "currency": data["currency"],
+                    "method": data["method"], "order": data["order"]["id"], "source": data["source"],
+                    "type": data["type"], "seller": data["seller"]["id"]}
+
+            modified_response.append(resp)
+        return modified_response
 
 # Basic incremental stream
 
@@ -113,7 +177,6 @@ class IncrementalXolaStream(XolaStream, ABC):
         TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
         :return str: The name of the cursor field.
         """
         return []
@@ -163,5 +226,6 @@ class SourceXola(AbstractSource):
         # TODO remove the authenticator if not required.
 
         return [
-            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
+            Transactions(x_api_key=config['x-api-key'])
         ]

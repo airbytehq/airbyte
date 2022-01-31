@@ -1,174 +1,63 @@
+
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Items",
-  "type": "object",
-  "properties": {
-    "id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "customerName": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "amount": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "customerEmail": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "phone": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "source": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "items": {
-      "$id": "#root/data/items/items",
-      "title": "Items",
-      "type": "array",
-      "default": [],
-      "items": {
-        "title": "Items",
-        "type": "object",
-        "properties": {
-          "object": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "name": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "desc": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "currency": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "seller": {
-            "title": "Seller",
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "type":"array",
+   "default":[],
+   "items":{
+      "title":"Items",
+      "type":"object",
+      "properties":{
+         "tags":{
+            "type":["null","array"],
+            "default":[],
+            "items":{
+               "type":["null","object"],
+               "properties":{
+                  "id":{
+                     "title":"Id",
+                     "type":["null","string"]
+                  }
+               }
             }
-          },
-          "guestType": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "event": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
+         },
+         "price": {
+            "type":["null","integer"]
+         },
+         "customerName":{
+            "title":"CustomerName",
+            "type":["null","string"]
+         },
+         "customerEmail":{
+            "title":"CustomerEmail",
+            "type":["null","string"]
+         },
+         "travelers":{
+            "type":"array",
+            "default":[],
+            "items":{
+               "properties":{
+                  "id":{
+                     "title":"Id",
+                     "type":["null","string"]
+                  }
+               }
             }
-          },
-          "arrivalDatetime": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "quantity": {
-            "type": [
-              "null",
-              "integer"
-            ]
-          },
-          "ticketCode": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "amount": {
-            "type": [
-              "null",
-              "integer"
-            ]
-          },
-          "status": {
-            "type": [
-              "null",
-              "integer"
-            ]
-          }
-        }
+         },
+         "source":{
+            "type":["null","string"]
+         },
+         "createdBy":{
+            "type":["null","string"],
+         },
+         "arrivalTime":{
+            "type":["null","integer"]
+         },
+         "quantity":{
+            "type":["null","integer"]
+         },
+         "event":{
+            "type":["null","string"]
+         }
       }
-    },
-    "createdAt": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "createdBy": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "travelers": {
-      "type": "array",
-      "items": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "properties": {
-          "id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      }
-    }
-  },
-  "additionalProperties": false
+   }
 }
