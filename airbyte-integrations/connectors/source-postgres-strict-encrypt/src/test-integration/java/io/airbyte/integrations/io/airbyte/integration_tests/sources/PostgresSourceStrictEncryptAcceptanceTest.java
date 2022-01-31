@@ -121,11 +121,6 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
