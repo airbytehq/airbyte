@@ -64,7 +64,8 @@ def chunk_date_range(
 
     # As in to return some state when state in abnormal
     if start_date > end_date:
-        return [{field: start_date.to_date_string()}]
+        start, end = get_date_params(start_date.to_date_string(), time_zone=time_zone, range_days=range_days)
+        return [{"start_date": start, "end_date": end}]
 
     # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
