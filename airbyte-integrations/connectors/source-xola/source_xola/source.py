@@ -120,9 +120,11 @@ class Orders(XolaStream):
 
 class Transactions(XolaStream):
     primary_key = "id"
+    seller_id = None
 
     def __init__(self, x_api_key: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
+        self.seller_id = seller_id
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -140,7 +142,7 @@ class Transactions(XolaStream):
         """
         seller id is returned as a form of parameters
         """
-        return {}
+        return {'seller': self.seller_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -227,5 +229,5 @@ class SourceXola(AbstractSource):
 
         return [
             Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Transactions(x_api_key=config['x-api-key'])
+            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]
