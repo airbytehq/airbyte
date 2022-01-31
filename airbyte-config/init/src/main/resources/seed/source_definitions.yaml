@@ -339,13 +339,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
-- name: Jenkins
-  sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
-  dockerRepository: farosai/airbyte-jenkins-source
-  dockerImageTag: 0.1.23
-  documentationUrl: https://docs.airbyte.io/integrations/sources/jenkins
-  icon: jenkins.svg
-  sourceType: api
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
