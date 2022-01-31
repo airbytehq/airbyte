@@ -284,38 +284,6 @@ class Subscriptions(BaseStream):
     pass
 
 
-class SubscriptionChanges(BaseStream):
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        The method to be called to retrieve the subscriptions changes from Recurly. To retrieve the subscription change, a separate call to
-        get subscription change should be made to pass the `subscription_id` to the subscription change API call.
-
-        :return: Iterable of dictionaries representing the Recurly resource
-        :rtype: Iterable
-        """
-        params = self.default_params
-
-        self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
-
-        if self.begin_time:
-            params.update({BEGIN_TIME_PARAM: self.begin_time})
-
-        # Call the Recurly client methods
-        subscriptions = self._client.list_subscriptions(params=params).items()
-
-        for subscription in subscriptions:
-            try:
-                yield self._item_to_dict(self._client.get_subscription_change(params=params, subscription_id=subscription.id))
-            except NotFoundError:
-                pass
-
-
 class Transactions(BaseStream):
     pass
 

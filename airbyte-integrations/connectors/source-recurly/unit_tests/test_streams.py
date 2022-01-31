@@ -25,7 +25,6 @@ from source_recurly.streams import (
     Plans,
     ShippingAddresses,
     ShippingMethods,
-    SubscriptionChanges,
     Subscriptions,
     Transactions,
     UniqueCoupons,
@@ -174,18 +173,6 @@ class TestStreams(unittest.TestCase):
         stream = Subscriptions(client=self.client_mock)
 
         assert stream.client_method_name == "list_subscriptions"
-
-    def test_subscription_changes_read_records(self):
-        stream = SubscriptionChanges(client=self.client_mock)
-        subscription_id_mock = Mock()
-        subscription_mock = Mock(id=subscription_id_mock)
-        self.client_mock.list_subscriptions.return_value.items.return_value = iter([subscription_mock])
-        self.client_mock.get_subscription_change.return_value = None
-
-        next(iter(stream.read_records(self.sync_mode_mock)))
-
-        self.client_mock.list_subscriptions.assert_called_once()
-        self.client_mock.get_subscription_change.assert_called_once_with(subscription_id=subscription_id_mock, params=self.params)
 
     def test_transactions_client_method_name(self):
         stream = Transactions(client=self.client_mock)

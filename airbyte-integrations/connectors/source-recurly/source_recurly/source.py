@@ -24,7 +24,6 @@ from .streams import (
     Plans,
     ShippingAddresses,
     ShippingMethods,
-    SubscriptionChanges,
     Subscriptions,
     Transactions,
     UniqueCoupons,
@@ -70,7 +69,6 @@ class SourceRecurly(AbstractSource):
             ShippingAddresses(**args),
             ShippingMethods(**args),
             Subscriptions(**args),
-            SubscriptionChanges(**args),
             Transactions(**args),
             UniqueCoupons(**args),
         ]
