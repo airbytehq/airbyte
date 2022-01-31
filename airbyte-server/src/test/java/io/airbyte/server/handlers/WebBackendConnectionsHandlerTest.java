@@ -54,6 +54,7 @@ import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -69,6 +70,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -93,6 +95,8 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
+  private FeatureFlags featureFlags;
+  private TemporalWorkerRunFactory temporalWorkerRunFactory;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -102,8 +106,10 @@ class WebBackendConnectionsHandlerTest {
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
+    featureFlags = mock(FeatureFlags.class);
+    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler);
+        operationsHandler, featureFlags, temporalWorkerRunFactory);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -457,6 +463,8 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
   }
 
+
+
   @Test
   void testUpdateConnectionWithOperations() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendOperationCreateOrUpdate operationCreateOrUpdate = new WebBackendOperationCreateOrUpdate()
@@ -533,6 +541,45 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
     verify(schedulerHandler, times(1)).syncConnection(connectionId);
+  }
+
+  @Test
+  void testUpdateConnectionWithUpdatedSchemaNewScheduler() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .namespaceDefinition(expected.getNamespaceDefinition())
+        .namespaceFormat(expected.getNamespaceFormat())
+        .prefix(expected.getPrefix())
+        .connectionId(expected.getConnectionId())
+        .schedule(expected.getSchedule())
+        .status(expected.getStatus())
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+        .withRefreshedCatalog(true);
+
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
+        new ConnectionRead().connectionId(expected.getConnectionId()));
+    when(connectionsHandler.updateConnection(any())).thenReturn(
+        new ConnectionRead()
+            .connectionId(expected.getConnectionId())
+            .sourceId(expected.getSourceId())
+            .destinationId(expected.getDestinationId())
+            .name(expected.getName())
+            .namespaceDefinition(expected.getNamespaceDefinition())
+            .namespaceFormat(expected.getNamespaceFormat())
+            .prefix(expected.getPrefix())
+            .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+            .status(expected.getStatus())
+            .schedule(expected.getSchedule()));
+
+    final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+
+    assertEquals(expectedWithNewSchema.getSyncCatalog(), connectionRead.getSyncCatalog());
+
+    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+    verify(schedulerHandler, times(0)).resetConnection(connectionId);
+    verify(schedulerHandler, times(0)).syncConnection(connectionId);
+    verify(temporalWorkerRunFactory, times(1)).resetConnection(connectionId.getConnectionId());
+    // verify(schedulerHandler, times(0)).syncConnection(connectionId);
   }
 
   @Test
