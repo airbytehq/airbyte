@@ -366,8 +366,18 @@ public class TemporalClient {
         Optional.of(jobId));
   }
 
+  /**
+   * This is launching a reset and wait for the reset to be performed.
+   *
+   * The way to do so is to wait for the jobId to change, either to a new job id or the default id
+   * that signal that a workflow is waiting to be submitted
+   */
   public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
-    resetConnection(connectionId);
+    ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
+    if (resetResult.getFailingReason().isPresent()) {
+      return resetResult;
+    }
+
     final ConnectionManagerWorkflow connectionManagerWorkflow =
         getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
 

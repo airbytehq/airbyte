@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -82,6 +83,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 class WebBackendConnectionsHandlerTest {
 
@@ -577,8 +579,9 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
-    verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
+    InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
+    orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test
