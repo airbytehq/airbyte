@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from recurly import Client
-from recurly.errors import MissingFeatureError
+from recurly.errors import MissingFeatureError, NotFoundError, ValidationError
 
 DEFAULT_PRIMARY_KEY = "id"
 DEFAULT_CURSOR = "updated_at"
@@ -286,3 +286,37 @@ class Subscriptions(BaseStream):
 
 class Transactions(BaseStream):
     pass
+
+
+class UniqueCoupons(BaseStream):
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        The method to be called to retrieve the unique coupons from Recurly. To retrieve the unique coupons, a separate call to
+        get unique coupons should be made to pass the `coupon_id` to the unique coupons API call.
+
+        :return: Iterable of dictionaries representing the Recurly resource
+        :rtype: Iterable
+        """
+        params = self.default_params
+
+        self.begin_time = (stream_state and stream_state[self.cursor_field]) or self.begin_time
+
+        if self.begin_time:
+            params.update({BEGIN_TIME_PARAM: self.begin_time})
+
+        # List all coupons
+        coupons = self._client.list_coupons(params=params).items()
+
+        for coupon in coupons:
+            try:
+                items = self._client.list_unique_coupon_codes(params=params, coupon_id=coupon.id).items()
+                for item in items:
+                    yield self._item_to_dict(item)
+            except (NotFoundError, ValidationError):
+                pass

@@ -26,6 +26,7 @@ from .streams import (
     ShippingMethods,
     Subscriptions,
     Transactions,
+    UniqueCoupons,
 )
 
 
@@ -69,6 +70,7 @@ class SourceRecurly(AbstractSource):
             ShippingMethods(**args),
             Subscriptions(**args),
             Transactions(**args),
+            UniqueCoupons(**args),
         ]
 
     def _client(self, api_key: str) -> Client:

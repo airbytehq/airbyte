@@ -27,6 +27,7 @@ from source_recurly.streams import (
     ShippingMethods,
     Subscriptions,
     Transactions,
+    UniqueCoupons,
 )
 
 METHOD_NAME = "list_resource"
@@ -177,3 +178,15 @@ class TestStreams(unittest.TestCase):
         stream = Transactions(client=self.client_mock)
 
         assert stream.client_method_name == "list_transactions"
+
+    def test_unique_coupons_read_records(self):
+        stream = UniqueCoupons(client=self.client_mock)
+        coupon_id_mock = Mock()
+        coupon_mock = Mock(id=coupon_id_mock)
+        self.client_mock.list_coupons.return_value.items.return_value = iter([coupon_mock])
+        self.client_mock.list_unique_coupon_codes.return_value.items.return_value = iter([None])
+
+        next(iter(stream.read_records(self.sync_mode_mock)))
+
+        self.client_mock.list_coupons.assert_called_once()
+        self.client_mock.list_unique_coupon_codes.assert_called_once_with(coupon_id=coupon_id_mock, params=self.params)
