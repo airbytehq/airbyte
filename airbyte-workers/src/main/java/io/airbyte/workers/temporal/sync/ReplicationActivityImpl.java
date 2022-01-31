@@ -34,6 +34,7 @@ import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -106,47 +107,49 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput) {
+    return TemporalUtils.withBackgroundHeartbeat(() -> {
 
-    final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
-    final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
+      final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
+      final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
 
-    final var fullSyncInput = Jsons.clone(syncInput)
-        .withSourceConfiguration(fullSourceConfig)
-        .withDestinationConfiguration(fullDestinationConfig);
+      final var fullSyncInput = Jsons.clone(syncInput)
+          .withSourceConfiguration(fullSourceConfig)
+          .withDestinationConfiguration(fullDestinationConfig);
 
-    final Supplier<StandardSyncInput> inputSupplier = () -> {
-      validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
-      return fullSyncInput;
-    };
+      final Supplier<StandardSyncInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+        return fullSyncInput;
+      };
 
-    final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
+      final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
-    if (containerOrchestratorConfig.isPresent()) {
-      workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
-          jobRunConfig, syncInput);
-    } else {
-      workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
-    }
+      if (containerOrchestratorConfig.isPresent()) {
+        workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
+            jobRunConfig, syncInput);
+      } else {
+        workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
+      }
 
-    final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-        workspaceRoot,
-        workerEnvironment,
-        logConfigs,
-        jobRunConfig,
-        workerFactory,
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(),
-        databaseUser,
-        databasePassword,
-        databaseUrl,
-        airbyteVersion);
+      final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          workerEnvironment,
+          logConfigs,
+          jobRunConfig,
+          workerFactory,
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler(),
+          databaseUser,
+          databasePassword,
+          databaseUrl,
+          airbyteVersion);
 
-    final ReplicationOutput attemptOutput = temporalAttempt.get();
-    final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
+      final ReplicationOutput attemptOutput = temporalAttempt.get();
+      final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-    LOGGER.info("sync summary: {}", standardSyncOutput);
+      LOGGER.info("sync summary: {}", standardSyncOutput);
 
-    return standardSyncOutput;
+      return standardSyncOutput;
+    });
   }
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
