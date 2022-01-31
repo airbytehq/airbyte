@@ -50,6 +50,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,13 +134,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
-                  final JsonSchemaPrimitive jsonType = getType(datatype);
+                  final JsonSchemaType jsonType = getType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
-                      jsonType);
+                          jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
@@ -191,9 +193,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       throws Exception {
     return discoverInternal(database, null);
   }
-
   @Override
-  public JsonSchemaPrimitive getType(final Datatype columnType) {
+  public JsonSchemaType getType(final Datatype columnType) {
     return sourceOperations.getJsonType(columnType);
   }
 

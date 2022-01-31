@@ -18,11 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,9 +94,9 @@ class BigQuerySourceTest {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         config.get(CONFIG_DATASET_ID).asText(),
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("array_val", JsonSchemaPrimitive.ARRAY),
-        Field.of("object_val", JsonSchemaPrimitive.OBJECT));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("array_val", JsonSchemaType.ARRAY),
+        Field.of("object_val", JsonSchemaType.OBJECT));
   }
 
 }

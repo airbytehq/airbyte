@@ -27,19 +27,8 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -1197,9 +1186,9 @@ public abstract class DestinationAcceptanceTest {
     for (int i = 0; i < streamsSize; i++) {
       configuredAirbyteStreams
           .add(CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME + i,
-              Field.of(NAME, JsonSchemaPrimitive.STRING),
+              Field.of(NAME, JsonSchemaType.STRING),
               Field
-                  .of(ID, JsonSchemaPrimitive.STRING)));
+                  .of(ID, JsonSchemaType.STRING)));
     }
     final AirbyteCatalog testCatalog = new AirbyteCatalog().withStreams(configuredAirbyteStreams);
     final ConfiguredAirbyteCatalog configuredTestCatalog = CatalogHelpers

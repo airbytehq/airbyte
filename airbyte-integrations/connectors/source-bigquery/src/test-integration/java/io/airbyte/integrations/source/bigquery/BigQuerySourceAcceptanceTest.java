@@ -91,8 +91,8 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         config.get(CONFIG_DATASET_ID).asText(),
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
   }
 
   @Override

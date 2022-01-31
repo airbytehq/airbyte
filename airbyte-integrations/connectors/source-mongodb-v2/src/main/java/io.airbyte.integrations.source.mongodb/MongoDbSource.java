@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonType;
 import org.bson.Document;
@@ -100,7 +102,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final BsonType fieldType) {
+  protected JsonSchemaType getType(final BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 

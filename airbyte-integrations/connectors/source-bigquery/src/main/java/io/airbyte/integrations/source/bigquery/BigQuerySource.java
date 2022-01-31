@@ -31,6 +31,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +89,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final StandardSQLTypeName columnType) {
+  protected JsonSchemaType getType(final StandardSQLTypeName columnType) {
     return sourceOperations.getJsonType(columnType);
   }
 
