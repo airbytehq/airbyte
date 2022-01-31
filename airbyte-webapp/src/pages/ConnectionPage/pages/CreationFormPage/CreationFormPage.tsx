@@ -43,7 +43,6 @@ export enum EntityStepsTypes {
 }
 
 const hasSourceId = (state: unknown): state is { sourceId: string } => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (
     typeof state === "object" &&
     state !== null &&
