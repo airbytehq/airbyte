@@ -95,7 +95,6 @@ jobs:
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Prepare Sentry Release
-        if: env.IMAGE_TYPE == 'connectors'
         run: |
           curl -sL https://sentry.io/get-cli/ | bash
           source tools/lib/lib.sh
