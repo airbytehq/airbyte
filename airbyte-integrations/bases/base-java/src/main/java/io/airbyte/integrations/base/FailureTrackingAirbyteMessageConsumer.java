@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.base;
 
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   @Override
   public void start() throws Exception {
     try {
+      AirbyteSentry.executeWithTracing("ConsumerStart", this::startTracked,
+          Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
       startTracked();
     } catch (final Exception e) {
       hasFailed = true;
@@ -59,7 +63,8 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     } else {
       LOGGER.info("Airbyte message consumer: succeeded.");
     }
-    close(hasFailed);
+    AirbyteSentry.executeWithTracing("ConsumerEnd", () -> close(hasFailed),
+        Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
   }
 
 }

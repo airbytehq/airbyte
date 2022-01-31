@@ -9,10 +9,12 @@ import io.sentry.Sentry;
 import io.sentry.SpanStatus;
 import java.util.Collections;
 import java.util.Map;
+import org.apache.logging.log4j.util.Strings;
 
 public class AirbyteSentry {
 
   private static final String DEFAULT_ROOT_TRANSACTION = "ROOT";
+  private static final String DEFAULT_UNKNOWN_OPERATION = "ANONYMOUS";
 
   @FunctionalInterface
   public interface ThrowingRunnable<E extends Exception> {
@@ -94,6 +96,7 @@ public class AirbyteSentry {
   }
 
   private static ISpan createChildSpan(final ISpan currentSpan, final String operationName, final Map<String, Object> metadata) {
+    final String name = Strings.isBlank(operationName) ? DEFAULT_UNKNOWN_OPERATION : operationName;
     final ISpan childSpan;
     if (currentSpan == null) {
       childSpan = Sentry.startTransaction(DEFAULT_ROOT_TRANSACTION, operationName);

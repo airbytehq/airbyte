@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -141,7 +142,7 @@ public class IntegrationRunner {
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
-          messageIterator.forEachRemaining(outputRecordCollector::accept);
+          AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
         }
       }
       // destination only
@@ -150,7 +151,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
-        consumeWriteStream(consumer);
+        AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
