@@ -12,6 +12,10 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'com.google.cloud:google-cloud-iamcredentials:2.0.8'
+    implementation 'com.google.apis:google-api-services-iam:v1-rev316-1.25.0'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
+    implementation 'com.google.apis:google-api-services-cloudresourcemanager:v3-rev20220109-1.32.1'
 
     // csv
     implementation 'org.apache.commons:commons-csv:1.4'
