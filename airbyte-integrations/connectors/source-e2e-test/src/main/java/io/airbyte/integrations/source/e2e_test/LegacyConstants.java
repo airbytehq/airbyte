@@ -4,10 +4,7 @@
 
 package io.airbyte.integrations.source.e2e_test;
 
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.*;
 
 public final class LegacyConstants {
 
@@ -15,7 +12,7 @@ public final class LegacyConstants {
   public static final String DEFAULT_COLUMN = "column1";
   public static final AirbyteCatalog DEFAULT_CATALOG = CatalogHelpers.createAirbyteCatalog(
       DEFAULT_STREAM,
-      Field.of(DEFAULT_COLUMN, JsonSchemaPrimitive.STRING));
+      Field.of(DEFAULT_COLUMN, JsonSchemaType.STRING));
 
   private LegacyConstants() {}
 

@@ -30,15 +30,9 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AuthSpecification;
+import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AuthSpecification.AuthType;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+
 import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
@@ -313,9 +307,9 @@ public class MockData {
         CatalogHelpers.createAirbyteStream(
             "models",
             "models_schema",
-            io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("model", JsonSchemaPrimitive.STRING))
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
