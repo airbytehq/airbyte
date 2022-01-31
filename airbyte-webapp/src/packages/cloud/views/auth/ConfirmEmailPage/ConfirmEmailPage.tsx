@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { AuthErrorCodes } from "firebase/auth";
 
@@ -129,7 +129,7 @@ const ConfirmEmailPage: React.FC = () => {
               <Img src="/newsletter.png" height={68} />
             </TitleBlock>
             <Text>
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="login.confirmEmail.text"
                 values={{ email }}
               />

@@ -1,5 +1,4 @@
 import React from "react";
-import { FormattedHTMLMessage } from "react-intl";
 import sanitizeHtml from "sanitize-html";
 
 type IProps = {
@@ -13,16 +12,14 @@ const TextWithHTML: React.FC<IProps> = ({ text }) => {
 
   const sanitizedHtmlText = sanitizeHtml(text, {
     transformTags: {
-      a: sanitizeHtml.simpleTransform("a", { target: "_blank" }),
+      a: sanitizeHtml.simpleTransform("a", {
+        target: "_blank",
+        rel: "noreferrer noopener",
+      }),
     },
   });
 
-  return (
-    <FormattedHTMLMessage
-      id="textWithHtmlTags"
-      defaultMessage={sanitizedHtmlText}
-    />
-  );
+  return <span dangerouslySetInnerHTML={{ __html: sanitizedHtmlText }} />;
 };
 
 export default TextWithHTML;
