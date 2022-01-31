@@ -23,7 +23,6 @@ import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Comparator;

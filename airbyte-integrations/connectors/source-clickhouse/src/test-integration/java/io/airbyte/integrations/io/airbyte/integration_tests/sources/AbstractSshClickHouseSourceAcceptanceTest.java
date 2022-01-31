@@ -17,7 +17,6 @@ import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.util.HashMap;
 import org.testcontainers.containers.ClickHouseContainer;
 

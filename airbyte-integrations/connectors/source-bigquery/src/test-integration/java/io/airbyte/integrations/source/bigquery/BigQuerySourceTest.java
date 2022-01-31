@@ -19,7 +19,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.protocol.models.*;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

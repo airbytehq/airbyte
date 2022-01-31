@@ -25,7 +25,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;

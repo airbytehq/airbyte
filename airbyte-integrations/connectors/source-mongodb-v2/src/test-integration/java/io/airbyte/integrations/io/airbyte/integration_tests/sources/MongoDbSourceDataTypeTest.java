@@ -18,7 +18,6 @@ import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;

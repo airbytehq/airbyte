@@ -15,7 +15,6 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.sql.SQLException;
 import java.util.HashMap;
 import org.apache.commons.lang3.RandomStringUtils;

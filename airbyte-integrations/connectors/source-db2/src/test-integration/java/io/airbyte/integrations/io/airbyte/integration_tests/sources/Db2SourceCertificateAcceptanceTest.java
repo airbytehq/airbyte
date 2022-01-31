@@ -15,7 +15,6 @@ import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;

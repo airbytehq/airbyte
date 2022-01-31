@@ -16,7 +16,6 @@ import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;

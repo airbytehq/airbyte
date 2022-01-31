@@ -19,7 +19,6 @@ import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;

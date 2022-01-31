@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.*;
-
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;

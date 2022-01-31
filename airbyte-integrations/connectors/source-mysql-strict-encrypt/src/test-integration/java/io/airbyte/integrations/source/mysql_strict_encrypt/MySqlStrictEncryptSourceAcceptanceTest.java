@@ -18,7 +18,6 @@ import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.util.HashMap;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;

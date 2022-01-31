@@ -13,7 +13,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

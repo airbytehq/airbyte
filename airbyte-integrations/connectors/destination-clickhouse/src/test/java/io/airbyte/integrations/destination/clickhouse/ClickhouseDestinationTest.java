@@ -17,7 +17,6 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;

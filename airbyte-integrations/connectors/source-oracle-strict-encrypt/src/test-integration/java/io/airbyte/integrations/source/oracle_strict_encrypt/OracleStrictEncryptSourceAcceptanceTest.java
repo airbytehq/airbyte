@@ -21,8 +21,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 

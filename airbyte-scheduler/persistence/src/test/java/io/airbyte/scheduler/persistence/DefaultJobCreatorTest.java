@@ -26,7 +26,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.*;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;

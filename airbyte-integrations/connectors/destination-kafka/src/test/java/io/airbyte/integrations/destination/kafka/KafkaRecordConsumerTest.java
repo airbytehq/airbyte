@@ -17,7 +17,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

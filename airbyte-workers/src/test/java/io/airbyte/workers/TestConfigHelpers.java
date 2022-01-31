@@ -19,7 +19,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.*;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

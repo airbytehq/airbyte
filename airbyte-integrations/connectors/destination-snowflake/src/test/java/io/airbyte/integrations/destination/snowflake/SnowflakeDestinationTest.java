@@ -18,7 +18,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.*;
-
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;

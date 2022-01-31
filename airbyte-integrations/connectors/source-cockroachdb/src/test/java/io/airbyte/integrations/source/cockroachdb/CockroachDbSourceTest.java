@@ -18,7 +18,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;

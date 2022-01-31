@@ -22,6 +22,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,8 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.airbyte.protocol.models.JsonSchemaType;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonType;
 import org.bson.Document;

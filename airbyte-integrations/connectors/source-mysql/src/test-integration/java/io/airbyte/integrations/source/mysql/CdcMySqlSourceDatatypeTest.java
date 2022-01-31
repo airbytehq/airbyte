@@ -12,10 +12,9 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
-
-import io.airbyte.protocol.models.JsonSchemaType;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;

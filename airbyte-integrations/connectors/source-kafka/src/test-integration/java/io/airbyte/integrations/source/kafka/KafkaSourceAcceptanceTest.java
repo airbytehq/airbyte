@@ -14,7 +14,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

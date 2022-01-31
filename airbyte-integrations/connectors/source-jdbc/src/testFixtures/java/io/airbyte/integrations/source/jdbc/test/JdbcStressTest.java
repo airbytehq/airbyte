@@ -17,7 +17,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
