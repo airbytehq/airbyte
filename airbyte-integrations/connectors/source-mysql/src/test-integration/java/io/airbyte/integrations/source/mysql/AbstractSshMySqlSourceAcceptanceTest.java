@@ -20,9 +20,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
