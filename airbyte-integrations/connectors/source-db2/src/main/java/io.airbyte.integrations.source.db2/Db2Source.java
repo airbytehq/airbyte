@@ -95,7 +95,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
-          "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {

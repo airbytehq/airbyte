@@ -185,7 +185,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 
-  private List<String> getActualNamesWithPermission(JsonNode config) throws Exception{
+  private List<String> getActualNamesWithPermission(JsonNode config) throws Exception {
     AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
     return airbyteCatalog
         .getStreams()
@@ -193,4 +193,5 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .map(AirbyteStream::getName)
         .toList();
   }
+
 }
