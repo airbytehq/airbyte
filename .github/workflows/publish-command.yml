@@ -105,7 +105,7 @@ jobs:
       - name: Create Sentry Release
         if: env.IMAGE_TYPE == 'connectors'
         run: |
-          sentry-cli releases set-commit "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}-ci-test" --auto --ignore-missing
+          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}-ci-test" --auto --ignore-missing
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
