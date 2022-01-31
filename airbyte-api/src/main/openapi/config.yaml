@@ -185,6 +185,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/update_name:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace name
+      operationId: updateWorkspaceName
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdateName"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/tag_feedback_status_as_done:
     post:
       tags:
@@ -1972,6 +1995,16 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+    WorkspaceUpdateName:
+      type: object
+      required:
+        - workspaceId
+        - name
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
     WorkspaceUpdate:
       type: object
       required:

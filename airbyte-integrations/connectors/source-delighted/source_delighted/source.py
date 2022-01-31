@@ -18,7 +18,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 # Basic full refresh stream
 class DelightedStream(HttpStream, ABC):
-
     url_base = "https://api.delighted.com/v1/"
 
     # Page size
@@ -41,10 +40,9 @@ class DelightedStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        params = {"per_page": self.limit, "since": self.since}
         if next_page_token:
-            params = {"per_page": self.limit, **next_page_token}
-        else:
-            params = {"per_page": self.limit, "since": self.since}
+            params.update(**next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -52,7 +50,7 @@ class DelightedStream(HttpStream, ABC):
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
-    # Getting page size as 'limit' from parrent class
+    # Getting page size as 'limit' from parent class
     @property
     def limit(self):
         return super().limit
@@ -73,8 +71,17 @@ class IncrementalDelightedStream(DelightedStream, ABC):
             params["since"] = stream_state.get(self.cursor_field)
         return params
 
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            if self.cursor_field not in stream_state or record[self.cursor_field] > stream_state[self.cursor_field]:
+                yield record
+
 
 class People(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-people
+    """
+
     def path(self, **kwargs) -> str:
         return "people.json"
 
@@ -86,6 +93,10 @@ class People(IncrementalDelightedStream):
 
 
 class Unsubscribes(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-unsubscribed-people
+    """
+
     cursor_field = "unsubscribed_at"
     primary_key = "person_id"
 
@@ -94,6 +105,10 @@ class Unsubscribes(IncrementalDelightedStream):
 
 
 class Bounces(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-bounced-people
+    """
+
     cursor_field = "bounced_at"
     primary_key = "person_id"
 
@@ -102,6 +117,10 @@ class Bounces(IncrementalDelightedStream):
 
 
 class SurveyResponses(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-survey-responses
+    """
+
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
@@ -110,8 +129,13 @@ class SurveyResponses(IncrementalDelightedStream):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+
+        if "since" in params:
+            params["updated_since"] = params.pop("since")
+
         if stream_state:
             params["updated_since"] = stream_state.get(self.cursor_field)
+
         return params
 
 
