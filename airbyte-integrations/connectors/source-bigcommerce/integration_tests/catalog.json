@@ -191,7 +191,8 @@
             "type": ["null", "integer"]
           },
           "date_modified": {
-            "type": ["null", "string"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "date_shipped": {
             "type": ["null", "string"],
@@ -373,8 +374,9 @@
           "customer_message": {
             "type": ["null", "string"]
           },
-          "date_create": {
-            "type": ["null", "string"]
+          "date_created": {
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "default_currency_code": {
             "type": ["null", "string"]
