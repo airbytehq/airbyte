@@ -66,6 +66,7 @@ public class BufferedStreamConsumerTest {
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
   private RecordWriter recordWriter;
+  private GetFileRecordWriter getFileRecordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;

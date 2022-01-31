@@ -19,6 +19,13 @@ public interface StreamCopier {
   void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
+   * Closes the writer for the stream to the current staging file.
+   * The staging file must be of a certain size specified in GlobalDataSizeConstants + one more buffer.
+   * The writer for the stream will close with a note that no errors were found.
+   */
+  void closeStagingFileWriter() throws Exception;
+
+  /**
    * Closes the writer for the stream to the staging persistence. This method should block until all
    * buffered data has been written to the persistence.
    */
@@ -65,5 +72,10 @@ public interface StreamCopier {
    *         appended to a shared filename prefix
    */
   String prepareStagingFile();
+
+  /**
+   * @return current staging file name
+   */
+  String getCurrentFile();
 
 }

@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.GetFileRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -53,6 +54,8 @@ public class CopyConsumerFactory {
         outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
         recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+        removeStagingFilePrinter(pairToCopier),
+        getFileName(pairToCopier),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
@@ -98,6 +101,16 @@ public class CopyConsumerFactory {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }
       }
+    };
+  }
+
+  private static GetFileRecordWriter getFileName(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair) -> pairToCopier.get(pair).getCurrentFile();
+  }
+
+  private static RecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+      pairToCopier.get(pair).closeStagingFileWriter();
     };
   }
 

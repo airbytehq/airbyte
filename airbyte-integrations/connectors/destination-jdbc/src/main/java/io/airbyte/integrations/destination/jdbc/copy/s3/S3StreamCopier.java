@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.slf4j.Logger;
@@ -48,6 +51,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final Timestamp uploadTime;
   protected final String stagingFolder;
   protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
+  protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
+  protected final Set<String> stagingFileNames = new LinkedHashSet<>();
   private final boolean purgeStagingData;
 
   // The number of batches of records that will be inserted into each file.
@@ -56,13 +61,6 @@ public abstract class S3StreamCopier implements StreamCopier {
   private int partsAddedToCurrentFile;
   private String currentFile;
 
-  /**
-   * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can
-   *        be up to 256 MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift
-   *        recommends at most 1 GiB per file, so you would want maxPartsPerFile = 4 (because 4 *
-   *        256MiB = 1 GiB).
-   *        {@link io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants#DEFAULT_MAX_BATCH_SIZE_BYTES}
-   */
   public S3StreamCopier(final String stagingFolder,
                         final String schema,
                         final AmazonS3 client,
@@ -112,6 +110,8 @@ public abstract class S3StreamCopier implements StreamCopier {
                 .build();
         currentFile = writer.getOutputPath();
         stagingWritersByFile.put(currentFile, writer);
+        activeStagingWriterFileNames.add(currentFile);
+        stagingFileNames.add(currentFile);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
@@ -125,6 +125,19 @@ public abstract class S3StreamCopier implements StreamCopier {
     if (stagingWritersByFile.containsKey(filename)) {
       stagingWritersByFile.get(filename).write(id, recordMessage);
     }
+  }
+
+  @Override
+  public void closeStagingFileWriter() throws Exception {
+    Set<String> removedKeys = new HashSet<>();
+    for (String key : activeStagingWriterFileNames) {
+      if (!key.equals(currentFile)) {
+        stagingWritersByFile.get(key).close(false);
+        stagingWritersByFile.remove(key);
+        removedKeys.add(key);
+      }
+    }
+    activeStagingWriterFileNames.removeAll(removedKeys);
   }
 
   @Override
@@ -149,9 +162,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
-      final String objectKey = entry.getValue().getOutputPath();
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), objectKey), schemaName, tmpTableName, s3Config);
+    for (final String fileName : stagingFileNames) {
+      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), fileName), schemaName, tmpTableName, s3Config);
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
@@ -181,21 +193,22 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
     if (purgeStagingData) {
-      for (final Map.Entry<String, S3Writer> entry : stagingWritersByFile.entrySet()) {
-        final String suffix = entry.getKey();
-        final String objectKey = entry.getValue().getOutputPath();
-
-        LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
-        if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {
-          s3Client.deleteObject(s3Config.getBucketName(), objectKey);
+      for (final String fileName : stagingFileNames) {
+        if (s3Client.doesObjectExist(s3Config.getBucketName(), fileName)) {
+          s3Client.deleteObject(s3Config.getBucketName(), fileName);
         }
-        LOGGER.info("S3 staging file {} cleaned.", suffix);
+        LOGGER.info("S3 staging file {} cleaned.", fileName);
       }
     }
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+  }
+
+  @Override
+  public String getCurrentFile() {
+    return currentFile;
   }
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {

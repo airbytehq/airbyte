@@ -12,11 +12,13 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.GetFileRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -155,6 +157,10 @@ public class SnowflakeInternalStagingConsumerFactory {
 
       snowflakeSqlOperations.insertRecords(database, records, schemaName, path);
     };
+  }
+
+  private static GetFileRecordWriter getFileName(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair) -> pairToCopier.get(pair).prepareStagingFile();
   }
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -77,6 +78,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
+  private final RecordWriter removeRecordWriter;
+  private final GetFileRecordWriter getFileRecordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final List<AirbyteMessage> buffer;
@@ -86,6 +89,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
+  private String fileName;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -100,12 +104,27 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                                 final long maxQueueSizeInBytes) {
+    this(outputRecordCollector, onStart, recordWriter, null, null,
+            onClose, catalog, isValidRecord, maxQueueSizeInBytes);
+  }
+
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final VoidCallable onStart,
+                                final RecordWriter recordWriter,
+                                final RecordWriter removeRecordWriter,
+                                final GetFileRecordWriter getFileRecordWriter,
+                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final long maxQueueSizeInBytes) {
     this.outputRecordCollector = outputRecordCollector;
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
+    this.removeRecordWriter = removeRecordWriter;
+    this.getFileRecordWriter = getFileRecordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
@@ -113,6 +132,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.buffer = new ArrayList<>(10_000);
     this.bufferSizeInBytes = 0;
     this.pairToIgnoredRecordCount = new HashMap<>();
+    this.fileName = null;
   }
 
   @Override
@@ -173,12 +193,25 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
       recordWriter.accept(entry.getKey(), entry.getValue());
+
+      String currentFileName = getStagingFilNameIfExist(entry.getKey());
+      if (Objects.isNull(fileName)) {
+        fileName = currentFileName;
+      }
+      if (removeRecordWriter != null && Objects.nonNull(fileName) && !fileName.equals(currentFileName)) {
+        removeRecordWriter.accept(entry.getKey(), entry.getValue());
+        fileName = currentFileName;
+      }
     }
 
     if (pendingState != null) {
       lastFlushedState = pendingState;
       pendingState = null;
     }
+  }
+
+  private String getStagingFilNameIfExist(AirbyteStreamNameNamespacePair pair) throws Exception {
+    return getFileRecordWriter != null ? getFileRecordWriter.apply(pair) : null;
   }
 
   private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {

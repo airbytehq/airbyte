@@ -124,6 +124,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
+  public void closeStagingFileWriter() throws Exception {
+    //TODO need to update this method when updating whole class for using GcsWriter
+  }
+
+  @Override
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     for (final var csvPrinter : csvPrinters.values()) {
@@ -192,6 +197,12 @@ public abstract class GcsStreamCopier implements StreamCopier {
     }
     queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
+  }
+
+  @Override
+  public String getCurrentFile() {
+    //TODO need to update this method when updating whole class for using GcsWriter
+    return null;
   }
 
   private static String getFullGcsPath(final String bucketName, final String stagingFile) {
