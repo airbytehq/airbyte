@@ -35,7 +35,6 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     try {
       AirbyteSentry.executeWithTracing("ConsumerStart", this::startTracked,
           Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
-      startTracked();
     } catch (final Exception e) {
       hasFailed = true;
       throw e;
