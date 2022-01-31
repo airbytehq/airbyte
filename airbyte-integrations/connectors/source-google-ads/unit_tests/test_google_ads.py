@@ -3,9 +3,9 @@
 #
 
 from datetime import date
-from freezegun import freeze_time
 
 import pendulum
+from freezegun import freeze_time
 from pendulum.tz.timezone import Timezone
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range, get_date_params
