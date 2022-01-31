@@ -57,22 +57,22 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     // create a test data
-    createTestData(database, schemaName);
+    createTestData(database, schemaName, "customer", true);
+    createTestData(database, schemaName, "not_readable", false);
 
     // create a schema with data that will not be used for testing, but would be used to check schema
     // filtering. This one should not be visible in results
-    createTestData(database, schemaName + "shouldIgnore");
+    createTestData(database, schemaName + "shouldIgnore", "customer", true);
   }
 
-  private void createTestData(final JdbcDatabase database, final String schemaName)
-      throws SQLException {
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+private void createTestData(final JdbcDatabase database, final String schemaName, final String tableName, final Boolean isReadable)
+  throws SQLException {
+    final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
     });
 
-    streamName = "customer";
-    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
     final String createTestTable =
         String.format(
             "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
@@ -86,6 +86,13 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
+
+    if (!isReadable) {
+      final String revokeSelect = String.format("REVOKE SELECT ON %s FROM %s;\n", fqTableName, database.getMetaData().getUserName());
+      database.execute(connection -> {
+        connection.createStatement().execute(insertTestData);
+      });
+    }
   }
 
   @Override
