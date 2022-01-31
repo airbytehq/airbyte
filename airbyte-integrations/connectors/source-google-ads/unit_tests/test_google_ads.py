@@ -73,14 +73,6 @@ def test_get_fields_from_schema():
 
 
 def test_interval_chunking():
-    # mock_intervals = [
-    #     {"segments.date": "2021-06-17"},
-    #     {"segments.date": "2021-06-27"},
-    #     {"segments.date": "2021-07-07"},
-    #     {"segments.date": "2021-07-17"},
-    #     {"segments.date": "2021-07-27"},
-    #     {"segments.date": "2021-08-06"},
-    # ]
     mock_intervals = [
         {"start_date": "2021-06-18", "end_date": "2021-06-27"},
         {"start_date": "2021-06-28", "end_date": "2021-07-07"},
@@ -89,7 +81,6 @@ def test_interval_chunking():
         {"start_date": "2021-07-28", "end_date": "2021-08-06"},
         {"start_date": "2021-08-07", "end_date": "2021-08-16"},
     ]
-
     intervals = chunk_date_range("2021-07-01", 14, "segments.date", "2021-08-15", range_days=10)
 
     assert mock_intervals == intervals
@@ -145,7 +136,6 @@ def test_get_date_params_with_time_zone():
     stream_2 = IncrementalGoogleAdsStream(**incremental_stream_config)
 
     start_date_honolulu, end_date_honolulu = get_date_params(
-        # stream_slice={"segments.date": mock_start_date_honolulu},
         start_date=mock_start_date_honolulu,
         time_zone=stream_2.time_zone,
         range_days=stream_2.range_days
@@ -201,7 +191,6 @@ def test_get_date_params_with_date():
     )
     stream = IncrementalGoogleAdsStream(**incremental_stream_config)
     start_date, end_date = get_date_params(
-        # stream_slice={"segments.date": "2021-10-31"},
         start_date="2021-10-31",
         time_zone=stream.time_zone,
         range_days=stream.range_days,
@@ -235,8 +224,6 @@ def test_get_date_params_without_end_date():
     )
     stream = IncrementalGoogleAdsStream(**incremental_stream_config)
     start_date, end_date = get_date_params(
-        # stream_slice={"segments.date": "2021-10-31"},
-        # cursor_field="segments.date"
         start_date="2021-10-31",
         range_days=stream.range_days,
         time_zone=stream.time_zone
