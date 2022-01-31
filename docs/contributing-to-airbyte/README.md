@@ -120,3 +120,5 @@ As soon as you are done with your development, just put up a PR. You're also alw
 
 ‌Once your PR passes, we will merge it.
 
+## **Airbyte CI workflows**
+* [Testing by SonarQube](sonar-qube-workflow.md)

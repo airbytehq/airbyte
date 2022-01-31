@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import StepsMenu from "../../StepsMenu";
+import { StepsMenu } from "components/StepsMenu";
 
 type IProps = {
   isFailed?: boolean;

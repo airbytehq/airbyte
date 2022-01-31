@@ -30,7 +30,8 @@ The Snowflake source does not alter the schema present in your warehouse. Depend
 6. **Schema**
 7. **Username**
 8. **Password**
-9. Create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
+9. **JDBC URL Params** (Optional)
+10. Create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
 
 ### Setup guide
 
@@ -75,8 +76,9 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2022-01-25 | [9623](https://github.com/airbytehq/airbyte/pull/9623) | Add jdbc_url_params support for optional JDBC parameters |
+| 0.1.5 | 2022-01-19 | [9567](https://github.com/airbytehq/airbyte/pull/9567) | Added parameter for keeping JDBC session alive |
 | 0.1.4 | 2021-12-30 | [9203](https://github.com/airbytehq/airbyte/pull/9203) | Update connector fields title/description |
 | 0.1.3 | 2021-01-11 | [9304](https://github.com/airbytehq/airbyte/pull/9304) | Upgrade version of JDBC driver |
 | 0.1.2 | 2021-10-21 | [7257](https://github.com/airbytehq/airbyte/pull/7257) | Fixed parsing of extreme values for FLOAT and NUMBER data types |
 | 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
-

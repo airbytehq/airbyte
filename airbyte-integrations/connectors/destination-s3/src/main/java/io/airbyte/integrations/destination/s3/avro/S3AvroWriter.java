@@ -7,11 +7,12 @@ package io.airbyte.integrations.destination.s3.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class S3AvroWriter extends BaseS3Writer implements S3Writer {
+public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3AvroWriter.class);
 
@@ -35,6 +36,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
   private final String objectKey;
+  private final String gcsFileLocation;
 
   public S3AvroWriter(final S3DestinationConfig config,
                       final AmazonS3 s3Client,
@@ -49,6 +51,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
@@ -86,6 +89,22 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   @Override
   public String getOutputPath() {
     return objectKey;
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.AVRO;
+  }
+
+  @Override
+  public void write(JsonNode formattedData) throws IOException {
+    final GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
+    dataFileWriter.append(record);
   }
 
 }

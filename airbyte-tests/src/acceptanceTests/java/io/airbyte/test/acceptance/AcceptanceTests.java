@@ -68,6 +68,8 @@ import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.resources.MoreResources;
@@ -171,6 +173,8 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
+  private static FeatureFlags featureFlags;
+
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
@@ -203,6 +207,8 @@ public class AcceptanceTests {
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
+
+    featureFlags = new EnvVariableFeatureFlags();
   }
 
   @AfterAll
@@ -467,7 +473,10 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -486,7 +495,10 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
@@ -519,7 +531,10 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     LOGGER.info("Beginning testIncrementalSync() sync 1");
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -550,21 +565,31 @@ public class AcceptanceTests {
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
+
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
+    FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      waitForJob(apiClient.getJobsApi(), jobInfoRead.getJob(),
+          Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    } else {
+      waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
+    }
+
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+        STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
     LOGGER.info("Starting testIncrementalSync() sync 3");
-    final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead3 =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndDestinationDbInSync(false);
+
   }
 
   @Test
@@ -613,7 +638,10 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -743,7 +771,10 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
@@ -834,7 +865,10 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
-
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
@@ -912,6 +946,10 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
+    // Avoid Race condition with the new scheduler
+    if (featureFlags.usesNewScheduler()) {
+      waitForTemporalWorkflow(connectionId);
+    }
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -1313,6 +1351,19 @@ public class AcceptanceTests {
   public enum Type {
     SOURCE,
     DESTINATION
+  }
+
+  private static void waitForTemporalWorkflow(final UUID connectionId) {
+    /*
+     * do { try { Thread.sleep(1000); } catch (InterruptedException e) { throw new RuntimeException(e);
+     * } } while
+     * (temporalClient.isWorkflowRunning(temporalClient.getConnectionManagerName(connectionId)));
+     */
+    try {
+      Thread.sleep(10 * 1000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

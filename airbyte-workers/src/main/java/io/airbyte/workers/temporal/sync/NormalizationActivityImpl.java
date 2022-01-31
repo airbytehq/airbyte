@@ -16,20 +16,21 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultNormalizationWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class NormalizationActivityImpl implements NormalizationActivity {
 
-  private final boolean containerOrchestratorEnabled;
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory jobProcessFactory;
-  private final ProcessFactory orchestratorProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
   private final AirbyteConfigValidator validator;
@@ -39,11 +40,11 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private final String databasePassword;
   private final String databaseUrl;
   private final String airbyteVersion;
+  private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
 
-  public NormalizationActivityImpl(final boolean containerOrchestratorEnabled,
+  public NormalizationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
                                    final WorkerConfigs workerConfigs,
                                    final ProcessFactory jobProcessFactory,
-                                   final ProcessFactory orchestratorProcessFactory,
                                    final SecretsHydrator secretsHydrator,
                                    final Path workspaceRoot,
                                    final WorkerEnvironment workerEnvironment,
@@ -52,10 +53,9 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                    final String databasePassword,
                                    final String databaseUrl,
                                    final String airbyteVersion) {
-    this.containerOrchestratorEnabled = containerOrchestratorEnabled;
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
     this.jobProcessFactory = jobProcessFactory;
-    this.orchestratorProcessFactory = orchestratorProcessFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
     this.validator = new AirbyteConfigValidator();
@@ -71,31 +71,32 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   public Void normalize(final JobRunConfig jobRunConfig,
                         final IntegrationLauncherConfig destinationLauncherConfig,
                         final NormalizationInput input) {
+    return TemporalUtils.withBackgroundHeartbeat(() -> {
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-    final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
-    final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+      final Supplier<NormalizationInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
+      };
 
-    final Supplier<NormalizationInput> inputSupplier = () -> {
-      validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
-      return fullInput;
-    };
+      final CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
 
-    final CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
+      if (containerOrchestratorConfig.isPresent()) {
+        workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+      } else {
+        workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+      }
 
-    if (containerOrchestratorEnabled) {
-      workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-    } else {
-      workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-    }
+      final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot, workerEnvironment, logConfigs,
+          jobRunConfig,
+          workerFactory,
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
-    final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
-        jobRunConfig,
-        workerFactory,
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
-
-    return temporalAttemptExecution.get();
+      return temporalAttemptExecution.get();
+    });
   }
 
   private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getLegacyWorkerFactory(
@@ -118,11 +119,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                          final JobRunConfig jobRunConfig) {
     return () -> new NormalizationLauncherWorker(
-        workspaceRoot,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
-        orchestratorProcessFactory,
+        containerOrchestratorConfig.get(),
         airbyteVersion);
   }
 

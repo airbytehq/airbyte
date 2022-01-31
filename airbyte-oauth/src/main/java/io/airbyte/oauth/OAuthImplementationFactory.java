@@ -57,6 +57,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-monday", new MondayOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-sunshine", new ZendeskSunshineOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
         .build();
   }
 
