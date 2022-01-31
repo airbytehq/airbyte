@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -94,7 +95,9 @@ public class SnowflakeInternalStagingConsumerFactory {
     };
   }
 
-  private static String getOutputSchema(final AirbyteStream stream, final String defaultDestSchema, NamingConventionTransformer namingResolver) {
+  private static String getOutputSchema(final AirbyteStream stream,
+                                        final String defaultDestSchema,
+                                        final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
         ? namingResolver.getIdentifier(stream.getNamespace())
         : namingResolver.getIdentifier(defaultDestSchema);
@@ -106,24 +109,38 @@ public class SnowflakeInternalStagingConsumerFactory {
                                                  final SnowflakeSQLNameTransformer namingResolver) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
+
       for (final WriteConfig writeConfig : writeConfigs) {
-        final String schemaName = writeConfig.getOutputSchemaName();
-        final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Preparing tmp table in destination started for stream {}. schema: {}, tmp table name: {}", writeConfig.getStreamName(),
-            schemaName, tmpTableName);
-        final String outputTableName = writeConfig.getOutputTableName();
-        final String stageName = namingResolver.getStageName(schemaName, outputTableName);
-        LOGGER.info("Preparing stage in destination started for stream {}. schema: {}, stage: {}", writeConfig.getStreamName(),
-            schemaName, stageName);
+        final String schema = writeConfig.getOutputSchemaName();
+        final String stream = writeConfig.getStreamName();
+        final String tmpTable = writeConfig.getTmpTableName();
+        final String stage = namingResolver.getStageName(schema, writeConfig.getOutputTableName());
 
-        snowflakeSqlOperations.createSchemaIfNotExists(database, schemaName);
-        snowflakeSqlOperations.createTableIfNotExists(database, schemaName, tmpTableName);
-        snowflakeSqlOperations.createStageIfNotExists(database, stageName);
-        LOGGER.info("Preparing stages in destination completed " + stageName);
+        LOGGER.info("Preparing stage in destination started for schema {} stream {}: tmp table: {}, stage: {}",
+            schema, stream, tmpTable, stage);
 
+        AirbyteSentry.executeWithTracing("PrepareStreamStage",
+            () -> prepareStream(database, snowflakeSqlOperations, schema, tmpTable, stage),
+            Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stage));
+
+        LOGGER.info("Preparing stage in destination completed for schema {} stream {}", schema, stream);
       }
+
       LOGGER.info("Preparing tables in destination completed.");
     };
+  }
+
+  private static void prepareStream(final JdbcDatabase database,
+                                    final SnowflakeStagingSqlOperations snowflakeSqlOperations,
+                                    final String schema,
+                                    final String tmpTable,
+                                    final String stage) throws Exception {
+    AirbyteSentry.executeWithTracing("CreateSchemaIfNotExists",
+        () -> snowflakeSqlOperations.createSchemaIfNotExists(database, schema));
+    AirbyteSentry.executeWithTracing("CreateTmpTableIfNotExists",
+        () -> snowflakeSqlOperations.createTableIfNotExists(database, schema, tmpTable));
+    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
+        () -> snowflakeSqlOperations.createStageIfNotExists(database, stage));
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {
@@ -176,7 +193,7 @@ public class SnowflakeInternalStagingConsumerFactory {
               path);
           try {
             sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
             throw new RuntimeException("Failed to upload data from stage " + path, e);
