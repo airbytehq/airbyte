@@ -6,6 +6,7 @@
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode

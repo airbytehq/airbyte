@@ -2,8 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Dict, List, Mapping
 from unittest.mock import patch
-from typing import List, Mapping, Dict, Any
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.stream import FileStream

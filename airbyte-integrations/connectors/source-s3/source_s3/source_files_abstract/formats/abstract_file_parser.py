@@ -7,7 +7,6 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
-
 from source_s3.source_files_abstract.file_info import FileInfo
 
 

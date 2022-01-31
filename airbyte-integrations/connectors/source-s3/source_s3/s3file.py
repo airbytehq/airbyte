@@ -4,7 +4,7 @@
 
 
 from contextlib import contextmanager
-from typing import BinaryIO, Iterator, TextIO, Union, Any, Mapping
+from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import smart_open
 from boto3 import session as boto3session

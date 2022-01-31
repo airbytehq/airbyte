@@ -6,7 +6,7 @@
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterator, List, Mapping, Any
+from typing import Any, Iterator, List, Mapping
 from uuid import uuid4
 
 import pytest

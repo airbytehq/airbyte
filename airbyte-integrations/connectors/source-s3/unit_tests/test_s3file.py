@@ -3,10 +3,11 @@
 #
 
 
+from typing import Mapping
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.s3file import S3File
-from typing import Mapping
 
 LOGGER = AirbyteLogger()
 

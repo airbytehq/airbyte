@@ -2,11 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Mapping, Tuple
+
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.formats.abstract_file_parser import AbstractFileParser
-from typing import Any, Mapping, Tuple
 
 LOGGER = AirbyteLogger()
 

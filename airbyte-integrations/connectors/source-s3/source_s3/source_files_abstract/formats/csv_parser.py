@@ -5,14 +5,14 @@
 import csv
 import json
 import tempfile
-from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union, Callable
+from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
 from pyarrow import csv as pa_csv
-
 from source_s3.utils import run_in_external_process
+
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
 

@@ -3,11 +3,12 @@
 #
 
 import multiprocessing as mp
-from multiprocessing import Queue
 import traceback
-from typing import Any, List, Callable, Mapping
-from airbyte_cdk.logger import AirbyteLogger
+from multiprocessing import Queue
+from typing import Any, Callable, List, Mapping
+
 import dill
+from airbyte_cdk.logger import AirbyteLogger
 
 
 def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: AirbyteLogger, args: List[Any]) -> Mapping[str, Any]:

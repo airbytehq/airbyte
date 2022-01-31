@@ -3,9 +3,9 @@
 #
 
 import json
+from pathlib import Path
 
 from source_s3 import SourceS3
-from pathlib import Path
 
 
 def test_transform_backslash_t_to_tab(tmp_path: Path) -> None:

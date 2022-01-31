@@ -3,7 +3,7 @@
 #
 
 import boto3.session
-from botocore.client import Config, BaseClient
+from botocore.client import BaseClient, Config
 
 
 def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:

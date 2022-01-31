@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open

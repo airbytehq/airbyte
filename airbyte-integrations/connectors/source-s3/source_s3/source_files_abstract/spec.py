@@ -5,7 +5,7 @@
 
 import json
 import re
-from typing import Union, Any, Dict
+from typing import Any, Dict, Union
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field

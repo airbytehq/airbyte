@@ -9,16 +9,18 @@ from copy import deepcopy
 from datetime import datetime
 from functools import lru_cache
 from traceback import format_exc
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union, Dict
-from .storagefile import StorageFile
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
-from .formats.abstract_file_parser import AbstractFileParser
+
 from .file_info import FileInfo
+from .formats.abstract_file_parser import AbstractFileParser
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
+from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 

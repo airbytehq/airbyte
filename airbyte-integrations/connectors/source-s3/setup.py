@@ -21,6 +21,7 @@ TEST_REQUIREMENTS = [
     "psutil",
     "pytest-order",
     "netifaces~=0.11.0",
+    "docker",
 ]
 
 setup(

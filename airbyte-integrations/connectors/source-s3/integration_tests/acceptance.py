@@ -3,8 +3,9 @@
 #
 
 
-import pytest
 from typing import Iterable
+
+import pytest
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 

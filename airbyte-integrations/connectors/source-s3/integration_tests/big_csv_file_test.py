@@ -7,6 +7,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.source import SourceS3

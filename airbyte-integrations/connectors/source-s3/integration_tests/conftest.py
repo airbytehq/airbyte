@@ -6,7 +6,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Mapping, Any, Iterable, List
+from typing import Any, Iterable, List, Mapping
 from zipfile import ZipFile
 
 import docker
