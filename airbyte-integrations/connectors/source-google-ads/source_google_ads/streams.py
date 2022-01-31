@@ -139,6 +139,10 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        """
+        This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
+        and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
+        """
         state = stream_state or {}
         while True:
             try:
