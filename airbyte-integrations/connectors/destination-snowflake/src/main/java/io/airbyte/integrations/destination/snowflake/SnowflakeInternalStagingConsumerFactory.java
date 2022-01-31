@@ -180,19 +180,20 @@ public class SnowflakeInternalStagingConsumerFactory {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
+
         for (final WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();
+          final String streamName = writeConfig.getStreamName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
-          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}", writeConfig.getStreamName(), schemaName, srcTableName,
-              dstTableName);
-
           final String path = namingResolver.getStagingPath(schemaName, dstTableName, CURRENT_SYNC_PATH);
-          LOGGER.info("Uploading data from stage:  stream {}. schema {}, tmp table {}, stage path {}", writeConfig.getStreamName(), schemaName,
-              srcTableName,
-              path);
+          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}, stage path {}",
+              streamName, schemaName, srcTableName, dstTableName, path);
+
           try {
-            sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
+            AirbyteSentry.executeWithTracing("CopyIntoTmpTableFromStage",
+                () -> sqlOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName),
+                Map.of("schema", schemaName, "stream", streamName, "tmpTable", srcTableName, "finalTable", dstTableName));
           } catch (final Exception e) {
             sqlOperations.cleanUpStage(database, path);
             LOGGER.info("Cleaning stage path {}", path);
