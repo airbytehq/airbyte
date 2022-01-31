@@ -82,7 +82,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected void createTestData(final JdbcDatabase database, final String schemaName, final String tableName, final Boolean isReadable)
       throws SQLException {
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
     });
