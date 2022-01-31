@@ -6,6 +6,7 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
@@ -46,7 +47,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void start() throws Exception {
-        consumer.start();
+        AirbyteSentry.executeWithTracing("ConsumerStart", consumer::start);
       }
 
       @Override
@@ -56,8 +57,10 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void close() throws Exception {
-        consumer.close();
-        voidCallable.call();
+        AirbyteSentry.executeWithTracing("ConsumerClose", () -> {
+          consumer.close();
+          voidCallable.call();
+        });
       }
 
     };
