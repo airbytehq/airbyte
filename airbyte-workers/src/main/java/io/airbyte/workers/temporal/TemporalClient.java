@@ -357,7 +357,33 @@ public class TemporalClient {
       }
     } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
 
-    log.info("end of reset");
+    log.info("end of reset submission");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
+    resetConnection(connectionId);
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("End of reset");
 
     final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
 

@@ -55,8 +55,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
+@Slf4j
 public class WebBackendConnectionsHandler {
 
   private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
@@ -259,7 +261,9 @@ public class WebBackendConnectionsHandler {
       final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
 
       if (featureFlags.usesNewScheduler()) {
-        temporalWorkerRunFactory.resetConnection(webBackendConnectionUpdate.getConnectionId());
+        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+
+        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
       } else {
         // wait for this to execute
         schedulerHandler.resetConnection(connectionId);

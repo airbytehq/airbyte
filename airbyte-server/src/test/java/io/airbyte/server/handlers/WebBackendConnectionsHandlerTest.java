@@ -463,8 +463,6 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
   }
 
-
-
   @Test
   void testUpdateConnectionWithOperations() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendOperationCreateOrUpdate operationCreateOrUpdate = new WebBackendOperationCreateOrUpdate()
@@ -570,6 +568,7 @@ class WebBackendConnectionsHandlerTest {
             .syncCatalog(expectedWithNewSchema.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
+    when(featureFlags.usesNewScheduler()).thenReturn(true);
 
     final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
@@ -578,8 +577,8 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    verify(temporalWorkerRunFactory, times(1)).resetConnection(connectionId.getConnectionId());
-    // verify(schedulerHandler, times(0)).syncConnection(connectionId);
+    verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test
