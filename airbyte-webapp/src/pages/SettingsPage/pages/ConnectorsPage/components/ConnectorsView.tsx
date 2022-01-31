@@ -108,7 +108,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           ]
         : []),
     ],
-    [feedbackList, onUpdateVersion]
+    [feedbackList, onUpdateVersion, allowUpdateConnectors]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
