@@ -8,10 +8,15 @@ import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.temporal.activity.Activity;
 import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.namespace.v1.NamespaceConfig;
 import io.temporal.api.namespace.v1.NamespaceInfo;
+import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
+import io.temporal.api.workflowservice.v1.UpdateNamespaceRequest;
+import io.temporal.client.ActivityCompletionException;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -20,9 +25,15 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +41,9 @@ import org.slf4j.LoggerFactory;
 public class TemporalUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
+
+  public static final Duration SEND_HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
+  public static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(30);
 
   public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
@@ -45,6 +59,30 @@ public class TemporalUtils {
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
 
   public static final String DEFAULT_NAMESPACE = "default";
+
+  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(7);
+  private static final String HUMAN_READABLE_WORKFLOW_EXECUTION_TTL =
+      DurationFormatUtils.formatDurationWords(WORKFLOW_EXECUTION_TTL.toMillis(), true, true);
+
+  public static void configureTemporalNamespace(WorkflowServiceStubs temporalService) {
+    final var client = temporalService.blockingStub();
+    final var describeNamespaceRequest = DescribeNamespaceRequest.newBuilder().setNamespace(DEFAULT_NAMESPACE).build();
+    final var currentRetentionGrpcDuration = client.describeNamespace(describeNamespaceRequest).getConfig().getWorkflowExecutionRetentionTtl();
+    final var currentRetention = Duration.ofSeconds(currentRetentionGrpcDuration.getSeconds());
+
+    if (currentRetention.equals(WORKFLOW_EXECUTION_TTL)) {
+      LOGGER.info("Workflow execution TTL already set for namespace " + DEFAULT_NAMESPACE + ". Remains unchanged as: "
+          + HUMAN_READABLE_WORKFLOW_EXECUTION_TTL);
+    } else {
+      final var newGrpcDuration = com.google.protobuf.Duration.newBuilder().setSeconds(WORKFLOW_EXECUTION_TTL.getSeconds()).build();
+      final var humanReadableCurrentRetention = DurationFormatUtils.formatDurationWords(currentRetention.toMillis(), true, true);
+      final var namespaceConfig = NamespaceConfig.newBuilder().setWorkflowExecutionRetentionTtl(newGrpcDuration).build();
+      final var updateNamespaceRequest = UpdateNamespaceRequest.newBuilder().setNamespace(DEFAULT_NAMESPACE).setConfig(namespaceConfig).build();
+      LOGGER.info("Workflow execution TTL differs for namespace " + DEFAULT_NAMESPACE + ". Changing from (" + humanReadableCurrentRetention + ") to ("
+          + HUMAN_READABLE_WORKFLOW_EXECUTION_TTL + "). ");
+      client.updateNamespace(updateNamespaceRequest);
+    }
+  }
 
   @FunctionalInterface
   public interface TemporalJobCreator<T extends Serializable> {
@@ -142,6 +180,30 @@ public class TemporalUtils {
         .map(DescribeNamespaceResponse::getNamespaceInfo)
         .map(NamespaceInfo::getName)
         .collect(toSet());
+  }
+
+  /**
+   * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
+   * down the heartbeat server after the fact.
+   */
+  public static <T> T withBackgroundHeartbeat(Callable<T> callable) {
+    final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    try {
+      scheduledExecutor.scheduleAtFixedRate(() -> {
+        Activity.getExecutionContext().heartbeat(null);
+      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+
+      return callable.call();
+    } catch (final ActivityCompletionException e) {
+      LOGGER.warn("Job either timed out or was cancelled.");
+      throw new RuntimeException(e);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      LOGGER.info("Stopping temporal heartbeating...");
+      scheduledExecutor.shutdown();
+    }
   }
 
 }
