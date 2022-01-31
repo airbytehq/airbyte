@@ -38,7 +38,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     }
   }
 
-  public static boolean isInternalStaging(JsonNode config) {
+  public static boolean isInternalStaging(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject()
         && config.get("loading_method").get("method").asText().equals("Internal Staging");
   }
@@ -66,9 +66,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
-    LOGGER.info("starting destination: {}", SnowflakeDestination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", SnowflakeDestination.class);
   }
 
 }
