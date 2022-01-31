@@ -174,8 +174,8 @@ public class ElasticsearchDestinationTest {
           CatalogHelpers.createConfiguredAirbyteStream(
               this.getStreamName(),
               this.getNamespace(),
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING))
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("name", JsonSchemaType.STRING))
               .withDestinationSyncMode(this.getSyncMode())
               .withPrimaryKey(this.getPrimaryKey())));
     }

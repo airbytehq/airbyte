@@ -25,7 +25,8 @@ public class JsonSchemaType {
   public static final JsonSchemaType OBJECT = new JsonSchemaType.Builder().withType(JsonSchemaPrimitive.OBJECT).build();
   public static final JsonSchemaType ARRAY = new JsonSchemaType.Builder().withType(JsonSchemaPrimitive.ARRAY).build();
   public static final JsonSchemaType NULL = new JsonSchemaType.Builder().withType(JsonSchemaPrimitive.NULL).build();
-  public static final JsonSchemaType STRING_BASE_64 = new JsonSchemaType.Builder().withType(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
+  public static final JsonSchemaType STRING_BASE_64 =
+      new JsonSchemaType.Builder().withType(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
 
   private final HashMap<String, String> jsonSchemaTypeMap = new HashMap<>();
 

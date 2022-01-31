@@ -14,14 +14,8 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.*;
+
 import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
@@ -57,8 +51,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
                 String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -69,8 +63,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
                 String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(

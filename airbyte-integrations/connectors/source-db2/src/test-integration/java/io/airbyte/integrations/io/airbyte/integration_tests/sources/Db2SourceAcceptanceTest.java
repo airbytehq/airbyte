@@ -14,14 +14,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.*;
+
 import java.util.HashMap;
 import org.testcontainers.containers.Db2Container;
 
@@ -59,8 +53,8 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -68,8 +62,8 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }

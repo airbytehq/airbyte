@@ -10,14 +10,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.*;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -54,14 +48,14 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING),
-                Field.of("test", JsonSchemaPrimitive.STRING),
-                Field.of("test_array", JsonSchemaPrimitive.ARRAY),
-                Field.of("empty_test", JsonSchemaPrimitive.STRING),
-                Field.of("double_test", JsonSchemaPrimitive.NUMBER),
-                Field.of("int_test", JsonSchemaPrimitive.NUMBER))
+                Field.of("_id", JsonSchemaType.STRING),
+                Field.of("id", JsonSchemaType.STRING),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("test", JsonSchemaType.STRING),
+                Field.of("test_array", JsonSchemaType.ARRAY),
+                Field.of("empty_test", JsonSchemaType.STRING),
+                Field.of("double_test", JsonSchemaType.NUMBER),
+                Field.of("int_test", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

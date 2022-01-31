@@ -6,6 +6,8 @@ package io.airbyte.integrations.standardtest.source;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +18,7 @@ public class TestDataHolder {
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
   private final String sourceType;
-  private final JsonSchemaPrimitive airbyteType;
+  private final JsonSchemaType airbyteType;
   private final List<String> values;
   private final List<String> expectedValues;
   private final String createTablePatternSql;
@@ -28,7 +30,7 @@ public class TestDataHolder {
   private String testColumnName;
 
   TestDataHolder(final String sourceType,
-                 final JsonSchemaPrimitive airbyteType,
+                 final JsonSchemaType airbyteType,
                  final List<String> values,
                  final List<String> expectedValues,
                  final String createTablePatternSql,
@@ -55,7 +57,7 @@ public class TestDataHolder {
   public static class TestDataHolderBuilder {
 
     private String sourceType;
-    private JsonSchemaPrimitive airbyteType;
+    private JsonSchemaType airbyteType;
     private final List<String> values = new ArrayList<>();
     private final List<String> expectedValues = new ArrayList<>();
     private String createTablePatternSql;
@@ -90,7 +92,7 @@ public class TestDataHolder {
      * @param airbyteType Airbyte data type
      * @return builder
      */
-    public TestDataHolderBuilder airbyteType(final JsonSchemaPrimitive airbyteType) {
+    public TestDataHolderBuilder airbyteType(final JsonSchemaType airbyteType) {
       this.airbyteType = airbyteType;
       return this;
     }
@@ -196,7 +198,7 @@ public class TestDataHolder {
     return sourceType;
   }
 
-  public JsonSchemaPrimitive getAirbyteType() {
+  public JsonSchemaType getAirbyteType() {
     return airbyteType;
   }
 

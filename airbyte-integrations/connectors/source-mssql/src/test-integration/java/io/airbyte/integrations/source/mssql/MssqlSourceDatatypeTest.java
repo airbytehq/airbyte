@@ -15,6 +15,7 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
@@ -91,7 +92,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -99,7 +100,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
@@ -107,7 +108,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .build());
@@ -115,7 +116,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "0", "255")
             .addExpectedValues(null, "0", "255")
             .build());
@@ -123,7 +124,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "0", "1", "'true'", "'false'")
             .addExpectedValues(null, "false", "true", "true", "false")
             .build());
@@ -132,7 +133,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("decimal")
             .fullSourceDataType("DECIMAL(5,2)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("999", "5.1", "0", "null")
             .addExpectedValues("999", "5.1", "0", null)
             .build());
@@ -140,7 +141,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'99999'", "null")
             .addExpectedValues("99999", null)
             .build());
@@ -148,7 +149,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "'9990000.99'")
             .addExpectedValues(null, "9990000.99")
             .build());
@@ -156,7 +157,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallmoney")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "'-214748.3648'", "214748.3647")
             .addExpectedValues(null, "-214748.3648", "214748.3647")
             .build());
@@ -164,7 +165,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "null")
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .build());
@@ -172,7 +173,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("real")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "null")
             .addExpectedValues("123.0", "1.23456794E9", null)
             .build());
@@ -180,7 +181,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
                 "null")
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
@@ -190,7 +191,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smalldatetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
             .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
             .build());
@@ -198,7 +199,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
             .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
@@ -206,7 +207,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime2")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "null")
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
@@ -214,7 +215,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'13:00:01'", "'13:00:04Z'")
             .addExpectedValues(null, "13:00:01.0000000", "13:00:04.0000000")
             .build());
@@ -222,7 +223,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetimeoffset")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
             .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
                 "9999-01-10 00:00:00.0000000 +01:00", null)
@@ -231,7 +232,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("char")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'*'", "null")
             .addExpectedValues("a", "*", null)
             .build());
@@ -240,7 +241,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("varchar")
             .fullSourceDataType("varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -250,7 +251,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("text")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Some test text 123$%^&*()_'", "''", "null")
             .addExpectedValues("a", "abc", "Some test text 123$%^&*()_", "", null)
             .build());
@@ -258,7 +259,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("nchar")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'*'", "N'ї'", "null")
             .addExpectedValues("a", "*", "ї", null)
             .build());
@@ -267,7 +268,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("nvarchar")
             .fullSourceDataType("nvarchar(max)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -277,7 +278,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("ntext")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -287,7 +288,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
             .addExpectedValues("A", null)
             .build());
@@ -296,7 +297,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("varbinary")
             .fullSourceDataType("varbinary(3)")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
             .addExpectedValues("ABC", null)
             .build());
@@ -308,7 +309,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hierarchyid")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'/1/1/'", "null")
             .addExpectedValues("/1/1/", null)
             .build());
@@ -316,7 +317,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("sql_variant")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -327,7 +328,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geometry")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)",
                 "null")
             .addExpectedValues("LINESTRING(100 100, 20 180, 180 180)", null)
@@ -336,7 +337,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("uniqueidentifier")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'375CFC44-CAE3-4E43-8083-821D2DF0E626'", "null")
             .addExpectedValues("375CFC44-CAE3-4E43-8083-821D2DF0E626", null)
             .build());
@@ -344,7 +345,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("xml")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues(
                 "'<user><user_id>1</user_id></user>'", "null", "''")
             .addExpectedValues("<user><user_id>1</user_id></user>", null, "")
@@ -354,7 +355,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geography")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues(
                 "geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )', 4326)",
                 "null")
@@ -365,7 +366,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hierarchyid")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .build());
 
   }

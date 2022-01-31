@@ -14,6 +14,8 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.List;
+
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -109,7 +111,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -117,7 +119,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
@@ -125,7 +127,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("serial")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "2147483647", "0", "-2147483647")
             .addExpectedValues("1", "2147483647", "0", "-2147483647")
             .build());
@@ -133,7 +135,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallserial")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "32767", "0", "-32767")
             .addExpectedValues("1", "32767", "0", "-32767")
             .build());
@@ -142,7 +144,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("BIT(3)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("B'101'", "B'111'", "null")
             .addExpectedValues("101", "111", null)
             .build());
@@ -151,7 +153,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("bit_varying")
             .fullSourceDataType("BIT VARYING(5)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("B'101'", "null")
             .addExpectedValues("101", null)
             .build());
@@ -159,7 +161,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("boolean")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
             .addExpectedValues("true", "true", "true", "false", "false", "false", null)
             .build());
@@ -167,7 +169,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
-            .airbyteType(JsonSchemaPrimitive.OBJECT)
+            .airbyteType(JsonSchemaType.OBJECT)
             .addInsertValues("decode('1234', 'hex')")
             .addExpectedValues("EjQ=")
             .build());
@@ -175,7 +177,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("character")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'*'", "null")
             .addExpectedValues("a", "*", null)
             .build());
@@ -184,7 +186,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("character")
             .fullSourceDataType("character(8)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
             .build());
@@ -192,7 +194,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
                 "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -203,7 +205,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("varchar")
             .fullSourceDataType("character(12)")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
                 "''", "null")
             .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
@@ -213,7 +215,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("cidr")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'192.168.100.128/25'", "'192.168/24'", "'192.168.1'",
                 "'128.1'", "'2001:4f8:3:ba::/64'")
             .addExpectedValues(null, "192.168.100.128/25", "192.168.0.0/24", "192.168.1.0/24",
@@ -223,7 +225,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'January 7, 1999'", "'1999-01-08'", "'1/9/1999'", "'January 10, 99 BC'", "'January 11, 99 AD'", "null")
             .addExpectedValues("1999-01-07T00:00:00Z", "1999-01-08T00:00:00Z", "1999-01-09T00:00:00Z", "0099-01-10T00:00:00Z", "1999-01-11T00:00:00Z",
                 null)
@@ -232,7 +234,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "'-Infinity'", "'Infinity'", "'NaN'", "null")
             .addExpectedValues("123.0", "1.2345678901234567E9", "-Infinity", "Infinity", "NaN", null)
             .build());
@@ -240,7 +242,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "'-Infinity'", "'Infinity'", "'NaN'", "null")
             .addExpectedValues("123.0", "1.2345678901234567E9", "-Infinity", "Infinity", "NaN", null)
             .build());
@@ -248,7 +250,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inet")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'198.24.10.0/24'", "'198.24.10.0'", "'198.10/8'", "null")
             .addExpectedValues("198.24.10.0/24", "198.24.10.0", "198.10.0.0/8", null)
             .build());
@@ -256,7 +258,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
@@ -264,7 +266,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("interval")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'P1Y2M3DT4H5M6S'", "'PT4H5M6S'", "'-300'", "'-178000000'",
                 "'178000000'", "'1-2'", "'3 4:05:06'", "'P0002-02-03T04:05:06'")
             .addExpectedValues(null, "1 year 2 mons 3 days 04:05:06", "04:05:06", "-00:05:00", "-49444:26:40",
@@ -274,7 +276,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
             .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
@@ -282,7 +284,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'[1, 2, 3]'::jsonb")
             .addExpectedValues(null, "[1, 2, 3]")
             .build());
@@ -290,7 +292,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("macaddr")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'08:00:2b:01:02:03'", "'08-00-2b-01-02-04'",
                 "'08002b:010205'")
             .addExpectedValues(null, "08:00:2b:01:02:03", "08:00:2b:01:02:04", "08:00:2b:01:02:05")
@@ -299,7 +301,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("macaddr8")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'08:00:2b:01:02:03:04:05'", "'08-00-2b-01-02-03-04-06'",
                 "'08002b:0102030407'")
             .addExpectedValues(null, "08:00:2b:01:02:03:04:05", "08:00:2b:01:02:03:04:06",
@@ -314,7 +316,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'999.99'", "'1,000.01'", "'-999999999999.99'", "'-999999999999999'", "'999999999999.99'", "'999999999999999'",
                 "'-92233720368547758.08'", "'92233720368547758.07'")
             .addExpectedValues(null, "999.99", "1000.01", "-999999999999.99", "-999999999999999", "999999999999.99", "999999999999999",
@@ -324,7 +326,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'99999'", "'NAN'", "10000000000000000000000000000000000000", null)
             .addExpectedValues("99999", "NAN", "10000000000000000000000000000000000000", null)
             .build());
@@ -332,7 +334,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("99999", "5.1", "0", "'NAN'", "null")
             .addExpectedValues("99999", "5.1", "0", "NAN", null)
             .build());
@@ -341,7 +343,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("numeric")
             .fullSourceDataType("numeric(13,4)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("0.1880", "10.0000", "5213.3468", "'NAN'", "null")
             .addExpectedValues("0.1880", "10.0000", "5213.3468", "NAN", null)
             .build());
@@ -349,7 +351,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .build());
@@ -357,7 +359,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("text")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
                 "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
@@ -366,7 +368,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'04:05:06'", "'2021-04-12 05:06:07'", "'04:05 PM'")
             .addExpectedValues(null, "04:05:06", "05:06:07", "16:05:00")
             .build());
@@ -374,7 +376,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timetz")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'04:05:06+03'", "'2021-04-12 05:06:07+00'", "'060708-03'")
             .addExpectedValues(null, "04:05:06+03", "05:06:07+00", "06:07:08-03")
             .build());
@@ -382,7 +384,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
             .addExpectedValues("2004-10-19T10:23:54Z", null)
             .build());
@@ -390,7 +392,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamptz")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54+03'", "null")
             .addExpectedValues("2004-10-19T07:23:54Z", null)
             .build());
@@ -398,7 +400,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsvector")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());
@@ -406,7 +408,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("uuid")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'", "null")
             .addExpectedValues("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", null)
             .build());
@@ -414,7 +416,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("xml")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues(
                 "XMLPARSE (DOCUMENT '<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
                 "null", "''")
@@ -425,7 +427,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mood")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'happy'", "null")
             .addExpectedValues("happy", null)
             .build());
@@ -434,7 +436,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
@@ -442,7 +444,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inventory_item")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
@@ -450,7 +452,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsrange")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'(2010-01-01 14:30, 2010-01-01 15:30)'", "null")
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
             .build());
@@ -458,7 +460,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("box")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("(15.0,18.0),(3.0,7.0)", "(0.0,0.0),(0.0,0.0)", null)
             .build());
@@ -466,7 +468,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("circle")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
             .addExpectedValues("<(5.0,7.0),10.0>", "<(0.0,0.0),0.0>", "<(-10.0,-4.0),10.0>", null)
             .build());
@@ -474,7 +476,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("line")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
             .addExpectedValues("{4.0,5.0,6.0}", "{0.0,1.0,0.0}", null)
             .build());
@@ -482,7 +484,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("lseg")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("[(3.0,7.0),(15.0,18.0)]", "[(0.0,0.0),(0.0,0.0)]", null)
             .build());
@@ -490,7 +492,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("path")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15.5,18.2))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.5,18.2))", "((0.0,0.0),(0.0,0.0))", null)
             .build());
@@ -498,7 +500,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("point")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
             .addExpectedValues("(3.0,7.0)", "(0.0,0.0)", "(1.0E24,0.0)", null)
             .build());
@@ -506,7 +508,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("polygon")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
                 "'((0,0),(999999999999999999999999,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
@@ -515,7 +517,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("real")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'123'", "'1234567890.1234567'", "null")
             .addExpectedValues("123.0", "1.23456794E9", null)
             .build());
@@ -523,7 +525,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsvector")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());

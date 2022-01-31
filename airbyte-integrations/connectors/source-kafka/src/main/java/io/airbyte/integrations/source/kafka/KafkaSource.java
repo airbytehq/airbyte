@@ -57,7 +57,7 @@ public class KafkaSource extends BaseConnector implements Source {
 
     final Set<String> topicsToSubscribe = KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
     final List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
-        .createAirbyteStream(topic, Field.of("value", JsonSchemaPrimitive.STRING))
+        .createAirbyteStream(topic, Field.of("value", JsonSchemaType.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
         .collect(Collectors.toList());
     return new AirbyteCatalog().withStreams(streams);
