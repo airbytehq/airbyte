@@ -1307,7 +1307,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.1.2"
+- dockerImage: "airbyte/source-delighted:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -3082,7 +3082,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.36"
+- dockerImage: "airbyte/source-hubspot:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4003,7 +4003,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-looker:0.2.6"
+- dockerImage: "airbyte/source-looker:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
     connectionSpecification:
@@ -4978,7 +4978,7 @@
           airbyte_secret: true
           order: 4
         jdbc_url_params:
-          description: "Additional properties to pass to the jdbc url string when\
+          description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
             \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
           title: "JDBC URL Params"
@@ -5910,9 +5910,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.3"
+- dockerImage: "airbyte/source-postgres:0.4.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Postgres Source Spec"
@@ -5997,7 +5997,7 @@
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
               \ to detect inserts, updates, and deletes. This needs to be configured\
               \ on the source database itself. Only available on Postgres 10 and above.\
-              \ Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+              \ Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
               >Postgres Source</a> docs for more information."
             required:
             - "method"
@@ -6013,11 +6013,12 @@
                 order: 0
               plugin:
                 type: "string"
+                title: "Plugin"
                 description: "A logical decoding plug-in installed on the PostgreSQL\
                   \ server. `pgoutput` plug-in is used by default.\nIf replication\
                   \ table contains a lot of big jsonb values it is recommended to\
                   \ use `wal2json` plug-in. For more information about `wal2json`\
-                  \ plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+                  \ plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
                   >Postgres Source</a> docs."
                 enum:
                 - "pgoutput"
@@ -6026,10 +6027,12 @@
                 order: 1
               replication_slot:
                 type: "string"
+                title: "Replication Slot"
                 description: "A plug-in logical replication slot."
                 order: 2
               publication:
                 type: "string"
+                title: "Publication"
                 description: "A Postgres publication used for consuming changes."
                 order: 3
         tunnel_method:
@@ -6763,7 +6766,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.20"
+- dockerImage: "airbyte/source-salesforce:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7339,7 +7342,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.5"
+- dockerImage: "airbyte/source-snowflake:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -7405,6 +7408,13 @@
           airbyte_secret: true
           title: "Password"
           order: 6
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 7
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
