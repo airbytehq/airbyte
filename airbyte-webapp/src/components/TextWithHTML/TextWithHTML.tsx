@@ -5,16 +5,22 @@ type IProps = {
   text?: string;
 };
 
+const allowedAttributes = {
+  ...sanitizeHtml.defaults.allowedAttributes,
+  a: [...sanitizeHtml.defaults.allowedAttributes["a"], "rel"],
+};
+
 const TextWithHTML: React.FC<IProps> = ({ text }) => {
   if (!text) {
     return null;
   }
 
   const sanitizedHtmlText = sanitizeHtml(text, {
+    allowedAttributes,
     transformTags: {
       a: sanitizeHtml.simpleTransform("a", {
         target: "_blank",
-        rel: "noreferrer noopener",
+        rel: "noopener noreferrer",
       }),
     },
   });
