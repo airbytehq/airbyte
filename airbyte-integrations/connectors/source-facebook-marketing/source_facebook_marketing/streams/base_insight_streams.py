@@ -126,6 +126,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
         self._next_cursor_value = self._get_start_date()
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """Update stream state from latest record
+
+        :param current_stream_state: latest state returned
+        :param latest_record: latest record that we read
+        """
+        return self.state
+
     def _date_intervals(self) -> Iterator[pendulum.Date]:
         date_range = self._end_date - self._next_cursor_value
         return date_range.range("days", self.time_increment)
@@ -159,7 +167,10 @@ class AdsInsights(FBMarketingIncrementalStream):
             }
             yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
         1. we should commit state after each successful job
@@ -172,6 +183,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         when slice is not next one we just update state with it
         to do so source will check state attribute and call get_state,
         """
+        if stream_state:
+            self.state = stream_state
+
         manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
         for job in manager.completed_jobs():
             yield {"insight_job": job}

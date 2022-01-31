@@ -4,9 +4,11 @@
 
 from datetime import datetime
 
+import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_facebook_marketing.streams.async_job import AsyncJob
+from pendulum import duration
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams import AdsInsights
 
 
@@ -15,6 +17,34 @@ def api_fixture(mocker):
     api = mocker.Mock()
     api.api.ads_insights_throttle = (0, 0)
     return api
+
+
+@pytest.fixture(name="old_start_date")
+def old_start_date_fixture():
+    return pendulum.now() - duration(months=37 + 1)
+
+
+@pytest.fixture(name="recent_start_date")
+def recent_start_date_fixture():
+    return pendulum.now() - duration(days=10)
+
+
+@pytest.fixture(name="start_date")
+def start_date_fixture():
+    return pendulum.now() - duration(months=12)
+
+
+@pytest.fixture(name="async_manager_mock")
+def async_manager_mock_fixture(mocker):
+    mock = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager")
+    mock.return_value = mock
+    return mock
+
+
+@pytest.fixture(name="async_job_mock")
+def async_job_mock_fixture(mocker):
+    mock =  mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob")
+    mock.side_effect = lambda api, **kwargs: {"api": api, **kwargs}
 
 
 class TestBaseInsightsStream:
@@ -41,13 +71,14 @@ class TestBaseInsightsStream:
         assert stream.name == "custom_name"
         assert stream.primary_key == ["date_start", "ad_id", "test1", "test2"]
 
-    def test_read_records(self, mocker, api):
+    def test_read_records_all(self, mocker, api):
         """ 1. yield all from mock
             2. if read slice 2, 3 state not changed
                 if read slice 2, 3, 1 state changed to 3
         """
-        job = mocker.Mock(spec=AsyncJob)
+        job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.key = "2010-01-01"
         stream = AdsInsights(
             api=api,
             start_date=datetime(2010, 1, 1),
@@ -61,60 +92,120 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
-    # def read_records(
-    #     self,
-    #     sync_mode: SyncMode,
-    #     cursor_field: List[str] = None,
-    #     stream_slice: Mapping[str, Any] = None,
-    #     stream_state: Mapping[str, Any] = None,
-    # ) -> Iterable[Mapping[str, Any]]:
-    #     job = stream_slice["insight_job"]
-    #     for obj in job.get_result():
-    #         yield obj.export_all_data()
-    #
-    #     self._completed_slices.add(job.key)
-    #     if job.key == self._next_cursor_value:
-    #         self._advance_cursor()
+    def test_read_records_random_order(self, mocker, api):
+        """ 1. yield all from mock
+            2. if read slice 2, 3 state not changed
+                if read slice 2, 3, 1 state changed to 3
+        """
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.key = "2010-01-01"
+        stream = AdsInsights(
+            api=api,
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+        )
+
+        records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job},))
+
+        assert len(records) == 3
 
     def test_state(self):
-        pass
+        """TODO"""
 
-    # @property
-    # def state(self) -> MutableMapping[str, Any]:
-    #     if self._cursor_value:
-    #         return {
-    #             self.cursor_field: self._cursor_value.isoformat(),
-    #             "slices": [d.isoformat() for d in self._completed_slices],
-    #         }
-    #
-    #     if self._completed_slices:
-    #         return {
-    #             "slices": [d.isoformat() for d in self._completed_slices],
-    #         }
-    #
-    #     return {}
-    #
-    # @state.setter
-    # def state(self, value: MutableMapping[str, Any]):
-    #     self._cursor_value = pendulum.parse(value[self.cursor_field]).date() if value.get(self.cursor_field) else None
-    #     self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
-    #     self._next_cursor_value = self._get_start_date()
+    def test_stream_slices_no_state(self, api, async_manager_mock, start_date):
+        """Stream will use start_date when there is not state"""
+        end_date = start_date + duration(weeks=2)
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        async_manager_mock.completed_jobs.return_value = [1, 2, 3]
 
-    def test_stream_slices(self):
-        pass
+        slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
 
-    # def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-    #     manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
-    #     for job in manager.completed_jobs():
-    #         yield {"insight_job": job}
+        assert slices == [{"insight_job": 1}, {"insight_job": 2}, {"insight_job": 3}]
+        async_manager_mock.assert_called_once()
+        args, kwargs = async_manager_mock.call_args
+        generated_jobs = list(kwargs["jobs"])
+        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert generated_jobs[0].key == start_date.date()
+        assert generated_jobs[1].key == start_date.date() + duration(days=1)
 
-    # def test_init(self, api):
-    #     stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1))
-    #
-    #     assert not stream.breakdowns
-    #     assert not stream.action_breakdowns
-    #     assert stream.name == "ads_insights"
-    #     assert stream.primary_key == ["date_start", "ad_id"]
+    def test_stream_slices_no_state_close_to_now(self, api, async_manager_mock, recent_start_date):
+        """Stream will use start_date when there is not state and start_date within 28d from now"""
+        start_date = recent_start_date
+        end_date = pendulum.now()
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        async_manager_mock.completed_jobs.return_value = [1, 2, 3]
+
+        slices = list(stream.stream_slices(stream_state=None, sync_mode=SyncMode.incremental))
+
+        assert slices == [{"insight_job": 1}, {"insight_job": 2}, {"insight_job": 3}]
+        async_manager_mock.assert_called_once()
+        args, kwargs = async_manager_mock.call_args
+        generated_jobs = list(kwargs["jobs"])
+        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert generated_jobs[0].key == start_date.date()
+        assert generated_jobs[1].key == start_date.date() + duration(days=1)
+
+    def test_stream_slices_with_state(self, api, async_manager_mock, start_date):
+        """Stream will use cursor_value from state when there is state"""
+        end_date = start_date + duration(days=10)
+        cursor_value = start_date + duration(days=5)
+        state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        async_manager_mock.completed_jobs.return_value = [1, 2, 3]
+
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
+
+        assert slices == [{"insight_job": 1}, {"insight_job": 2}, {"insight_job": 3}]
+        async_manager_mock.assert_called_once()
+        args, kwargs = async_manager_mock.call_args
+        generated_jobs = list(kwargs["jobs"])
+        assert len(generated_jobs) == (end_date - cursor_value).days
+        assert generated_jobs[0].key == cursor_value.date() + duration(days=1)
+        assert generated_jobs[1].key == cursor_value.date() + duration(days=2)
+
+    def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date):
+        """Stream will use start_date when close to now and start_date close to now"""
+        start_date = recent_start_date
+        end_date = pendulum.now()
+        cursor_value = end_date - duration(days=1)
+        state = {AdsInsights.cursor_field: cursor_value.date().isoformat()}
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        async_manager_mock.completed_jobs.return_value = [1, 2, 3]
+
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
+
+        assert slices == [{"insight_job": 1}, {"insight_job": 2}, {"insight_job": 3}]
+        async_manager_mock.assert_called_once()
+        args, kwargs = async_manager_mock.call_args
+        generated_jobs = list(kwargs["jobs"])
+        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert generated_jobs[0].key == start_date.date()
+        assert generated_jobs[1].key == start_date.date() + duration(days=1)
+
+    def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date):
+        """Stream will use cursor_value from state, but will skip saved slices"""
+        end_date = start_date + duration(days=10)
+        cursor_value = start_date + duration(days=5)
+        state = {
+            AdsInsights.cursor_field: cursor_value.date().isoformat(),
+            "slices": [
+                (cursor_value + duration(days=1)).date().isoformat(),
+                (cursor_value + duration(days=3)).date().isoformat()
+            ]
+        }
+        stream = AdsInsights(api=api, start_date=start_date, end_date=end_date)
+        async_manager_mock.completed_jobs.return_value = [1, 2, 3]
+
+        slices = list(stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental))
+
+        assert slices == [{"insight_job": 1}, {"insight_job": 2}, {"insight_job": 3}]
+        async_manager_mock.assert_called_once()
+        args, kwargs = async_manager_mock.call_args
+        generated_jobs = list(kwargs["jobs"])
+        assert len(generated_jobs) == (end_date - cursor_value).days - 2, "should be 2 slices short because of state"
+        assert generated_jobs[0].key == cursor_value.date() + duration(days=2)
+        assert generated_jobs[1].key == cursor_value.date() + duration(days=4)
 
     def test_get_json_schema(self, api):
         stream = AdsInsights(api=api, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1))
@@ -123,7 +214,7 @@ class TestBaseInsightsStream:
 
         assert "device_platform" not in schema["properties"]
         assert "country" not in schema["properties"]
-        assert set(stream.fields) - set(schema["properties"].keys())
+        assert not (set(stream.fields) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_get_json_schema_custom(self, api):
         stream = AdsInsights(
@@ -137,7 +228,7 @@ class TestBaseInsightsStream:
 
         assert "device_platform" in schema["properties"]
         assert "country" in schema["properties"]
-        assert set(stream.fields) - set(schema["properties"].keys())
+        assert not (set(stream.fields) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_fields(self, api):
         stream = AdsInsights(
