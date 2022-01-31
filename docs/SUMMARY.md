@@ -88,6 +88,7 @@
     * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
     * [Iterable](integrations/sources/iterable.md)
+    * [Jenkins (Sponsored by Faros AI)](integrations/sources/jenkins.md)
     * [Jira](integrations/sources/jira.md)
     * [Kafka](integrations/sources/kafka.md)
     * [Klaviyo](integrations/sources/klaviyo.md)
