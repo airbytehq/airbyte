@@ -3,20 +3,20 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.models import SyncMode
-from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
+from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
 
 
 def parse_dates(stream_slice):
-    start_date = pendulum.parse(stream_slice['start_date'])
-    end_date = pendulum.parse(stream_slice['end_date'])
+    start_date = pendulum.parse(stream_slice["start_date"])
+    end_date = pendulum.parse(stream_slice["end_date"])
     return start_date, end_date
 
 
@@ -32,10 +32,7 @@ def get_date_params(start_date: str, time_zone=None, range_days: int = None, end
     start_date = pendulum.parse(start_date)
     if start_date > pendulum.now():
         return start_date.to_date_string(), start_date.add(days=1).to_date_string()
-    end_date = min(
-        end_date,
-        start_date.add(days=range_days)
-    )
+    end_date = min(end_date, start_date.add(days=range_days))
 
     # Fix issue #4806, start date should always be lower than end date.
     if start_date.add(days=1).date() >= end_date.date():
@@ -50,7 +47,7 @@ def chunk_date_range(
     end_date: str = None,
     days_of_data_storage: int = None,
     range_days: int = None,
-    time_zone=None
+    time_zone=None,
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
@@ -80,10 +77,12 @@ def chunk_date_range(
     slices = []
     for interval in intervals:
         start, end = get_date_params(interval[field], time_zone=time_zone, range_days=range_days)
-        slices.append({
-            "start_date": start,
-            "end_date": end,
-        })
+        slices.append(
+            {
+                "start_date": start,
+                "end_date": end,
+            }
+        )
     return slices
 
 
@@ -129,7 +128,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             field=self.cursor_field,
             days_of_data_storage=self.days_of_data_storage,
             range_days=self.range_days,
-            time_zone=self.time_zone
+            time_zone=self.time_zone,
         )
 
     def read_records(
@@ -137,7 +136,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         state = stream_state or {}
         while True:
@@ -188,7 +187,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             report_name=self.name,
             from_date=stream_slice.get("start_date"),
             to_date=stream_slice.get("end_date"),
-            cursor_field=self.cursor_field
+            cursor_field=self.cursor_field,
         )
         return query
 

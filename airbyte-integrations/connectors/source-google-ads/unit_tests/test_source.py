@@ -4,7 +4,6 @@
 
 import pytest
 from freezegun import freeze_time
-
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
@@ -38,14 +37,14 @@ def test_chunk_date_range():
     field = "date"
     response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
     assert [
-       {"start_date": "2021-02-19", "end_date": "2021-02-28"},
-       {"start_date": "2021-03-01", "end_date": "2021-03-10"},
-       {"start_date": "2021-03-11", "end_date": "2021-03-20"},
-       {"start_date": "2021-03-21", "end_date": "2021-03-30"},
-       {"start_date": "2021-03-31", "end_date": "2021-04-09"},
-       {"start_date": "2021-04-10", "end_date": "2021-04-19"},
-       {"start_date": "2021-04-20", "end_date": "2021-04-29"},
-       {"start_date": "2021-04-30", "end_date": "2021-05-09"},
+        {"start_date": "2021-02-19", "end_date": "2021-02-28"},
+        {"start_date": "2021-03-01", "end_date": "2021-03-10"},
+        {"start_date": "2021-03-11", "end_date": "2021-03-20"},
+        {"start_date": "2021-03-21", "end_date": "2021-03-30"},
+        {"start_date": "2021-03-31", "end_date": "2021-04-09"},
+        {"start_date": "2021-04-10", "end_date": "2021-04-19"},
+        {"start_date": "2021-04-20", "end_date": "2021-04-29"},
+        {"start_date": "2021-04-30", "end_date": "2021-05-09"},
     ] == response
 
 
