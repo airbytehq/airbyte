@@ -26,4 +26,13 @@ public class ActivityConfiguration {
       .setRetryOptions(TemporalUtils.NO_RETRY)
       .build();
 
+  public static final ActivityOptions LONG_RUN_OPTIONS = ActivityOptions.newBuilder()
+      .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
+      .setStartToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
+      .setScheduleToStartTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
+      .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
+      .setRetryOptions(TemporalUtils.NO_RETRY)
+      .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
+      .build();
+
 }

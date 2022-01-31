@@ -15,9 +15,7 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -92,11 +90,6 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return new ArrayList<>();
   }
 
 }

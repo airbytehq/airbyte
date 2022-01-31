@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.bson.BsonArray;
@@ -129,11 +128,6 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
   }
 
   @Test

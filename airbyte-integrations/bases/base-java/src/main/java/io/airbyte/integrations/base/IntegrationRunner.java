@@ -15,7 +15,11 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
@@ -73,10 +77,31 @@ public class IntegrationRunner {
   }
 
   public void run(final String[] args) throws Exception {
-    LOGGER.info("Running integration: {}", integration.getClass().getName());
+    initSentry();
 
     final IntegrationConfig parsed = cliParser.parse(args);
+    final ITransaction transaction = Sentry.startTransaction(
+        integration.getClass().getSimpleName(),
+        parsed.getCommand().toString(),
+        true);
+    try {
+      runInternal(transaction, parsed);
+      transaction.finish(SpanStatus.OK);
+    } catch (final Exception e) {
+      transaction.setThrowable(e);
+      transaction.finish(SpanStatus.INTERNAL_ERROR);
+      throw e;
+    } finally {
+      /*
+       * This finally block may not run, probably because the container can be terminated by the worker.
+       * So the transaction should always be finished in the try and catch blocks.
+       */
+      transaction.finish();
+    }
+  }
 
+  public void runInternal(final ITransaction transaction, final IntegrationConfig parsed) throws Exception {
+    LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
@@ -167,6 +192,23 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
+  }
+
+  private static void initSentry() {
+    final Map<String, String> env = System.getenv();
+    final String connector = env.getOrDefault("APPLICATION", "unknown");
+    final String version = env.getOrDefault("APPLICATION_VERSION", "unknown");
+    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
+
+    // https://docs.sentry.io/platforms/java/configuration/
+    Sentry.init(options -> {
+      options.setDsn(env.getOrDefault("SENTRY_DSN", ""));
+      options.setEnableExternalConfiguration(true);
+      options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
+      options.setRelease(String.format("%s@%s", connector, version));
+      options.setTag("connector", connector);
+      options.setTag("connector_version", version);
+    });
   }
 
 }

@@ -133,6 +133,29 @@ public class DeprecatedDatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
+        .fetch());
+
+    if (result.isEmpty()) {
+      throw new ConfigNotFoundException(configType, configId);
+    } else if (result.size() > 1) {
+      throw new IllegalStateException(String.format("Multiple %s configs found for ID %s: %s", configType, configId, result));
+    }
+
+    final Record record = result.get(0);
+    return new ConfigWithMetadata<>(
+        record.get(AIRBYTE_CONFIGS.CONFIG_ID),
+        record.get(AIRBYTE_CONFIGS.CONFIG_TYPE),
+        record.get(AIRBYTE_CONFIGS.CREATED_AT).toInstant(),
+        record.get(AIRBYTE_CONFIGS.UPDATED_AT).toInstant(),
+        Jsons.deserialize(result.get(0).get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz));
+  }
+
+  @Override
   public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz) throws IOException {
     final Result<Record> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
