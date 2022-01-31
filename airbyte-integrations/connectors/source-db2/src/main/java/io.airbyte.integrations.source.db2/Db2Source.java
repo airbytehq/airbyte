@@ -88,17 +88,14 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database
-        .query(getPrivileges(database), sourceOperations::rowToJson)
+        .query(getPrivileges(), sourceOperations::rowToJson)
         .map(this::getPrivilegeDto)
         .collect(Collectors.toSet());
   }
 
-  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
-    return connection -> {
-      final PreparedStatement ps = connection.prepareStatement(
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
+    return connection -> connection.prepareStatement(
           "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
-      return ps;
-    };
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
