@@ -147,7 +147,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         while True:
             try:
                 response = self.google_ads_client.send_request(self.get_query(stream_slice))
-                # yield from self.parse_response(response)
                 for record in self.parse_response(response):
                     state = self.get_updated_state(state, record)
                     yield record

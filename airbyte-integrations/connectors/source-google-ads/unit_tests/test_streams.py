@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import Mock, call
-from unittest import mock
 
 from airbyte_cdk.models import SyncMode
 from .common import MockGoogleAdsClient as MockGoogleAdsClient
@@ -26,55 +25,6 @@ def test_config():
         "conversion_window_days": 14,
     }
     return config
-
-
-# class MockErrorResponse:
-#     def __iter__(self):
-#         return self
-#
-#     def __next__(self):
-#         e = GoogleAdsException(
-#             error=RpcError(),
-#             failure=GoogleAdsFailure(
-#                 errors=[GoogleAdsError(error_code=ErrorCode(request_error=RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN))]
-#             ),
-#             call=RpcError(),
-#             request_id="test",
-#         )
-#         raise e
-
-
-# class MockGoogleAdsService:
-#     count = 0
-#
-#     def search(self, search_request):
-#         self.count += 1
-#         if self.count == 1:
-#             # For the first attempt (with date range = 15 days) return Error Response
-#             return MockErrorResponse()
-#         else:
-#             # the second attempt should succeed, (date range = 7 days)
-#             # this payload is dummy, in this case test stream records will be printed with None values in all fields.
-#             return [{"id": 1}, {"id": 2}]
-
-
-# class MockGoogleAdsServiceWhichFails:
-#     def search(self, search_request):
-#         # For all attempts, return Error Response
-#         return MockErrorResponse()
-
-
-# class MockGoogleAdsClient(MockGoogleAdsClientBase):
-#     pass
-
-    # def get_service(self, service):
-    #     return MockGoogleAdsService()
-
-
-# class MockGoogleAdsClientWhichFails(MockGoogleAdsClientBase):
-#     pass
-    # def get_service(self, service):
-    #     return MockGoogleAdsServiceWhichFails()
 
 
 @pytest.fixture
@@ -125,13 +75,6 @@ class MockGoogleAds(GoogleAds):
             return mock_response()
         else:
             return mock_response_2()
-
-
-@pytest.fixture
-def mock_ads_client_which_fails(mocker, test_config):
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClientWhichFails(test_config))
-    # mocker.patch("source_google_ads.google_ads.GoogleAds",
-    #              return_value=MockGoogleAds(credentials=test_config["credentials"], customer_id=test_config["customer_id"]))
 
 
 def test_page_token_expired_retry_succeeds(mock_ads_client, test_config):
