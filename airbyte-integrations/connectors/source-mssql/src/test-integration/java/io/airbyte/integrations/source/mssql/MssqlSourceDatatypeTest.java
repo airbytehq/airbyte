@@ -287,7 +287,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
             .addExpectedValues("A", null)
             .build());
