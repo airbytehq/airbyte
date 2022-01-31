@@ -14,7 +14,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -50,7 +50,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
   protected final String stagingFolder;
-  protected final Map<String, S3Writer> stagingWritersByFile = new HashMap<>();
+  protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
   protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
   protected final Set<String> stagingFileNames = new LinkedHashSet<>();
   private final boolean purgeStagingData;
@@ -142,7 +142,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
-    for (final S3Writer writer : stagingWritersByFile.values()) {
+    for (final DestinationFileWriter writer : stagingWritersByFile.values()) {
       writer.close(hasFailed);
     }
   }
@@ -221,7 +221,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @VisibleForTesting
-  public Map<String, S3Writer> getStagingWritersByFile() {
+  public Map<String, DestinationFileWriter> getStagingWritersByFile() {
     return stagingWritersByFile;
   }
 

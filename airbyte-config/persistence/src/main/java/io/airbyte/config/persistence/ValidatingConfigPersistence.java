@@ -49,6 +49,14 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final ConfigWithMetadata<T> config = decoratedPersistence.getConfigWithMetadata(configType, configId, clazz);
+    validateJson(config.getConfig(), configType);
+    return config;
+  }
+
+  @Override
   public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);

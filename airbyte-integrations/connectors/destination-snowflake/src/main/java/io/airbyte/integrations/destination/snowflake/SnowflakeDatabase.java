@@ -13,6 +13,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SnowflakeDatabase contains helpers to create connections to and run queries on Snowflake.
@@ -22,9 +24,12 @@ public class SnowflakeDatabase {
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
   private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDatabase.class);
 
   public static Connection getConnection(final JsonNode config) throws SQLException {
-    final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
+
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
+        config.get("host").asText()));
 
     final Properties properties = new Properties();
 
@@ -47,7 +52,14 @@ public class SnowflakeDatabase {
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
-    return DriverManager.getConnection(connectUrl, properties);
+    // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
+    if (config.has("jdbc_url_params")) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText());
+    }
+
+    LOGGER.info(jdbcUrl.toString());
+
+    return DriverManager.getConnection(jdbcUrl.toString(), properties);
   }
 
   public static JdbcDatabase getDatabase(final JsonNode config) {

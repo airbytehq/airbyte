@@ -137,7 +137,8 @@ They will be like this in the output file:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.1 | 2021-12-29 | [\#5332](https://github.com/airbytehq/airbyte/pull/9190) | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
+| 0.1.2 | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682) | Each data synchronization for each stream is written to a new blob to the folder with stream name. |
+| 0.1.1 | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190) | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
 | 0.1.0 | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332) | Initial release with JSONL and CSV output. |
 
 
