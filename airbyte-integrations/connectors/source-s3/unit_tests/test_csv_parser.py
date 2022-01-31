@@ -71,7 +71,7 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
         schema = None
     else:
         schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in range(columns_number)}
-        generate_csv_file(filepath, schema, 101, ",")
+        generate_csv_file(filepath, schema, 456, ",")
 
     skip_headers = False
     with open(filepath, "r") as f:
