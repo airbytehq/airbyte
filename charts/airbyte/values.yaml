@@ -571,3 +571,16 @@ minio:
     password: minio
   secretKey:
     password: minio123
+
+jobs:
+  resources:
+    ## Example:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
