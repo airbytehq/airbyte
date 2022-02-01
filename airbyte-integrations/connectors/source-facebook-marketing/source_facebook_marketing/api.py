@@ -5,7 +5,7 @@
 import json
 import logging
 from time import sleep
-from typing import List, Type
+from typing import List, Set, Type
 
 import pendulum
 from cached_property import cached_property
@@ -123,6 +123,17 @@ class API:
                         accounts_found
                     )
                 )
+
+                accounts_missing = self._accounts_missing_from_config(accounts_found)
+                if accounts_missing:
+                    raise FacebookAPIException(f"Couldn't find account(s) with id {accounts_missing}")
+
             return accounts_found
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+
+    def _accounts_missing_from_config(self, accounts:List[Type[AdAccount]]) -> Set[str]:
+        """Returns a list of account ids missing from config accounts"""
+        config_account_ids = set(self.__config.account_ids)
+        account_ids = set(map(lambda x: x.get("account_id"), accounts))
+        return config_account_ids.difference(account_ids)
