@@ -511,7 +511,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Test
-    @DisplayName("Test workflow which recieved an update signal stop waiting, don't run and don't update the job status")
+    @DisplayName("Test workflow which recieved an update signal wait for the current run and report the job status")
     public void updatedSignalRecievedWhileRunning() {
 
       final UUID testId = UUID.randomUUID();
@@ -547,7 +547,6 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
     }
-
   }
 
   @Nested
