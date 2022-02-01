@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+source-acceptance-test = {editable = true, file = "file:///Users/ronaldfortmann_ewolff/Code/experimental/airbyte/airbyte-integrations/bases/source-acceptance-test"}
+source-pinterest = {editable = true, file = "file:///Users/ronaldfortmann_ewolff/Code/experimental/airbyte/airbyte-integrations/connectors/source-pinterest"}
+responses = "*"
+pytest-mock = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
