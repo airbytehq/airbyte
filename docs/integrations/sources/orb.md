@@ -1,0 +1,55 @@
+# Orb
+
+## Overview
+
+The Orb source supports both Full Refresh and Incremental syncs. For incremental syncs, this source
+will only read and output new records based on their `created_at` timestamp.
+
+### Output schema
+
+This Source is capable of syncing the following core resources, each of which has a separate Stream. Note that all of the streams are incremental:
+
+* [Subscriptions]( https://docs.withorb.com/reference/list-subscriptions)
+* [Plans](https://docs.withorb.com/reference/list-plans)
+* [Customers](https://docs.withorb.com/reference/list-customers) 
+* [Credits Ledger Entries](https://docs.withorb.com/reference/view-credits-ledger)
+
+
+As a caveat, the Credits Ledger Entries must read all Customers for an incremental sync, but will only incrementally return new ledger entries for each customers.
+
+### Note on Incremental Syncs
+
+The Orb API does not allow querying objects based on an `updated_at` time. Therefore, this connector uses the `created_at` field to query for new data since the last sync.
+
+In order to capture data that has been updated after creation, please run a periodic Full Refresh.
+
+### Features
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Incremental - Dedupe Sync | Yes |
+| SSL connection | Yes |
+
+### Performance considerations
+
+The Orb connector should not run into Orb API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
+## Getting started
+
+### Requirements
+
+* Orb Account
+* Orb API Key
+
+### Setup guide
+
+Please reach out to the Orb team at [team@withorb.com](mailto:team@withorb.com) to request
+an Orb Account and API Key.
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+

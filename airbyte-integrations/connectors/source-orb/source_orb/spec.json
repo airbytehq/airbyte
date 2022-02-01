@@ -1,0 +1,19 @@
+{
+  "documentationUrl": "https://docs.withorb.com/",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Orb Spec",
+    "type": "object",
+    "required": ["api_key"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "title": "Orb API Key",
+        "description": "Orb API Key, issued from the Orb admin console.",
+        "airbyte_secret": true,
+        "order": 1
+      }
+    }
+  }
+}
