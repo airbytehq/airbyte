@@ -33,14 +33,14 @@ class Helpers {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
                 project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
-                    module = "coverage"
+                    module = "coverage_${taskName}"
                     command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                 }
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
+                project.task("coverage_delimiter_${taskName}", type: PythonTask, dependsOn: taskDependencies) {
                     module = "echo"
                     command = "====== short test summary info ======"
                 }
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
+                project.task("coverage_report_${taskName}", type: PythonTask, dependsOn: taskDependencies) {
                     module = "coverage"
                     // command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                     command = "report --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
