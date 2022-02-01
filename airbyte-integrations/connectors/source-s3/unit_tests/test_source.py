@@ -15,3 +15,4 @@ def test_transform_backslash_t_to_tab(tmp_path: Path) -> None:
     source = SourceS3()
     config = source.read_config(str(config_file))
     assert config["format"]["delimiter"] == "\t"
+    assert False
