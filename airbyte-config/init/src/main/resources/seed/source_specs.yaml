@@ -5910,9 +5910,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.3"
+- dockerImage: "airbyte/source-postgres:0.4.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Postgres Source Spec"
@@ -5997,7 +5997,7 @@
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
               \ to detect inserts, updates, and deletes. This needs to be configured\
               \ on the source database itself. Only available on Postgres 10 and above.\
-              \ Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+              \ Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
               >Postgres Source</a> docs for more information."
             required:
             - "method"
@@ -6013,11 +6013,12 @@
                 order: 0
               plugin:
                 type: "string"
+                title: "Plugin"
                 description: "A logical decoding plug-in installed on the PostgreSQL\
                   \ server. `pgoutput` plug-in is used by default.\nIf replication\
                   \ table contains a lot of big jsonb values it is recommended to\
                   \ use `wal2json` plug-in. For more information about `wal2json`\
-                  \ plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+                  \ plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
                   >Postgres Source</a> docs."
                 enum:
                 - "pgoutput"
@@ -6026,10 +6027,12 @@
                 order: 1
               replication_slot:
                 type: "string"
+                title: "Replication Slot"
                 description: "A plug-in logical replication slot."
                 order: 2
               publication:
                 type: "string"
+                title: "Publication"
                 description: "A Postgres publication used for consuming changes."
                 order: 3
         tunnel_method:
