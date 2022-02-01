@@ -10,7 +10,7 @@ x-logging: &default-logging
 services:
   db:
     ports:
-      - 8011:5432
+      - "8011:1099"
   airbyte-temporal-ui:
     image: temporalio/web:1.13.0
     logging: *default-logging
@@ -20,4 +20,13 @@ services:
       - TEMPORAL_GRPC_ENDPOINT=airbyte-temporal:7233
       - TEMPORAL_PERMIT_WRITE_API=true
     ports:
-      - 8012:8088
+      - "8012:8088"
+  airbyte-server:
+    ports:
+      - "8014:1099"
+  airbyte-scheduler:
+    ports:
+      - "8015:1099"
+  airbyte-worker:
+    ports:
+      - "8016:1099"
