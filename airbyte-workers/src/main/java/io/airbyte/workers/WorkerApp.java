@@ -269,8 +269,7 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
+          configs.getDockerNetwork());
     }
   }
 
@@ -323,6 +322,8 @@ public class WorkerApp {
     final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+
+    TemporalUtils.configureTemporalNamespace(temporalService);
 
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),

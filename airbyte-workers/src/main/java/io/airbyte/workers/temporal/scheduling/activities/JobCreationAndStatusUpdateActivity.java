@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.temporal.activity.ActivityInterface;
@@ -111,6 +112,8 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private StandardSyncOutput standardSyncOutput;
+    private AttemptFailureSummary attemptFailureSummary;
 
   }
 
@@ -126,6 +129,8 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobCancelledInput {
 
     private long jobId;
+    private int attemptId;
+    private AttemptFailureSummary attemptFailureSummary;
 
   }
 

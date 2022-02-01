@@ -12,6 +12,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
+    "responses~=0.13.3",
 ]
 
 setup(
