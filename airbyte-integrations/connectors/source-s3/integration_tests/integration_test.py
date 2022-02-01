@@ -7,7 +7,6 @@ import json
 import os
 import shutil
 import time
-
 from typing import Any, Dict, Iterator, List, Mapping
 
 import boto3
@@ -134,5 +133,4 @@ class TestIntegrationCsvFiles:
         minio_credentials["format"]["block_size"] = 5 * 1024 ** 2
         source = SourceS3()
         catalog = source.read_catalog(HERE / "configured_catalog.json")
-
         assert self.read_source(minio_credentials, catalog) == expected_count
