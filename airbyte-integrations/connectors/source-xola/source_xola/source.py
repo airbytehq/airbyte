@@ -122,7 +122,7 @@ class Transactions(XolaStream):
     primary_key = "id"
     seller_id = None
 
-    def __init__(self, x_api_key: str, **kwargs):
+    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
         self.seller_id = seller_id
 

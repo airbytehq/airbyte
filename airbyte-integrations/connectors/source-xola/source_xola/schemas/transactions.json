@@ -14,13 +14,13 @@
                 "type": ["null", "number"]
             },
             "createdAt": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
             },
             "createdBy": {
                 "type": ["null", "string"]
             },
             "currency": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
             },
             "method": {
                 "type": ["null", "string"]
