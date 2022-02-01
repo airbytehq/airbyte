@@ -55,8 +55,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      AirbyteSentry.executeWithTracing("CreateAndDropTable", () ->
-          attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
+      AirbyteSentry.executeWithTracing("CreateAndDropTable",
+          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
