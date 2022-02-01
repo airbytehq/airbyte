@@ -4,7 +4,6 @@
 
 package io.airbyte.db.instance.configs;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -12,6 +11,8 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.BaseDatabaseInstance;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance.class);
-
+  private static final Set<String> INITIAL_EXPECTED_TABLES = Collections.singleton("airbyte_configs");
   private static final String DATABASE_LOGGING_NAME = "airbyte configs";
   private static final String SCHEMA_PATH = "configs_database/schema.sql";
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
@@ -37,13 +38,9 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private Database database;
 
-  @VisibleForTesting
-  public ConfigsDatabaseInstance(final String username, final String password, final String connectionString, final String schema) {
-    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseTables.getTableNames(), IS_CONFIGS_DATABASE_READY);
-  }
-
   public ConfigsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
-    this(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH));
+    super(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH), DATABASE_LOGGING_NAME, INITIAL_EXPECTED_TABLES,
+        IS_CONFIGS_DATABASE_READY);
   }
 
   @Override
