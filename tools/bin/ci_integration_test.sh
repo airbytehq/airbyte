@@ -49,7 +49,7 @@ fi
 }
 
 show_skipped_failed_info() {
-   skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
+   skipped_failed_info=`sed -n '/^Name.*Stmts.*Miss.*Cover/,/^=* [0-9]/p' build.out`
    if ! test -z "$skipped_failed_info"
       then
          echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV

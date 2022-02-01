@@ -32,18 +32,16 @@ class Helpers {
         if (project.file(testFilesDirectory).exists()) {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
-                    module = "coverage_${taskName}"
+                project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
+                    module = "coverage"
                     command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                 }
-                project.task("coverage_delimiter_${taskName}", type: PythonTask, dependsOn: taskDependencies) {
-                    module = "echo"
-                    command = "====== short test summary info ======"
-                }
-                project.task("coverage_report_${taskName}", type: PythonTask, dependsOn: taskDependencies) {
+                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
                     module = "coverage"
                     // command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                     command = "report --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
+                    dependsOn project.tasks.findByName("_${taskName}Coverage")
+
                 }
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
                 return FileVisitResult.TERMINATE
