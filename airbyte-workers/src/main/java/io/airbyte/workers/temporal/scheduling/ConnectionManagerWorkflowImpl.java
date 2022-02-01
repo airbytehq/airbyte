@@ -62,12 +62,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   final Set<FailureReason> failures = new HashSet<>();
   Boolean partialSuccess = null;
 
-  private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
+  private final GenerateInputActivity getSyncInputActivity =
+      Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity =
-      Workflow.newActivityStub(JobCreationAndStatusUpdateActivity.class, ActivityConfiguration.OPTIONS);
-  private final ConfigFetchActivity configFetchActivity = Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.OPTIONS);
+      Workflow.newActivityStub(JobCreationAndStatusUpdateActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final ConfigFetchActivity configFetchActivity =
+      Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final ConnectionDeletionActivity connectionDeletionActivity =
-      Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.OPTIONS);
+      Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope syncWorkflowCancellationScope;
 

@@ -7,6 +7,8 @@ package io.airbyte.workers.temporal;
 import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.Activity;
 import io.temporal.api.common.v1.WorkflowExecution;
@@ -57,6 +59,12 @@ public class TemporalUtils {
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
+
+  private static final Configs configs = new EnvConfigs();
+  public static final RetryOptions RETRY = RetryOptions.newBuilder()
+      .setMaximumAttempts(configs.getActivityNumberOfAttempt())
+      .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttemps()))
+      .build();
 
   public static final String DEFAULT_NAMESPACE = "default";
 
