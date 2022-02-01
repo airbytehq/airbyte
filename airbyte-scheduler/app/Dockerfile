@@ -2,7 +2,7 @@ ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS scheduler
 
 # JMX port
-EXPOSE 1099
+EXPOSE 8015
 
 ENV APPLICATION airbyte-scheduler
 

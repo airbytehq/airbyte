@@ -21,12 +21,14 @@ services:
       - TEMPORAL_PERMIT_WRITE_API=true
     ports:
       - "8012:8088"
+  # IMPORTANT: the internal and external ports for JMX must be the same!
+  # see https://forums.docker.com/t/exposing-mapped-jmx-ports-from-multiple-containers/5287/6 for more info
   server:
     ports:
-      - "8014:1099"
+      - "8014:8014"
   scheduler:
     ports:
-      - "8015:1099"
+      - "8015:8015"
   worker:
     ports:
-      - "8016:1099"
+      - "8016:8016"

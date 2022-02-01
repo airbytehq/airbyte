@@ -5,7 +5,7 @@ FROM openjdk:${JDK_VERSION}-slim AS server
 EXPOSE 8000
 
 # JMX port
-EXPOSE 1099
+EXPOSE 8014
 
 ENV APPLICATION airbyte-server
 
