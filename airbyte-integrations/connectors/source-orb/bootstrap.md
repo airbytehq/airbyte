@@ -11,6 +11,10 @@ Note that the Credits Ledger Entries must read all Customers for an incremental 
 
 Since the Orb API does not allow querying objects based on `updated_at`, these incremental syncs will capture updates to newly created objects but not resources updated after object creation.
 
+## Pagination
+
+Orb's API uses cursor-based pagination, which is documented [here](https://docs.withorb.com/reference/pagination).
+
 ## Authentication
 
 This connector authenticates against the Orb API with an API key that can be issued via the Orb Admin Console.
