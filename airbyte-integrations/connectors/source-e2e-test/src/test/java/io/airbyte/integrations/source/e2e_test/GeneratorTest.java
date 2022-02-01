@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,7 +50,7 @@ public class GeneratorTest {
   public void testComplexObjectGeneration(final String testCase, final JsonNode jsonSchema) throws Exception {
     final SchemaStore schemaStore = new SchemaStore(true);
     final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(jsonSchema));
-    final Generator generator = new Generator(CONFIG, schemaStore,RANDOM);
+    final Generator generator = new Generator(CONFIG, schemaStore, RANDOM);
     for (int i = 0; i < 10; ++i) {
       final JsonNode json = Jsons.jsonNode(generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
       assertTrue(JSON_VALIDATOR.test(jsonSchema, json));

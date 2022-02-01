@@ -14,8 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Since 2.0.0, the cloud version is the same as the OSS version. This connector
- * should be removed.
+ * Since 2.0.0, the cloud version is the same as the OSS version. This connector should be removed.
  */
 public class CloudTestingSources extends SpecModifyingSource implements Source {
 
