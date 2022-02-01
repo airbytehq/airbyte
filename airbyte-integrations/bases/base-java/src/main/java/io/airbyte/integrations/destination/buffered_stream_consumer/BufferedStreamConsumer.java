@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -152,7 +153,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         LOGGER.info("Flushing buffer...");
         AirbyteSentry.executeWithTracing("FlushBuffer",
             this::flushQueueToDestination,
-            Map.of("stream", stream.getName(), "namespace", stream.getNamespace(), "bufferSizeInBytes", bufferSizeInBytes));
+            Map.of("stream", stream.getName(),
+                "namespace", Objects.requireNonNullElse(stream.getNamespace(), "null"),
+                "bufferSizeInBytes", bufferSizeInBytes));
         bufferSizeInBytes = 0;
       }
 
