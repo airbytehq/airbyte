@@ -19,9 +19,9 @@ public interface StreamCopier {
   void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
-   * Closes the writer for the stream to the current staging file.
-   * The staging file must be of a certain size specified in GlobalDataSizeConstants + one more buffer.
-   * The writer for the stream will close with a note that no errors were found.
+   * Closes the writer for the stream to the current staging file. The staging file must be of a
+   * certain size specified in GlobalDataSizeConstants + one more buffer. The writer for the stream
+   * will close with a note that no errors were found.
    */
   void closeStagingFileWriter() throws Exception;
 

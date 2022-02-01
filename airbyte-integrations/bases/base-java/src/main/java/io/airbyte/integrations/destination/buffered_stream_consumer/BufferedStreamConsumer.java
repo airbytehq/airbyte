@@ -106,7 +106,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                                 final long maxQueueSizeInBytes) {
     this(outputRecordCollector, onStart, recordWriter, null, null,
-            onClose, catalog, isValidRecord, maxQueueSizeInBytes);
+        onClose, catalog, isValidRecord, maxQueueSizeInBytes);
   }
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,

@@ -11,4 +11,5 @@ public interface GetFileRecordWriter extends CheckedFunction<AirbyteStreamNameNa
 
   @Override
   String apply(AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair) throws Exception;
+
 }
