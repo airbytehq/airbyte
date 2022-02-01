@@ -63,7 +63,7 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 | Version | Date | Pull request | Notes |
 | --- | --- | --- | --- |
 | 2.0.0 | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954) | Remove legacy modes. |
-| 1.0.1 (unpublished) | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
+| 1.0.1 | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 1.0.0 | 2021-01-23 | [\#9720](https://github.com/airbytehq/airbyte/pull/9720) | Add new continuous feed mode that supports arbitrary catalog specification. Initial release to cloud. |
 | 0.1.1 | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217) | Fix sleep time in infinite feed mode. |
 | 0.1.0 | 2021-07-23 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) [\#4939](https://github.com/airbytehq/airbyte/pull/4939) | Initial release. |
