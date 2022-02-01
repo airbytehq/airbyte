@@ -134,3 +134,4 @@ class TestIntegrationCsvFiles:
         source = SourceS3()
         catalog = source.read_catalog(HERE / "configured_catalog.json")
         assert self.read_source(minio_credentials, catalog) == expected_count
+        assert False
