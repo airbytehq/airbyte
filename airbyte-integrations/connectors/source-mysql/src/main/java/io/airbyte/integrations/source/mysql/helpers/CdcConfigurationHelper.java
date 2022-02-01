@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Helper class for MySqlSource used to check cdc configuration in case of: 1. adding new source and
+ * checking operations #getCheckOperations method 2. checking whether binlog required from saved cdc
+ * offset is available on mysql server #checkBinlog method
+ */
 public class CdcConfigurationHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcConfigurationHelper.class);
@@ -27,25 +32,35 @@ public class CdcConfigurationHelper {
   private static final String BINLOG_FORMAT = "binlog_format";
   private static final String BINLOG_ROW_IMAGE = "binlog_row_image";
 
+  /**
+   * Method will check whether required binlog is available on mysql server
+   *
+   * @param offset - saved cdc offset with required binlog file
+   * @param database - database
+   */
   public static void checkBinlog(JsonNode offset, JdbcDatabase database) {
     Optional<String> binlogOptional = getBinlog(offset);
-    if (binlogOptional.isPresent()) {
-      String binlog = binlogOptional.get();
+    binlogOptional.ifPresent(binlog -> {
       if (isBinlogAvailable(binlog, database)) {
         LOGGER.info("""
                     Binlog %s is available""".formatted(binlog));
       } else {
         String error =
             """
-            Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. " To fix data synchronization you need to reset your data. Please check binlog retention policy configurations."""
+            Binlog %s is not available. This is a critical error, it means that requested binlog is not present on mysql server. To fix data synchronization you need to reset your data. Please check binlog retention policy configurations."""
                 .formatted(binlog);
         LOGGER.error(error);
         throw new RuntimeException("""
                                    Binlog %s is not available.""".formatted(binlog));
       }
-    }
+    });
   }
 
+  /**
+   * Method will get required configurations for cdc sync
+   *
+   * @return list of List<CheckedConsumer<JdbcDatabase, Exception>>
+   */
   public static List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations() {
     return List.of(getCheckOperation(LOG_BIN, "ON"),
         getCheckOperation(BINLOG_FORMAT, "ROW"),
