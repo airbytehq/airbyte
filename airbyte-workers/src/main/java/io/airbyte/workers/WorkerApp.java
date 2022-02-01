@@ -39,6 +39,8 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -84,9 +86,12 @@ public class WorkerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerApp.class);
   public static final int KUBE_HEARTBEAT_PORT = 9000;
 
+  // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
+  // version is deployed!
+  public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
+
   private final Path workspaceRoot;
   private final ProcessFactory jobProcessFactory;
-  private final ProcessFactory orchestratorProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final ConfigRepository configRepository;
@@ -103,7 +108,7 @@ public class WorkerApp {
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final Configs configs;
   private final ConnectionHelper connectionHelper;
-  private final boolean containerOrchestratorEnabled;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
 
@@ -147,10 +152,9 @@ public class WorkerApp {
 
     final NormalizationActivityImpl normalizationActivity =
         new NormalizationActivityImpl(
-            containerOrchestratorEnabled,
+            containerOrchestratorConfig,
             workerConfigs,
             jobProcessFactory,
-            orchestratorProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,
@@ -161,10 +165,9 @@ public class WorkerApp {
             airbyteVersion);
     final DbtTransformationActivityImpl dbtTransformationActivity =
         new DbtTransformationActivityImpl(
-            containerOrchestratorEnabled,
+            containerOrchestratorConfig,
             workerConfigs,
             jobProcessFactory,
-            orchestratorProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,
@@ -177,10 +180,9 @@ public class WorkerApp {
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(
-        containerOrchestratorEnabled,
+        containerOrchestratorConfig,
         workerConfigs,
         jobProcessFactory,
-        orchestratorProcessFactory,
         secretsHydrator,
         workspaceRoot,
         workerEnvironment,
@@ -226,10 +228,9 @@ public class WorkerApp {
    * launching or not.
    */
   private ReplicationActivityImpl getReplicationActivityImpl(
-                                                             final boolean containerOrchestratorEnabled,
+                                                             final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                                              final WorkerConfigs workerConfigs,
                                                              final ProcessFactory jobProcessFactory,
-                                                             final ProcessFactory orchestratorProcessFactory,
                                                              final SecretsHydrator secretsHydrator,
                                                              final Path workspaceRoot,
                                                              final WorkerEnvironment workerEnvironment,
@@ -238,33 +239,19 @@ public class WorkerApp {
                                                              final String databasePassword,
                                                              final String databaseUrl,
                                                              final String airbyteVersion) {
-    if (containerOrchestratorEnabled) {
-      return new ReplicationActivityImpl(
-          containerOrchestratorEnabled,
-          workerConfigs,
-          orchestratorProcessFactory,
-          secretsHydrator,
-          workspaceRoot,
-          workerEnvironment,
-          logConfigs,
-          databaseUser,
-          databasePassword,
-          databaseUrl,
-          airbyteVersion);
-    } else {
-      return new ReplicationActivityImpl(
-          containerOrchestratorEnabled,
-          workerConfigs,
-          jobProcessFactory,
-          secretsHydrator,
-          workspaceRoot,
-          workerEnvironment,
-          logConfigs,
-          databaseUser,
-          databasePassword,
-          databaseUrl,
-          airbyteVersion);
-    }
+
+    return new ReplicationActivityImpl(
+        containerOrchestratorConfig,
+        workerConfigs,
+        jobProcessFactory,
+        secretsHydrator,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        databaseUser,
+        databasePassword,
+        databaseUrl,
+        airbyteVersion);
   }
 
   private static ProcessFactory getJobProcessFactory(final Configs configs) throws IOException {
@@ -282,32 +269,7 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
-    }
-  }
-
-  private static ProcessFactory getOrchestratorProcessFactory(final Configs configs) throws IOException {
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
-    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      final KubernetesClient fabricClient = new DefaultKubernetesClient();
-      final String localIp = InetAddress.getLocalHost().getHostAddress();
-      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, true);
-    } else {
-      return new DockerProcessFactory(
-          workerConfigs,
-          configs.getWorkspaceRoot(),
-          configs.getWorkspaceDockerMount(),
-          configs.getLocalDockerMount(),
-
-          // this needs to point at the Docker network Airbyte is running on, not the host network or job
-          // runner network, otherwise it can't talk with the db/minio
-          "airbyte_default",
-
-          true);
+          configs.getDockerNetwork());
     }
   }
 
@@ -315,6 +277,28 @@ public class WorkerApp {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
+  }
+
+  public static record ContainerOrchestratorConfig(
+                                                   String namespace,
+                                                   DocumentStoreClient documentStoreClient,
+                                                   KubernetesClient kubernetesClient) {}
+
+  static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
+    if (configs.getContainerOrchestratorEnabled()) {
+      final var kubernetesClient = new DefaultKubernetesClient();
+
+      final DocumentStoreClient documentStoreClient = StateClients.create(
+          configs.getStateStorageCloudConfigs(),
+          STATE_STORAGE_PREFIX);
+
+      return Optional.of(new ContainerOrchestratorConfig(
+          configs.getJobKubeNamespace(),
+          documentStoreClient,
+          kubernetesClient));
+    } else {
+      return Optional.empty();
+    }
   }
 
   public static void main(final String[] args) throws IOException, InterruptedException {
@@ -336,9 +320,10 @@ public class WorkerApp {
     }
 
     final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
-    final ProcessFactory orchestratorProcessFactory = getOrchestratorProcessFactory(configs);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+
+    TemporalUtils.configureTemporalNamespace(temporalService);
 
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -390,6 +375,8 @@ public class WorkerApp {
         workspaceHelper,
         workerConfigs);
 
+    final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
+
     final JobNotifier jobNotifier = new JobNotifier(
         configs.getWebappUrl(),
         configRepository,
@@ -401,7 +388,6 @@ public class WorkerApp {
     new WorkerApp(
         workspaceRoot,
         jobProcessFactory,
-        orchestratorProcessFactory,
         secretsHydrator,
         temporalService,
         configRepository,
@@ -418,7 +404,7 @@ public class WorkerApp {
         temporalWorkerRunFactory,
         configs,
         connectionHelper,
-        configs.getContainerOrchestratorEnabled(),
+        containerOrchestratorConfig,
         jobNotifier,
         jobTracker).start();
   }

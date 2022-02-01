@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,10 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   @Override
-  protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String stage) throws Exception {
+  protected void insertRecordsInternal(final JdbcDatabase database,
+                                       final List<AirbyteRecordMessage> records,
+                                       final String schemaName,
+                                       final String stage) {
     LOGGER.info("actual size of batch for staging: {}", records.size());
 
     if (records.isEmpty()) {
@@ -30,13 +35,13 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
     }
     try {
       loadDataIntoStage(database, stage, records);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to upload records into stage {}", stage, e);
       throw new RuntimeException(e);
     }
   }
 
-  private void loadDataIntoStage(JdbcDatabase database, String stage, List<AirbyteRecordMessage> partition) throws Exception {
+  private void loadDataIntoStage(final JdbcDatabase database, final String stage, final List<AirbyteRecordMessage> partition) throws Exception {
     final File tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".csv").toFile();
     writeBatchToFile(tempFile, partition);
     database.execute(String.format("PUT file://%s @%s PARALLEL = %d", tempFile.getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
@@ -44,26 +49,32 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
   }
 
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws SQLException {
-    database.execute(String.format("CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE')" +
-        " copy_options = (on_error='skip_file');", stageName));
+    final String query = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
+    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
+        () -> database.execute(String.format(query, stageName)),
+        Map.of("stage", stageName));
   }
 
-  public void copyIntoTmpTableFromStage(JdbcDatabase database, String stageName, String dstTableName, String schemaName) throws SQLException {
-    database.execute(String.format("COPY INTO %s.%s FROM @%s file_format = " +
-        "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')",
-        schemaName,
-        dstTableName,
-        stageName));
-
+  public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String stageName, final String dstTableName, final String schemaName)
+      throws SQLException {
+    final String query = "COPY INTO %s.%s FROM @%s file_format = " +
+        "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
+        () -> database.execute(String.format(query, schemaName, dstTableName, stageName)),
+        Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws SQLException {
-    database.execute(String.format("DROP STAGE IF EXISTS %s;", stageName));
+    AirbyteSentry.executeWithTracing("DropStageIfExists",
+        () -> database.execute(String.format("DROP STAGE IF EXISTS %s;", stageName)),
+        Map.of("stage", stageName));
   }
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    database.execute(createTableQuery(database, schemaName, tableName));
+    AirbyteSentry.executeWithTracing("CreateTableIfNotExists",
+        () -> database.execute(createTableQuery(database, schemaName, tableName)),
+        Map.of("schema", schemaName, "table", tableName));
   }
 
   @Override
@@ -77,12 +88,14 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  public void cleanUpStage(JdbcDatabase database, String path) throws SQLException {
-    database.execute(String.format("REMOVE @%s;", path));
+  public void cleanUpStage(final JdbcDatabase database, final String path) throws SQLException {
+    AirbyteSentry.executeWithTracing("CleanStage",
+        () -> database.execute(String.format("REMOVE @%s;", path)),
+        Map.of("path", path));
   }
 
   @Override
-  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+  public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
   }
 

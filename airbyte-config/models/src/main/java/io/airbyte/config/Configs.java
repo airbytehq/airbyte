@@ -337,6 +337,21 @@ public interface Configs {
    */
   boolean getContainerOrchestratorEnabled();
 
+  /**
+   * Get the longest duration of non long running activity
+   */
+  int getMaxActivityTimeoutSecond();
+
+  /**
+   * Get the duration in second between 2 activity attempts
+   */
+  int getDelayBetweenActivityAttemps();
+
+  /**
+   * Get number of attempts of the non long running activities
+   */
+  int getActivityNumberOfAttempt();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
