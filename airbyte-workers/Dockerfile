@@ -1,6 +1,9 @@
 ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS worker
 
+# JMX port
+EXPOSE 1099
+
 ARG DOCKER_BUILD_ARCH=amd64
 
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.

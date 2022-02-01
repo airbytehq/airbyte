@@ -1,7 +1,11 @@
 ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS server
 
+# Server port
 EXPOSE 8000
+
+# JMX port
+EXPOSE 1099
 
 ENV APPLICATION airbyte-server
 
