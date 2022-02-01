@@ -4,26 +4,46 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
+import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
@@ -282,17 +302,111 @@ public class WorkerApp {
   }
 
   public static void main(final String[] args) throws IOException, InterruptedException {
+    final Configs configs = new EnvConfigs();
 
-    for (Map.Entry<Object, Object> property : System.getProperties().entrySet()) {
-      System.out.println(property.getKey() + " = " + property.getValue());
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
+
+    final Path workspaceRoot = configs.getWorkspaceRoot();
+    LOGGER.info("workspaceRoot = " + workspaceRoot);
+
+    final String temporalHost = configs.getTemporalHost();
+    LOGGER.info("temporalHost = " + temporalHost);
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+
+    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
     }
 
-    var count = 0;
-    while (true) {
-      System.out.println("running... " + count);
-      Thread.sleep(1000);
-      count += 1;
-    }
+    final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
+
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+
+    TemporalUtils.configureTemporalNamespace(temporalService);
+
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getInitialized();
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+
+    final Database jobDatabase = new JobsDatabaseInstance(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl())
+            .getInitialized();
+
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
+    final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
+        new DefaultJobCreator(jobPersistence, configRepository),
+        configRepository,
+        new OAuthConfigSupplier(configRepository, trackingClient));
+
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
+
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        configs.getAirbyteVersionOrWarning(),
+        featureFlags);
+
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(
+        configRepository,
+        jobPersistence);
+
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+
+    final ConnectionHelper connectionHelper = new ConnectionHelper(
+        configRepository,
+        workspaceHelper,
+        workerConfigs);
+
+    final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
+
+    final JobNotifier jobNotifier = new JobNotifier(
+        configs.getWebappUrl(),
+        configRepository,
+        workspaceHelper,
+        TrackingClientSingleton.get());
+
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+
+    new WorkerApp(
+        workspaceRoot,
+        jobProcessFactory,
+        secretsHydrator,
+        temporalService,
+        configRepository,
+        configs.getMaxWorkers(),
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        workerConfigs,
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl(),
+        configs.getAirbyteVersionOrWarning(),
+        jobFactory,
+        jobPersistence,
+        temporalWorkerRunFactory,
+        configs,
+        connectionHelper,
+        containerOrchestratorConfig,
+        jobNotifier,
+        jobTracker).start();
   }
 
 }
