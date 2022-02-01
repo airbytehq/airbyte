@@ -510,6 +510,44 @@ public class ConnectionManagerWorkflowTest {
       testEnv.shutdown();
     }
 
+    @Test
+    @DisplayName("Test workflow which recieved an update signal wait for the current run and report the job status")
+    public void updatedSignalRecievedWhileRunning() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.connectionUpdated();
+      testEnv.sleep(Duration.ofMinutes(1L));
+      testEnv.shutdown();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RUNNING && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.UPDATED && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
+    }
+
   }
 
   @Nested
