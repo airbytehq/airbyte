@@ -3,7 +3,7 @@ import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { SourceDiscoverSchemaRead, SyncSchema } from "core/domain/catalog";
 import { toInnerModel } from "core/domain/catalog/fieldUtil";
-import { JobInfo } from "../domain/job/Job";
+import { JobInfo } from "core/domain/job/Job";
 
 export interface Schema extends SourceDiscoverSchemaRead {
   id: string;

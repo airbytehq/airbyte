@@ -7,8 +7,8 @@ import {
 } from "react-query";
 
 import { useConfig } from "config";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { useInitService } from "packages/cloud/services/useInitService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 import { JobsService, ListParams } from "core/domain/job/JobsService";
 import { JobDetails, JobListItem } from "core/domain/job/Job";
 

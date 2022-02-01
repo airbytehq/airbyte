@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { Button, H4, StatusIcon } from "components";
 
 const Block = styled.div`
-  margin: 40px;
+  padding: 40px;
   text-align: center;
 `;
 const Title = styled(H4)`

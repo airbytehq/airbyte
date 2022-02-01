@@ -55,7 +55,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     isLoading,
     schemaErrorStatus,
     onDiscoverSchema,
-  } = useDiscoverSchema(source?.sourceId);
+  } = useDiscoverSchema(source.sourceId);
 
   const connection = useMemo(
     () => ({
@@ -65,35 +65,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
     }),
     [schema, destination, source]
   );
-
-  if (isLoading) {
-    return (
-      <ContentCard
-        title={
-          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-        }
-      >
-        <LoadingSchema />
-      </ContentCard>
-    );
-  }
-
-  if (schemaErrorStatus) {
-    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
-    return (
-      <ContentCard
-        title={
-          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-        }
-      >
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
-        {jobInfo && <JobItem jobInfo={jobInfo} />}
-      </ContentCard>
-    );
-  }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
@@ -126,26 +97,47 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
+  if (schemaErrorStatus) {
+    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
+    return (
+      <ContentCard
+        title={
+          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
+        }
+      >
+        <TryAfterErrorBlock
+          onClick={onDiscoverSchema}
+          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
+        />
+        {jobInfo && <JobItem jobInfo={jobInfo} />}
+      </ContentCard>
+    );
+  }
+
   return (
     <ContentCard
       title={
         noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
       }
     >
-      <Suspense fallback={<LoadingSchema />}>
-        <ConnectionForm
-          connection={connection}
-          additionBottomControls={additionBottomControls}
-          onDropDownSelect={onSelectFrequency}
-          additionalSchemaControl={
-            <Button onClick={onDiscoverSchema} type="button">
-              <TryArrow icon={faRedoAlt} />
-              <FormattedMessage id="connection.refreshSchema" />
-            </Button>
-          }
-          onSubmit={onSubmitConnectionStep}
-        />
-      </Suspense>
+      {isLoading ? (
+        <LoadingSchema />
+      ) : (
+        <Suspense fallback={<LoadingSchema />}>
+          <ConnectionForm
+            connection={connection}
+            additionBottomControls={additionBottomControls}
+            onDropDownSelect={onSelectFrequency}
+            additionalSchemaControl={
+              <Button onClick={onDiscoverSchema} type="button">
+                <TryArrow icon={faRedoAlt} />
+                <FormattedMessage id="connection.refreshSchema" />
+              </Button>
+            }
+            onSubmit={onSubmitConnectionStep}
+          />
+        </Suspense>
+      )}
     </ContentCard>
   );
 };

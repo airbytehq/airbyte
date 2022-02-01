@@ -41,7 +41,7 @@ const ConnectorLabel = styled(ControlLabels)`
 `;
 
 const FormContainer = styled(Form)`
-  padding: 22px 27px 15px 24px;
+  padding: 15px 20px;
 
   & > div:not(:last-child) {
     margin-bottom: 20px;

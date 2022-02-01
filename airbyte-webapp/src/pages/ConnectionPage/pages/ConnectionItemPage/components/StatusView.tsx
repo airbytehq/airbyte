@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useFetcher } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import { useListJobs } from "services/job/JobService";
 

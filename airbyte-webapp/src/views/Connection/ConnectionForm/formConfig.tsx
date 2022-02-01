@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
+import { setIn } from "formik";
 
 import {
   AirbyteStreamConfiguration,
@@ -24,7 +25,6 @@ import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
-import { setIn } from "formik";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -188,13 +188,14 @@ function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   return streamNode.config.cursorField;
 }
 
-// If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-// Otherwise, it supports whatever sync modes are present.
 const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
         const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+
+        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
+        // Otherwise, it supports whatever sync modes are present.
         const streamNode = nodeWithId.stream.supportedSyncModes?.length
           ? nodeWithId
           : setIn(nodeWithId, "stream.supportedSyncModes", [
@@ -215,14 +216,7 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
 
         const supportedSyncModes = streamNode.stream.supportedSyncModes;
 
-        // If syncMode is null, FULL_REFRESH should be selected by default (if it supports FULL_REFRESH).
-        if (supportedSyncModes.includes(SyncMode.FullRefresh)) {
-          return updateStreamConfig({
-            syncMode: SyncMode.FullRefresh,
-          });
-        }
-
-        // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
+        // Prefer INCREMENTAL sync mode over other sync modes
         if (supportedSyncModes.includes(SyncMode.Incremental)) {
           return updateStreamConfig({
             cursorField: streamNode.config.cursorField.length
@@ -300,7 +294,7 @@ const useInitialValues = (
 };
 
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return useMemo(
     () =>
@@ -322,10 +316,39 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   );
 };
 
+const useBulkEdit = (
+  nodes: SyncSchemaStream[],
+  update: (streams: SyncSchemaStream[]) => void
+) => {
+  const [selectedBatchNodes] = useState<string[]>([]);
+  const [isActive, toggleActiveMode] = useState(false);
+  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(
+    {}
+  );
+
+  const onApply = () => {
+    const updatedConfig = nodes
+      .filter((node) => selectedBatchNodes.includes(node.id))
+      .map((node) => setIn(node, "config", { ...node.config, ...options }));
+
+    update(updatedConfig);
+  };
+
+  return {
+    isActive,
+    toggleActiveMode,
+    onChangeOption: setOptions,
+    options,
+    onApply,
+    onCancel: () => console.log("Define"),
+  };
+};
+
 export type { ConnectionFormValues, FormikConnectionFormValues };
 export {
   connectionValidationSchema,
   useInitialValues,
+  useBulkEdit,
   useFrequencyDropdownData,
   mapFormPropsToOperation,
   SUPPORTED_MODES,
