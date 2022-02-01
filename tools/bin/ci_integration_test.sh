@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# set -e
+set -e
 
 . tools/lib/lib.sh
 . tools/lib/databricks.sh
@@ -39,8 +39,9 @@ else
     if [[ "$selected_integration_test" == *"databricks"* ]] ; then
       _get_databricks_jdbc_driver
     fi
-    echo "Running: ./gradlew --stacktrace --scan $integrationTestCommand"
-    ./gradlew --stacktrace --scan "$integrationTestCommand"
+
+    echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
     echo "Connector '$connector' not found..."
     return 1
@@ -49,7 +50,7 @@ fi
 }
 
 show_skipped_failed_info() {
-   skipped_failed_info=`sed -n '/^Name.*Stmts.*Miss.*Cover/,/^=* [0-9]/p' build.out`
+   skipped_failed_info=`sed -n '/^=* short test summary info =*/,/^=* [0-9]/p' build.out`
    if ! test -z "$skipped_failed_info"
       then
          echo "PYTHON_SHORT_TEST_SUMMARY_INFO<<EOF" >> $GITHUB_ENV
@@ -64,13 +65,10 @@ show_skipped_failed_info() {
 }
 
 # Copy command output to extract gradle scan link.
-run
-echo "Run test status: $?"
 run | tee build.out
-run_status=${PIPESTATUS[0]}
-echo "Run test status: ${PIPESTATUS[0]}"
 # return status of "run" command, not "tee"
 # https://tldp.org/LDP/abs/html/internalvariables.html#PIPESTATUSREF
+run_status=${PIPESTATUS[0]}
 
 test $run_status == "0" || {
    # Build failed
@@ -85,7 +83,7 @@ test $run_status == "0" || {
 show_skipped_failed_info
 
 # Build successed
-coverage_report=`sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out`
+coverage_report=`sed -n '/^[ \t]Name.*Stmts.*Miss.*Cover/,/TOTAL   /p' build.out`
 
 if ! test -z "$coverage_report"
 then
