@@ -3,6 +3,8 @@
 #
 
 import math
+import queue
+import threading
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
@@ -199,15 +201,72 @@ class InvoiceLineItems(StripeStream):
     API docs: https://stripe.com/docs/api/invoices/invoice_lines
     """
 
+    max_workers = 20
     name = "invoice_line_items"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        self.producer_to_worker = queue.Queue()
+        self.worker_to_consumer = queue.Queue()
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"invoices/{stream_slice['invoice_id']}/lines"
+        return f"invoices/{stream_slice['id']}/lines"
+
+    def _notify_error(self):
+        self.worker_to_consumer.put(None)
+
+    def _notify_done(self):
+        for _ in range(self.max_workers):
+            self.producer_to_worker.put(None)
+
+    def _producer(self):
+        try:
+            self.background_stream_slices()
+        except Exception as e:
+            self.logger.exception(e)
+            self._notify_error()
+        else:
+            self._notify_done()
+
+    def _worker(self, **kwargs):
+        try:
+            self.background_read_records(**kwargs)
+        except Exception as e:
+            self.logger.exception(e)
+            self._notify_error()
+
+    def background_read_records(self, **kwargs):
+        while True:
+            item = self.producer_to_worker.get()
+            if item is None:
+                self.worker_to_consumer.put(False)
+                break
+            for record in super().read_records(stream_slice=item, **kwargs):
+                self.worker_to_consumer.put(record)
+
+    def background_stream_slices(self):
+        for record in self.parent.read_records(sync_mode=SyncMode.full_refresh):
+            self.producer_to_worker.put(record)
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
+
+        for _ in range(self.max_workers):
+            threading.Thread(target=self._worker, kwargs=kwargs, daemon=True).start()
+
+        threading.Thread(target=self._producer, daemon=True).start()
+
+        stopped_workers = 0
+        while True:
+            item = self.worker_to_consumer.get()
+            if item is None:
+                break
+            elif item is False:
+                stopped_workers += 1
+                if stopped_workers >= self.max_workers:
+                    break
+            else:
+                yield item
 
 
 class InvoiceItems(IncrementalStripeStream):
