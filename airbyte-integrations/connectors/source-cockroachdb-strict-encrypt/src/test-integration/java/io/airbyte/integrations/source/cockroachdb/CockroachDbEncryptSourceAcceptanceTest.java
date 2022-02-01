@@ -15,9 +15,7 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import org.jooq.SQLDialect;
 
 public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
