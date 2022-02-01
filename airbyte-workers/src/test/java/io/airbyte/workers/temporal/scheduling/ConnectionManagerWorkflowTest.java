@@ -355,7 +355,7 @@ public class ConnectionManagerWorkflowTest {
   }
 
   @Nested
-  @DisplayName("Test which without a long running child workflow")
+  @DisplayName("Test which with a long running child workflow")
   class SynchronousWorkflow {
 
     @BeforeEach
@@ -428,7 +428,7 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(30L));
+      testEnv.sleep(Duration.ofSeconds(10L));
       workflow.cancelJob();
       testEnv.sleep(Duration.ofMinutes(2L));
       testEnv.shutdown();
