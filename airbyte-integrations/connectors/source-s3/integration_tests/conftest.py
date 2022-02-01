@@ -16,12 +16,10 @@ from airbyte_cdk import AirbyteLogger
 from docker.errors import APIError
 from netifaces import AF_INET, ifaddresses, interfaces
 from requests.exceptions import ConnectionError  # type: ignore[import]
-from .integration_test import TestIncrementalFileStreamS3
+
+from .integration_test import TMP_FOLDER, TestIncrementalFileStreamS3
 
 LOGGER = AirbyteLogger()
-TMP_FOLDER = "/tmp/test_minio_source_s3"
-if not os.path.exists(TMP_FOLDER):
-    os.makedirs(TMP_FOLDER)
 
 
 def get_local_ip() -> str:
@@ -99,9 +97,10 @@ def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
     yield
     # this minio container was not finished because it is needed for all integration adn acceptance tests
 
+
 def pytest_sessionfinish(session: Any, exitstatus: Any) -> None:
-    """ tries to find and remove all temp buckets """
-    instance =TestIncrementalFileStreamS3()
+    """tries to find and remove all temp buckets"""
+    instance = TestIncrementalFileStreamS3()
     instance._s3_connect(instance.credentials)
     temp_buckets = []
     for bucket in instance.s3_resource.buckets.all():

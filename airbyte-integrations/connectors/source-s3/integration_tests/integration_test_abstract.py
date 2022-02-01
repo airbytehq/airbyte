@@ -23,6 +23,7 @@ JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "objec
 
 class AbstractTestIncrementalFileStream(ABC):
     """Prefix this class with Abstract so the tests don't run here but only in the children"""
+
     temp_bucket_prefix = "airbytetest-"
 
     @pytest.fixture(scope="session")
