@@ -8,7 +8,7 @@ This is a mock source for testing the Airbyte pipeline. It can generate arbitrar
 
 ### Continuous Feed
 
-**This is the only mode available on Airbyte Cloud.**
+**This is the only mode available starting from `2.0.0`.**
 
 This mode allows users to specify a single-stream or multi-stream catalog with arbitrary schema. The schema should be compliant with Json schema [draft-07](https://json-schema.org/draft-07/json-schema-release-notes.html).
 
@@ -27,7 +27,7 @@ Here is its configuration:
 
 ### Legacy Infinite Feed
 
-This is a legacy mode used in Airbyte integration tests. It has a simple catalog with one `data` stream that has the following schema:
+This is a legacy mode used in Airbyte integration tests. It has been removed since `2.0.0`. It has a simple catalog with one `data` stream that has the following schema:
 
 ```json
 {
@@ -52,7 +52,7 @@ There are two configurable parameters:
 
 ### Exception after N
 
-This is a legacy mode used in Airbyte integration tests. It throws an `IllegalStateException` after certain number of messages. The number of messages to emit before exception is the only parameter for this mode.
+This is a legacy mode used in Airbyte integration tests. It has been removed since `2.0.0`. It throws an `IllegalStateException` after certain number of messages. The number of messages to emit before exception is the only parameter for this mode.
 
 This mode is also excluded from the Cloud variant of this connector.
 
@@ -62,6 +62,7 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 
 | Version | Date | Pull request | Notes |
 | --- | --- | --- | --- |
+| 2.0.0 (unpublished) | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954) | Remove legacy modes. Use more efficient Json generator. |
 | 1.0.1 | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 1.0.0 | 2021-01-23 | [\#9720](https://github.com/airbytehq/airbyte/pull/9720) | Add new continuous feed mode that supports arbitrary catalog specification. Initial release to cloud. |
 | 0.1.1 | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217) | Fix sleep time in infinite feed mode. |
