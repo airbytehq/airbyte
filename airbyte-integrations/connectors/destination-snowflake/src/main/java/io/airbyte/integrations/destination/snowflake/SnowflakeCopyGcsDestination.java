@@ -37,6 +37,7 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) throws Exception {
+
     GcsStreamCopier.attemptWriteToPersistence(GcsConfig.getGcsConfig(config));
   }
 
