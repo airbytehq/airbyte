@@ -547,6 +547,7 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
     }
+
   }
 
   @Nested
