@@ -1,6 +1,7 @@
-import type { User } from "packages/cloud/lib/domain/users";
 import { useEffect } from "react";
 import * as FullStory from "@fullstory/browser";
+
+import type { User } from "packages/cloud/lib/domain/users";
 
 let inited = false;
 
