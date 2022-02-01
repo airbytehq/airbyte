@@ -5,7 +5,7 @@ import { faCog } from "@fortawesome/free-solid-svg-icons";
 
 import { RoutePaths } from "pages/routes";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import Link from "components/Link";
+import { Link } from "components";
 
 type IProps = {
   id: string;
