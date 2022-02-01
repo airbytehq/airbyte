@@ -1,8 +1,7 @@
-# On Digital Ocean \(Droplet\)
+# On DigitalOcean \(Droplet\)
 
-{% hint style="info" %}
-The instructions have been tested on `Digital Ocean Droplet ($5)`
-{% endhint %}
+The instructions have been tested on `DigitalOcean Droplet ($5)`. 
+##### Alternatively, you can one-click deply Airbyte to DigitalOcean using their marketplace: https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet
 
 ## Create a new droplet
 
@@ -32,9 +31,7 @@ The instructions have been tested on `Digital Ocean Droplet ($5)`
 
 ## Install environment
 
-{% hint style="info" %}
 Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
-{% endhint %}
 
 * Connect to your instance
 

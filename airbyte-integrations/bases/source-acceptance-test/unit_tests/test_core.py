@@ -5,140 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    Type,
-)
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
-from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
-
-
-@pytest.mark.parametrize(
-    "connector_spec, should_fail",
-    [
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                        "$ref": None,
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_input_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                }
-            },
-            False,
-        ),
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                },
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}},
-                        }
-                    },
-                },
-            },
-            False,
-        ),
-        ({"$ref": None}, True),
-        ({"properties": {"user": {"$ref": None}}}, True),
-        ({"properties": {"user": {"$ref": "user.json"}}}, True),
-        ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
-        ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),
-    ],
-)
-def test_ref_in_spec_schemas(connector_spec, should_fail):
-    t = _TestSpec()
-    if should_fail is True:
-        with pytest.raises(AssertionError):
-            t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
-    else:
-        t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
 
 
 @pytest.mark.parametrize(
@@ -159,9 +29,9 @@ def test_discovery(schema, cursors, should_fail):
     }
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+            t.test_defined_cursors_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+        t.test_defined_cursors_exist_in_schema(discovered_catalog)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +60,49 @@ def test_ref_in_discovery_schemas(schema, should_fail):
     discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+            t.test_defined_refs_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+        t.test_defined_refs_exist_in_schema(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "schema, keyword, should_fail",
+    [
+        ({}, "allOf", False),
+        ({"allOf": [{"type": "string"}, {"maxLength": 1}]}, "allOf", True),
+        ({"type": "object", "properties": {"allOf": {"type": "string"}}}, "allOf", False),
+        ({"type": "object", "properties": {"name": {"allOf": [{"type": "string"}, {"maxLength": 1}]}}}, "allOf", True),
+        (
+            {"type": "object", "properties": {"name": {"type": "array", "items": {"allOf": [{"type": "string"}, {"maxLength": 4}]}}}},
+            "allOf",
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "array",
+                        "items": {"anyOf": [{"type": "number"}, {"allOf": [{"type": "string"}, {"maxLength": 4}, {"minLength": 2}]}]},
+                    }
+                },
+            },
+            "allOf",
+            True,
+        ),
+        ({"not": {"type": "string"}}, "not", True),
+        ({"type": "object", "properties": {"not": {"type": "string"}}}, "not", False),
+        ({"type": "object", "properties": {"name": {"not": {"type": "string"}}}}, "not", True),
+    ],
+)
+def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+    else:
+        t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
 
 
 @pytest.mark.parametrize(
@@ -232,226 +142,6 @@ def test_read(schema, record, should_fail):
             t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
     else:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
-
-
-@pytest.mark.parametrize(
-    "connector_spec, expected_error",
-    [
-        # SUCCESS: no authSpecification specified
-        (ConnectorSpecification(connectionSpecification={}), ""),
-        # FAIL: Field specified in root object does not exist
-        (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object"},
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
-        ),
-        # SUCCESS: Empty root object
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": [],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # FAIL: Some oauth fields missed
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
-        ),
-        # SUCCESS: case w/o oneOf property
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                                "refresh_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials"],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # SUCCESS: case w/ oneOf property
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # FAIL: Wrong root object index
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
-        ),
-        # SUCCESS: root object index equal to 1
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-    ],
-)
-def test_validate_oauth_flow(connector_spec, expected_error):
-    t = _TestSpec()
-    if expected_error:
-        with pytest.raises(AssertionError, match=expected_error):
-            t.test_oauth_flow_parameters(connector_spec)
-    else:
-        t.test_oauth_flow_parameters(connector_spec)
 
 
 @pytest.mark.parametrize(
