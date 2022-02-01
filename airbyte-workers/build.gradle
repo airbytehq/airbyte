@@ -18,7 +18,6 @@ dependencies {
     implementation 'org.apache.commons:commons-text:1.9'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-//    implementation 'org.glassfish.main.external:jmxremote_optional-repackaged:4.1.1' // todo: check license
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
