@@ -10,7 +10,7 @@ x-logging: &default-logging
 services:
   db:
     ports:
-      - "8011:1099"
+      - "8011:5432"
   airbyte-temporal-ui:
     image: temporalio/web:1.13.0
     logging: *default-logging
