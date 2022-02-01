@@ -21,12 +21,12 @@ services:
       - TEMPORAL_PERMIT_WRITE_API=true
     ports:
       - "8012:8088"
-  airbyte-server:
+  server:
     ports:
       - "8014:1099"
-  airbyte-scheduler:
+  scheduler:
     ports:
       - "8015:1099"
-  airbyte-worker:
+  worker:
     ports:
       - "8016:1099"
