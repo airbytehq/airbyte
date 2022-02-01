@@ -261,9 +261,6 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
-      - name: Run End-to-End Acceptance Tests with the new scheduler
-        run: ./tools/bin/acceptance_test_with_new_scheduler.sh
-
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
@@ -286,6 +283,103 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
+
+  ## Gradle Build (Platform)
+  # In case of self-hosted EC2 errors, remove this block.
+  start-platform-new-scheduler-acceptance-runner:
+    name: "Platform: Start Build EC2 Runner"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+  platform-new-scheduler-acceptance:
+    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }} # run the job on the newly created runner
+    name: "Platform: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - name: Npm Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+
+      # this intentionally does not use restore-keys so we don't mess with gradle caching
+      - name: Gradle Caching
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.venv
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.13.0"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Build
+        run: |
+          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+
+      - name: Run End-to-End Acceptance Tests with the new scheduler
+        run: ./tools/bin/acceptance_test_with_new_scheduler.sh
+
+      - name: Slack Notification - Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildozer
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: DC143C
+          SLACK_TITLE: "Build failure"
+          SLACK_FOOTER: ""
+
+      - name: Slack Notification - Success
+        if: success() && github.ref == 'refs/heads/master'
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildbot
+          SLACK_TITLE: "Build Success"
+          SLACK_FOOTER: ""
+
   octavia-cli-build:
     runs-on: ubuntu-latest
     name: "Octavia CLI: Build"
