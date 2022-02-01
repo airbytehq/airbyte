@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Mapping, Tuple
+
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
@@ -23,7 +25,7 @@ class TestAbstractFileParserStatics:
             ("null", pa.large_string()),
         ],
     )
-    def test_json_type_to_pyarrow_type(self, input_json_type, output_pyarrow_type):
+    def test_json_type_to_pyarrow_type(self, input_json_type: str, output_pyarrow_type: Any) -> None:
         # Json -> PyArrow direction
         LOGGER.info(f"asserting that JSON type '{input_json_type}' converts to PyArrow type '{output_pyarrow_type}'...")
         assert AbstractFileParser.json_type_to_pyarrow_type(input_json_type) == output_pyarrow_type
@@ -45,7 +47,7 @@ class TestAbstractFileParserStatics:
             ((pa.map_(pa.string(), pa.float32()), pa.dictionary(pa.int16(), pa.list_(pa.string()))), "string"),  # object types
         ],
     )
-    def test_json_type_to_pyarrow_type_reverse(self, input_pyarrow_types, output_json_type):
+    def test_json_type_to_pyarrow_type_reverse(self, input_pyarrow_types: Tuple[Any], output_json_type: str) -> None:
         # PyArrow -> Json direction (reverse=True)
         for typ in input_pyarrow_types:
             LOGGER.info(f"asserting that PyArrow type '{typ}' converts to JSON type '{output_json_type}'...")
@@ -72,7 +74,7 @@ class TestAbstractFileParserStatics:
             (["string", "object"], None),  # bad input type
         ],
     )
-    def test_json_schema_to_pyarrow_schema(self, json_schema, pyarrow_schema):
+    def test_json_schema_to_pyarrow_schema(self, json_schema: Mapping[str, Any], pyarrow_schema: Mapping[str, Any]) -> None:
         # Json -> PyArrow direction
         if pyarrow_schema is not None:
             assert AbstractFileParser.json_schema_to_pyarrow_schema(json_schema) == pyarrow_schema
@@ -101,7 +103,7 @@ class TestAbstractFileParserStatics:
             (["string", "object"], None),  # bad input type
         ],
     )
-    def test_json_schema_to_pyarrow_schema_reverse(self, pyarrow_schema, json_schema):
+    def test_json_schema_to_pyarrow_schema_reverse(self, pyarrow_schema: Mapping[str, Any], json_schema: Mapping[str, Any]) -> None:
         # PyArrow -> Json direction (reverse=True)
         if json_schema is not None:
             assert AbstractFileParser.json_schema_to_pyarrow_schema(pyarrow_schema, reverse=True) == json_schema
