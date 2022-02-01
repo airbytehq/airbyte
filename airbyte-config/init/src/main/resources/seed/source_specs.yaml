@@ -1769,7 +1769,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-file:0.2.8"
+- dockerImage: "airbyte/source-file:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
