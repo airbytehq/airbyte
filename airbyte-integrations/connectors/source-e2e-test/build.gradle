@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.mozilla:rhino-engine:1.7.14'
     implementation('net.jimblackler:jsongenerator') {
         version {
-            branch = 'liren/add-string-generators'
+            branch = 'master'
         }
     }
 
