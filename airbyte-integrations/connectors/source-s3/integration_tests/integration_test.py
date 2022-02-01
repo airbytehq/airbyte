@@ -7,13 +7,12 @@ import json
 import os
 import shutil
 import time
-from pathlib import Path
+
 from typing import Any, Dict, Iterator, List, Mapping
 
 import boto3
 import pytest
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.logger import AirbyteLogger
 from botocore.errorfactory import ClientError
 from source_s3.source import SourceS3
 from source_s3.stream import IncrementalFileStreamS3
