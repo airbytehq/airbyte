@@ -20,9 +20,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Helper class for MySqlSource used to check cdc configuration in case of: 1. adding new source and
- * checking operations #getCheckOperations method 2. checking whether binlog required from saved cdc
- * offset is available on mysql server #checkBinlog method
+ * Helper class for MySqlSource used to check cdc configuration in case of:
+ * <p>
+ * 1. adding new source and checking operations #getCheckOperations method.
+ * </p>
+ * <p>
+ * 2. checking whether binlog required from saved cdc offset is available on mysql server
+ * #checkBinlog method
+ * </p>
  */
 public class CdcConfigurationHelper {
 
