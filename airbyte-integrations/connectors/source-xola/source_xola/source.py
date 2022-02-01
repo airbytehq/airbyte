@@ -152,10 +152,16 @@ class Transactions(XolaStream):
         raw_response = response.json()["data"]
         modified_response = []
         for data in raw_response:
+
             resp = {"id": data["id"], "amount": data["amount"], "balance": data["balance"],
-                    "createdAt": data["createdAt"], "createdBy": data["createdBy"]["id"], "currency": data["currency"],
-                    "method": data["method"], "order": data["order"]["id"], "source": data["source"],
-                    "type": data["type"], "seller": data["seller"]["id"]}
+                    "createdAt": data["createdAt"], "createdBy": data["createdBy"], "currency": data["currency"],
+                    "method": data["method"], "source": data["source"],
+                    "type": data["type"], "seller_id": data["seller"]}
+
+            if "order" in data.keys():
+                resp["order_id"] = data["order"]["id"]
+            else:
+                resp["order_id"] = ""
 
             modified_response.append(resp)
         return modified_response
