@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -47,7 +48,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     AirbyteSentry.executeWithTracing("CreateTableIfNotExists",
         () -> database.execute(createTableQuery(database, schemaName, tableName)),
-        Map.of("schema", schemaName, "table", tableName));
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
   }
 
   @Override
@@ -111,7 +112,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     AirbyteSentry.executeWithTracing("DropTableIfExists",
         () -> database.execute(dropTableIfExistsQuery(schemaName, tableName)),
-        Map.of("schema", schemaName, "table", tableName));
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
   }
 
   private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
@@ -139,7 +140,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
           records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
           insertRecordsInternal(database, records, schemaName, tableName);
         },
-        Map.of("schema", schemaName, "table", tableName, "recordCount", records.size()));
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName, "recordCount", records.size()));
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
