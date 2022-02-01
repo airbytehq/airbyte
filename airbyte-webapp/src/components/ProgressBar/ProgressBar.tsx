@@ -32,6 +32,7 @@ const Bar = styled.div`
   border-radius: 4px;
   overflow: hidden;
   position: relative;
+  display: inline-block;
 `;
 
 const Progress = styled.div<{ runTime: number }>`
@@ -56,7 +57,7 @@ const Text = styled.div<{ delay: number }>`
 `;
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ runTime, text }) => {
-  const animationRunTime = runTime || 15;
+  const animationRunTime = runTime || 20;
   return (
     <Bar>
       <Progress runTime={animationRunTime} />
