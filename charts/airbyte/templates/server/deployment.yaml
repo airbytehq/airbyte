@@ -122,16 +122,32 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: S3_LOG_BUCKET_REGION
+        {{- if and .Values.logs.accessKey.existingSecret .Values.logs.accessKey.existingSecretKey }}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.logs.accessKey.existingSecret }}
+              key: {{ .Values.logs.accessKey.existingSecretKey }}
+        {{- else }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: AWS_ACCESS_KEY_ID
+        {{- end }}
+        {{- if and .Values.logs.secretKey.existingSecret .Values.logs.secretKey.existingSecretKey }}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.logs.secretKey.existingSecret }}
+              key: {{ .Values.logs.secretKey.existingSecretKey }}
+        {{- else }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: AWS_SECRET_ACCESS_KEY
+        {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:

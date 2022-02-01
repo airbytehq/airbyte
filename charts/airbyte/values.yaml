@@ -533,8 +533,12 @@ logs:
   ## @param logs.secretKey.password Logs Secret Key
   accessKey:
     password: minio
+    existingSecret: ""
+    existingSecretKey: ""
   secretKey:
     password: minio123
+    existingSecret: ""
+    existingSecretKey: ""
 
   ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
   minio:
