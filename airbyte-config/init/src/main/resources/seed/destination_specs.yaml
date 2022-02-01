@@ -917,7 +917,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-e2e-test:0.2.1"
+- dockerImage: "airbyte/destination-e2e-test:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/e2e-test"
     connectionSpecification:
