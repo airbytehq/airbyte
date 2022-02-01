@@ -33,6 +33,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
   private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -58,8 +60,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", jdbcUrl.toString())
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
+        .put(USERNAME, config.get(USERNAME).asText())
+        .put(PASSWORD, config.get(PASSWORD).asText())
         .build());
 
     // assume ssl if not explicitly mentioned.
@@ -69,8 +71,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
           .put("jdbc_url", jdbcUrl.toString())
-          .put("username", config.get("username").asText())
-          .put("password", config.get("password").asText())
+          .put(USERNAME, config.get(USERNAME).asText())
+          .put(PASSWORD, config.get(PASSWORD).asText())
           .put("connection_properties", additionalParams)
           .build());
     }
