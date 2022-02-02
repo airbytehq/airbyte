@@ -180,6 +180,8 @@ webapp:
   ##     mountPath: /var/run/
   ##   - name: var-cache-nginx
   ##     mountPath: /var/cache/nginx
+  ##   - mountPath: /etc/nginx/conf.d
+  ##     name: nginx-conf-d
   ##
   extraVolumeMounts: []
 
@@ -189,6 +191,8 @@ webapp:
   ##   - name: var-run
   ##     emptyDir: {}
   ##   - name: var-cache-nginx
+  ##     emptyDir: {}
+  ##   - name: nginx-conf-d
   ##     emptyDir: {}
   ##
   extraVolumes: []
@@ -303,6 +307,8 @@ scheduler:
   ## extraVolumeMounts:
   ##   - name: tmpdir
   ##     mountPath: /tmp
+  ##   - mountPath: /workspace
+  ##     name: workspace
   ##
   extraVolumeMounts: []
 
@@ -310,6 +316,8 @@ scheduler:
   ## Examples:
   ## extraVolumes:
   ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##   - name: workspace
   ##     emptyDir: {}
   ##
   extraVolumes: []
