@@ -153,6 +153,10 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
+| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
+| 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields |
+| 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id |
 | 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data |
 | 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user |
 | 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
@@ -172,6 +176,10 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.2.7   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
+| 0.2.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
+| 0.2.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields |
+| 0.2.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | BigQuery/BiqQuery denorm Destinations : Support dataset-id prefixed by project-id |
 | 0.2.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data |
 | 0.2.2   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging |
 | 0.2.1   | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574)   | Added namespace to Avro and Parquet record types |

@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:0.6.3"
+- dockerImage: "airbyte/destination-bigquery:0.6.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -203,7 +203,9 @@
         big_query_client_buffer_size_mb:
           title: "Google BigQuery client chunk size"
           description: "Google BigQuery client's chunk(buffer) size (MIN=1, MAX =\
-            \ 15) for each table. The default 15MiB value is used if not set explicitly.\
+            \ 15) for each table. The size that will be written by a single RPC. Written\
+            \ data will be buffered and only flushed upon reaching this size or closing\
+            \ the channel. The default 15MiB value is used if not set explicitly.\
             \ It's recommended to decrease value for big data sets migration for less\
             \ HEAP memory consumption and avoiding crashes. For more details refer\
             \ to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html"
@@ -271,9 +273,12 @@
           airbyte_secret: true
         transformation_priority:
           type: "string"
-          description: "When running custom transformations or Basic normalization,\
-            \ running queries on interactive mode can hit BQ limits, choosing batch\
-            \ will solve those limits."
+          description: "Interactive run type means that the query is executed as soon\
+            \ as possible, and these queries count towards concurrent rate limit and\
+            \ daily limit. Batch queries are queued and started as soon as idle resources\
+            \ are available in the BigQuery shared resource pool, which usually occurs\
+            \ within a few minutes. Batch queries don’t count towards your concurrent\
+            \ rate limit."
           title: "Transformation Query Run Type"
           default: "interactive"
           enum:
@@ -378,7 +383,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.3"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -393,7 +398,9 @@
         big_query_client_buffer_size_mb:
           title: "Google BigQuery client chunk size"
           description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
-            \ = 15) for each table. It defaults to 15MiB. Smaller chunk size means\
+            \ = 15) for each table. The size that will be written by a single RPC.\
+            \ Written data will be buffered and only flushed upon reaching this size\
+            \ or closing the channel. It defaults to 15MiB. Smaller chunk size means\
             \ less memory consumption, and is recommended for big data sets. For more\
             \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
             >here</a>"
@@ -502,8 +509,8 @@
                 title: "Block Size (MB) for GCS multipart upload"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
-                  \ to upload a bigger files and improve the speed, but consumes9\
-                  \ more memory. Allowed values: min=5MB, max=525MB Default: 5MB."
+                  \ to upload a bigger files and improve the speed, but consumes more\
+                  \ memory. Allowed values: min=5MB, max=525MB Default: 5MB."
                 type: "integer"
                 default: 5
                 minimum: 5
@@ -910,7 +917,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-e2e-test:0.2.1"
+- dockerImage: "airbyte/destination-e2e-test:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/e2e-test"
     connectionSpecification:
@@ -1501,7 +1508,37 @@
     - "overwrite"
     - "append"
     $schema: "http://json-schema.org/draft-07/schema#"
-- dockerImage: "airbyte/destination-pubsub:0.1.1"
+- dockerImage: "airbyte/destination-firestore:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firestore"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Google Firestore"
+      type: "object"
+      required:
+      - "project_id"
+      additionalProperties: false
+      properties:
+        project_id:
+          type: "string"
+          description: "The GCP project ID for the project containing the target BigQuery\
+            \ dataset."
+          title: "Project ID"
+        credentials_json:
+          type: "string"
+          description: "The contents of the JSON service account key. Check out the\
+            \ <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\"\
+            >docs</a> if you need help generating this key. Default credentials will\
+            \ be used if this field is left empty."
+          title: "Credentials JSON"
+          airbyte_secret: true
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+    - "overwrite"
+- dockerImage: "airbyte/destination-pubsub:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pubsub"
     connectionSpecification:
@@ -1516,11 +1553,11 @@
       properties:
         project_id:
           type: "string"
-          description: "The GCP project ID for the project containing the target PubSub"
+          description: "The GCP project ID for the project containing the target PubSub."
           title: "Project ID"
         topic_id:
           type: "string"
-          description: "PubSub topic ID in the given GCP project ID"
+          description: "The PubSub topic ID in the given GCP project ID."
           title: "PubSub Topic ID"
         credentials_json:
           type: "string"
@@ -1534,7 +1571,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kafka:0.1.3"
+- dockerImage: "airbyte/destination-kafka:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
@@ -2584,7 +2621,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.12"
+- dockerImage: "airbyte/destination-oracle:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -2600,12 +2637,12 @@
       properties:
         host:
           title: "Host"
-          description: "Hostname of the database."
+          description: "The hostname of the database."
           type: "string"
           order: 0
         port:
           title: "Port"
-          description: "Port of the database."
+          description: "The port of the database."
           type: "integer"
           minimum: 0
           maximum: 65536
@@ -2615,28 +2652,29 @@
           order: 1
         sid:
           title: "SID"
-          description: "SID"
+          description: "The System Identifier uniquely distinguishes the instance\
+            \ from any other instance on the same computer."
           type: "string"
           order: 2
         username:
           title: "User"
-          description: "Username to use to access the database.  This user must have\
-            \ CREATE USER privileges in the database."
+          description: "The username to access the database. This user must have CREATE\
+            \ USER privileges in the database."
           type: "string"
           order: 3
         password:
           title: "Password"
-          description: "Password associated with the username."
+          description: "The password associated with the username."
           type: "string"
           airbyte_secret: true
           order: 4
         schema:
           title: "Default Schema"
-          description: "The default schema tables are written to if the source does\
-            \ not specify a namespace. The usual value for this field is \"airbyte\"\
-            .  In Oracle, schemas and users are the same thing, so the \"user\" parameter\
-            \ is used as the login credentials and this is used for the default Airbyte\
-            \ message schema."
+          description: "The default schema is used as the target schema for all statements\
+            \ issued from the connection that do not explicitly specify a schema name.\
+            \ The usual value for this field is \"airbyte\".  In Oracle, schemas and\
+            \ users are the same thing, so the \"user\" parameter is used as the login\
+            \ credentials and this is used for the default Airbyte message schema."
           type: "string"
           examples:
           - "airbyte"
@@ -2645,7 +2683,8 @@
         encryption:
           title: "Encryption"
           type: "object"
-          description: "Encryption method to use when communicating with the database"
+          description: "The encryption method which is used when communicating with\
+            \ the database."
           order: 6
           oneOf:
           - title: "Unencrypted"
@@ -2660,9 +2699,9 @@
                 enum:
                 - "unencrypted"
                 default: "unencrypted"
-          - title: "Native Network Ecryption (NNE)"
+          - title: "Native Network Encryption (NNE)"
             additionalProperties: false
-            description: "Native network encryption gives you the ability to encrypt\
+            description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
               \ and SSL/TLS and without the need to open and listen on different ports."
             required:
@@ -2676,8 +2715,7 @@
                 default: "client_nne"
               encryption_algorithm:
                 type: "string"
-                description: "This parameter defines the encryption algorithm to be\
-                  \ used"
+                description: "This parameter defines the database encryption algorithm."
                 title: "Encryption Algorithm"
                 default: "AES256"
                 enum:
@@ -2686,7 +2724,7 @@
                 - "3DES168"
           - title: "TLS Encrypted (verify certificate)"
             additionalProperties: false
-            description: "Verify and use the cert provided by the server."
+            description: "Verify and use the certificate provided by the server."
             required:
             - "encryption_method"
             - "ssl_certificate"
@@ -2700,7 +2738,7 @@
               ssl_certificate:
                 title: "SSL PEM file"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
-                  \ containers frequently used in certificate installations"
+                  \ containers frequently used in certificate installations."
                 type: "string"
                 airbyte_secret: true
                 multiline: true
@@ -3779,7 +3817,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.2"
+- dockerImage: "airbyte/destination-snowflake:0.4.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3797,8 +3835,8 @@
       additionalProperties: true
       properties:
         host:
-          description: "Host domain of the snowflake instance (must include the account,\
-            \ region, cloud environment, and end with snowflakecomputing.com)."
+          description: "The host domain of the snowflake instance (must include the\
+            \ account, region, cloud environment, and end with snowflakecomputing.com)."
           examples:
           - "accountname.us-east-2.aws.snowflakecomputing.com"
           type: "string"
@@ -3826,10 +3864,10 @@
           title: "Database"
           order: 3
         schema:
-          description: "The default Snowflake schema tables are written to if the\
-            \ source does not specify a namespace. Schema name would be transformed\
-            \ to allowed by Snowflake if it not follow Snowflake Naming Conventions\
-            \ https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
+          description: "The default schema is used as the target schema for all statements\
+            \ issued from the connection that do not explicitly specify a schema name..\
+            \ Schema name would be transformed to allowed by Snowflake if it not follow\
+            \ Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions "
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
@@ -3843,16 +3881,23 @@
           title: "Username"
           order: 5
         password:
-          description: "Password associated with the username."
+          description: "The password associated with the username."
           type: "string"
           airbyte_secret: true
           title: "Password"
           order: 6
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 7
         loading_method:
           type: "object"
           title: "Loading Method"
-          description: "Loading method used to send data to Snowflake."
-          order: 7
+          description: "The loading method used to send data to Snowflake."
+          order: 8
           oneOf:
           - title: "[Recommended] Internal Staging"
             additionalProperties: false
@@ -3910,8 +3955,8 @@
                 title: "S3 Bucket Region"
                 type: "string"
                 default: ""
-                description: "The region of the S3 staging bucket to use if utilising\
-                  \ a copy strategy."
+                description: "The region of the S3 staging bucket which is used when\
+                  \ utilising a copy strategy."
                 enum:
                 - ""
                 - "us-east-1"
@@ -3967,6 +4012,14 @@
                   \ memory requirement. Modify this with care."
                 title: "Stream Part Size"
                 order: 5
+              purge_staging_data:
+                title: "Purge Staging Files and Tables"
+                type: "boolean"
+                description: "Whether to delete the staging files from S3 after completing\
+                  \ the sync. See the docs for details. Only relevant for COPY. Defaults\
+                  \ to true."
+                default: true
+                order: 6
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
@@ -4171,3 +4224,30 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "ghcr.io/devmate-cloud/streamr-airbyte-connectors:0.0.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/streamr"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Streamr"
+      type: "object"
+      required:
+      - "privateKey"
+      - "streamId"
+      additionalProperties: false
+      properties:
+        privateKey:
+          type: "string"
+          description: "You private key on Streamr"
+          airbyte_secret: true
+        streamId:
+          type: "string"
+          description: "Your full Stream ID"
+          examples:
+          - "0x0d0102474519cd2fc1b3e3f962a87e39cbcbead2/test-streamr"
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+    - "append_dedup"

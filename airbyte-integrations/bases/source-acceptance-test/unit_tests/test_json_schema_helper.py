@@ -122,20 +122,6 @@ def test_absolute_path(records, stream_mapping, singer_state):
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"
 
 
-def test_json_schema_helper_mssql(mssql_spec_schema):
-    js_helper = JsonSchemaHelper(mssql_spec_schema)
-    variant_paths = js_helper.find_variant_paths()
-    assert variant_paths == [["properties", "ssl_method", "oneOf"]]
-    js_helper.validate_variant_paths(variant_paths)
-
-
-def test_json_schema_helper_postgres(postgres_source_spec_schema):
-    js_helper = JsonSchemaHelper(postgres_source_spec_schema)
-    variant_paths = js_helper.find_variant_paths()
-    assert variant_paths == [["properties", "replication_method", "oneOf"]]
-    js_helper.validate_variant_paths(variant_paths)
-
-
 def test_json_schema_helper_pydantic_generated():
     class E(str, Enum):
         A = "dda"
@@ -162,7 +148,7 @@ def test_json_schema_helper_pydantic_generated():
         f: Union[A, B]
 
     js_helper = JsonSchemaHelper(Root.schema())
-    variant_paths = js_helper.find_variant_paths()
+    variant_paths = js_helper.find_nodes(keys=["anyOf", "oneOf"])
     assert len(variant_paths) == 2
     assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well

@@ -162,6 +162,25 @@ public class BigQueryUtils {
     return gcsJsonNode;
   }
 
+  public static String getDatasetId(final JsonNode config) {
+    String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+
+    int colonIndex = datasetId.indexOf(":");
+    if (colonIndex != -1) {
+      String projectIdPart = datasetId.substring(0, colonIndex);
+      String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+      if (!(projectId.equals(projectIdPart))) {
+        throw new IllegalArgumentException(String.format(
+            "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
+            projectId,
+            projectIdPart));
+      }
+    }
+    // if colonIndex is -1, then this returns the entire string
+    // otherwise it returns everything after the colon
+    return datasetId.substring(colonIndex + 1);
+  }
+
   public static String getDatasetLocation(final JsonNode config) {
     if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
       return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
@@ -214,7 +233,7 @@ public class BigQueryUtils {
   }
 
   public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String defaultSchema = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    final String defaultSchema = getDatasetId(config);
     final String srcNamespace = stream.getStream().getNamespace();
     if (srcNamespace == null) {
       return defaultSchema;

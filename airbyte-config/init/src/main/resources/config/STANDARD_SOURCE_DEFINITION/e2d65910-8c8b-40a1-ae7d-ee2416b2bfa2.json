@@ -2,7 +2,7 @@
   "sourceDefinitionId": "e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2",
   "name": "Snowflake",
   "dockerRepository": "airbyte/source-snowflake",
-  "dockerImageTag": "0.1.4",
+  "dockerImageTag": "0.1.6",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/snowflake",
   "icon": "snowflake.svg"
 }

@@ -27,7 +27,7 @@ Airbyte Cloud only supports connecting to your Postgres instance with SSL or TLS
 
 To use the Postgres destination, you'll need:
 
-* A Postgres server version 9.4 or above
+* A Postgres server version 9.5 or above
 
 #### Configure Network Access
 
