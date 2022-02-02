@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.GetFileRecordWriter;
+import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -55,7 +56,6 @@ public class CopyConsumerFactory {
         onStartFunction(pairToIgnoredRecordCount),
         recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
         removeStagingFilePrinter(pairToCopier),
-        getFileName(pairToCopier),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
@@ -104,13 +104,13 @@ public class CopyConsumerFactory {
     };
   }
 
-  private static GetFileRecordWriter getFileName(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair) -> pairToCopier.get(pair).getCurrentFile();
-  }
-
-  private static RecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
-      pairToCopier.get(pair).closeStagingFileWriter();
+  private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+      String currentFileName = pairToCopier.get(pair).getCurrentFile();
+      if (Objects.nonNull(stagingFileName) && Objects.nonNull(currentFileName) && !stagingFileName.equals(currentFileName)) {
+        pairToCopier.get(pair).closeStagingFileWriter();
+      }
+      return currentFileName;
     };
   }
 
