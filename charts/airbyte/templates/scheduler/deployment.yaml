@@ -212,11 +212,46 @@ spec:
         {{- if .Values.scheduler.resources }}
         resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
         {{- end }}
+        {{- if .Values.scheduler.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.scheduler.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        {{- if .Values.scheduler.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - grep -qa airbyte.scheduler.app.SchedulerApp /proc/1/cmdline
+          initialDelaySeconds: {{ .Values.scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.scheduler.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.scheduler.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - grep -qa airbyte.scheduler.app.SchedulerApp /proc/1/cmdline
+          initialDelaySeconds: {{ .Values.scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.scheduler.readinessProbe.failureThreshold }}
+        {{- end }}
         volumeMounts:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+        {{- if .Values.scheduler.extraVolumeMounts }}
+  {{ toYaml .Values.scheduler.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       volumes:
       - name: gcs-log-creds-volume
         secret:
           secretName: gcs-log-creds
+      {{- if .Values.scheduler.extraVolumes }}
+{{ toYaml .Values.scheduler.extraVolumes | nindent 6 }}
+      {{- end }}

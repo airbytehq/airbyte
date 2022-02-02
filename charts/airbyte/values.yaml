@@ -49,6 +49,46 @@ webapp:
   ##
   podAnnotations: {}
 
+ ## @param webapp.containerSecurityContext
+ ## Examples:
+ ## containerSecurityContext:
+ ##    runAsNonRoot: true
+ ##    runAsUser: 1000
+ ##    readOnlyRootFilesystem: true
+ containerSecurityContext: {}
+
+  ## Configure extra options for the webapp containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param webapp.livenessProbe.enabled Enable livenessProbe on the webapp
+  ## @param webapp.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param webapp.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param webapp.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param webapp.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param webapp.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## @param webapp.readinessProbe.enabled Enable readinessProbe on the webapp
+  ## @param webapp.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param webapp.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param webapp.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param webapp.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param webapp.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
   ## @param webapp.service.type The service type to use for the webapp service
   ## @param webapp.service.port The service port to expose the webapp on
   service:
@@ -133,6 +173,26 @@ webapp:
   ##   value: "key=sample-value"
   extraEnv: []
 
+  ## @param webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
+  ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: var-run
+  ##     mountPath: /var/run/
+  ##   - name: var-cache-nginx
+  ##     mountPath: /var/cache/nginx
+  ##
+  extraVolumeMounts: []
+
+  ## @param webapp.extraVolumes [array] Additional volumes for webapp pod(s).
+  ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: var-run
+  ##     emptyDir: {}
+  ##   - name: var-cache-nginx
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Scheduler Parameters
 
 scheduler:
@@ -150,6 +210,46 @@ scheduler:
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
   podAnnotations: {}
+
+  ## @param scheduler.containerSecurityContext
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
+
+  ## Configure extra options for the scheduler containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param scheduler.livenessProbe.enabled Enable livenessProbe on the scheduler
+  ## @param scheduler.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param scheduler.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param scheduler.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param scheduler.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param scheduler.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## @param scheduler.readinessProbe.enabled Enable readinessProbe on the scheduler
+  ## @param scheduler.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param scheduler.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param scheduler.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param scheduler.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param scheduler.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
 
   ## Scheduler resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -198,6 +298,22 @@ scheduler:
   ##   value: "key=sample-value"
   extraEnv: []
 
+  ## @param scheduler.extraVolumeMounts [array] Additional volumeMounts for scheduler container(s).
+  ## Examples:
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ## @param scheduler.extraVolumes [array] Additional volumes for scheduler pod(s).
+  ## Examples:
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Pod Sweeper parameters
 
 podSweeper:
@@ -212,6 +328,46 @@ podSweeper:
   ## @param podSweeper.podAnnotations [object] Add extra annotations to the podSweeper pod
   ##
   podAnnotations: {}
+
+  ## @param podSweeper.containerSecurityContext
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
+
+  ## Configure extra options for the podSweeper containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param podSweeper.livenessProbe.enabled Enable livenessProbe on the podSweeper
+  ## @param podSweeper.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param podSweeper.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param podSweeper.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param podSweeper.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param podSweeper.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## @param podSweeper.readinessProbe.enabled Enable readinessProbe on the podSweeper
+  ## @param podSweeper.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param podSweeper.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param podSweeper.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param podSweeper.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param podSweeper.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
 
   ## Pod Sweeper app resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -248,6 +404,22 @@ podSweeper:
   ##
   affinity: {}
 
+  ## @param podSweeper.extraVolumeMounts [array] Additional volumeMounts for podSweeper container(s).
+  ## Examples:
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ## @param podSweeper.extraVolumes [array] Additional volumes for podSweeper pod(s).
+  ## Examples:
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Server parameters
 
 server:
@@ -265,6 +437,14 @@ server:
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
   podAnnotations: {}
+
+  ## @param server.containerSecurityContext
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
 
   ## Configure extra options for the server containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -365,6 +545,22 @@ server:
   ##   value: "key=sample-value"
   extraEnv: []
 
+  ## @param server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
+  ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ## @param server.extraVolumes [array] Additional volumes for server pod(s).
+  ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Worker Parameters
 
 worker:
@@ -382,6 +578,14 @@ worker:
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
   podAnnotations: {}
+
+  ## @param worker.containerSecurityContext
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
 
   ## Configure extra options for the worker containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -462,6 +666,22 @@ worker:
   ##   value: "key=airbyte-server,operator=Equals,value=true,effect=NoSchedule"
   extraEnv: []
 
+  ## @param worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
+  ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ## @param worker.extraVolumes [array] Additional volumes for worker pod(s).
+  ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Bootloader Parameters
 
 bootloader:
@@ -502,6 +722,61 @@ temporal:
   ##
   podAnnotations: {}
 
+  ## @param temporal.containerSecurityContext
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
+
+  ## @param temporal.extraInitContainers Additional InitContainers to initialize the pod
+  ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraInitContainers:
+  ##   - name: config-loader
+  ##     image: temporalio/auto-setup:1.7.0
+  ##     command:
+  ##       - /bin/sh
+  ##       - -c
+  ##       - >-
+  ##         find /etc/temporal/config/ -maxdepth 1 -mindepth 1 -exec cp -ar {} /config/ \;
+  ##     volumeMounts:
+  ##       - name: config
+  ##         mountPath: /config
+  extraInitContainers: []
+
+  ## Configure extra options for the temporal containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param temporal.livenessProbe.enabled Enable livenessProbe on the temporal
+  ## @param temporal.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param temporal.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param temporal.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param temporal.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param temporal.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## @param temporal.readinessProbe.enabled Enable readinessProbe on the temporal
+  ## @param temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param temporal.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param temporal.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param temporal.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param temporal.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
   ## @param temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
@@ -525,6 +800,26 @@ temporal:
   ##   value: "key=sample-value"
   extraEnv: []
 
+  ## @param temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
+  ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##   - name: config
+  ##     mountPath: /etc/temporal/config
+  ##
+  extraVolumeMounts: []
+
+  ## @param temporal.extraVolumes [array] Additional volumes for temporal pod(s).
+  ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##  - name: config
+  ##    emptyDir: {}
+  ##
+  extraVolumes: []
+
 ## @section Airbyte Database parameters
 
 ## PostgreSQL chart configuration
@@ -543,6 +838,8 @@ postgresql:
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
+  containerSecurityContext:
+    runAsNonRoot: true
   commonAnnotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-weight: "-1"
