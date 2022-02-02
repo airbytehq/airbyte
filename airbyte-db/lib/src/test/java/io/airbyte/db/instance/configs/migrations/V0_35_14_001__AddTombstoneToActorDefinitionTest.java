@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import io.airbyte.db.Database;
@@ -10,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class V0_35_14_001__AddTombstoneToActorDefinitionTest extends AbstractConfigsDatabaseTest {
+
   @Test
   public void test() throws SQLException, IOException {
 
@@ -30,4 +35,5 @@ public class V0_35_14_001__AddTombstoneToActorDefinitionTest extends AbstractCon
         .where(DSL.field("table_name").eq("actor_definition")
             .and(DSL.field("column_name").eq("tombstone"))));
   }
+
 }
