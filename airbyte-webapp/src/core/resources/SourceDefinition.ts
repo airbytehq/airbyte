@@ -4,6 +4,7 @@ import BaseResource from "./BaseResource";
 import { getService } from "core/servicesProvider";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { SourceDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 export default class SourceDefinitionResource
   extends BaseResource
@@ -86,6 +87,27 @@ export default class SourceDefinitionResource
   ): MutateShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.createShape(),
+      fetch: async (
+        _: Readonly<Record<string, unknown>>,
+        body: Readonly<Partial<SourceDefinition>>
+      ): Promise<SourceDefinition> => {
+        const result = await this.fetch(
+          "post",
+          `${this.url(body)}/create`,
+          body
+        );
+
+        if (!result.jobInfo.succeeded) {
+          const jobInfo = {
+            ...result.jobInfo,
+            status: result.status,
+          };
+
+          throw new LogsRequestError(jobInfo, jobInfo, result.message || "");
+        }
+
+        return result.sourceDefinitionRead;
+      },
       schema: this,
     };
   }
