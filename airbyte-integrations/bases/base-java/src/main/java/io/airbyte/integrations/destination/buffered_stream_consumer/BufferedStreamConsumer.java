@@ -130,7 +130,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.buffer = new ArrayList<>(10_000);
     this.bufferSizeInBytes = 0;
     this.pairToIgnoredRecordCount = new HashMap<>();
-    this.fileName = null;
   }
 
   @Override
