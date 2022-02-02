@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -146,10 +148,14 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
       // are serialized again when writing to
       // the destination
-      long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
+      final long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
         LOGGER.info("Flushing buffer...");
-        flushQueueToDestination();
+        AirbyteSentry.executeWithTracing("FlushBuffer",
+            this::flushQueueToDestination,
+            Map.of("stream", stream.getName(),
+                "namespace", Objects.requireNonNullElse(stream.getNamespace(), "null"),
+                "bufferSizeInBytes", bufferSizeInBytes));
         bufferSizeInBytes = 0;
       }
 
