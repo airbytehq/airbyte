@@ -1307,6 +1307,37 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-confluence:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/confluence"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Confluence Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "domain_name"
+      - "email"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "Please follow the Jira confluence for generating an API token:\
+            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+          airbyte_secret: true
+        domain_name:
+          type: "string"
+          description: "Your Confluence domain name"
+          examples:
+          - "example.atlassian.net"
+        email:
+          type: "string"
+          description: "Your Confluence login email"
+          examples:
+          - "abc@example.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-delighted:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -2113,7 +2144,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.15"
+- dockerImage: "airbyte/source-github:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -2166,12 +2197,14 @@
         repository:
           type: "string"
           examples:
-          - "airbytehq/airbyte"
+          - "airbytehq/airbyte airbytehq/another-repo"
           - "airbytehq/*"
+          - "airbytehq/airbyte"
           title: "GitHub Repositories"
-          description: "Space-delimited list of GitHub repositories/organizations,\
-            \ e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for\
-            \ get all repositories from organization"
+          description: "Space-delimited list of GitHub organizations/repositories,\
+            \ e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get\
+            \ all repositories from organization and `airbytehq/airbyte airbytehq/another-repo`\
+            \ for multiple repositories."
         start_date:
           type: "string"
           title: "Start Date"
@@ -2186,7 +2219,7 @@
           type: "string"
           title: "Branch"
           examples:
-          - "airbytehq/airbyte/master"
+          - "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
           description: "Space-delimited list of GitHub repository branches to pull\
             \ commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified\
             \ for a repository, the default branch will be pulled."
@@ -3333,6 +3366,52 @@
           description: "Iterable API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/iterable\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "farosai/airbyte-jenkins-source:0.1.23"
+  spec:
+    documentationUrl: "https://docs.faros.ai"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Jenkins Spec"
+      type: "object"
+      required:
+      - "server_url"
+      - "user"
+      - "token"
+      additionalProperties: false
+      properties:
+        server_url:
+          type: "string"
+          title: "Jenkins Server URL"
+          examples:
+          - "https://my-jenkins-server.example.com"
+        user:
+          type: "string"
+          description: "Jenkins User"
+        token:
+          type: "string"
+          title: "Jenkins Token"
+          airbyte_secret: true
+        depth:
+          type: "number"
+          title: "Depth"
+          description: "Jenkins JSON API does not support deep scan, it is required\
+            \ to generate a suitable tree for the corresponding depth. Job in some\
+            \ cases have many sub jobs, depth needs to quantify how many sub jobs\
+            \ are showed. If depth is not provided we will try to compute it automatically"
+        pageSize:
+          type: "integer"
+          minimum: 1
+          default: 10
+          title: "Page Size"
+          description: "Quantity of jobs on a single page fetched from Jenkins"
+        last100Builds:
+          type: "boolean"
+          default: false
+          title: "Last 100 Builds Only"
+          description: "Fetch only 100 last builds from Jenkins server"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6454,7 +6533,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.9"
+- dockerImage: "airbyte/source-s3:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -8361,7 +8440,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.1.11"
+- dockerImage: "airbyte/source-zendesk-support:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:

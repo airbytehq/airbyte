@@ -86,6 +86,15 @@ create table "public"."connection_operation"(
       "operation_id"
     )
 );
+create table "public"."feature_flag"(
+  "id" uuid not null,
+  "name" varchar(256) not null,
+  "value" varchar(2147483647) null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
+  constraint "feature_flag_pkey"
+    primary key ("id")
+);
 create table "public"."operation"(
   "id" uuid not null,
   "workspace_id" uuid not null,
@@ -181,6 +190,8 @@ create unique index "connection_operation_pkey" on "public"."connection_operatio
   "connection_id" asc, 
   "operation_id" asc
 );
+create index "feature_flag_name_idx" on "public"."feature_flag"("name" asc);
+create unique index "feature_flag_pkey" on "public"."feature_flag"("id" asc);
 create unique index "operation_pkey" on "public"."operation"("id" asc);
 create unique index "state_pkey" on "public"."state"(
   "id" asc, 
