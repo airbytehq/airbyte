@@ -4194,3 +4194,30 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "ghcr.io/devmate-cloud/streamr-airbyte-connectors:0.0.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/streamr"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Destination Streamr"
+      type: "object"
+      required:
+      - "privateKey"
+      - "streamId"
+      additionalProperties: false
+      properties:
+        privateKey:
+          type: "string"
+          description: "You private key on Streamr"
+          airbyte_secret: true
+        streamId:
+          type: "string"
+          description: "Your full Stream ID"
+          examples:
+          - "0x0d0102474519cd2fc1b3e3f962a87e39cbcbead2/test-streamr"
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "append"
+    - "append_dedup"
