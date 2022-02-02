@@ -20,7 +20,8 @@ const LogsDetails: React.FC<{
   path: string;
   currentAttempt?: Attempt | null;
   logs?: Logs;
-}> = ({ path, logs, id, currentAttempt }) => (
+  logsHeight?: number;
+}> = ({ path, logs, id, currentAttempt, logsHeight }) => (
   <>
     {currentAttempt && <AttemptDetails attempt={currentAttempt} />}
     <CenteredDetails>
@@ -29,7 +30,7 @@ const LogsDetails: React.FC<{
         <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
       )}
     </CenteredDetails>
-    <LogsTable logsArray={logs?.logLines} />
+    <LogsTable logsArray={logs?.logLines} logsHeight={logsHeight} />
   </>
 );
 

@@ -11,8 +11,9 @@ import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import { LogsDetails } from "./components/LogsDetails";
 
-const Item = styled.div<{ isFailed: boolean }>`
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+const Item = styled.div<{ isFailed: boolean; light?: boolean }>`
+  border-bottom: ${({ light, theme }) =>
+    light ? "none" : `1px solid ${theme.greyColor20}`};
   font-size: 15px;
   line-height: 18px;
 
@@ -39,6 +40,8 @@ const JobCurrentLogs: React.FC<{
   id: number | string;
   jobIsFailed?: boolean;
   logs?: Logs;
+  light?: boolean;
+  logsHeight?: number;
 }> = (props) => {
   const path = ["/tmp/workspace", props.id, "logs.log"].join("/");
 
@@ -47,6 +50,8 @@ const JobCurrentLogs: React.FC<{
 
 type IProps = {
   shortInfo?: boolean;
+  light?: boolean;
+  logsHeight?: number;
 } & ({ job: JobListItem } | { jobInfo: JobInfo });
 
 const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
@@ -57,8 +62,9 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
   const isFailed = jobMeta.status === Status.FAILED;
 
   return (
-    <Item isFailed={isFailed}>
+    <Item isFailed={isFailed} light={props.light}>
       <MainInfo
+        light={props.light}
         shortInfo={shortInfo}
         isOpen={isOpen}
         isFailed={isFailed}
@@ -83,6 +89,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
                   id={jobMeta.id}
                   jobIsFailed={isFailed}
                   logs={props.jobInfo.logs}
+                  logsHeight={props.logsHeight}
                 />
               )
             ) : null}

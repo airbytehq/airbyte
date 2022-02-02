@@ -3,14 +3,15 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 
-const LogsView = styled.div<{ isEmpty?: boolean }>`
+const LogsView = styled.div<{ isEmpty?: boolean; logsHeight?: number }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
   font-family: ${({ theme }) => theme.codeFont};
   word-wrap: break-word;
-  min-height: ${({ isEmpty }) => (isEmpty ? "auto" : "400px")};
+  min-height: ${({ isEmpty, logsHeight }) =>
+    isEmpty ? "auto" : logsHeight ? `${logsHeight}px` : "400px"};
 
   & .logLine {
     font-size: 10px;
@@ -34,15 +35,16 @@ const LogsView = styled.div<{ isEmpty?: boolean }>`
 
 type LogsProps = {
   logsArray?: string[];
+  logsHeight?: number;
 };
 
-const Logs: React.FC<LogsProps> = ({ logsArray }) => {
+const Logs: React.FC<LogsProps> = ({ logsArray, logsHeight }) => {
   const logsJoin = logsArray?.length
     ? logsArray.join("\n")
     : "No logs available";
 
   return (
-    <LogsView isEmpty={!logsArray}>
+    <LogsView isEmpty={!logsArray} logsHeight={logsHeight}>
       {logsArray ? (
         <LazyLog
           text={logsJoin}

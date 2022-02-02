@@ -7,9 +7,16 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import { useConfig } from "config";
 
 import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { JobInfo } from "core/domain/job";
+import JobItem from "components/JobItem";
 
 export type IProps = {
-  errorMessage?: string;
+  error?: {
+    status: number;
+    response: JobInfo;
+    message?: string;
+  } | null;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
     name: string;
@@ -92,10 +99,11 @@ const validationSchema = yup.object().shape({
 const CreateConnectorModal: React.FC<IProps> = ({
   onClose,
   onSubmit,
-  errorMessage,
+  error,
 }) => {
   const config = useConfig();
   const formatMessage = useIntl().formatMessage;
+  const jobInfo = LogsRequestError.extractJobInfo(error);
 
   return (
     <Modal
@@ -208,10 +216,10 @@ const CreateConnectorModal: React.FC<IProps> = ({
                 </Field>
               </FieldContainer>
               <ButtonContent>
-                {errorMessage ? (
+                {error?.message ? (
                   <ErrorBlock>
                     <Error />
-                    <ErrorText>{errorMessage}</ErrorText>
+                    <ErrorText>{error.message}</ErrorText>
                   </ErrorBlock>
                 ) : (
                   <div />
@@ -232,6 +240,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
           )}
         </Formik>
       </Content>
+      {jobInfo && <JobItem jobInfo={jobInfo} light logsHeight={150} />}
     </Modal>
   );
 };

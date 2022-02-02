@@ -18,10 +18,11 @@ import { useCancelJob } from "../../../services/job/JobService";
 const MainView = styled(Row)<{
   isOpen?: boolean;
   isFailed?: boolean;
+  light?: boolean;
 }>`
   cursor: pointer;
   height: 59px;
-  padding: 10px 44px 10px 40px;
+  padding: 10px 44px 10px ${({ light }) => (light ? 66 : 40)}px;
   justify-content: space-between;
   border-bottom: 1px solid
     ${({ theme, isOpen, isFailed }) =>
@@ -89,6 +90,7 @@ type IProps = {
   onExpand: () => void;
   isFailed?: boolean;
   shortInfo?: boolean;
+  light?: boolean;
 };
 
 const MainInfo: React.FC<IProps> = ({
@@ -98,6 +100,7 @@ const MainInfo: React.FC<IProps> = ({
   onExpand,
   isFailed,
   shortInfo,
+  light,
 }) => {
   const cancelJob = useCancelJob();
 
@@ -111,7 +114,12 @@ const MainInfo: React.FC<IProps> = ({
     [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
 
   return (
-    <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
+    <MainView
+      isOpen={isOpen}
+      isFailed={isFailed}
+      onClick={onExpand}
+      light={light}
+    >
       <InfoCell>
         <Title isFailed={isFailed}>
           {isFailed && !shortInfo && <ErrorSign />}

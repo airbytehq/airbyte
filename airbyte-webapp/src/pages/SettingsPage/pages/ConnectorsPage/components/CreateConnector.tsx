@@ -10,6 +10,7 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 
 import CreateConnectorModal from "./CreateConnectorModal";
 import useWorkspace from "hooks/services/useWorkspace";
+import { JobInfo } from "core/domain/job";
 
 type IProps = {
   type: string;
@@ -26,10 +27,14 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number;
+    message: string;
+    response: JobInfo;
+  } | null>(null);
   const onChangeModalState = () => {
     setIsModalOpen(!isModalOpen);
-    setErrorMessage("");
+    setErrorStatusRequest(null);
   };
 
   const formatMessage = useIntl().formatMessage;
@@ -39,7 +44,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   );
 
   const onSubmitSource = async (sourceDefinition: ICreateProps) => {
-    setErrorMessage("");
+    setErrorStatusRequest(null);
     try {
       const result = await createSourceDefinition({}, sourceDefinition, [
         [
@@ -59,12 +64,15 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       push(
         {
-          pathname: `${RoutePaths.Source}${RoutePaths.SourceNew}`,
+          pathname: `/${RoutePaths.Workspaces}/${workspace.workspaceId}/${RoutePaths.Source}/${RoutePaths.SourceNew}`,
         },
         { state: { sourceDefinitionId: result.sourceDefinitionId } }
       );
     } catch (e) {
-      setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
+      setErrorStatusRequest({
+        ...e,
+        message: e.message || formatMessage({ id: "form.dockerError" }),
+      });
     }
   };
 
@@ -72,7 +80,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     DestinationDefinitionResource.createShape()
   );
   const onSubmitDestination = async (destinationDefinition: ICreateProps) => {
-    setErrorMessage("");
+    setErrorStatusRequest(null);
     try {
       const result = await createDestinationDefinition(
         {},
@@ -96,12 +104,15 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       push(
         {
-          pathname: `${RoutePaths.Destination}${RoutePaths.DestinationNew}`,
+          pathname: `/${RoutePaths.Workspaces}/${workspace.workspaceId}/${RoutePaths.Destination}/${RoutePaths.DestinationNew}`,
         },
         { state: { destinationDefinitionId: result.destinationDefinitionId } }
       );
     } catch (e) {
-      setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
+      setErrorStatusRequest({
+        ...e,
+        message: e.message || formatMessage({ id: "form.dockerError" }),
+      });
     }
   };
 
@@ -120,7 +131,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         <CreateConnectorModal
           onClose={onChangeModalState}
           onSubmit={onSubmit}
-          errorMessage={errorMessage}
+          error={errorStatusRequest}
         />
       )}
     </>
