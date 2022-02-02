@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/mike/rudder/airbyte/airbyte-integrations/connectors/source-test-connector/main.py", line 17, in <module>
+    launch(source, sys.argv[1:])
+  File "/usr/local/lib/python3.9/site-packages/airbyte_cdk/entrypoint.py", line 117, in launch
+    for message in source_entrypoint.run(parsed_args):
+  File "/usr/local/lib/python3.9/site-packages/airbyte_cdk/entrypoint.py", line 108, in run
+    for message in generator:
+  File "/Users/mike/rudder/airbyte/airbyte-integrations/connectors/source-test-connector/source_test_connector/source.py", line 130, in read
+    raise Exception("Expected Error")
+Exception: Expected Error
