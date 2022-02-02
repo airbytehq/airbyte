@@ -4,6 +4,10 @@
 
 package io.airbyte.server.converters;
 
+import io.airbyte.api.model.AttemptFailureOrigin;
+import io.airbyte.api.model.AttemptFailureReason;
+import io.airbyte.api.model.AttemptFailureSummary;
+import io.airbyte.api.model.AttemptFailureType;
 import io.airbyte.api.model.AttemptInfoRead;
 import io.airbyte.api.model.AttemptRead;
 import io.airbyte.api.model.AttemptStats;
@@ -110,10 +114,11 @@ public class JobConverter {
         .streamStats(getAttemptStreamStats(attempt))
         .createdAt(attempt.getCreatedAtInSecond())
         .updatedAt(attempt.getUpdatedAtInSecond())
-        .endedAt(attempt.getEndedAtInSecond().orElse(null));
+        .endedAt(attempt.getEndedAtInSecond().orElse(null))
+        .failureSummary(getAttemptFailureSummary(attempt));
   }
 
-  public static AttemptStats getTotalAttemptStats(final Attempt attempt) {
+  private static AttemptStats getTotalAttemptStats(final Attempt attempt) {
     final SyncStats totalStats = attempt.getOutput()
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
@@ -131,7 +136,7 @@ public class JobConverter {
         .recordsCommitted(totalStats.getRecordsCommitted());
   }
 
-  public static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
+  private static List<AttemptStreamStats> getAttemptStreamStats(final Attempt attempt) {
     final List<StreamSyncStats> streamStats = attempt.getOutput()
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
@@ -147,6 +152,24 @@ public class JobConverter {
                 .stateMessagesEmitted(streamStat.getStats().getStateMessagesEmitted())
                 .recordsCommitted(streamStat.getStats().getRecordsCommitted())))
         .collect(Collectors.toList());
+  }
+
+  private static AttemptFailureSummary getAttemptFailureSummary(final Attempt attempt) {
+    final io.airbyte.config.AttemptFailureSummary failureSummary = attempt.getFailureSummary().orElse(null);
+
+    if (failureSummary == null) {
+      return null;
+    }
+
+    return new AttemptFailureSummary()
+        .failures(failureSummary.getFailures().stream().map(failure -> new AttemptFailureReason()
+                .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
+                .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
+                .externalMessage(failure.getExternalMessage())
+                .stacktrace(failure.getStacktrace())
+                .timestamp(failure.getTimestamp()))
+            .collect(Collectors.toList()))
+        .partialSuccess(failureSummary.getPartialSuccess());
   }
 
   public LogRead getLogRead(final Path logPath) {
