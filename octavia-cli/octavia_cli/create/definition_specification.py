@@ -82,10 +82,12 @@ class DefinitionSpecification(abc.ABC):
         return self._get().documentation_url
 
     def _get(self):
+        # TODO  alafanechere raise error if 404
         return self._get_fn(self.api_instance, **self._get_fn_kwargs, **self.COMMON_GET_FUNCTION_KWARGS)
 
     @property
     def definition(self):
+        # TODO  alafanechere raise error if 404
         return self._get_definition_fn(self.definition_api_instance, **self._get_fn_kwargs, **self.COMMON_GET_FUNCTION_KWARGS)
 
 
