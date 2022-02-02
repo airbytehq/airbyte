@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 class HttpBasicAuthenticator(TokenAuthenticator):
     def __init__(self, email: str, token: str, auth_method: str = "Basic", **kwargs):
@@ -23,7 +23,7 @@ class HttpBasicAuthenticator(TokenAuthenticator):
 class ImpactAdvertisersReportStream(HttpStream, ABC):
 
     # Base URL
-    url_base = "https://api.impact.com/Advertisers/"
+    url_base = "api.impact.com/Advertisers"
 
     def __init__(self, account_sid: str, auth_token: str, report_id: str, start_date: str, sub_ad_id: str, **kwargs):
         super().__init__(**kwargs)
@@ -74,14 +74,14 @@ class Report(ImpactAdvertisersReportStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"{self.account_sid}/Reports/{self.report_id}"
+        return f"/{self.account_sid}/Reports/{self.report_id}"
 
 
 # Source
 class SourceImpactAdvertisersReport(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth = HttpBasicAuthenticator(config["account_sid"], config["auth_token"], auth_method="Basic").get_auth_header()
-        url = f"https://{ImpactAdvertisersReportStream.url_base}/Advertisers/{config['account_sid']}/CompanyInformation"
+        url = f"https://{ImpactAdvertisersReportStream.url_base}/{config['account_sid']}/CompanyInformation"
         try:
             response = requests.get(url, headers=auth)
             response.raise_for_status()
