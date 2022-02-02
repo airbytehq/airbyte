@@ -28,7 +28,6 @@ import {
   useInitialValues,
 } from "./formConfig";
 import { OperationsSection } from "./OperationsSection";
-import { DefaultSyncSettingsField } from "./DefaultSyncSettingsField";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
@@ -194,22 +193,22 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           )}
-          <ControlLabels
-            nextLine
-            label={formatMessage({
-              id: "connectionForm.defaultSyncMode",
-            })}
-            message={formatMessage(
-              {
-                id: "connectionForm.defaultSyncMode.message",
-              },
-              {
-                b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-              }
-            )}
-          >
-            <DefaultSyncSettingsField />
-          </ControlLabels>
+          {/*<ControlLabels*/}
+          {/*  nextLine*/}
+          {/*  label={formatMessage({*/}
+          {/*    id: "connectionForm.defaultSyncMode",*/}
+          {/*  })}*/}
+          {/*  message={formatMessage(*/}
+          {/*    {*/}
+          {/*      id: "connectionForm.defaultSyncMode.message",*/}
+          {/*    },*/}
+          {/*    {*/}
+          {/*      b: (...b: React.ReactNode[]) => <strong>{b}</strong>,*/}
+          {/*    }*/}
+          {/*  )}*/}
+          {/*>*/}
+          {/*  <DefaultSyncSettingsField />*/}
+          {/*</ControlLabels>*/}
           <FlexRow>
             <Field
               name="namespaceDefinition"

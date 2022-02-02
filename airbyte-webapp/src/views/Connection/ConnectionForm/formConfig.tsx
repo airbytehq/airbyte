@@ -30,7 +30,7 @@ type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
-  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceDefinition?: ConnectionNamespaceDefinition;
   namespaceFormat: string;
   transformations?: Transformation[];
   normalization?: NormalizationType;
@@ -269,10 +269,12 @@ const useInitialValues = (
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      schedule: connection.schedule,
+      schedule: connection.schedule ?? {
+        units: 24,
+        timeUnit: "hours",
+      },
       prefix: connection.prefix || "",
-      namespaceDefinition:
-        connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
+      namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
