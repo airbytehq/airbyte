@@ -3267,7 +3267,7 @@ components:
         - unknown
         - source
         - destination
-        - replicationWorker
+        - replication_worker
         - persistence
         - normalization
         - dbt
@@ -3276,13 +3276,9 @@ components:
       type: string
       enum:
         - unknown
-        - source
-        - destination
-        - replicationWorker
-        - persistence
-        - normalization
-        - dbt
-
+        - user_error
+        - system_error
+        - transient
     AttemptStatus:
       type: string
       enum:

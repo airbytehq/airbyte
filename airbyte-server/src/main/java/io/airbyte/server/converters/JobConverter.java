@@ -163,11 +163,11 @@ public class JobConverter {
 
     return new AttemptFailureSummary()
         .failures(failureSummary.getFailures().stream().map(failure -> new AttemptFailureReason()
-                .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
-                .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
-                .externalMessage(failure.getExternalMessage())
-                .stacktrace(failure.getStacktrace())
-                .timestamp(failure.getTimestamp()))
+            .failureOrigin(Enums.convertTo(failure.getFailureOrigin(), AttemptFailureOrigin.class))
+            .failureType(Enums.convertTo(failure.getFailureType(), AttemptFailureType.class))
+            .externalMessage(failure.getExternalMessage())
+            .stacktrace(failure.getStacktrace())
+            .timestamp(failure.getTimestamp()))
             .collect(Collectors.toList()))
         .partialSuccess(failureSummary.getPartialSuccess());
   }
