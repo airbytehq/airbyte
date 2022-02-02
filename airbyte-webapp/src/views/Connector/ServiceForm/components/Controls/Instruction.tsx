@@ -2,12 +2,15 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
+import urls from "rehype-urls";
+// import { Pluggable } from "react-markdown";
 
 import useDocumentation from "hooks/services/useDocumentation";
 import { LoadingPage } from "components";
 import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { useConfig } from "config";
 
 type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;
@@ -47,7 +50,18 @@ const Instruction: React.FC<IProps> = ({
   documentationUrl,
 }) => {
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
+  const config = useConfig();
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
+
+  const removeBaseUrl = (url: { path: string }) => {
+    if (url.path.match(/^..\/..\/.*/)) {
+      return url.path.replace(/^..\/..\//, `${config.integrationUrl}/`);
+    }
+    return url.path;
+  };
+
+  // TODO: fix Pluggable type
+  const urlReplacerPlugin = [urls, removeBaseUrl];
 
   return (
     <>
@@ -70,7 +84,7 @@ const Instruction: React.FC<IProps> = ({
           {isLoading ? (
             <LoadingPage />
           ) : docs ? (
-            <Markdown content={docs} />
+            <Markdown content={docs} rehypePlugins={[urlReplacerPlugin]} />
           ) : (
             <FormattedMessage id="docs.notFoundError" />
           )}
