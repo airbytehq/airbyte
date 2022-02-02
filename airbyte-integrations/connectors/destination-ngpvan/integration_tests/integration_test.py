@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_ngpvan import DestinationNgpvan
+from destination_ngpvan import DestinationNGPVAN
 from destination_ngpvan.client import NGPVANClient
 
 
@@ -59,11 +59,11 @@ def client_fixture(config) -> NGPVANClient:
     return NGPVANClient(**config)
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationNgpvan().check(AirbyteLogger(), config)
+    outcome = DestinationNGPVAN().check(AirbyteLogger(), config)
     assert outcome.status == Status.SUCCEEDED
 
 def test_check_invalid_config():
-    outcome = DestinationNgpvan().check(AirbyteLogger(), {"bucket_id": "not_a_real_id"})
+    outcome = DestinationNGPVAN().check(AirbyteLogger(), {"bucket_id": "not_a_real_id"})
     assert outcome.status == Status.FAILED
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:

@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from destination_ngpvan.client import NGPVANClient
 from destination_ngpvan.writer import NGPVANWriter
 
-class DestinationNgpvan(Destination):
+class DestinationNGPVAN(Destination):
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]

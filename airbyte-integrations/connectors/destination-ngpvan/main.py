@@ -5,7 +5,7 @@
 
 import sys
 
-from destination_ngpvan import DestinationNgpvan
+from destination_ngpvan import DestinationNGPVAN
 
 if __name__ == "__main__":
-    DestinationNgpvan().run(sys.argv[1:])
+    DestinationNGPVAN().run(sys.argv[1:])

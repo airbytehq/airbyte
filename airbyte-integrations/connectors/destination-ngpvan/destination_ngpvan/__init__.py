@@ -3,6 +3,6 @@
 #
 
 
-from .destination import DestinationNgpvan
+from .destination import DestinationNGPVAN
 
-__all__ = ["DestinationNgpvan"]
+__all__ = ["DestinationNGPVAN"]
