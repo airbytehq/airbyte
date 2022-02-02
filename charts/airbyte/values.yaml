@@ -49,13 +49,13 @@ webapp:
   ##
   podAnnotations: {}
 
- ## @param webapp.containerSecurityContext
- ## Examples:
- ## containerSecurityContext:
- ##    runAsNonRoot: true
- ##    runAsUser: 1000
- ##    readOnlyRootFilesystem: true
- containerSecurityContext: {}
+  ## @param webapp.containerSecurityContext Security context for the container
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
 
   ## Configure extra options for the webapp containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
@@ -211,7 +211,7 @@ scheduler:
   ##
   podAnnotations: {}
 
-  ## @param scheduler.containerSecurityContext
+  ## @param scheduler.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -329,7 +329,7 @@ podSweeper:
   ##
   podAnnotations: {}
 
-  ## @param podSweeper.containerSecurityContext
+  ## @param podSweeper.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -438,7 +438,7 @@ server:
   ##
   podAnnotations: {}
 
-  ## @param server.containerSecurityContext
+  ## @param server.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -579,7 +579,7 @@ worker:
   ##
   podAnnotations: {}
 
-  ## @param worker.containerSecurityContext
+  ## @param worker.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -722,7 +722,7 @@ temporal:
   ##
   podAnnotations: {}
 
-  ## @param temporal.containerSecurityContext
+  ## @param temporal.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -829,6 +829,9 @@ temporal:
 ## @param postgresql.postgresqlPassword Airbyte Postgresql password
 ## @param postgresql.postgresqlDatabase Airbyte Postgresql database
 ## @param postgresql.existingSecret Name of an existing secret containing the PostgreSQL password ('postgresql-password' key)
+## @param postgresql.containerSecurityContext.runAsNonRoot Ensures the container will run with a non-root user
+## @param postgresql.commonAnnotations.helm.sh/hook It will determine when the hook should be rendered
+## @param postgresql.commonAnnotations.helm.sh/hook-weight The order in which the hooks are executed. If weight is lower, it has higher priority
 ##
 postgresql:
   enabled: true
@@ -865,11 +868,15 @@ externalDatabase:
 ## @section Logs parameters
 logs:
   ## @param logs.accessKey.password Logs Access Key
-  ## @param logs.secretKey.password Logs Secret Key
+  ## @param logs.accessKey.existingSecret
+  ## @param logs.accessKey.existingSecretKey
   accessKey:
     password: minio
     existingSecret: ""
     existingSecretKey: ""
+  ## @param logs.secretKey.password Logs Secret Key
+  ## @param logs.secretKey.existingSecret
+  ## @param logs.secretKey.existingSecretKey
   secretKey:
     password: minio123
     existingSecret: ""
@@ -912,6 +919,14 @@ minio:
     password: minio123
 
 jobs:
+  ## Jobs resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param jobs.resources.limits [object] The resources limits for jobs
+  ## @param jobs.resources.requests [object] The requested resources for jobs
   resources:
     ## Example:
     ## requests:
