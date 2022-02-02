@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -20,7 +20,7 @@ def parse_dates(stream_slice):
     return start_date, end_date
 
 
-def get_date_params(start_date: str, time_zone=None, range_days: int = None, end_date: pendulum.datetime = None):
+def get_date_params(start_date: str, time_zone=None, range_days: int = None, end_date: pendulum.datetime = None) -> Tuple[str, str]:
     """
     Returns `start_date` and `end_date` for the given stream_slice.
     If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
