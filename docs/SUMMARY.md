@@ -275,6 +275,7 @@
     * [Platform](project-overview/changelog/platform.md)
     * [Connectors](project-overview/changelog/connectors.md)
   * [Slack Code of Conduct](project-overview/slack-code-of-conduct.md)
+  * [Security and Data Privacy](project-overview/security.md)  
   * [Licenses](project-overview/licenses/README.md)
     * [License FAQ](project-overview/licenses/license-faq.md)
     * [ELv2](project-overview/licenses/elv2-license.md)
