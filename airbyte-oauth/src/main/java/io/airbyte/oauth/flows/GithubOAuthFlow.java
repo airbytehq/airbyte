@@ -66,7 +66,7 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           // we add `scopes` and `state` after we've already built the url, to prevent url encoding for scopes
-          // see https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+          // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
           // we need to keep scopes in the format of: < scope1%20scope2:sub_scope%20scope3 >
           .build().toString() + "&scope=" + getScopes() + "&state=" + getState();
     } catch (final URISyntaxException e) {
