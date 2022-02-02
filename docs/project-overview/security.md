@@ -1,4 +1,4 @@
-# Security at Airbyte
+# Security and Data Privacy at Airbyte
 
 ## Data Security
 
