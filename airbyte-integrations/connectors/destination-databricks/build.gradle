@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id "de.undercouch.download" version "5.0.1"
 }
 
 application {
@@ -32,4 +33,17 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
+}
+
+task downloadJdbcDriverZip(type: Download) {
+    src 'https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.21/SimbaSparkJDBC42-2.6.21.1039.zip'
+    dest file('lib/SimbaSparkJDBC42-2.6.21.1039.zip')
+    overwrite false
+}
+
+task extractJdbcDriverFile(dependsOn: downloadJdbcDriverZip, type: Copy) {
+    from {
+        zipTree(file(downloadJdbcDriverZip.dest)).matching { include 'SparkJDBC42.jar' }.singleFile
+    }
+    into 'lib/'
 }
