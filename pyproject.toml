@@ -10,22 +10,37 @@ omit = [
   "*_tests/**",
   "setup.py"
 ]
+
 [tool.flake8]
 extend-exclude = [
  ".venv",
  "build",
  "models",
  ".eggs",
- ".tox"
+ "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+ ".tox",
+ "airbyte_api_client"
 ]
-
 max-complexity = 10
 max-line-length = 140
+
+extend-ignore = [
+  "E203",  # whitespace before ':' (conflicts with Black)
+  "E231",  # Bad trailing comma (conflicts with Black)
+  "E501",  # line too long (conflicts with Black)
+  "W503",  # line break before binary operator (conflicts with Black)
+]
 
 [tool.isort]
 profile = "black"
 color_output = false
 skip_gitignore = true
+line_length = 140
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+
 
 [tool.mypy]
 platform = "linux"

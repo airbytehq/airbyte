@@ -70,32 +70,36 @@ class AirbytePythonPlugin implements Plugin<Project> {
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
             installVirtualenv = true
-            pip 'flake8:3.8.4'
-            pip 'black:21.10b0'
-            pip 'mypy:0.812'
+            pip 'mccabe:0.6.1'
+            // flake8 doesn't support pyproject.toml files
+            // and thus there is the wrapper "pyproject-flake8" for this
+            pip 'pyproject-flake8:0.0.1a2'
+            pip 'black:22.1.0'
+            pip 'mypy:0.930'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
-            pip 'pip:21.1.3'
+            pip 'pip:21.3.1'
             pip 'coverage[toml]:6.2'
         }
 
         project.task('isortFormat', type: PythonTask) {
             module = "isort"
-            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
+            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} ./"
         }
 
-        project.task('blackFormat', type: PythonTask) {
+        project.task('blackFormat', type: PythonTask, dependsOn: taskDependencies) {
             module = "black"
             // the line length should match .isort.cfg
-            command = ". --line-length 140"
+            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
             dependsOn project.rootProject.licenseFormat
             dependsOn project.isortFormat
         }
 
-        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
-            module = "flake8"
-            command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
-        }
+        project.task('flakeCheck', type: PythonTask, dependsOn: taskDependencies) {
+            module = "pflake8"
+            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
+            dependsOn project.blackFormat
+        }Жq
 
         // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
 
