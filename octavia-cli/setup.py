@@ -45,7 +45,7 @@ setup(
         "click~=8.0.3",
         f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
         "datamodel-code-generator[http]~=0.11.17",
-        "pydantic-factories",
+        "tomlkit~=0.9.0",
     ],
     python_requires=">=3.8.12",
     extras_require={
