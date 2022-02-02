@@ -3,5 +3,6 @@
 #
 
 
-def test_example_method():
+def test_example_method() -> None:
     assert True
+    return

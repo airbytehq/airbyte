@@ -16,9 +16,9 @@ import java.sql.Timestamp;
 public interface GcsWriterFactory {
 
   DestinationFileWriter create(GcsDestinationConfig config,
-                  AmazonS3 s3Client,
-                  ConfiguredAirbyteStream configuredStream,
-                  Timestamp uploadTimestamp)
+                               AmazonS3 s3Client,
+                               ConfiguredAirbyteStream configuredStream,
+                               Timestamp uploadTimestamp)
       throws Exception;
 
 }

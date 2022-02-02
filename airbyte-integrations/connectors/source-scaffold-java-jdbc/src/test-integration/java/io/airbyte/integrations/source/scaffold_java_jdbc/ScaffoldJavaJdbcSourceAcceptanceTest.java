@@ -11,9 +11,7 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -53,11 +51,6 @@ public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     // TODO Return the ConfiguredAirbyteCatalog with ConfiguredAirbyteStream objects
     return null;
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override
