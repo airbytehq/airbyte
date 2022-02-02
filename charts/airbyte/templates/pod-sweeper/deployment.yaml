@@ -60,7 +60,7 @@ spec:
             command:
             - /bin/sh
             - -ec
-            - 'test $(ps -ef | grep -v grep | grep sweep-pod.sh | wc -l) -eq 1'
+            - grep -aq sweep-pod.sh /proc/1/cmdline
           initialDelaySeconds: {{ .Values.podSweeper.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.podSweeper.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.podSweeper.livenessProbe.timeoutSeconds }}
@@ -73,7 +73,7 @@ spec:
             command:
             - /bin/sh
             - -ec
-            - 'test $(ps -ef | grep -v grep | grep sweep-pod.sh | wc -l) -eq 1'
+            - grep -aq sweep-pod.sh /proc/1/cmdline
           initialDelaySeconds: {{ .Values.podSweeper.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.podSweeper.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.podSweeper.readinessProbe.timeoutSeconds }}

@@ -79,7 +79,7 @@ spec:
         {{- if .Values.webapp.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: /api/v1/health
+            path: /robots.txt
             port: http
           initialDelaySeconds: {{ .Values.webapp.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.webapp.readinessProbe.periodSeconds }}
