@@ -200,6 +200,7 @@ font-style: italic;
 <li>Adding new HTTP endpoints.</li>
 </ul>
 </li>
+<li>All <code>web_backend</code> APIs are not considered public APIs and are not guaranteeing backwards compatibility.</li>
 </ul>
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
@@ -358,6 +359,7 @@ font-style: italic;
   <li><a href="#listWorkspaces"><code><span class="http-method">post</span> /v1/workspaces/list</code></a></li>
   <li><a href="#updateWorkspace"><code><span class="http-method">post</span> /v1/workspaces/update</code></a></li>
   <li><a href="#updateWorkspaceFeedback"><code><span class="http-method">post</span> /v1/workspaces/tag_feedback_status_as_done</code></a></li>
+  <li><a href="#updateWorkspaceName"><code><span class="http-method">post</span> /v1/workspaces/update_name</code></a></li>
   </ul>
 
   <h1><a name="Connection">Connection</a></h1>
@@ -7446,6 +7448,88 @@ font-style: italic;
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="updateWorkspaceName"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/workspaces/update_name</code></pre></div>
+    <div class="method-summary">Update workspace name (<span class="nickname">updateWorkspaceName</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceUpdateName <a href="#WorkspaceUpdateName">WorkspaceUpdateName</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WorkspaceRead">WorkspaceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "news" : true,
+  "displaySetupWizard" : true,
+  "initialSetupComplete" : true,
+  "anonymousDataCollection" : true,
+  "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "name" : "name",
+  "firstCompletedSync" : true,
+  "feedbackDone" : true,
+  "email" : "email",
+  "slug" : "slug",
+  "securityUpdates" : true,
+  "notifications" : [ {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
+  }, {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
+  } ],
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WorkspaceRead">WorkspaceRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
 
   <h2><a name="__Models">Models</a></h2>
   [ Jump to <a href="#__Methods">Methods</a> ]
@@ -7570,6 +7654,7 @@ font-style: italic;
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
     <li><a href="#WorkspaceReadList"><code>WorkspaceReadList</code> - </a></li>
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
+    <li><a href="#WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a></li>
   </ol>
 
   <div class="model">
@@ -8708,6 +8793,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>

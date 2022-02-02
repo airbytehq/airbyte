@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -30,8 +32,11 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
@@ -194,6 +199,32 @@ class TemporalClientTest {
       temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.SYNC));
+    }
+
+    @Test
+    public void testSynchronousResetConnection() {
+      ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final long jobId1 = 1L;
+      final long jobId2 = 2L;
+      final long jobId3 = 3L;
+
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId3, 0),
+          new JobInformation(jobId3, 0));
+
+      doReturn(true).when(temporalClient).isWorkflowRunning(anyString());
+
+      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
+
+      verify(mConnectionManagerWorkflow).resetConnection();
+
+      assertEquals(manualSyncSubmissionResult.getJobId().get(), jobId3);
     }
 
   }

@@ -71,18 +71,21 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
-    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
         self.time_zone = time_zone
+        self._end_date = end_date
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
+        end_date = self._end_date
 
         return chunk_date_range(
             start_date=start_date,
+            end_date=end_date,
             conversion_window=self.conversion_window_days,
             field=self.cursor_field,
             days_of_data_storage=self.days_of_data_storage,

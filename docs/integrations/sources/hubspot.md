@@ -98,9 +98,11 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | `email_events` | `content` |
 | `engagements` | `contacts` |
 | `forms` | `forms` |
+| `form_submissions`| `forms` |
 | `line_items` | `e-commerce` |
 | `owners` | `contacts` |
 | `products` | `e-commerce` |
+| `property_history` | `contacts` |
 | `quotes` | no scope required |
 | `subscription_changes` | `content` |
 | `tickets` | `tickets` |
@@ -110,6 +112,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.36  | 2022-01-22 | [7784](https://github.com/airbytehq/airbyte/pull/7784) | Add Property History Stream |
 | 0.1.35  | 2021-12-24 | [9081](https://github.com/airbytehq/airbyte/pull/9081) | Add Feedback Submissions stream and update Ticket Pipelines stream |
 | 0.1.34  | 2022-01-20 | [9641](https://github.com/airbytehq/airbyte/pull/9641) | Add more fields for `email_events` stream |
 | 0.1.33  | 2022-01-14 | [8887](https://github.com/airbytehq/airbyte/pull/8887) | More efficient support for incremental updates on Companies, Contact, Deals and Engagement streams |
