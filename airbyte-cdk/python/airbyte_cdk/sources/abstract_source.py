@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.utils.concurrent import ConcurrentStreamReader
 from airbyte_cdk.utils.event_timing import create_timer
 
 
@@ -205,16 +206,26 @@ class AbstractSource(Source, ABC):
         self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, internal_config: InternalConfig
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        total_records_counter = 0
-        for slice in slices:
-            records = stream_instance.read_records(
-                stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
-            )
-            for record in records:
-                yield self._as_airbyte_record(configured_stream.stream.name, record)
-                total_records_counter += 1
-                if self._limit_reached(internal_config, total_records_counter):
-                    return
+        if stream_instance.max_workers > 1:
+            with ConcurrentStreamReader(stream_instance, configured_stream) as reader:
+                total_records_counter = 0
+                for record in reader:
+                    yield self._as_airbyte_record(configured_stream.stream.name, record)
+                    total_records_counter += 1
+                    if self._limit_reached(internal_config, total_records_counter):
+                        return
+        else:
+            slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
+            total_records_counter = 0
+            for slice in slices:
+                records = stream_instance.read_records(
+                    stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
+                )
+                for record in records:
+                    yield self._as_airbyte_record(configured_stream.stream.name, record)
+                    total_records_counter += 1
+                    if self._limit_reached(internal_config, total_records_counter):
+                        return
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")

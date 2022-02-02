@@ -4,7 +4,7 @@
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -200,14 +200,31 @@ class InvoiceLineItems(StripeStream):
     """
 
     name = "invoice_line_items"
+    max_workers = 10
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"invoices/{stream_slice['invoice_id']}/lines"
+        return f"invoices/{stream_slice['parent']['id']}/lines"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            for record in parent_records:
+                yield {"parent": record}
 
 
 class InvoiceItems(IncrementalStripeStream):

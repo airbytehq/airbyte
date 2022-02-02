@@ -33,6 +33,9 @@ class Stream(ABC):
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
+    # number of concurrent workers to read stream
+    max_workers: int = 0
+
     @property
     def name(self) -> str:
         """
