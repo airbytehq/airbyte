@@ -4,7 +4,8 @@ import { getService } from "core/servicesProvider";
 
 import BaseResource from "./BaseResource";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
-import { DestinationDefinition } from "../domain/connector";
+import { DestinationDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 export default class DestinationDefinitionResource
   extends BaseResource
@@ -86,6 +87,36 @@ export default class DestinationDefinitionResource
         return getService<DestinationDefinitionService>(
           "DestinationDefinitionService"
         ).update(body);
+      },
+      schema: this,
+    };
+  }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<DestinationDefinition>> {
+    return {
+      ...super.createShape(),
+      fetch: async (
+        _: Readonly<Record<string, unknown>>,
+        body: Readonly<Partial<DestinationDefinition>>
+      ): Promise<DestinationDefinition> => {
+        const result = await this.fetch(
+          "post",
+          `${this.url(body)}/create`,
+          body
+        );
+
+        if (!result.jobInfo.succeeded) {
+          const jobInfo = {
+            ...result.jobInfo,
+            status: result.status,
+          };
+
+          throw new LogsRequestError(jobInfo, jobInfo, result.message || "");
+        }
+
+        return result.destinationDefinitionRead;
       },
       schema: this,
     };
