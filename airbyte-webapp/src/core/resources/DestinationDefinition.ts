@@ -6,6 +6,7 @@ import BaseResource from "./BaseResource";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { DestinationDefinition } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import Status from "core/statuses";
 
 export default class DestinationDefinitionResource
   extends BaseResource
@@ -110,7 +111,7 @@ export default class DestinationDefinitionResource
         if (!result.jobInfo.succeeded) {
           const jobInfo = {
             ...result.jobInfo,
-            status: result.status,
+            status: Status.FAILED,
           };
 
           throw new LogsRequestError(jobInfo, jobInfo, result.message || "");

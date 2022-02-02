@@ -5,6 +5,7 @@ import { getService } from "core/servicesProvider";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { SourceDefinition } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import Status from "core/statuses";
 
 export default class SourceDefinitionResource
   extends BaseResource
@@ -100,7 +101,7 @@ export default class SourceDefinitionResource
         if (!result.jobInfo.succeeded) {
           const jobInfo = {
             ...result.jobInfo,
-            status: result.status,
+            status: Status.FAILED,
           };
 
           throw new LogsRequestError(jobInfo, jobInfo, result.message || "");
