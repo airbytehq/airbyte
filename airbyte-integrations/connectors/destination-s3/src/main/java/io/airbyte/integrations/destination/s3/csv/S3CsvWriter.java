@@ -173,4 +173,5 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
   public void write(JsonNode formattedData) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData));
   }
+
 }

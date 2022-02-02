@@ -62,12 +62,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   final Set<FailureReason> failures = new HashSet<>();
   Boolean partialSuccess = null;
 
-  private final GenerateInputActivity getSyncInputActivity = Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.OPTIONS);
+  private final GenerateInputActivity getSyncInputActivity =
+      Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity =
-      Workflow.newActivityStub(JobCreationAndStatusUpdateActivity.class, ActivityConfiguration.OPTIONS);
-  private final ConfigFetchActivity configFetchActivity = Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.OPTIONS);
+      Workflow.newActivityStub(JobCreationAndStatusUpdateActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final ConfigFetchActivity configFetchActivity =
+      Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final ConnectionDeletionActivity connectionDeletionActivity =
-      Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.OPTIONS);
+      Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope syncWorkflowCancellationScope;
 
@@ -192,8 +194,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         connectionUpdaterInput.setResetConnection(false);
       }
 
-      if (workflowState.isUpdated()) {
-        log.error("A connection configuration has changed for the connection {}. The job will be restarted",
+      if (workflowState.isUpdated() && !workflowState.isRunning()) {
+        log.error("A connection configuration has changed for the connection {} when no sync was running. The job will be restarted",
             connectionUpdaterInput.getConnectionId());
       } else if (workflowState.isDeleted()) {
         // Stop the runs

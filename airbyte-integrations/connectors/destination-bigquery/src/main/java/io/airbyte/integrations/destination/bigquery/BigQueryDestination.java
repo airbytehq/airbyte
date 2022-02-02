@@ -157,7 +157,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
-      UploaderConfig uploaderConfig = UploaderConfig
+      final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
           .bigQuery(bigquery)
           .configStream(configStream)
@@ -186,7 +186,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return true;
   }
 
-  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(JsonNode jsonSchema) {
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
     return Map.of(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
         UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
         UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
@@ -203,9 +203,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDestination();
-    LOGGER.info("starting destination: {}", BigQueryDestination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", BigQueryDestination.class);
   }
 
 }
