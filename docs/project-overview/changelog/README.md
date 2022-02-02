@@ -23,9 +23,8 @@
 ## 1/13/2021 Summary
 
 ⚠️ WARNING ⚠️
---------------
+
 Snowflake Source: Normalization with Snowflake now produces permanent tables. [If you want to continue creating transient tables, you will need to create a new transient database for Airbyte.]
---------------
 
 * ✨ GitHub Source: PR related streams now support incremental sync.
 * ✨ HubSpot Source: We now support ListMemberships in the Contacts stream.
@@ -101,10 +100,10 @@ Snowflake Source: Normalization with Snowflake now produces permanent tables. [I
 ## 12/9/2021 Summary
 
 ⚠️ WARNING ⚠️
-------------------------
+
 v0.33.0 is a minor version with breaking changes. Take the normal precautions with upgrading safely to this version.
 v0.33.0 has a bug that affects GCS logs on Kubernetes. Upgrade straight to v0.33.2 if you are running a K8s deployment of Airbyte.
-------------------------
+
 * New Source: Mailgun
 
 🎉 Snowflake Destination: You can now stage your inserts, making them much faster.
