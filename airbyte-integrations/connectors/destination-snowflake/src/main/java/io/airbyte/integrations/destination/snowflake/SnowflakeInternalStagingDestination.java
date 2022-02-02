@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -27,13 +28,15 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
-    SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
-    SnowflakeStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeStagingSqlOperations();
+  public AirbyteConnectionStatus check(final JsonNode config) {
+    final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
+    final SnowflakeStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeStagingSqlOperations();
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations);
-      attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations);
+      AirbyteSentry.executeWithTracing("CreateAndDropTable",
+          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
+      AirbyteSentry.executeWithTracing("CreateAndDropStage",
+          () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -43,15 +46,15 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
   }
 
-  private static void attemptSQLCreateAndDropStages(String outputSchema,
-                                                    JdbcDatabase database,
-                                                    SnowflakeSQLNameTransformer namingResolver,
-                                                    SnowflakeStagingSqlOperations sqlOperations)
+  private static void attemptSQLCreateAndDropStages(final String outputSchema,
+                                                    final JdbcDatabase database,
+                                                    final SnowflakeSQLNameTransformer namingResolver,
+                                                    final SnowflakeStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
+    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
     sqlOperations.createStageIfNotExists(database, stageName);
     sqlOperations.dropStageIfExists(database, stageName);
   }

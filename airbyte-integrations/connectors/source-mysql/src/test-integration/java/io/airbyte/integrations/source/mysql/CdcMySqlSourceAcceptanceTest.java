@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
@@ -81,11 +80,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return null;
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-ads",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
@@ -21,30 +21,30 @@
           "developer_token": {
             "type": "string",
             "title": "Developer Token",
-            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
-            "title": "Client Id",
-            "description": "Google client id. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
+            "title": "Client ID",
+            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>"
           },
           "client_secret": {
             "type": "string",
             "title": "Client Secret",
-            "description": "Google client secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "access_token": {
             "type": "string",
             "title": "Access Token",
-            "description": "Access token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
-            "description": "Refresh token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "description": "The token for obtaining a new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           }
         }
@@ -52,7 +52,7 @@
       "customer_id": {
         "title": "Customer ID",
         "type": "string",
-        "description": "Customer id must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
+        "description": "Customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
         "order": 1
       },
       "start_date": {
@@ -63,6 +63,14 @@
         "examples": ["2017-01-25"],
         "order": 2
       },
+      "end_date": {
+        "type": "string",
+        "title": "End Date",
+        "description": "UTC date and time in the format 2017-01-25. Any data after this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["2017-01-30"],
+        "order": 6
+      },
       "custom_queries": {
         "type": "array",
         "title": "Custom GAQL Queries (Optional)",
@@ -72,7 +80,7 @@
           "properties": {
             "query": {
               "type": "string",
-              "title": "Custom query",
+              "title": "Custom Query",
               "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression as it used by incremental streams",
               "examples": [
                 "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign WHERE campaign.status = 'PAUSED'"
@@ -80,7 +88,7 @@
             },
             "table_name": {
               "type": "string",
-              "title": "Destination table name",
+              "title": "Destination Table Name",
               "description": "The table name in your destination database for choosen query."
             }
           }
@@ -95,7 +103,7 @@
       "conversion_window_days": {
         "title": "Conversion Window (Optional)",
         "type": "integer",
-        "description": "Define the historical replication lookback window in days",
+        "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads.",
         "minimum": 0,
         "maximum": 1095,
         "default": 14,

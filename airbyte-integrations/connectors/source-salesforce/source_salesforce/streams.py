@@ -3,6 +3,7 @@
 #
 
 import csv
+import io
 import math
 import time
 from abc import ABC
@@ -22,7 +23,6 @@ from .rate_limiting import default_backoff_handler
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
-
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
@@ -69,15 +69,6 @@ class SalesforceStream(HttpStream, ABC):
             return {}
 
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -143,6 +134,8 @@ class BulkSalesforceStream(SalesforceStream):
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json)
+        if response.status_code not in [200, 204]:
+            self.logger.error(f"error body: {response.text}")
         response.raise_for_status()
         return response
 
@@ -151,6 +144,7 @@ class BulkSalesforceStream(SalesforceStream):
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+
         try:
             response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
@@ -201,6 +195,10 @@ class BulkSalesforceStream(SalesforceStream):
             job_info = self._send_http_request("GET", url=url).json()
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
+                if job_status != "JobComplete":
+                    # this is only job metadata without payload
+                    self.logger.error(f"JobStatus: {job_status}, full job response: {job_info}")
+
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
@@ -247,12 +245,10 @@ class BulkSalesforceStream(SalesforceStream):
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
         decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
-        csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
-        for i, row in enumerate(csv_data):
-            if i == 0:
-                head = row
-            else:
-                yield i, dict(zip(head, row))
+        fp = io.StringIO(decoded_content, newline="")
+        csv_data = csv.DictReader(fp, dialect="unix")
+        for n, row in enumerate(csv_data, 1):
+            yield n, row
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}
@@ -274,15 +270,6 @@ class BulkSalesforceStream(SalesforceStream):
         """
 
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
             query += next_page_token
@@ -349,14 +336,6 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
 
         selected_properties = self.get_json_schema().get("properties", {})
 
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
-
         stream_date = stream_state.get(self.cursor_field)
         start_date = stream_date or self.start_date
 
@@ -391,14 +370,6 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
-
-        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-        if self.sf_api.api_type == "BULK":
-            selected_properties = {
-                key: value
-                for key, value in selected_properties.items()
-                if value.get("format") != "base64" and "object" not in value["type"]
-            }
 
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
