@@ -141,8 +141,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         state = stream_state or {}
         while True:
             try:
-                response = self.google_ads_client.send_request(self.get_query(stream_slice))
-                for record in self.parse_response(response):
+                records = super().read_records(sync_mode, stream_slice=stream_slice)
+                for record in records:
                     state = self.get_updated_state(state, record)
                     yield record
             except GoogleAdsException as e:
