@@ -1,0 +1,48 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/imapct-advertisers-report",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Impact Advertisers Report Spec",
+    "type": "object",
+    "required": [
+      "account_sid",
+      "auth_token",
+      "report_id",
+      "start_date",
+      "sub_ad_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "account_sid": {
+        "title": "Account SID",
+        "type": "string",
+        "description": "Your username is your Account Security Identifier. It is a 34 character string starting with letters IR.",
+        "airbyte_secret": true
+      },
+      "auth_token": {
+        "title": "Auth Token",
+        "type": "string",
+        "description": "Auth Token available from the Impact settings section",
+        "airbyte_secret": true
+      },
+      "report_id": {
+        "title": "Report ID",
+        "type": "string",
+        "description": "Report ID",
+        "examples": ["adv_tracking_values"]
+      },
+      "start_date": {
+        "title": "Start Date",
+        "type": "string",
+        "description": "Start Date",
+        "examples": ["2019-11-14"]
+      },
+      "sub_ad_id": {
+        "title": "SubAdId",
+        "type": "string",
+        "description": "SubAdId",
+        "examples": ["10722"]
+      }
+    }
+  }
+}
