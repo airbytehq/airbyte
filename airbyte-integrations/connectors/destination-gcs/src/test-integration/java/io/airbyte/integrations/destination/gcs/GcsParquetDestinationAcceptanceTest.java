@@ -29,11 +29,9 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 import org.apache.avro.generic.GenericData;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
-import org.junit.jupiter.api.Assertions;
 
 public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
@@ -82,7 +80,6 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
 
     return jsonRecords;
   }
-
 
   @Override
   public boolean requiresDateTimeConversionForSync() {

@@ -143,7 +143,6 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     db.close();
   }
 
-
   @Override
   public boolean requiresDateTimeConversionForNormalizedSync() {
     return true;

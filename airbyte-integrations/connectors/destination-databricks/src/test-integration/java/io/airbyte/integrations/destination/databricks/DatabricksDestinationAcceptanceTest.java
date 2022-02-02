@@ -158,7 +158,6 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         SQLDialect.DEFAULT);
   }
 
-
   @Override
   public boolean requiresDateTimeConversionForSync() {
     return true;
@@ -174,7 +173,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
       if (dateTimeFieldNames.containsKey(key)) {
         switch (dateTimeFieldNames.get(key)) {
           case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), String.format("***\"member0\":%s,\"member1\":null***", DateTimeUtils.convertToDateFormat(field.getValue().asText())));
+          case DATE -> data.put(key.toLowerCase(),
+              String.format("***\"member0\":%s,\"member1\":null***", DateTimeUtils.convertToDateFormat(field.getValue().asText())));
         }
       } else {
         data.set(key.toLowerCase(), field.getValue());
@@ -184,8 +184,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void assertSameValue(String key,
-      JsonNode expectedValue,
-      JsonNode actualValue) {
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
     var format = dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY);
     if (DATE_TIME.equals(format) || DATE.equals(format)) {
       Assertions.assertEquals(expectedValue.asText(), expectedValue.asText());
