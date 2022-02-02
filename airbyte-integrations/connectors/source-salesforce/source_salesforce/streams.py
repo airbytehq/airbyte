@@ -20,6 +20,9 @@ from requests import codes, exceptions
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
 
+CSV_FIELD_SIZE_LIMIT = 1024 * 1024
+csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000

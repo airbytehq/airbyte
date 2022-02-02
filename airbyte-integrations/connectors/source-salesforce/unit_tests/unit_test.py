@@ -14,7 +14,13 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import (
+    CSV_FIELD_SIZE_LIMIT,
+    BulkIncrementalSalesforceStream,
+    BulkSalesforceStream,
+    IncrementalSalesforceStream,
+    SalesforceStream,
+)
 
 
 @pytest.fixture(scope="module")
@@ -545,10 +551,14 @@ def test_csv_reader_dialect_unix():
     stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
+    DEFAULT_CSV_FIELD_SIZE_LIMIT = 1024 * 128
+    assert CSV_FIELD_SIZE_LIMIT > DEFAULT_CSV_FIELD_SIZE_LIMIT
+
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
         {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name"},
+        {"Id": "3", "Name": "first_name last_name" + (CSV_FIELD_SIZE_LIMIT - 100) * "e"},
+        {"Id": "4", "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:
