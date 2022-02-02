@@ -1,22 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 import styled from "styled-components";
+import intersection from "lodash/intersection";
 
 // import { DestinationSyncMode, SyncMode } from "core/domain/catalog";
-import { Cell, Toggle } from "components";
-import { SyncSettingsCell } from "./components/SyncSettingsCell";
-//
-// const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
-//   color: ${({ theme }) => theme.greyColor40};
-//   margin-left: 6px;
-//   transform: ${({ isOpen }) => isOpen && "rotate(180deg)"};
-//   transition: 0.3s;
-//   vertical-align: sub;
-// `;
-//
-// const EmptyField = styled.span`
-//   color: ${({ theme }) => theme.greyColor40};
-// `;
+import { Button, Cell, Header, Toggle } from "components";
+import { SyncSettingsDropdown } from "./components/SyncSettingsCell";
+import { SUPPORTED_MODES } from "../ConnectionForm/formConfig";
+import { useBulkEdit } from "../ConnectionForm/BulkEditService";
 
 const HeaderCell = styled(Cell)`
   font-size: 10px;
@@ -34,71 +25,79 @@ const ArrowCell = styled(HeaderCell)`
   width: 40px;
 `;
 
-// type SyncSchema = {
-//   syncMode: SyncMode;
-//   destinationSyncMode: DestinationSyncMode;
-// };
+const SchemaHeader = styled(Header)`
+  min-height: 41px;
+  background: ${({ theme }) => theme.primaryColor};
+  border-radius: 8px;
+`;
 
-type BulkHeaderProps = {
-  // stream: SyncSchemaStream;
-  // destName: string;
-  // destNamespace: string;
-  // availableSyncModes: {
-  //   value: SyncSchema;
-  // }[];
-  // onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
-  // onSelectStream: () => void;
-  //
-  // primitiveFields: SyncSchemaField[];
-  //
-  // pkType: null | "required" | "sourceDefined";
-  // onPrimaryKeyChange: (pkPath: string[][]) => void;
-  // cursorType: null | "required" | "sourceDefined";
-  // onCursorChange: (cursorPath: string[]) => void;
-  //
-  // isRowExpanded: boolean;
-  // hasFields: boolean;
-  // onExpand: () => void;
-};
+const Flex = styled.div`
+  display: flex;
+`;
 
-export const BulkHeader: React.FC<BulkHeaderProps> = (
-  {
-    // stream,
-    // destName,
-    // destNamespace,
-    // onSelectSyncMode,
-    // onSelectStream,
-    // availableSyncModes,
-    // pkType,
-    // onPrimaryKeyChange,
-    // onCursorChange,
-    // primitiveFields,
-    // cursorType,
-  }
-) => {
-  // const syncSchema = useMemo(
-  //   () => ({
-  //     syncMode,
-  //     destinationSyncMode,
-  //   }),
-  //   [syncMode, destinationSyncMode]
-  // );
+type BulkHeaderProps = {};
+
+export const BulkHeader: React.FC<BulkHeaderProps> = ({}) => {
   //
   // const dropdownFields = primitiveFields.map((field) => ({
   //   value: field.path,
   //   label: field.path.join("."),
   // }));
 
+  const {
+    selectedBatchNodes,
+    // TODO: extract this from context
+    destinationSupportedSyncModes,
+    options,
+    onChangeOption,
+    onApply,
+    isActive,
+    onCancel,
+  } = useBulkEdit();
+
+  const availableSyncModes = useMemo(
+    () =>
+      SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
+        const supportableModes = intersection(
+          selectedBatchNodes.flatMap((n) => n.stream.supportedSyncModes)
+        );
+        return (
+          supportableModes.includes(syncMode) &&
+          destinationSupportedSyncModes.includes(destinationSyncMode)
+        );
+      }).map(([syncMode, destinationSyncMode]) => ({
+        value: { syncMode, destinationSyncMode },
+      })),
+    [selectedBatchNodes, destinationSupportedSyncModes]
+  );
+
+  if (!isActive) {
+    return null;
+  }
+
   return (
-    <>
+    <SchemaHeader>
       <CheckboxCell></CheckboxCell>
       <ArrowCell></ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle small checked={false} onChange={() => ({})} />
+        <Toggle
+          small
+          checked={options.selected}
+          onChange={() => onChangeOption({ selected: !options.selected })}
+        />
       </HeaderCell>
       <HeaderCell ellipsis></HeaderCell>
       <HeaderCell ellipsis></HeaderCell>
-      <SyncSettingsCell value={{}} options={[]} onChange={() => ({})} />
+      <Cell flex={1.5}>
+        <SyncSettingsDropdown
+          value={{
+            syncMode: options.syncMode,
+            destinationSyncMode: options.destinationSyncMode,
+          }}
+          options={availableSyncModes}
+          onChange={({ value }) => onChangeOption({ ...value })}
+        />
+      </Cell>
       <HeaderCell>
         {/*{cursorType === "required" ? (*/}
         {/*  <Popout*/}
@@ -120,39 +119,18 @@ export const BulkHeader: React.FC<BulkHeaderProps> = (
         {/*  "<sourceDefined>"*/}
         {/*) : null}*/}
       </HeaderCell>
-      <HeaderCell ellipsis>
-        {/*{pkType === "required" ? (*/}
-        {/*  <Popout*/}
-        {/*    options={dropdownFields}*/}
-        {/*    value={primaryKey}*/}
-        {/*    // @ts-ignore need to solve issue with typings*/}
-        {/*    isMulti={true}*/}
-        {/*    isSearchable*/}
-        {/*    onChange={(options: { value: string[] }[]) => {*/}
-        {/*      onPrimaryKeyChange(options.map((op) => op.value));*/}
-        {/*    }}*/}
-        {/*    placeholder={*/}
-        {/*      <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />*/}
-        {/*    }*/}
-        {/*    components={PkPopupComponents}*/}
-        {/*    targetComponent={({ onOpen }) => (*/}
-        {/*      <div onClick={onOpen}>*/}
-        {/*        {primaryKey.map((k) => k.join(".")).join(", ")}*/}
-        {/*        <Arrow icon={faSortDown} />*/}
-        {/*        <Tooltip items={primaryKey.map((k) => k.join("."))} />*/}
-        {/*      </div>*/}
-        {/*    )}*/}
-        {/*  />*/}
-        {/*) : pkType === "sourceDefined" ? (*/}
-        {/*  "<sourceDefined>"*/}
-        {/*) : null}*/}
-      </HeaderCell>
-      <HeaderCell ellipsis title={"test"}>
-        {/*{destNamespace}*/}
-      </HeaderCell>
+      <HeaderCell ellipsis></HeaderCell>
+      <HeaderCell ellipsis title={"test"}></HeaderCell>
       <HeaderCell ellipsis title={"Stream name"}>
-        test
+        <Flex>
+          <Button type="button" onClick={onCancel}>
+            cancel
+          </Button>
+          <Button type="button" secondary onClick={onApply}>
+            apply
+          </Button>
+        </Flex>
       </HeaderCell>
-    </>
+    </SchemaHeader>
   );
 };

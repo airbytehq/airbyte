@@ -3,6 +3,8 @@ import { FieldProps, setIn } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { useConfig } from "config";
+
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
@@ -12,7 +14,9 @@ import CatalogTree from "views/Connection/CatalogTree";
 import Search from "./Search";
 import { naturalComparatorBy } from "utils/objects";
 import InformationToolTip from "./InformationToolTip";
-import { useConfig } from "config";
+
+import { BulkHeader } from "../../CatalogTree/BulkHeader";
+import { BatchEditProvider } from "../BulkEditService";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
@@ -149,41 +153,16 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   }, [hasSelectedItem, onChangeSchema, filteredStreams]);
 
   return (
-    <>
+    <BatchEditProvider
+      nodes={streams}
+      destinationSupportedSyncModes={destinationSupportedSyncModes}
+      update={onChangeSchema}
+    >
       <HeaderBlock>
         <FormattedMessage id="form.dataSync" />
         {additionalControl}
       </HeaderBlock>
       <Search onSearch={setSearchString} />
-      {/*<FiltersContent>*/}
-      {/*  <RadioButtonControl*/}
-      {/*    onChange={(value) => {*/}
-      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
-      {/*    }}*/}
-      {/*    name="FilterAll"*/}
-      {/*    value={SyncCatalogFilters.All}*/}
-      {/*    checked={filterMode === SyncCatalogFilters.All}*/}
-      {/*    label={<FormattedMessage id="form.all" />}*/}
-      {/*  />*/}
-      {/*  <RadioButtonControl*/}
-      {/*    onChange={(value) => {*/}
-      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
-      {/*    }}*/}
-      {/*    name="FilterSelected"*/}
-      {/*    value={SyncCatalogFilters.Selected}*/}
-      {/*    checked={filterMode === SyncCatalogFilters.Selected}*/}
-      {/*    label={<FormattedMessage id="form.selected" />}*/}
-      {/*  />*/}
-      {/*  <RadioButtonControl*/}
-      {/*    onChange={(value) => {*/}
-      {/*      setFilterMode(value.target.value as SyncCatalogFilters);*/}
-      {/*    }}*/}
-      {/*    name="FilterNotSelected"*/}
-      {/*    value={SyncCatalogFilters.NotSelected}*/}
-      {/*    checked={filterMode === SyncCatalogFilters.NotSelected}*/}
-      {/*    label={<FormattedMessage id="form.notSelected" />}*/}
-      {/*  />*/}
-      {/*</FiltersContent>*/}
       <StreamsContent>
         <SchemaHeader>
           <CheckboxCell>
@@ -270,6 +249,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
             <FormattedMessage id="form.streamName" />
           </SubtitleCell>
         </SchemaHeader>
+        <BulkHeader />
         <TreeViewContainer>
           <CatalogTree
             streams={filteredStreams}
@@ -278,7 +258,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           />
         </TreeViewContainer>
       </StreamsContent>
-    </>
+    </BatchEditProvider>
   );
 };
 

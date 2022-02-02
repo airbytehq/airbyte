@@ -3,7 +3,6 @@ import { components, ControlProps } from "react-select";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Cell } from "components/SimpleTableComponents";
 import { DropDown, DropdownProps } from "components";
 import Text from "components/base/DropDown/components/Text";
 import { IProps } from "components/base/DropDown/components/SingleValue";
@@ -122,10 +121,4 @@ const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
   />
 );
 
-const SyncSettingsCell: React.FC<DropdownProps> = (props) => (
-  <Cell flex={1.5}>
-    <SyncSettingsDropdown {...props} />
-  </Cell>
-);
-
-export { SyncSettingsCell, SyncSettingsDropdown };
+export { SyncSettingsDropdown };

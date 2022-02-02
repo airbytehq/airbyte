@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { FieldProps, Field, setIn, useField } from "formik";
+import { Field, FieldProps, setIn, useField } from "formik";
 
 import {
   AirbyteStreamConfiguration,

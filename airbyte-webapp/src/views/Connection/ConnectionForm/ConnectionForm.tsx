@@ -193,22 +193,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           )}
-          {/*<ControlLabels*/}
-          {/*  nextLine*/}
-          {/*  label={formatMessage({*/}
-          {/*    id: "connectionForm.defaultSyncMode",*/}
-          {/*  })}*/}
-          {/*  message={formatMessage(*/}
-          {/*    {*/}
-          {/*      id: "connectionForm.defaultSyncMode.message",*/}
-          {/*    },*/}
-          {/*    {*/}
-          {/*      b: (...b: React.ReactNode[]) => <strong>{b}</strong>,*/}
-          {/*    }*/}
-          {/*  )}*/}
-          {/*>*/}
-          {/*  <DefaultSyncSettingsField />*/}
-          {/*</ControlLabels>*/}
           <FlexRow>
             <Field
               name="namespaceDefinition"

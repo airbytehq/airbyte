@@ -12,10 +12,11 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 
-import { CheckBox, DropDownRow, Popout, Cell, Toggle } from "components";
+import { Cell, CheckBox, DropDownRow, Popout, Toggle } from "components";
 import { Arrow as ArrowBlock } from "./components/Arrow";
-import { SyncSettingsCell } from "./components/SyncSettingsCell";
+import { SyncSettingsDropdown } from "./components/SyncSettingsCell";
 import Tooltip from "./components/Tooltip";
+import { useBulkEditSelect } from "../ConnectionForm/BulkEditService";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
@@ -104,6 +105,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [syncMode, destinationSyncMode]
   );
 
+  const [isSelected, selectForBulkEdit] = useBulkEditSelect(stream.id);
+
   const dropdownFields = primitiveFields.map((field) => ({
     value: field.path,
     label: field.path.join("."),
@@ -112,8 +115,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   return (
     <>
       <CheckboxCell>
-        {/*TODO: Fix it for Batch Edit*/}
-        <CheckBox checked={false} disabled />
+        <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
       </CheckboxCell>
       <ArrowCell>
         {hasFields ? (
@@ -141,11 +143,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <HeaderCell ellipsis title={stream.stream.name || ""}>
         {stream.stream.name}
       </HeaderCell>
-      <SyncSettingsCell
-        value={syncSchema}
-        options={availableSyncModes}
-        onChange={onSelectSyncMode}
-      />
+      <Cell flex={1.5}>
+        <SyncSettingsDropdown
+          value={syncSchema}
+          options={availableSyncModes}
+          onChange={onSelectSyncMode}
+        />
+      </Cell>
       <HeaderCell>
         {cursorType === "required" ? (
           <Popout

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
 import { setIn } from "formik";
@@ -21,7 +21,10 @@ import {
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import {
+  ConnectionNamespaceDefinition,
+  ConnectionSchedule,
+} from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
@@ -271,7 +274,7 @@ const useInitialValues = (
       syncCatalog: initialSchema,
       schedule: connection.schedule ?? {
         units: 24,
-        timeUnit: "hours",
+        timeUnit: ConnectionSchedule.Hours,
       },
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition,
@@ -318,39 +321,10 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   );
 };
 
-const useBulkEdit = (
-  nodes: SyncSchemaStream[],
-  update: (streams: SyncSchemaStream[]) => void
-) => {
-  const [selectedBatchNodes] = useState<string[]>([]);
-  const [isActive, toggleActiveMode] = useState(false);
-  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(
-    {}
-  );
-
-  const onApply = () => {
-    const updatedConfig = nodes
-      .filter((node) => selectedBatchNodes.includes(node.id))
-      .map((node) => setIn(node, "config", { ...node.config, ...options }));
-
-    update(updatedConfig);
-  };
-
-  return {
-    isActive,
-    toggleActiveMode,
-    onChangeOption: setOptions,
-    options,
-    onApply,
-    onCancel: () => console.log("Define"),
-  };
-};
-
 export type { ConnectionFormValues, FormikConnectionFormValues };
 export {
   connectionValidationSchema,
   useInitialValues,
-  useBulkEdit,
   useFrequencyDropdownData,
   mapFormPropsToOperation,
   SUPPORTED_MODES,
