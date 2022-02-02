@@ -13,13 +13,13 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.6
+  dockerImageTag: 0.6.7
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: Cassandra
@@ -179,7 +179,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.7
+  dockerImageTag: 0.4.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
@@ -188,3 +188,9 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg
+- name: Streamr
+  destinationDefinitionId: eebd85cf-60b2-4af6-9ba0-edeca01437b0
+  dockerRepository: ghcr.io/devmate-cloud/streamr-airbyte-connectors
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/streamr
+  icon: streamr.svg

@@ -6,7 +6,7 @@ This destination syncs data to Databricks cluster. Each stream is written to its
 
 This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-Due to legal reasons, this is currently a private connector that is only available in Airbyte Cloud. We are working on publicizing it. Please follow [this issue](https://github.com/airbytehq/airbyte/issues/6043) for progress.
+Due to legal reasons, this is currently a private connector that is only available on Airbyte Cloud. We are working on publicizing it. Please follow [this issue](https://github.com/airbytehq/airbyte/issues/6043) for progress. In the interim, you can build the connector locally, publish it to your own image registry, and use it privately. See the [developer doc](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-databricks/README.md) for details. Please do not publish this connector publicly.
 
 ## Sync Mode
 

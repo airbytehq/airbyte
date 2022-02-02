@@ -194,8 +194,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         connectionUpdaterInput.setResetConnection(false);
       }
 
-      if (workflowState.isUpdated()) {
-        log.error("A connection configuration has changed for the connection {}. The job will be restarted",
+      if (workflowState.isUpdated() && !workflowState.isRunning()) {
+        log.error("A connection configuration has changed for the connection {} when no sync was running. The job will be restarted",
             connectionUpdaterInput.getConnectionId());
       } else if (workflowState.isDeleted()) {
         // Stop the runs
