@@ -13,7 +13,7 @@ const LoadingContainer = styled.div`
 const TestingConnectionSpinner: React.FC = () => {
   return (
     <LoadingContainer>
-      <ProgressBar />
+      <ProgressBar runTime={120} />
     </LoadingContainer>
   );
 };

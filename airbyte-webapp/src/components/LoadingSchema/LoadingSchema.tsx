@@ -19,7 +19,7 @@ const FetchMessage = styled.div`
 
 const LoadingSchema: React.FC = () => (
   <SpinnerBlock>
-    <ProgressBar runTime={120} />
+    <ProgressBar runTime={240} />
     <FetchMessage>
       <FormattedMessage id="onboarding.fetchingSchema" />
     </FetchMessage>
