@@ -145,22 +145,22 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
                 for record in records:
                     state = self.get_updated_state(state, record)
                     yield record
-            except GoogleAdsException as e:
-                if e.failure._pb.errors[0].error_code.request_error == 8:
+            except GoogleAdsException as exception:
+                if exception.failure._pb.errors[0].error_code.request_error == 8:
                     # page token has expired (EXPIRED_PAGE_TOKEN = 8)
                     start_date, end_date = parse_dates(stream_slice)
                     if (end_date - start_date).days == 1:
                         # If range days is 1, no need in retry, because it's the minimum date range
-                        raise e
+                        raise exception
                     elif state.get(self.cursor_field) == stream_slice["start_date"]:
                         # It couldn't read all the records within one day, it will enter an infinite loop,
                         # so raise the error
-                        raise e
+                        raise exception
                     # Retry reading records from where it crushed
                     stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
                 else:
                     # raise caught error for other error statuses
-                    raise e
+                    raise exception
             else:
                 # return the control if no exception is raised
                 return
