@@ -29,8 +29,6 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 
 public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 

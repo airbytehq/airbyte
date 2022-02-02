@@ -222,8 +222,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected void assertSameValue(String key,
-      JsonNode expectedValue,
-      JsonNode actualValue) {
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
     if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
       Assertions.assertEquals(MILLISECONDS_PATTERN.matcher(expectedValue.asText()).replaceAll(StringUtils.EMPTY),
           MILLISECONDS_PATTERN.matcher(actualValue.asText()).replaceAll(StringUtils.EMPTY));
@@ -231,4 +231,5 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
       super.assertSameValue(key, expectedValue, actualValue);
     }
   }
+
 }

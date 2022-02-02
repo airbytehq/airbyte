@@ -162,7 +162,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
-
   @Override
   public boolean requiresDateTimeConversionForNormalizedSync() {
     return true;

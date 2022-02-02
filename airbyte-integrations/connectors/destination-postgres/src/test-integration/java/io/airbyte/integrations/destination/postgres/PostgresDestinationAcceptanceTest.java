@@ -163,4 +163,5 @@ public class PostgresDestinationAcceptanceTest extends DestinationAcceptanceTest
       }
     });
   }
+
 }

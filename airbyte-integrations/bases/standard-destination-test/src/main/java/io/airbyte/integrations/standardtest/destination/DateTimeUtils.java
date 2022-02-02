@@ -112,7 +112,7 @@ public class DateTimeUtils {
     return convertDate(jsonDate, LocalDate::toString);
   }
 
-  private static <T> T convertDateTime(String jsonDateTime, Function<Instant,T> dateTimeFormatter) {
+  private static <T> T convertDateTime(String jsonDateTime, Function<Instant, T> dateTimeFormatter) {
     Instant instant = null;
     try {
       ZonedDateTime zdt = ZonedDateTime.parse(jsonDateTime, FORMATTER);
@@ -128,7 +128,7 @@ public class DateTimeUtils {
     return instant == null ? null : dateTimeFormatter.apply(instant);
   }
 
-  private static String convertDate(String jsonDate, Function<LocalDate,String> dateFormatter) {
+  private static String convertDate(String jsonDate, Function<LocalDate, String> dateFormatter) {
     String convertedDate = null;
     try {
       LocalDate date = LocalDate.parse(jsonDate, FORMATTER);
@@ -157,7 +157,7 @@ public class DateTimeUtils {
   }
 
   private static String toDatabricksDateFormat(Instant instant) {
-    return String.format("***\"member0\":%s,\"member1\":null***",MILLISECONDS_PATTERN.matcher(instant.toString().replace('T', ' ').replace("Z", ""))
+    return String.format("***\"member0\":%s,\"member1\":null***", MILLISECONDS_PATTERN.matcher(instant.toString().replace('T', ' ').replace("Z", ""))
         .replaceAll("." + (instant.getNano() / 1000000) * 1000));
   }
 

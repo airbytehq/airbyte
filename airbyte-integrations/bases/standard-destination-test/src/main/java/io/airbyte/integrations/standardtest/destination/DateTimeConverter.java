@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,8 +20,7 @@ public interface DateTimeConverter {
     }
   }
 
-  default void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-  }
+  default void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {}
 
   default boolean requiresDateTimeConversionForNormalizedSync() {
     return false;

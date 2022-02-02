@@ -204,5 +204,4 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     });
   }
 
-
 }
