@@ -2,12 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 
 import csv
+import datetime
 from collections import Mapping
 from google.cloud import storage
 from destination_ngpvan.client import NGPVANClient
 
-#TEMPORARY for testing locally (Airbyte will authenticate using application default credentials)
-import os
+import os #only needed for local development
 
 class NGPVANWriter:
     """
@@ -19,6 +19,7 @@ class NGPVANWriter:
 
     def __init__(self, client: NGPVANClient):
         self.client = client
+        self.local_test = client.local_test
         self.output_file_name = "output_airbyte.csv" #TODO parameterize this and add timestamp
         self.destination_bucket = "vansync-testing" #TODO parameterize this
 
@@ -43,13 +44,9 @@ class NGPVANWriter:
     def upload_output_to_gcs(self):
         """Uploads the output CSV to GCS."""
 
-        # TEMPORARY for testing locally (Airbyte will authenticate using application default credentials)
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
-        # TODO: enable user to pass service account credentials or else use default credentials
-        #os.environ["GOOGLE_APPLICATION_CREDENTIALS_JSON"]=client.service_account_key
-        #service_account_info = json.load(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
-        #credentials = service_account.Credentials.from_service_account_info(
-        #    service_account_info)
+        if self.local_test:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
+
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(self.destination_bucket)
         blob = bucket.blob(self.output_file_name)
@@ -57,3 +54,33 @@ class NGPVANWriter:
         print('File {} uploaded to {}.'.format(
             self.output_file_name,
             self.destination_bucket))
+
+    def generate_download_signed_url_v4(self):
+        """Generates a v4 signed URL for downloading a blob.
+
+        bucket_name = 'your-bucket-name'
+        blob_name = 'your-object-name'
+
+        Note that this method requires a service account key file. You can not use
+        this if you are using Application Default Credentials from Google Compute
+        Engine or from the Google Cloud SDK.
+        """
+
+        if self.local_test:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
+
+        bucket_name = self.output_file_name
+        blob_name = self.destination_bucket
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+
+        url = blob.generate_signed_url(
+            version="v4",
+            # This URL is valid for 15 minutes
+            expiration=datetime.timedelta(minutes=15),
+            # Allow GET requests using this URL.
+            method="GET",
+        )
+
+        return url

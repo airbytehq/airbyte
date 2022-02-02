@@ -10,7 +10,8 @@ import requests
 class NGPVANClient:
     base_uri = "https://api.securevan.com/v4/"
 
-    def __init__(self, van_api_key: str = None, service_account_key: str = None):
+    def __init__(self, local_test: bool = True, van_api_key: str = None, service_account_key: str = None):
+        self.local_test = local_test
         self.van_api_key = van_api_key
         self.service_account_key = service_account_key
         self.auth = ('default',

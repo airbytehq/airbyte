@@ -8,8 +8,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Ngpvan",
     "type": "object",
-    "required": ["van_api_key"],
-    "additionalProperties": false,
+    "required": ["van_api_key","local_test"],
+    "additionalProperties": true,
     "properties": {
       "van_api_key": {
         "title": "VAN API Key",
@@ -22,6 +22,11 @@
         "type": "string",
         "description": "If no key is provided, default application credentials will be used instead.",
         "order": 2
+      },
+      "local_test": {
+        "title": "local_test",
+        "type": "boolean",
+        "order": 3
       }
     }
   }
