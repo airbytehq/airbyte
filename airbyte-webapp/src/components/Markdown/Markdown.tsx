@@ -2,13 +2,12 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styled from "styled-components";
-// import { PluggableList } from "react-markdown/lib/react-markdown";
+import type { PluggableList } from "react-markdown/lib/react-markdown";
 
 type Props = {
   content?: string;
   className?: string;
-  // TODO: fix PluggableList type
-  rehypePlugins?: any[];
+  rehypePlugins?: PluggableList;
 };
 
 const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {

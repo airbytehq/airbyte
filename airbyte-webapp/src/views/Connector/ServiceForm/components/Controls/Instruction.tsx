@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
 import urls from "rehype-urls";
-// import { Pluggable } from "react-markdown";
+import type { PluggableList } from "react-markdown/lib/react-markdown";
 
 import useDocumentation from "hooks/services/useDocumentation";
 import { LoadingPage } from "components";
@@ -60,8 +60,7 @@ const Instruction: React.FC<IProps> = ({
     return url.path;
   };
 
-  // TODO: fix Pluggable type
-  const urlReplacerPlugin = [urls, removeBaseUrl];
+  const urlReplacerPlugin: PluggableList = [[urls, removeBaseUrl]];
 
   return (
     <>
@@ -84,7 +83,7 @@ const Instruction: React.FC<IProps> = ({
           {isLoading ? (
             <LoadingPage />
           ) : docs ? (
-            <Markdown content={docs} rehypePlugins={[urlReplacerPlugin]} />
+            <Markdown content={docs} rehypePlugins={urlReplacerPlugin} />
           ) : (
             <FormattedMessage id="docs.notFoundError" />
           )}
