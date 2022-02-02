@@ -16,6 +16,12 @@
         "type": "string",
         "description": "VAN API Key.",
         "order": 1
+      },
+      "service_account_key": {
+        "title": "Service account key (JSON)",
+        "type": "string",
+        "description": "If no key is provided, default application credentials will be used instead.",
+        "order": 2
       }
     }
   }

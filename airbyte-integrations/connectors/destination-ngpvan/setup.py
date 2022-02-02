@@ -5,7 +5,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk","google-cloud-storage==1.17.0"
 ]
 
 TEST_REQUIREMENTS = [

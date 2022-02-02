@@ -29,18 +29,11 @@ class DestinationNgpvan(Destination):
                 # ignore other message types for now
                 continue
 
-        #write to a csv
-        writer.write_to_local_csv()
-        #data = writer.data_output
-        #keys = data[0].keys()
-        #output_file = open("output.csv", "w")
-        #dict_writer = csv.DictWriter(output_file, keys)
-        #dict_writer.writeheader()
-        #dict_writer.writerows(data)
-        #output_file.close()
+        ##write to a csv
+        #writer.write_to_local_csv()
+        ##upload to GCS
+        #writer.upload_output_to_gcs()
 
-        #print("hi")
-        #print(writer.kv_pair_list)
         """
         TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
