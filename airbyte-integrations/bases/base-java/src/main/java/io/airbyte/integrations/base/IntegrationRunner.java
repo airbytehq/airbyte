@@ -197,7 +197,7 @@ public class IntegrationRunner {
 
     // https://docs.sentry.io/platforms/java/configuration/
     Sentry.init(options -> {
-      options.setDsn(env.getOrDefault("SENTRY_DSN", ""));
+      options.setDsn(enableSentry ? env.getOrDefault("SENTRY_DSN", "") : "");
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
       options.setRelease(String.format("%s@%s", connector, version));
