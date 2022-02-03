@@ -63,6 +63,12 @@
   dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
+- name: Google Firestore
+  destinationDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
+  dockerRepository: airbyte/destination-firestore
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/firestore
+  icon: firestore.svg
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
@@ -72,7 +78,7 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
 - name: Kinesis
@@ -188,3 +194,9 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg
+- name: Streamr
+  destinationDefinitionId: eebd85cf-60b2-4af6-9ba0-edeca01437b0
+  dockerRepository: ghcr.io/devmate-cloud/streamr-airbyte-connectors
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/streamr
+  icon: streamr.svg
