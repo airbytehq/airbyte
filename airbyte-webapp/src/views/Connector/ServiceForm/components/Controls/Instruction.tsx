@@ -54,8 +54,8 @@ const Instruction: React.FC<IProps> = ({
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
   const removeBaseUrl = (url: { path: string }) => {
-    if (url.path.match(/^..\/..\/.*/)) {
-      return url.path.replace(/^..\/..\//, `${config.integrationUrl}/`);
+    if (url.path.startsWith("../../")) {
+      return url.path.replace("../../", `${config.integrationUrl}/`);
     }
     return url.path;
   };

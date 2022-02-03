@@ -49,6 +49,7 @@ task copyDocs(type: Copy) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+// Copy images that are used in .md integration documentation docs
 task copyAssets(type: Copy) {
     dependsOn copyDocker
 
