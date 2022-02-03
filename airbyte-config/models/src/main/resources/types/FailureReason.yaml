@@ -15,7 +15,7 @@ properties:
       - unknown
       - source
       - destination
-      - replicationWorker
+      - replication
       - persistence
       - normalization
       - dbt
@@ -24,9 +24,8 @@ properties:
     type: string
     enum:
       - unknown
-      - userError
+      - configError
       - systemError
-      - transient
   internalMessage:
     description: Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
     type: string

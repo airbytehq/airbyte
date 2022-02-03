@@ -47,9 +47,9 @@ public class FailureHelper {
         .withExternalMessage("Something went wrong within the destination connector");
   }
 
-  public static FailureReason replicationWorkerFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+  public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.REPLICATION_WORKER)
+        .withFailureOrigin(FailureOrigin.REPLICATION)
         .withExternalMessage("Something went wrong during replication");
   }
 
@@ -89,7 +89,7 @@ public class FailureHelper {
                                                                    final Long jobId,
                                                                    final Integer attemptNumber) {
     if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
-      return replicationWorkerFailure(t, jobId, attemptNumber);
+      return replicationFailure(t, jobId, attemptNumber);
     } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {
       return persistenceFailure(t, jobId, attemptNumber);
     } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_NORMALIZE)) {
