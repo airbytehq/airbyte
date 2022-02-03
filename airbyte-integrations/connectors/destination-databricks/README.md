@@ -4,11 +4,16 @@ This is the repository for the Databricks destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/databricks).
 
 ## Databricks JDBC Driver
-This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before downloading and using this driver, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols. The driver can be downloaded from [here](https://databricks.com/spark/jdbc-drivers-download).
+This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba.
 
-The CI downloads the JDBC driver in [this script](https://github.com/airbytehq/airbyte/blob/master/tools/lib/databricks.sh).
+{% hint style="warning" %}
+Before building, or using this connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
+{% endhint %}
 
-This is currently a private connector that is only available in Airbyte Cloud. To build and publish this connector, first download the driver and put it under the `lib` directory. Please do not publish this connector publicly.  We are working on a solution to publicize it.
+This is currently a private connector that is only available on Airbyte Cloud. We are working on a solution to publicize it (issue [\#6043](https://github.com/airbytehq/airbyte/issues/6043)).
+
+- If you want to use this connector now, you can build the connector locally, and publish it to your own docker registry. See the "[Build](#build)" or "[Building via Gradle](#building-via-gradle)" sections below for details. Please do not publish this connector publicly.
+- If you want to work on the connector code, first build the connector. The building process will automatically download the driver to the [`lib`](./lib) directory. You can also manually download the driver from [here](https://databricks.com/spark/jdbc-drivers-download).
 
 ## Local development
 
