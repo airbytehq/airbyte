@@ -1371,13 +1371,20 @@ public class AcceptanceTests {
 
   private static void waitForTemporalWorkflow(final UUID connectionId) {
     assertTimeout(Duration.ofSeconds(20), () -> {
+      boolean canGetState = false;
       do {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }
-      } while (!temporalClient.isWorkflowRunning(temporalClient.getConnectionManagerName(connectionId)));
+        try {
+          temporalClient.getWorkflowState(connectionId);
+          canGetState = true;
+        } catch (Exception e) {
+
+        }
+      } while (!canGetState);
     });
   }
 
