@@ -8,9 +8,6 @@ COPY source_sf_marketingcloud_singer ./source_sf_marketingcloud_singer
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
-# this line can be removed if data extensions are required
-RUN sed -i '/^    DataExtensionDataAccessObject,$/d' /usr/local/lib/python3.7/site-packages/tap_exacttarget/__init__.py
-
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
