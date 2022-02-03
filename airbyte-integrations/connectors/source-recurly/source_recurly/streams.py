@@ -16,16 +16,18 @@ DEFAULT_SORT_KEY = "updated_at"
 DEFAULT_LIMIT = 200
 
 BEGIN_TIME_PARAM = "begin_time"
+END_TIME_PARAM = "end_time"
 
 CAMEL_CASE_PATTERN = re.compile(r"(?<!^)(?=[A-Z])")
 
 
 class BaseStream(Stream):
-    def __init__(self, client: Client, begin_time: str = None, **kwargs):
+    def __init__(self, client: Client, begin_time: str = None, end_time: str = None, **kwargs):
         super(Stream, self).__init__(**kwargs)
 
         self._client = client
         self.begin_time = begin_time
+        self.end_time = end_time
 
     @property
     def name(self):
@@ -121,6 +123,9 @@ class BaseStream(Stream):
         if self.begin_time:
             params.update({BEGIN_TIME_PARAM: self.begin_time})
 
+        if self.end_time:
+            params.update({END_TIME_PARAM: self.end_time})
+
         items = getattr(self._client, self.client_method_name)(params=params).items()
 
         # Call the Recurly client methods
@@ -186,6 +191,10 @@ class BaseAccountResourceStream(BaseStream):
         if self.begin_time:
             account_params.update({BEGIN_TIME_PARAM: self.begin_time})
             params.update({BEGIN_TIME_PARAM: self.begin_time})
+
+        if self.end_time:
+            account_params.update({END_TIME_PARAM: self.end_time})
+            params.update({END_TIME_PARAM: self.end_time})
 
         # Call the Recurly client methods
         accounts = self._client.list_accounts(params=account_params).items()
@@ -309,6 +318,9 @@ class UniqueCoupons(BaseStream):
 
         if self.begin_time:
             params.update({BEGIN_TIME_PARAM: self.begin_time})
+
+        if self.end_time:
+            params.update({END_TIME_PARAM: self.end_time})
 
         # List all coupons
         coupons = self._client.list_coupons(params=params).items()

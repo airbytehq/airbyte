@@ -13,6 +13,12 @@
         "examples": ["2021-12-01T00:00:00"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
       },
+      "end_time": {
+        "type": "string",
+        "description": "ISO8601 timestamp to which the replication from Recurly API will stop. Records after that date won't be imported.",
+        "examples": ["2021-12-01T00:00:00"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+      },
       "api_key": {
         "type": "string",
         "title": "API Key",

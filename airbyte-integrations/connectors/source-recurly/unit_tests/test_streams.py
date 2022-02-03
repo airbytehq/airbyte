@@ -10,6 +10,7 @@ from source_recurly.streams import (
     BEGIN_TIME_PARAM,
     DEFAULT_CURSOR,
     DEFAULT_LIMIT,
+    END_TIME_PARAM,
     AccountCouponRedemptions,
     AccountNotes,
     Accounts,
@@ -63,6 +64,16 @@ class TestStreams(unittest.TestCase):
         next(iter(stream.read_records(self.sync_mode_mock)))
 
         params = {**self.params, BEGIN_TIME_PARAM: begin_time_mock}
+
+        getattr(self.client_mock, METHOD_NAME).assert_called_once_with(params=params)
+
+    def test_read_records_with_end_time(self):
+        end_time_mock = Mock()
+        stream = TestStream(client=self.client_mock, end_time=end_time_mock)
+
+        next(iter(stream.read_records(self.sync_mode_mock)))
+
+        params = {**self.params, END_TIME_PARAM: end_time_mock}
 
         getattr(self.client_mock, METHOD_NAME).assert_called_once_with(params=params)
 
