@@ -15,6 +15,10 @@ import requests
 from requests_oauthlib import OAuth1
 import urllib
 import json
+import datetime
+import gzip
+from io import BytesIO
+import time
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -62,7 +66,7 @@ class TwitterAdsStream(HttpStream, ABC):
         # TODO: Fill in the url base. Required.
     url_base = "https://ads-api.twitter.com/"
 
-    def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, **kwargs):
+    def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, segmentation, **kwargs):
         super().__init__(authenticator, **kwargs)
         self.account_id = account_id
         self.auth = authenticator
@@ -71,6 +75,7 @@ class TwitterAdsStream(HttpStream, ABC):
         self.granularity = granularity
         self.metric_groups = metric_groups
         self.placement = placement
+        self.segmentation = segmentation
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -88,11 +93,9 @@ class TwitterAdsStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
 
-        if self.__class__.__name__ == "AdsAnalyticsMetrics":
-            return None
-        else:
-            next_page_token = response.json()['next_cursor']
-            next_page_token
+    
+        next_page_token = response.json()['next_cursor']
+        next_page_token
     
 
     def request_params(
@@ -101,11 +104,7 @@ class TwitterAdsStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-
-        if self.__class__.__name__ == "AdsAnalyticsMetrics":
-            return None
-        else:
-            return {"cursor": next_page_token}
+        return {"cursor": next_page_token}
      
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -114,9 +113,27 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        response_json = response.json()
-        result = response_json.get("data")
-        return result
+        if self.__class__.__name__ == "AdsAnalyticsMetrics":
+            job_urls = self.job_urls
+            data = {}
+            
+            for job_url in job_urls:
+                with requests.get(job_url) as zipped_result:
+                 json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
+
+                json_str = json_bytes.decode('utf-8') 
+                result = json.loads(json_str)
+
+                result = result.get("data")
+                data.update(result)
+            return data
+        else:
+            response_json = response.json()
+            result = response_json.get("data")
+            return result
+        
+
+
 
 
 class Campaigns(TwitterAdsStream):
@@ -136,7 +153,6 @@ class Campaigns(TwitterAdsStream):
         """
         auth = self.auth
         account_id = self.account_id
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
         
@@ -190,10 +206,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -201,38 +214,87 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        # FixMe: request returns a bad request error if (end_time - start_time)> 7 this could lead to problems
+        
         auth = self.auth
-        start_time = self.start_time
-        end_time = self.end_time
+        # we need to specifiy a start/end time different from the one in the config as maximum time span is 7day for this endpoint
+        start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+        end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
-        metric_groups = self.metric_groups
+        metric_groups =  self.metric_groups
         account_id = self.account_id
         placement = self.placement
-        campaign_ids_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
-        response = requests.get(campaign_ids_url, auth=auth)
-        campaign_ids = []
+        segmentation = self.segmentation
+        entity = "PROMOTED_TWEET"
+        
+        # getting activie promoted tweet ids
+        promoted_tweet_ids_url = "https://ads-api.twitter.com/9/stats/accounts/" + account_id + "/active_entities?"
+        promoted_tweet_ids_params = urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity})
+        promoted_tweet_ids_params = urllib.parse.unquote(promoted_tweet_ids_params)
+        promoted_tweet_ids_url = promoted_tweet_ids_url + promoted_tweet_ids_params
+        response = requests.get(promoted_tweet_ids_url, auth=auth)
+        promoted_tweet_ids = []
+
 
         for each in response.json()['data']:
-            campaign_ids.append(each["id"])
+            promoted_tweet_ids.append(each["entity_id"])
  
-        campaign_ids = list(set(campaign_ids))
-        
-        # we might need to limit the number of campaign ids to 20 per call...
-        campaign_ids = campaign_ids[:20]
+        promoted_tweet_ids = list(set(promoted_tweet_ids))
 
-        
-        #FixMe: campaign_ids and metric_groups are not being passed correctly to request header commas are being replaced by %
-        
-        campaign_ids = ','.join(campaign_ids)
+
+        # This twitter ads api endpoint allows only 20 entity ids per request
+        # Therefore we are splitting entity ids in list with len < 20 and loop through the lists
+        promoted_tweet_ids = [promoted_tweet_ids[i * 20:(i + 1) * 20 ] for i in range((len(promoted_tweet_ids) + 20 - 1) // 20)]
+
+        promoted_tweet_ids_str = []
+        for each in promoted_tweet_ids:
+            each = ','.join(each)
+            promoted_tweet_ids_str.append(each)
+
+
         metric_groups = ','.join(metric_groups)
-        account_id = self.account_id
 
-        base_url = "/10/stats/accounts/" + account_id + '?'
-        params = urllib.parse.urlencode({ "entity": "PROMOTED_TWEET", "entity_ids": campaign_ids, "start_time":start_time, "end_time": end_time,"granularity": granularity, "placement": placement, "metric_groups": metric_groups})
-        params = urllib.parse.unquote(params)
-      
-        request_url = base_url + params
+        job_urls = []
+        job_success_urls = [] 
+        job_statuses = []
+
+        for each in promoted_tweet_ids_str:
+            post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
+            params_post = {"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation}
+            post_response = requests.post(post_base_url, params_post,  auth=auth)
+        
+
+            job_id = post_response.json()['data']['id_str']
+            job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
+            job_success_params = urllib.parse.urlencode({"job_id": job_id})
+            job_success_params = urllib.parse.unquote(job_success_params)
+            job_success_url = job_success_url + job_success_params
+        
+            job_success_response = requests.get(job_success_url, auth=auth)
+            job_success_response = job_success_response.json()
+            job_status = job_success_response['data'][0]['status']
+            job_url = job_success_response['data'][0]['url']
+            
+            job_urls.append(job_url)
+            job_success_urls.append(job_success_url)
+            job_statuses.append(job_status)
+
+        for job_success_url,job_status in zip(job_success_urls, job_statuses):
+            while job_status != "SUCCESS":
+                time.sleep(300)
+                job_success_response = requests.get(job_success_url, auth=auth)
+                job_success_response = job_success_response.json()
+                job_status = job_success_response['data'][0]['status']
+                job_url = job_success_response['data'][0]['url']
+            
+                job_urls.append(job_url)
+
+
+            
+        # dropping none values from job_urls
+        job_urls = [url for url in job_urls if url]
+        self.job_urls = job_urls
+
+        request_url =  job_success_url
         return request_url
 
 # Basic incremental stream
@@ -317,7 +379,7 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
-        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
-        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"]),
-        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"])]
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"])]

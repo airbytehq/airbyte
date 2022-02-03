@@ -5,7 +5,7 @@
     "title": "Twitter Ads Spec",
     "type": "object",
     "required": [ "CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID", "START_TIME", "END_TIME"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "CONSUMER_KEY": {
         "type": "string",
@@ -46,6 +46,10 @@
       "PLACEMENT": {
         "type": "string",
         "description": "Placement of data to be pulled."
+      },
+      "Segmentation": {
+        "type": "string",
+        "description": "Segmentation of data to be pulled."
       }
     }
   }
