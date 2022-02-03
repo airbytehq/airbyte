@@ -7,6 +7,7 @@ package io.airbyte.workers.helper;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
 import java.util.Comparator;
 import java.util.List;
@@ -30,9 +31,7 @@ public class FailureHelper {
         .withInternalMessage(t.getMessage())
         .withStacktrace(ExceptionUtils.getStackTrace(t))
         .withTimestamp(System.currentTimeMillis())
-        .withMetadata(new Metadata()
-            .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
-            .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber));
+        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
   }
 
   public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -82,11 +81,25 @@ public class FailureHelper {
         .withPartialSuccess(partialSuccess);
   }
 
-  public static FailureReason failureReasonFromWorkflowAndActivity(final String workflowType,
-                                                                   final String activityType,
-                                                                   final Throwable t,
-                                                                   final Long jobId,
-                                                                   final Integer attemptNumber) {
+  public static AttemptFailureSummary failureSummaryForCancellation(final Long jobId, final Integer attemptNumber, final Set<FailureReason> failures, final Boolean partialSuccess) {
+    failures.add(new FailureReason()
+        .withFailureType(FailureType.MANUAL_CANCELLATION)
+        .withInternalMessage("Setting attempt to FAILED because the job was cancelled")
+        .withExternalMessage("This attempt was cancelled")
+        .withTimestamp(System.currentTimeMillis())
+        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber))
+    );
+
+    return failureSummary(failures, partialSuccess);
+  }
+
+  public static FailureReason failureReasonFromWorkflowAndActivity(
+      final String workflowType,
+      final String activityType,
+      final Throwable t,
+      final Long jobId,
+      final Integer attemptNumber
+  ) {
     if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
       return replicationFailure(t, jobId, attemptNumber);
     } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {
@@ -98,6 +111,12 @@ public class FailureHelper {
     } else {
       return unknownOriginFailure(t, jobId, attemptNumber);
     }
+  }
+
+  private static Metadata jobAndAttemptMetadata(final Long jobId, final Integer attemptNumber) {
+    return new Metadata()
+        .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
+        .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber);
   }
 
   /**
