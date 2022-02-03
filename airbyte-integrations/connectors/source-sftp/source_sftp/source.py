@@ -19,7 +19,7 @@ class SourceSftp(AbstractSource):
         client = get_client(config)
         return [SFTPIncrementalStream(
             client=client,
-            dataset_name=config["dataset_name"],
+            table_name=config["table_name"],
             start_date=config["start_date"],
             prefix=config.get("prefix"),
             pattern=config.get("pattern")

@@ -1,5 +1,5 @@
 {
-  "dataset_name": "sftp",
+  "table_name": "sftp",
   "reader_config": "{}",
   "user": "user1",
   "password": "pass1",

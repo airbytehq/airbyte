@@ -1,3 +1,4 @@
+import ast
 import os
 import re
 import socket
@@ -24,14 +25,14 @@ def handle_backoff(details):
 
 
 class Client:
-    def __init__(self, host, username, password=None, port=None, timeout=REQUEST_TIMEOUT, read_config=None):
+    def __init__(self, host, username, password=None, port=None, timeout=REQUEST_TIMEOUT, reader_config=None):
         self.host = host
         self.username = username
         self.password = password
         self.port = int(port) or 22
         self.__active_connection = False
         self.key = None
-        self.read_config = read_config or {}
+        self.reader_config = reader_config or {}
         self.transport : paramiko.Transport = None
 
         if timeout and float(timeout):
@@ -198,15 +199,16 @@ class Client:
 
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
     def load_dataframes(self, file_path, skip_data=False):
-        _read_config = {**self.read_config}
-        _read_config["chunksize"] = CHUNK_SIZE
+        _reader_config = {**self.reader_config}
+        _reader_config["chunksize"] = CHUNK_SIZE
         if skip_data:
-            _read_config["nrows"] = 0
-            _read_config["index_col"] = 0
-
+            _reader_config["nrows"] = 0
+            _reader_config["index_col"] = 0
+        
+        logger.debug("Load dataframe from file %s, with read options: %s", file_path, _reader_config)
         with self.sftp.open(file_path, "r") as file:
             # file.prefetch()
-            yield from pd.read_csv(file, **_read_config)
+            yield from pd.read_csv(file, **_reader_config)
 
     def read(self, file_path, fields=None, skip_data=False):
         fields = set(fields) if fields else None
@@ -231,5 +233,5 @@ def get_client(config):
         password=config.get("password"),
         port=config.get("port"),
         timeout=config.get("request_timeout"),
-        read_config=config.get("read_config"),
+        reader_config=ast.literal_eval(config.get("reader_config", "{}")),
     )

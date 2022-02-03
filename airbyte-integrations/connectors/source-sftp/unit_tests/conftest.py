@@ -15,8 +15,8 @@ def client_config():
         "port": "22",
         "password": "1234",
         "request_timeout": "60",
-        "read_config": {},
-        "dataset_name": "dataset",
+        "read_config": "{}",
+        "table_name": "dataset",
         "start_date": "2020-01-01T00:00:00"
     }
 

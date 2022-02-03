@@ -4,13 +4,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sftp Spec",
     "type": "object",
-    "required": ["dataset_name", "user", "password", "host", "start_date"],
+    "required": ["table_name", "user", "password", "host", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "dataset_name": {
+      "table_name": {
         "type": "string",
-        "title": "Dataset Name",
-        "description": "The Name of the final table to replicate this file into (should include letters, numbers dash and underscores only)."
+        "title": "Table Name",
+        "description": "The Name of the final table to replicate this file into (should include letters, numbers and underscores only).",
+        "pattern": "^[a-zA-Z0-9_]+$"
       },
       "reader_config": {
         "type": "string",

@@ -24,14 +24,14 @@ class SFTPStream(Stream):
     def __init__(
         self,
         client: Client,
-        dataset_name: str,
+        table_name: str,
         prefix: str = None,
         pattern: str = None,
         fields: Mapping[str, Any] = None,
         start_date: str = None,
     ) -> None:
         self._client = client
-        self.dataset_name = dataset_name
+        self.table_name = table_name
         self.prefix = prefix or PREFIX_ROOT
         self.pattern = pattern or PATTERN_ALL
         self.fields = fields or {}
@@ -50,7 +50,7 @@ class SFTPStream(Stream):
 
     @property
     def name(self) -> str:
-        return self.dataset_name
+        return self.table_name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -65,7 +65,6 @@ class SFTPStream(Stream):
             properties[ab_col] = {"type": ["string", "null"]}
         properties[self.ab_last_modified_column]["format"] = "date-time"
         properties[self.ab_last_modified_column]["airbyte_type"] = "timestamp_with_timezone"
-        self._client.close()
         return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties}
 
     def stream_slices(
@@ -74,7 +73,6 @@ class SFTPStream(Stream):
         files = self._client.get_files(prefix=self.prefix, search_pattern=self.pattern, modified_since=self.start_date)
         for file in files:
             yield [file]
-        self._client.close()
 
     def read_stream_slice(self, stream_slice: Iterable[Mapping[str, Any]], stream_state: Mapping[str, Any] = None):
         self.logger.info("Stream state: %s", stream_state)
@@ -161,4 +159,3 @@ class SFTPIncrementalStream(SFTPStream):
 
             # Ensure yield
             yield from [None]
-        self._client.close()

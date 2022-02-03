@@ -5,14 +5,14 @@ tests:
   spec:
     - spec_path: "source_sftp/spec.json"
   connection:
-    - config_path: "secrets/config.json"
+    - config_path: "integration_tests/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    - config_path: "integration_tests/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
+    - config_path: "integration_tests/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
       expect_records:
@@ -21,11 +21,11 @@ tests:
         exact_order: yes
         extra_records: no
   incremental:
-    - config_path: "secrets/config.json"
+    - config_path: "integration_tests/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
         test: ["_ab_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
+    - config_path: "integration_tests/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
