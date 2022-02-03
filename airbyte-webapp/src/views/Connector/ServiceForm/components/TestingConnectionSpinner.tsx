@@ -10,10 +10,13 @@ const LoadingContainer = styled.div`
   justify-content: center;
 `;
 
+// Progress Bar runs 2min for checking connections
+const PROGRESS_BAR_TIME = 60 * 2;
+
 const TestingConnectionSpinner: React.FC = () => {
   return (
     <LoadingContainer>
-      <ProgressBar runTime={120} />
+      <ProgressBar runTime={PROGRESS_BAR_TIME} />
     </LoadingContainer>
   );
 };

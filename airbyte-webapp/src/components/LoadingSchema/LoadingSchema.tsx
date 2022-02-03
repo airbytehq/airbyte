@@ -17,9 +17,12 @@ const FetchMessage = styled.div`
   white-space: pre-line;
 `;
 
+// Progress Bar runs 4min for discoveries schema
+const PROGRESS_BAR_TIME = 60 * 4;
+
 const LoadingSchema: React.FC = () => (
   <SpinnerBlock>
-    <ProgressBar runTime={240} />
+    <ProgressBar runTime={PROGRESS_BAR_TIME} />
     <FetchMessage>
       <FormattedMessage id="onboarding.fetchingSchema" />
     </FetchMessage>
