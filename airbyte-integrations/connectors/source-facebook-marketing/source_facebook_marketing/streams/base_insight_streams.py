@@ -129,7 +129,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         return {}
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: Mapping[str, Any]):
         """State setter"""
         self._cursor_value = pendulum.parse(value[self.cursor_field]).date() if value.get(self.cursor_field) else None
         self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
@@ -177,7 +177,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.

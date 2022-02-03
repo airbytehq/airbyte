@@ -27,7 +27,7 @@ class InsightAsyncJobManager:
 
     # When current insights throttle hit this value no new jobs added.
     THROTTLE_LIMIT = 70
-    FAILED_JOBS_RESTART_COUNT = 5
+    MAX_NUMBER_OF_ATTEMPTS = 5
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
@@ -113,15 +113,15 @@ class InsightAsyncJobManager:
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:
-                if job.restart_number >= self.FAILED_JOBS_RESTART_COUNT:
-                    raise JobException(f"Job {job} failed more than {self.FAILED_JOBS_RESTART_COUNT} times. Terminating...")
-                elif job.restart_number:
-                    logger.info(f"Job {job} failed, trying to split job into smaller chunks (campaigns).")
+                if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
+                    raise JobException("%s: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...", job)
+                elif job.attempt_number == 2:
+                    logger.info("%s: failed second time, trying to split job into smaller chunks (campaigns).", job)
                     group_job = job.split_job()
                     running_jobs.append(group_job)
                     group_job.start()
                 else:
-                    logger.info(f"Job {job} failed, restarting")
+                    logger.info("%s: failed, restarting", job)
                     job.restart()
                     running_jobs.append(job)
                 failed_num += 1
