@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import click
+from octavia_cli.check_context import ProjectNotInitizialiedError
 
 from .definition_specification import (
     DestinationDefinitionSpecification,
@@ -16,6 +17,10 @@ from .renderer import SpecRenderer
 @click.argument("definition_name")
 @click.pass_context
 def create(ctx: click.Context, definition_type: str, definition_id: str, definition_name: str):
+    if not ctx.obj["PROJECT_IS_INITIALIZED"]:
+        raise ProjectNotInitizialiedError(
+            "Your octavia project is not initialized, please run 'octavia init' before running 'octavia create'."
+        )
     api_client = ctx.obj["API_CLIENT"]
     if definition_type == "source":
         definition_specification = SourceDefinitionSpecification(api_client, definition_id)
@@ -30,4 +35,4 @@ def create(ctx: click.Context, definition_type: str, definition_id: str, definit
         definition_specification.definition.documentation_url,
         definition_specification.schema,
     )
-    print(renderer.write_yaml("/Users/augustin/Desktop/octavia_project"))
+    output_file = renderer.write_yaml(project_path=".")
