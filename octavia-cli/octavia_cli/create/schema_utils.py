@@ -1,247 +1,75 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-"""Utilities to help with JSON Schema.
-
-lazydocs: ignore
-"""
-
-import abc
-from dataclasses import dataclass
-from typing import Any, Dict, List
 
 
-def resolve_reference(reference: str, references: Dict) -> Dict:
-    return references[reference.split("/")[-1]]
+def parse_properties(required_fields, properties):
+    return [Field(f_name, f_name in required_fields, f_metadata) for f_name, f_metadata in properties.items()]
 
 
-def get_single_reference_item(property: Dict, references: Dict) -> Dict:
-    # Ref can either be directly in the properties or the first element of allOf
-    reference = property.get("$ref")
-    if reference is None:
-        reference = property["allOf"][0]["$ref"]
-    return resolve_reference(reference, references)
-
-
-def get_union_references(property: Dict, references: Dict) -> List[Dict]:
-    # Ref can either be directly in the properties or the first element of allOf
-    union_references = property.get("anyOf")
-    resolved_references: List[Dict] = []
-    for reference in union_references:  # type: ignore
-        resolved_references.append(resolve_reference(reference["$ref"], references))
-    return resolved_references
-
-
-class Field(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def type_name(
-        self,
-    ):  # pragma: no cover
-        pass
-
-    def __init__(self, name, property, references, required_properties) -> None:
+class Field:
+    def __init__(self, name, required, field_metadata):
         self.name = name
-        self.required = self.name in required_properties
-        self.property = property
-        self.references = references
-        self.description = property.get("description")
-        self.examples = property.get("examples")
-        self.default = property.get("default")
+        self.required = required
+        self.field_metadata = field_metadata
+        self.title = field_metadata.get("title")
+        self.type_hint = field_metadata.get("type")
+        self.description = field_metadata.get("description")
+        self.examples = field_metadata.get("examples", [])
+        self.default = field_metadata.get("default")
+        self.const = field_metadata.get("const")
+        self.is_secret = field_metadata.get("airbyte_secret", False)
+        self.is_one_of = "oneOf" in self.field_metadata
+        self.is_array_of_objects = (
+            self.type_hint == "array" and "items" in self.field_metadata and self.field_metadata["items"]["type"] == "object"
+        )
+        self.is_object = self.type_hint == "object"
+        self.one_of_values = self.get_one_of_values()
+        self.object_properties = self.get_object_properties(field_metadata)
+        self.array_items = self.get_array_items()
 
-    def as_dict(self):
-        return {
-            "type": self.type_name,
-            "required": self.required,
-            "examples": self.examples,
-            "description": self.description,
-            "default": self.default,
-        }
-
-
-class SingleString(Field):
-    type_name = "string"
-
-    @staticmethod
-    def identity(property, references):
-        return property.get("type") == "string"
-
-
-class Boolean(Field):
-    type_name = "boolean"
-
-    @staticmethod
-    def identity(property, references):
-        return property.get("type") == "boolean"
-
-
-class Integer(Field):
-    type_name = "integer"
+    def get_one_of_values(self):
+        if not self.is_one_of:
+            return []
+        one_of_values = []
+        for one_of_value in self.field_metadata.get("oneOf"):
+            properties = self.get_object_properties(one_of_value)
+            one_of_values.append(properties)
+        return one_of_values
 
     @staticmethod
-    def identity(property, references):
-        return property.get("type") == "integer"
+    def get_object_properties(field_metadata):
+        if field_metadata.get("properties"):
+            required_fields = field_metadata.get("required", [])
+            return parse_properties(required_fields, field_metadata["properties"])
+        return []
 
-
-class Number(Field):
-    type_name = "number"
-
-    @staticmethod
-    def identity(property, references):
-        return property.get("type") == "number"
-
-
-class MultiEnum(Field):
-    type_name = "array"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("type") != "array":
-            return False
-
-        if property.get("uniqueItems") is not True:
-            # Only relevant if it is a set or other datastructures with unique items
-            return False
-
-        try:
-            # Uses literal
-            _ = property["items"]["enum"]
-            return True
-        except Exception:
-            pass
-
-        try:
-            # Uses enum
-            resolve_reference(property["items"]["$ref"], references)["enum"]
-            return True
-        except Exception:
-            return False
-
-
-class SingleEnum(Field):
-    @property
-    def type_name(self):
-        return "enum"
+    def get_array_items(self):
+        if self.is_array_of_objects:
+            required_fields = self.field_metadata["items"].get("required", [])
+            return parse_properties(required_fields, self.field_metadata["items"]["properties"])
+        return []
 
     @property
-    def enum_values(self):
-        return get_single_reference_item(self.property, self.references)["enum"]
+    def comment(self):
+        comment_items = []
+        if self.is_secret:
+            comment_items.append("🤫")
+        comment_items.append("REQUIRED" if self.required else "OPTIONAL")
+        comment_items.append(f"Type: {self.type_hint}")
+        if self.description:
+            comment_items.append(self.description)
+        if self.examples:
+            comment_items.append(f"Examples: {', '.join([str(example) for example in self.examples])}")
+        return " | ".join(comment_items).replace("\n", "")
 
-    @staticmethod
-    def identity(property, references):
-        if property.get("enum"):
-            return True
-        try:
-            get_single_reference_item(property, references)["enum"]
-            return True
-        except Exception:
-            return False
+    @property
+    def default_value(self):
+        if self.const:
+            return self.const
+        if self.default is not None:
+            return self.default
+        return ""
 
-
-class SingleDict(Field):
-    type_name = "object"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("type") != "object":
-            return False
-        return "additionalProperties" in property
-
-
-class SingleReference(Field):
-    type_name = "object"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("type") is not None:
-            return False
-        return bool(property.get("$ref"))
-
-
-class SingleObject(Field):
-    type_name = "object"
-
-    @staticmethod
-    def identity(property, references):
-        try:
-            object_reference = get_single_reference_item(property, references)
-            if object_reference["type"] != "object":
-                return False
-            return "properties" in object_reference
-        except Exception:
-            return False
-
-
-class Union_(Field):
-    type_name = "anyOf"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("anyOf") is None:
-            return False
-
-        if len(property.get("anyOf")) == 0:  # type: ignore
-            return False
-
-        for reference in property.get("anyOf"):  # type: ignore
-            if not SingleReference.identity(reference, None):
-                return False
-
-        return True
-
-
-class List_(Field):
-    type_name = "array"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("type") != "array":
-            return False
-
-        if property.get("items") is None:
-            return False
-
-        try:
-            return property["items"]["type"] in ["string", "number", "integer"]
-        except Exception:
-            return False
-
-
-class ObjectList(Field):
-    type_name = "array"
-
-    @staticmethod
-    def identity(property, references):
-        if property.get("type") != "array":
-            return False
-        try:
-            object_reference = resolve_reference(property["items"]["$ref"], references)
-            if object_reference["type"] != "object":
-                return False
-            return "properties" in object_reference
-        except Exception:
-            return False
-
-
-FIELDS_TYPES = [
-    SingleString,
-    Boolean,
-    Integer,
-    Number,
-    MultiEnum,
-    SingleEnum,
-    SingleDict,
-    SingleReference,
-    SingleObject,
-    Union_,
-    List_,
-    ObjectList,
-]
-
-
-def field_factory(name, property, references, required_properties):
-    for field_type in FIELDS_TYPES:
-        if field_type.identity(property, references):
-            return field_type(name, property, references, required_properties)
-    print(property)
-    raise Exception("Unsupported property")
+    def __repr__(self) -> str:
+        return self.name

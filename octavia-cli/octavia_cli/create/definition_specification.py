@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import abc
-import json
 
 from airbyte_api_client.api import (
     destination_definition_api,
@@ -74,8 +73,8 @@ class DefinitionSpecification(abc.ABC):
         self.definition_api_instance = self.definition_api(api_client)
 
     @property
-    def json_schema(self):
-        return json.dumps(self._get().connection_specification)
+    def schema(self):
+        return self._get().connection_specification
 
     @property
     def documentation_url(self):

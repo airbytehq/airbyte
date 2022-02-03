@@ -1,0 +1,55 @@
+# Configuration for {{ definition_metadata.image }}
+# Documentation about this connector can be found at {{ definition_metadata.documentation_url }}
+definition_name: {{ definition_metadata.name}}
+definition_type: {{ definition_metadata.type}}
+definition_id: {{ definition_metadata.id }}
+definition_image: {{ definition_metadata.image }}
+definition_version: {{ definition_metadata.version }}
+
+{%- macro render_field(field, is_commented) %}
+{%- if is_commented %}# {% endif %}{{ field.name }}: {{ field.default_value}} # {{ field.comment }}
+{%- endmacro %}
+
+{%- macro render_sub_fields(sub_fields, is_commented) %}
+{%- for f in sub_fields %}
+{{ render_field(f, is_commented) }}
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro render_array_sub_fields(sub_fields, is_commented) %}
+{%- for f in sub_fields %}
+{% if loop.first %}- {% else %}  {% endif %}{{ render_field(f, is_commented) }}
+{%- endfor %}
+{%- endmacro %}
+
+
+{%- macro render_one_of(field) %}
+{{ field.name }}: 
+{%- for one_of_value in field.one_of_values %}
+  {%- if loop.first %}
+  # Pick one valid structure among the examples below:
+  {{- render_sub_fields(one_of_value, False)|indent(2, True) }}
+  {%- else %}
+  # Another valid structure for {{ field.name }}:
+  {{- render_sub_fields(one_of_value, True)|indent(2, True) }}
+  {%- endif %}
+{% endfor %}  
+{%- endmacro %}
+
+{%- macro render_array_of_objects(field) %}
+{{ field.name }}: 
+  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, True)}} 
+{%- endmacro %}
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+{%- for f in configuration_fields %}
+  {%- if f.is_one_of %}
+  {{ render_one_of(f)|indent(2, True) }}
+  {%- elif f.is_array_of_objects %}
+  {{ render_array_of_objects(f)|indent(2, True) }}
+  {%- else %}
+  {{ render_field(f, is_commented=False)}}
+  {%- endif %}
+{%- endfor %}
+
