@@ -348,10 +348,14 @@ class Stream(ABC):
             if not next_page_token:
                 break
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+    def read(self, getter: Callable, params: Mapping[str, Any] = None, filter_old_records: bool = True) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_old_records(self._read(getter, params))
+        generator = self._read(getter, params)
+        if filter_old_records:
+            generator = self._filter_old_records(generator)
+
+        yield from generator
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):
@@ -879,6 +883,10 @@ class FormSubmissionStream(Stream):
     limit = 50
     updated_at_field = "updatedAt"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.forms = FormStream(**kwargs)
+
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
             keys = record.keys()
@@ -891,10 +899,14 @@ class FormSubmissionStream(Stream):
             yield record
 
     def list_records(self, fields) -> Iterable:
-        for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
-            for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
-                submission["formId"] = form["id"]
-                yield submission
+        seen = set()
+        # To get submissions for all forms date filtering has to be disabled
+        for form in self.forms.read(getter=partial(self.forms._api.get, url=self.forms.url), filter_old_records=False):
+            if form["id"] not in seen:
+                seen.add(form["id"])
+                for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
+                    submission["formId"] = form["id"]
+                    yield submission
 
 
 class MarketingEmailStream(Stream):
