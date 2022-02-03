@@ -194,9 +194,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   public void removeFileAndDropTmpTable() throws Exception {
     if (purgeStagingData) {
       for (final String fileName : stagingFileNames) {
-        if (s3Client.doesObjectExist(s3Config.getBucketName(), fileName)) {
-          s3Client.deleteObject(s3Config.getBucketName(), fileName);
-        }
+        s3Client.deleteObject(s3Config.getBucketName(), fileName);
         LOGGER.info("S3 staging file {} cleaned.", fileName);
       }
     }
