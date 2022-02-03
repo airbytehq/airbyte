@@ -253,6 +253,12 @@ public class TemporalClient {
     connectionManagerWorkflow.connectionUpdated();
   }
 
+  public WorkflowState getWorkflowState(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+
+    return connectionManagerWorkflow.getState();
+  }
+
   @Value
   @Builder
   public static class ManualSyncSubmissionResult {
