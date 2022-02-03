@@ -37,18 +37,18 @@ This is dependent on your networking setup. The easiest way to verify if Airbyte
 
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
-This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
+This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
 To create a dedicated database user, run the following commands against your database:
 
 ```sql
-CREATE USER airbyte PASSWORD 'your_password_here';
+CREATE USER <username> PASSWORD 'your_password_here';
 ```
 
 Then give it access to the relevant schema:
 
 ```sql
-GRANT USAGE ON SCHEMA <schema_name> TO airbyte
+GRANT USAGE ON SCHEMA <schema_name> TO <username>
 ```
 
 Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
@@ -58,9 +58,22 @@ Next, grant the user read-only access to the relevant tables. The simplest way i
 ```sql
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 
-# Allow airbyte user to see tables created in the future
-ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
+-- Allow user to see tables created in the future
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <username>;
 ```
+
+Currently, there is no way to sync a subset of columns using the Postgres source connector.
+- When setting up a connection, you can only choose which tables to sync, but not columns (issue [#2227](https://github.com/airbytehq/airbyte/issues/2227)).
+- If the user account can only access a subset of columns (i.e. has no `SELECT` permission for the full table), the connection check will pass. However, the data sync will fail with permission denied exception (issue [#9771](https://github.com/airbytehq/airbyte/issues/9771)).
+
+The short-term workaround for both issues is to create a view on the specific columns, and grant the user read permission of that view:
+
+```sql
+CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
+GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
+```
+
+A bug related to partial table permission is track in [issue #9771](https://github.com/airbytehq/airbyte/issues/9771).
 
 #### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
 
