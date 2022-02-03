@@ -271,9 +271,9 @@ public class WebBackendConnectionsHandler {
         schedulerHandler.syncConnection(connectionId);
       }
     } else {
-      if (!needReset) {
-        connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-      } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate, !needReset);
+
+      if (needReset) {
         temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
 
         temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
