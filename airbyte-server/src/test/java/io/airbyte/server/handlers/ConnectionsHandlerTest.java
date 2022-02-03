@@ -167,6 +167,7 @@ class ConnectionsHandlerTest {
 
   @Nested
   class MockedConnectionHelper {
+
     @BeforeEach
     void setUp() {
       connectionHelper = mock(ConnectionHelper.class);
@@ -187,7 +188,6 @@ class ConnectionsHandlerTest {
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .connectionId(standardSync.getConnectionId());
 
-
       when(featureFlags.usesNewScheduler()).thenReturn(true);
       connectionsHandler.updateConnection(connectionUpdate, false);
 
@@ -200,17 +200,18 @@ class ConnectionsHandlerTest {
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .connectionId(standardSync.getConnectionId());
 
-
       when(featureFlags.usesNewScheduler()).thenReturn(true);
       connectionsHandler.updateConnection(connectionUpdate, true);
 
       verify(connectionHelper).updateConnection(connectionUpdate);
       verifyNoInteractions(temporalWorkflowHandler);
     }
+
   }
 
   @Nested
   class UnMockedConnectionHelper {
+
     @BeforeEach
     void setUp() {
       connectionHelper = new ConnectionHelper(configRepository, workspaceHelper, workerConfigs);
@@ -388,10 +389,10 @@ class ConnectionsHandlerTest {
       final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
       final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-              standardSync.getConnectionId(),
-              standardSync.getSourceId(),
-              standardSync.getDestinationId(),
-              standardSync.getOperationIds())
+          standardSync.getConnectionId(),
+          standardSync.getSourceId(),
+          standardSync.getDestinationId(),
+          standardSync.getOperationIds())
           .schedule(null)
           .syncCatalog(catalog)
           .status(ConnectionStatus.INACTIVE);
@@ -674,6 +675,7 @@ class ConnectionsHandlerTest {
       assertTrue(Enums.isCompatible(DataType.class, io.airbyte.api.model.DataType.class));
       assertTrue(Enums.isCompatible(NamespaceDefinitionType.class, io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.class));
     }
+
   }
 
 }
