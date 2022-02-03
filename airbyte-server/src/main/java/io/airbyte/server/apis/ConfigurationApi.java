@@ -218,7 +218,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        temporalWorkerRunFactory);
+        temporalWorkerRunFactory,
+        connectionHelper);
     healthCheckHandler = new HealthCheckHandler();
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
