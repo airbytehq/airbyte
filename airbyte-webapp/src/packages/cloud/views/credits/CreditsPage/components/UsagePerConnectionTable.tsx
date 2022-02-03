@@ -11,6 +11,8 @@ import SortButton from "components/EntityTable/components/SortButton";
 import useRouter from "hooks/useRouter";
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
+import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
+import { useDestinationDefinitionList } from "hooks/services/useDestinationDefinition";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -19,24 +21,44 @@ const Content = styled.div`
 type UsagePerConnectionTableProps = {
   creditConsumption: CreditConsumptionByConnector[];
 };
+
+type FullTableProps = CreditConsumptionByConnector & {
+  creditsConsumedPercent: number;
+  sourceIcon: string;
+  destinationIcon: string;
+};
+
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
   creditConsumption,
 }) => {
   const { query, push } = useRouter();
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const creditConsumptionWithPercent = React.useMemo(() => {
     const sumCreditsConsumed = creditConsumption.reduce(
       (a, b) => a + b.creditsConsumed,
       0
     );
-    return creditConsumption.map((item) => ({
-      ...item,
-      creditsConsumedPercent:
-        item.creditsConsumed !== 0
-          ? (item.creditsConsumed / sumCreditsConsumed) * 100
-          : 0,
-    }));
-  }, [creditConsumption]);
+    return creditConsumption.map((item) => {
+      const currentSourceDefinition = sourceDefinitions.find(
+        (def) => def.sourceDefinitionId === item.sourceDefinitionId
+      );
+      const currentDestinationDefinition = destinationDefinitions.find(
+        (def) => def.destinationDefinitionId === item.destinationDefinitionId
+      );
+
+      return {
+        ...item,
+        sourceIcon: currentSourceDefinition?.icon,
+        destinationIcon: currentDestinationDefinition?.icon,
+        creditsConsumedPercent:
+          item.creditsConsumed !== 0
+            ? (item.creditsConsumed / sumCreditsConsumed) * 100
+            : 0,
+      };
+    });
+  }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
 
   const sortBy = query.sortBy || "connection";
   const sortOrder = query.order || SortOrderEnum.ASC;
@@ -102,12 +124,12 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
-        Cell: ({ cell, row }: CellProps<CreditConsumptionByConnector>) => (
+        Cell: ({ cell, row }: CellProps<FullTableProps>) => (
           <ConnectionCell
             sourceDefinitionName={cell.value}
-            sourceDefinitionId={row.original.sourceDefinitionId}
             destinationDefinitionName={row.original.destinationDefinitionName}
-            destinationDefinitionId={row.original.destinationDefinitionId}
+            sourceIcon={row.original.sourceIcon}
+            destinationIcon={row.original.destinationIcon}
           />
         ),
       },
@@ -123,12 +145,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
           </>
         ),
         accessor: "creditsConsumed",
-        Cell: ({
-          cell,
-          row,
-        }: CellProps<
-          CreditConsumptionByConnector & { creditsConsumedPercent: number }
-        >) => (
+        Cell: ({ cell, row }: CellProps<FullTableProps>) => (
           <UsageCell
             value={cell.value}
             percent={row.original.creditsConsumedPercent}

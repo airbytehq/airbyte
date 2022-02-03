@@ -4,14 +4,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 import ImageBlock from "components/ImageBlock";
-import { useSourceDefinition } from "hooks/services/useSourceDefinition";
-import { useDestinationDefinition } from "hooks/services/useDestinationDefinition";
 
 type ConnectionCellProps = {
   sourceDefinitionName: string;
   destinationDefinitionName: string;
-  sourceDefinitionId: string;
-  destinationDefinitionId: string;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const Icon = styled(ImageBlock)`
@@ -36,23 +34,18 @@ const Arrow = styled(FontAwesomeIcon)`
 const ConnectionCell: React.FC<ConnectionCellProps> = ({
   sourceDefinitionName,
   destinationDefinitionName,
-  sourceDefinitionId,
-  destinationDefinitionId,
+  sourceIcon,
+  destinationIcon,
 }) => {
-  const sourceDefinition = useSourceDefinition(sourceDefinitionId);
-  const destinationDefinition = useDestinationDefinition(
-    destinationDefinitionId
-  );
-
   return (
     <>
       <Connector>
-        <Icon small img={sourceDefinition.icon} />
+        <Icon small img={sourceIcon} />
         {sourceDefinitionName}
       </Connector>
       <Connector>
         <Arrow icon={faArrowRight} />
-        <Icon small img={destinationDefinition.icon} />
+        <Icon small img={destinationIcon} />
         {destinationDefinitionName}
       </Connector>
     </>
