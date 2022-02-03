@@ -85,6 +85,11 @@ webapp:
   ##
   tolerations: []
 
+  ## @param webapp.affinity [object] Affinity and anti-affinity for webapp pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## Configure the ingress resource that allows you to access the Airbyte installation.
   ## ref: http://kubernetes.io/docs/user-guide/ingress/
   ## @param webapp.ingress.enabled Set to true to enable ingress record generation
@@ -176,6 +181,11 @@ scheduler:
   ##
   tolerations: []
 
+  ## @param scheduler.affinity [object] Affinity and anti-affinity for scheduler pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## @param scheduler.log.level The log level to log at.
   log:
     level: "INFO"
@@ -232,6 +242,11 @@ podSweeper:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param podSweeper.affinity [object] Affinity and anti-affinity for podSweeper pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
 ## @section Server parameters
 
@@ -333,6 +348,11 @@ server:
   ##
   tolerations: []
 
+  ## @param server.affinity [object] Affinity and anti-affinity for server pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## @param server.log.level The log level to log at
   log:
     level: "INFO"
@@ -425,6 +445,11 @@ worker:
   ##
   tolerations: []
 
+  ## @param worker.affinity [object] Affinity and anti-affinity for worker pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## @param worker.log.level The log level to log at.
   log:
     level: "INFO"
@@ -469,15 +494,20 @@ temporal:
     type: ClusterIP
     port: 7233
 
-  ## @param temporal.nodeSelector [object] Node labels for pod assignment
+  ## @param temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
   nodeSelector: {}
 
-  ## @param temporal.tolerations [array] Tolerations for pod assignment.
+  ## @param temporal.tolerations [array] Tolerations for temporal pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
   ## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
   ## Example:

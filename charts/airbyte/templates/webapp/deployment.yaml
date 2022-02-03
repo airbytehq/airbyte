@@ -25,6 +25,9 @@ spec:
       {{- if .Values.webapp.tolerations }}
       tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.tolerations "context" $) | nindent 8 }}
       {{- end }}
+      {{- if .Values.webapp.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.affinity "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-webapp-container
         image: {{ include "airbyte.webappImage" . }}
