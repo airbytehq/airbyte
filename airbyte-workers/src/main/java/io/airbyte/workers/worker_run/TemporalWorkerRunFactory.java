@@ -63,6 +63,10 @@ public class TemporalWorkerRunFactory {
     return temporalClient.resetConnection(connectionId);
   }
 
+  public ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId) {
+    return temporalClient.synchronousResetConnection(connectionId);
+  }
+
   public void deleteConnection(final UUID connectionId) {
     temporalClient.deleteConnection(connectionId);
   }
