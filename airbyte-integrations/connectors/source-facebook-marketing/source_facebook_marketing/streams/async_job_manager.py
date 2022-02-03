@@ -7,6 +7,7 @@ import time
 from typing import TYPE_CHECKING, Iterator, List, Tuple
 
 from facebook_business.api import FacebookAdsApiBatch
+from source_facebook_marketing.streams.common import JobException
 
 from .async_job import AsyncJob
 
@@ -84,13 +85,8 @@ class InsightAsyncJobManager:
             yield from completed_jobs
             self._start_jobs()
 
-    def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
-        """Checks jobs status in advance and restart if some failed.
-
-        :return: list of completed jobs
-        """
-        completed_jobs = []
-        running_jobs = []
+    def _check_jobs_status(self):
+        """Check jobs status in advance"""
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for job in self._running_jobs:
             # we check it here because job can be an instance of ParentAsyncJob, which uses its own batch object
@@ -104,25 +100,33 @@ class InsightAsyncJobManager:
             # FacebookAdsApiBatch object with those calls
             api_batch = api_batch.execute()
 
+    def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
+        """Checks jobs status in advance and restart if some failed.
+
+        :return: list of completed jobs
+        """
+        completed_jobs = []
+        running_jobs = []
         failed_num = 0
+
+        self._check_jobs_status()
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
-            if job.completed:
-                if job.failed:
-                    if job.restart_number >= self.FAILED_JOBS_RESTART_COUNT:
-                        raise Exception(f"Job {job} failed more than {self.FAILED_JOBS_RESTART_COUNT} times. Terminating...")
-                    elif job.restart_number:
-                        logger.info(f"Job {job} failed, trying to split job into smaller chunks (campaigns).")
-                        group_job = job.split_job()
-                        running_jobs.append(group_job)
-                        group_job.start()
-                    else:
-                        logger.info(f"Job {job} failed, restarting")
-                        job.restart()
-                        running_jobs.append(job)
-                    failed_num += 1
+            if job.failed:
+                if job.restart_number >= self.FAILED_JOBS_RESTART_COUNT:
+                    raise JobException(f"Job {job} failed more than {self.FAILED_JOBS_RESTART_COUNT} times. Terminating...")
+                elif job.restart_number:
+                    logger.info(f"Job {job} failed, trying to split job into smaller chunks (campaigns).")
+                    group_job = job.split_job()
+                    running_jobs.append(group_job)
+                    group_job.start()
                 else:
-                    completed_jobs.append(job)
+                    logger.info(f"Job {job} failed, restarting")
+                    job.restart()
+                    running_jobs.append(job)
+                failed_num += 1
+            elif job.completed:
+                completed_jobs.append(job)
             else:
                 running_jobs.append(job)
 

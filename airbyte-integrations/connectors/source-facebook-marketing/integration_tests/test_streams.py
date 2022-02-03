@@ -14,10 +14,11 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 
 @pytest.fixture(scope="session", name="state")
 def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
+    cursor_value = "2021-02-19T10:42:40-0800"
     return {
-        "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "ad_sets": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "campaigns": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "ads": {"updated_time": cursor_value},
+        "ad_sets": {"updated_time": cursor_value},
+        "campaigns": {"updated_time": cursor_value},
     }
 
 
