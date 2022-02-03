@@ -73,7 +73,7 @@ CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
 GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
 ```
 
-This issue is tracked in [issue #9771](https://github.com/airbytehq/airbyte/issues/9771).
+This issue is tracked in [\#9771](https://github.com/airbytehq/airbyte/issues/9771).
 
 #### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
 
