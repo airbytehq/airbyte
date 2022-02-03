@@ -63,8 +63,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 ```
 
 Currently, there is no way to sync a subset of columns using the Postgres source connector.
-- When setting up a connection, you can only choose which tables to sync, but not columns (issue [#2227](https://github.com/airbytehq/airbyte/issues/2227)).
-- If the user account can only access a subset of columns (i.e. has no `SELECT` permission for the full table), the connection check will pass. However, the data sync will fail with permission denied exception (issue [#9771](https://github.com/airbytehq/airbyte/issues/9771)).
+- When setting up a connection, you can only choose which tables to sync, but not columns.
+- If the user account can only access a subset of columns (i.e. has no `SELECT` permission for the full table), the connection check will pass. However, the data sync will fail with `permission denied` exception.
 
 The short-term workaround for both issues is to create a view on the specific columns, and grant the user read permission of that view:
 
@@ -73,7 +73,7 @@ CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
 GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
 ```
 
-A bug related to partial table permission is track in [issue #9771](https://github.com/airbytehq/airbyte/issues/9771).
+This issue is tracked in [issue #9771](https://github.com/airbytehq/airbyte/issues/9771).
 
 #### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
 
