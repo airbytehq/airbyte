@@ -32,15 +32,16 @@ class Helpers {
         if (project.file(testFilesDirectory).exists()) {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
-                project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
+                project.task("_${taskName}Coverage", type: PythonTask) {
                     module = "coverage"
-                    command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
+                    command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                 }
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
-                    module = "coverage"
-                    // command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
-                    command = "report --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
+                // generation of coverage report is optional and we should skip it if tests are empty
+                project.task(taskName, type: Exec, dependsOn: taskDependencies) {
+                    commandLine = ".venv/bin/python"
+                    args "-m", "coverage", "report", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
                     dependsOn project.tasks.findByName("_${taskName}Coverage")
+                    setIgnoreExitValue true
 
                 }
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
@@ -76,8 +77,9 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
             pip 'pip:21.1.3'
-            pip 'coverage[toml]:6.2'
+            pip 'coverage[toml]:6.3.1'
         }
+
 
         project.task('isortFormat', type: PythonTask) {
             module = "isort"
