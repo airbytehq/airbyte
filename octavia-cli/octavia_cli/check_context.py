@@ -39,10 +39,12 @@ def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
     try:
         api_response = api_instance.get_health_check()
         if not api_response.available:
-            raise UnhealthyApiError("Your Airbyte instance is not ready to receive requests.")
-    except (airbyte_api_client.ApiException, MaxRetryError):
+            raise UnhealthyApiError(
+                "Your Airbyte instance is not ready to receive requests: the health endpoint returned 'available: False.'"
+            )
+    except (airbyte_api_client.ApiException, MaxRetryError) as e:
         raise UnreachableAirbyteInstanceError(
-            "Could not reach your Airbyte instance, make sure the instance is up and running an network reachable."
+            f"Could not reach your Airbyte instance, make sure the instance is up and running an network reachable: {e}"
         )
 
 
