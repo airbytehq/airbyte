@@ -6,14 +6,14 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Sequence, Iterator, Union
+from typing import Any, Iterator, List, Mapping, Optional, Sequence, Union
 
 import pendulum
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApiBatch, FacebookResponse, FacebookAdsApi
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
 
 logger = logging.getLogger("airbyte")
 
@@ -39,7 +39,7 @@ class AsyncJob(ABC):
     """Abstract AsyncJob base class"""
 
     def __init__(self, api: FacebookAdsApi, interval: pendulum.Period):
-        """ Init generic async job
+        """Init generic async job
 
         :param api: FB API instance (to create batch, etc)
         :param interval: interval for which the job will fetch data
@@ -78,7 +78,7 @@ class AsyncJob(ABC):
 
     @abstractmethod
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
-        """ Method to retrieve job's status, separated because of retry handler
+        """Method to retrieve job's status, separated because of retry handler
 
         :param batch: FB batch executor
         """
@@ -185,8 +185,8 @@ class InsightAsyncJob(AsyncJob):
         logger.info(
             "Got %(num)s campaigns for period %(period)s: %(campaign_ids)s",
             num=len(campaign_ids),
-            period=self._params['time_range'],
-            campaign_ids=campaign_ids
+            period=self._params["time_range"],
+            campaign_ids=campaign_ids,
         )
 
         jobs = [InsightAsyncJob(api=self._api, edge_object=Campaign(pk), params=self._params) for pk in campaign_ids]
@@ -201,7 +201,7 @@ class InsightAsyncJob(AsyncJob):
         self._start_time = pendulum.now()
         logger.info(
             "Created AdReportRun: %(job_id)s to sync insights %(time_range)s with breakdown %(breakdowns)s for %(obj)s",
-            job_id = self._job["report_run_id"],
+            job_id=self._job["report_run_id"],
             time_range=self._params["time_range"],
             breakdowns=self._params["breakdowns"],
             obj=self._edge_object,
@@ -260,7 +260,9 @@ class InsightAsyncJob(AsyncJob):
         if self.completed:
             logger.info(
                 "%(job)s is %(percent)s complete (%(status)s)",
-                job=self, percent=self._job["async_percent_completion"], status=self._job['async_status']
+                job=self,
+                percent=self._job["async_percent_completion"],
+                status=self._job["async_status"],
             )
             # No need to update job status if its already completed
             return
@@ -279,7 +281,9 @@ class InsightAsyncJob(AsyncJob):
         job_status = self._job["async_status"]
         logger.info(
             "%(job)s is %(percent)s complete (%(status)s)",
-            job=self, percent=self._job["async_percent_completion"], status=job_status,
+            job=self,
+            percent=self._job["async_percent_completion"],
+            status=job_status,
         )
 
         if job_status == Status.COMPLETED:
@@ -290,7 +294,9 @@ class InsightAsyncJob(AsyncJob):
             self._failed = True
             logger.info(
                 "%(job)s has status %(status)s after %(elapsed)s seconds.",
-                job=self, status=job_status, elapsed=self.elapsed_time.in_seconds(),
+                job=self,
+                status=job_status,
+                elapsed=self.elapsed_time.in_seconds(),
             )
             return True
 

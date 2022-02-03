@@ -5,12 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Tuple, Type
 
-from airbyte_cdk.models import (
-    AuthSpecification,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    OAuth2Specification,
-)
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
