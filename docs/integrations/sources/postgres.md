@@ -64,7 +64,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 
 Currently, there is no way to sync a subset of columns using the Postgres source connector.
 - When setting up a connection, you can only choose which tables to sync, but not columns.
-- If the user account can only access a subset of columns (i.e. has no `SELECT` permission for the full table), the connection check will pass. However, the data sync will fail with `permission denied` exception.
+- If the user can only access a subset of columns, the connection check will pass. However, the data sync will fail with a `permission denied` exception.
 
 The short-term workaround for partial table syncing is to create a view on the specific columns, and grant the user read access to that view:
 
