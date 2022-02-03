@@ -113,20 +113,26 @@ class TwitterAdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        response_json = response.json()
-        result = response_json.get("data")
-
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
-            job_url = self.job_url
-            with requests.get(job_url) as zipped_result:
-                json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
+            job_urls = self.job_urls
+            data = {}
+            
+            for job_url in job_urls:
+                with requests.get(job_url) as zipped_result:
+                 json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
 
-            json_str = json_bytes.decode('utf-8') 
-            result = json.loads(json_str)
-            return result
+                json_str = json_bytes.decode('utf-8') 
+                result = json.loads(json_str)
+
+                result = result.get("data")
+                data.update(result)
+            return data
         else:
+            response_json = response.json()
+            result = response_json.get("data")
             return result
         
+
 
 
 
@@ -210,7 +216,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         """
         
         auth = self.auth
-
+        # we need to specifiy a start/end time different from the one in the config as maximum time span is 7day for this endpoint
         start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
         end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
@@ -220,6 +226,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         segmentation = self.segmentation
         entity = "PROMOTED_TWEET"
         
+        # getting activie promoted tweet ids
         promoted_tweet_ids_url = "https://ads-api.twitter.com/9/stats/accounts/" + account_id + "/active_entities?"
         promoted_tweet_ids_params = urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity})
         promoted_tweet_ids_params = urllib.parse.unquote(promoted_tweet_ids_params)
@@ -233,46 +240,59 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
  
         promoted_tweet_ids = list(set(promoted_tweet_ids))
 
-        # ToDo: Refactor so we can get more than 20 entity ids.
-        # only 20 enitity ids allow 
-        promoted_tweet_ids = promoted_tweet_ids[-20:]
 
-        
+        # This twitter ads api endpoint allows only 20 entity ids per request
+        # Therefore we are splitting entity ids in list with len < 20 and loop through the lists
+        promoted_tweet_ids = [promoted_tweet_ids[i * 20:(i + 1) * 20 ] for i in range((len(promoted_tweet_ids) + 20 - 1) // 20)]
 
-        promoted_tweet_ids = ','.join(promoted_tweet_ids)
+        promoted_tweet_ids_str = []
+        for each in promoted_tweet_ids:
+            each = ','.join(each)
+            promoted_tweet_ids_str.append(each)
+
 
         metric_groups = ','.join(metric_groups)
-    
-        post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
-        params_post = {"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": promoted_tweet_ids, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation}
-        post_response = requests.post(post_base_url, params_post,  auth=auth)
+
+        job_urls = []
+        job_success_urls = [] 
+        job_statuses = []
+
+        for each in promoted_tweet_ids_str:
+            post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
+            params_post = {"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation}
+            post_response = requests.post(post_base_url, params_post,  auth=auth)
         
 
-        job_id = post_response.json()['data']['id_str']
-        job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
-        job_success_params = urllib.parse.urlencode({"job_id": job_id})
-        job_success_params = urllib.parse.unquote(job_success_params)
-        job_success_url = job_success_url + job_success_params
+            job_id = post_response.json()['data']['id_str']
+            job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
+            job_success_params = urllib.parse.urlencode({"job_id": job_id})
+            job_success_params = urllib.parse.unquote(job_success_params)
+            job_success_url = job_success_url + job_success_params
         
-        job_success_response = requests.get(job_success_url, auth=auth)
-        job_success_response = job_success_response.json()
-        job_status = job_success_response['data'][0]['status']
-        job_url = job_success_response['data'][0]['url']
-
-
-        while job_status != "SUCCESS":
-            print("Job is still processing")
-            time.sleep(300)
             job_success_response = requests.get(job_success_url, auth=auth)
             job_success_response = job_success_response.json()
             job_status = job_success_response['data'][0]['status']
             job_url = job_success_response['data'][0]['url']
+            
+            job_urls.append(job_url)
+            job_success_urls.append(job_success_url)
+            job_statuses.append(job_status)
+
+        for job_success_url,job_status in zip(job_success_urls, job_statuses):
+            while job_status != "SUCCESS":
+                time.sleep(300)
+                job_success_response = requests.get(job_success_url, auth=auth)
+                job_success_response = job_success_response.json()
+                job_status = job_success_response['data'][0]['status']
+                job_url = job_success_response['data'][0]['url']
+            
+                job_urls.append(job_url)
 
 
             
-
-        job_url = job_success_response['data'][0]['url']
-        self.job_url = job_url
+        # dropping none values from job_urls
+        job_urls = [url for url in job_urls if url]
+        self.job_urls = job_urls
 
         request_url =  job_success_url
         return request_url
