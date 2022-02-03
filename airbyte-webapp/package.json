@@ -46,6 +46,7 @@
     "react-use-intercom": "^1.4.0",
     "react-widgets": "^4.6.1",
     "recharts": "^2.1.3",
+    "rehype-urls": "^1.1.1",
     "remark-gfm": "^3.0.0",
     "rest-hooks": "^5.0.20",
     "sanitize-html": "^2.3.3",
