@@ -200,7 +200,7 @@ class InvoiceLineItems(StripeStream):
     """
 
     name = "invoice_line_items"
-    max_workers = 10
+    max_workers = 5
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
