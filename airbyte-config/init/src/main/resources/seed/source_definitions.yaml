@@ -151,6 +151,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/commercetools
   icon: commercetools.svg
   sourceType: api
+- name: Confluence
+  sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
+  dockerRepository: airbyte/source-confluence
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
+  icon: confluence.svg
+  sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
@@ -231,7 +238,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -338,6 +345,13 @@
   dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
+  sourceType: api
+- name: Jenkins
+  sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
+  dockerRepository: farosai/airbyte-jenkins-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/jenkins
+  icon: jenkins.svg
   sourceType: api
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
@@ -787,7 +801,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
