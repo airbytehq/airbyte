@@ -551,13 +551,10 @@ def test_csv_reader_dialect_unix():
     stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
-    DEFAULT_CSV_FIELD_SIZE_LIMIT = 1024 * 128
-    assert CSV_FIELD_SIZE_LIMIT > DEFAULT_CSV_FIELD_SIZE_LIMIT
-
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
         {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name" + (CSV_FIELD_SIZE_LIMIT - 100) * "e"},
+        {"Id": "3", "Name": "first_name last_name" + 1024 * 1024 * "e"},
         {"Id": "4", "Name": "first_name last_name"},
     ]
 
@@ -572,3 +569,21 @@ def test_csv_reader_dialect_unix():
         m.register_uri("GET", url + "/results", text=text)
         result = [dict(i[1]) for i in stream.download_data(url)]
         assert result == data
+
+
+def test_csv_field_size_limit():
+    DEFAULT_CSV_FIELD_SIZE_LIMIT = 1024 * 128
+
+    field_size = 1024 * 1024
+    text = '"Id","Name"\n"1","' + field_size * "a" + '"\n'
+
+    csv.field_size_limit(DEFAULT_CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    with pytest.raises(csv.Error):
+        for _ in reader:
+            pass
+
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    for _ in reader:
+        pass

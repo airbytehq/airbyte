@@ -3,6 +3,7 @@
 #
 
 import csv
+import ctypes
 import io
 import math
 import time
@@ -20,7 +21,8 @@ from requests import codes, exceptions
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
 
-CSV_FIELD_SIZE_LIMIT = 1024 * 1024
+# https://stackoverflow.com/a/54517228
+CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 
