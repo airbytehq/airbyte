@@ -314,7 +314,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
       if (dateTimeFieldNames.containsKey(key)) {
         switch (dateTimeFieldNames.get(key)) {
           case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToGeneralDateFormat(field.getValue().asText()));
+          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
         }
       } else {
         data.set(key.toLowerCase(), field.getValue());

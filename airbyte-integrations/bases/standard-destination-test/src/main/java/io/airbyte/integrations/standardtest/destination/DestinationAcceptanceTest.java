@@ -1411,6 +1411,12 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     destination.notifyEndOfStream();
   }
 
+  /**
+   * This method goes through stream schemas and collect field names which format is "date" or
+   * "date-time"
+   *
+   * @return map where key is a field name and value is "date" or "date-time"
+   */
   protected static Map<String, String> getDateTimeFieldsFormat(final List<AirbyteStream> streams) {
     final Map<String, String> fieldFormats = new HashMap<>();
 

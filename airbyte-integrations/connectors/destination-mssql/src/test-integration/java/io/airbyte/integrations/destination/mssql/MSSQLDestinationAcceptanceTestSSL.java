@@ -221,6 +221,12 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
                                  JsonNode expectedValue,
                                  JsonNode actualValue) {
     if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      /*
+       * Omitted millis for assertion because MSSQL datetime values are rounded to increments of .000,
+       * .003, or .007 seconds
+       * https://docs.microsoft.com/en-us/sql/t-sql/data-types/datetime-transact-sql?view=sql-server-ver15
+       * #rounding-of-datetime-fractional-second-precision
+       */
       Assertions.assertEquals(DateTimeUtils.MILLISECONDS_PATTERN.matcher(expectedValue.asText()).replaceAll(StringUtils.EMPTY),
           DateTimeUtils.MILLISECONDS_PATTERN.matcher(actualValue.asText()).replaceAll(StringUtils.EMPTY));
     } else {
