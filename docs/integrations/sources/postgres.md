@@ -62,14 +62,14 @@ GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
 ```
 
-Currently, the user must have `SELECT` permission on the full table for the Postgres connector to sync the data. If the user only have read access to a subset of columns on the table, the data sync will fail with a `permission denied` exception. The workaround is to create a view on the specific columns, and grant the user read permission of that view:
+Currently, the user must have `SELECT` permission on the full table for the Postgres connector to sync the data. If the user only have read access to a subset of columns on the table, the data sync will fail with a `permission denied` exception. The workaround is to create a view on the specific columns, and grant the user read permission of that view. This workaround also applies to the scenario when you only want to sync a subset of columns:
 
 ```sql
 CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
 GRANT SELECT ON TABLE <view_name> to <user_name>;
 ```
 
-A bug related to partial table permission is track in [issue #\9771](https://github.com/airbytehq/airbyte/issues/9771).
+A bug related to partial table permission is track in [issue #9771](https://github.com/airbytehq/airbyte/issues/9771).
 
 #### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
 
