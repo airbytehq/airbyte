@@ -65,11 +65,21 @@ class Field:
 
     @property
     def default_value(self):
+        default = ""
         if self.const:
-            return self.const
+            default = self.const
         if self.default is not None:
-            return self.default
-        return ""
+            default = self.default
+        if default == '"':
+            default = "'\"'"
+        elif default == "'":
+            default = '"\'"'
+        elif isinstance(default, str):
+            if '"' not in default:
+                default = f'"{default}"'
+            else:
+                default = f"'{default}'"
+        return default
 
     def __repr__(self) -> str:
         return self.name
