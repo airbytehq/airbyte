@@ -2718,6 +2718,8 @@ components:
             $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
