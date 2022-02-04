@@ -69,7 +69,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     createTestData(database, schemaToIgnore, "customer", true);
   }
 
-  protected static JdbcDatabase createDatabase(final JsonNode config) {
+  protected JdbcDatabase createDatabase(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
