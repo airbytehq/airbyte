@@ -3,7 +3,6 @@ package io.airbyte.integrations.destination.bigquery.oauth;
 import static com.google.api.client.json.jackson2.JacksonFactory.*;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.iam.v1.Iam;
 import com.google.api.services.iam.v1.IamScopes;
 import com.google.api.services.iam.v1.model.CreateServiceAccountKeyRequest;
@@ -18,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryServiceAccountKeysManager {
-  // Creates a key for a service account.
+  // Creates a key for a service account. See
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryServiceAccountKeysManager.class);
 

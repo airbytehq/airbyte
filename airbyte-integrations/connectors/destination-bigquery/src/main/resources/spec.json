@@ -20,6 +20,11 @@
         "default": 15,
         "examples": ["15"]
       },
+      "service_account": {
+        "type": "string",
+        "description": "Service Account User (roles/iam.serviceAccountUser): Includes the permission iam.serviceAccounts.actAs, which allows principals to indirectly access all the resources that the service account can access. For example, if a principal has the Service Account User role on a service account, and the service account has the Cloud SQL Admin role (roles/cloudsql.admin) on the project, then the principal can impersonate the service account to create a Cloud SQL instance.",
+        "title": "Service Account"
+      },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset.",

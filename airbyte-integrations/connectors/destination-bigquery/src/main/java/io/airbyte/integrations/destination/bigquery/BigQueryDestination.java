@@ -23,6 +23,8 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountKeysManager;
+import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountManager;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -95,7 +97,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-
+    final String serviceAccountName = config.get(BigQueryConsts.SERVICE_ACCOUNT).asText();
+    BigQueryServiceAccountManager.createServiceAccount(projectId, serviceAccountName);
     try {
       final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;

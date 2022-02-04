@@ -3383,6 +3383,52 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "farosai/airbyte-jenkins-source:0.1.23"
+  spec:
+    documentationUrl: "https://docs.faros.ai"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Jenkins Spec"
+      type: "object"
+      required:
+      - "server_url"
+      - "user"
+      - "token"
+      additionalProperties: false
+      properties:
+        server_url:
+          type: "string"
+          title: "Jenkins Server URL"
+          examples:
+          - "https://my-jenkins-server.example.com"
+        user:
+          type: "string"
+          description: "Jenkins User"
+        token:
+          type: "string"
+          title: "Jenkins Token"
+          airbyte_secret: true
+        depth:
+          type: "number"
+          title: "Depth"
+          description: "Jenkins JSON API does not support deep scan, it is required\
+            \ to generate a suitable tree for the corresponding depth. Job in some\
+            \ cases have many sub jobs, depth needs to quantify how many sub jobs\
+            \ are showed. If depth is not provided we will try to compute it automatically"
+        pageSize:
+          type: "integer"
+          minimum: 1
+          default: 10
+          title: "Page Size"
+          description: "Quantity of jobs on a single page fetched from Jenkins"
+        last100Builds:
+          type: "boolean"
+          default: false
+          title: "Last 100 Builds Only"
+          description: "Fetch only 100 last builds from Jenkins server"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-jira:0.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
