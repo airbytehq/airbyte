@@ -45,6 +45,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ public class WebBackendConnectionsHandler {
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final ConnectionHelper connectionHelper;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -255,23 +257,31 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-    final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog())) {
-      final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
-
-      if (featureFlags.usesNewScheduler()) {
-        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-
-        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      } else {
+    ConnectionRead connectionRead;
+    boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
+    if (!featureFlags.usesNewScheduler()) {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+      if (needReset) {
+        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
         // wait for this to execute
         schedulerHandler.resetConnection(connectionId);
 
         // just create the job
         schedulerHandler.syncConnection(connectionId);
       }
+    } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate, !needReset);
+
+      if (needReset) {
+        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+
+        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+
+        connectionRead = connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
+      }
     }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 

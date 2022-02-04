@@ -102,6 +102,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.24` | 2022-02-04 | [9996](https://github.com/airbytehq/airbyte/pull/9996) | Use Google Ads API version V9. |
 | `0.1.23` | 2022-01-25 | [8669](https://github.com/airbytehq/airbyte/pull/8669) | Add end date parameter in spec. |
 | `0.1.22` | 2022-01-24 | [9608](https://github.com/airbytehq/airbyte/pull/9608) | Reduce stream slice date range. |
 | `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description |
