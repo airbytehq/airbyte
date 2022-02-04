@@ -259,13 +259,17 @@ class JobTrackerTest {
     final String configJson = MoreResources.readResource("example_config.json");
     final JsonNode config = Jsons.deserialize(configJson);
 
+    final String schemaJson = MoreResources.readResource("example_config_schema.json");
+    final JsonNode schema = Jsons.deserialize(schemaJson);
+
     final Map<String, Object> expected = ImmutableMap.of(
         JobTracker.CONFIG + ".username", JobTracker.SET,
         JobTracker.CONFIG + ".has_ssl", false,
         JobTracker.CONFIG + ".password", JobTracker.SET,
+        JobTracker.CONFIG + ".one_of.type_key", "foo",
         JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
 
-    final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config);
+    final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config, schema);
 
     assertEquals(expected, actual);
   }

@@ -5,6 +5,7 @@
   "empty_string": "",
   "null_value": null,
   "one_of": {
+    "type_key": "foo",
     "some_key": 100
   }
 }
