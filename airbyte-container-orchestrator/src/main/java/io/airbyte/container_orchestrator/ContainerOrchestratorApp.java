@@ -78,7 +78,6 @@ public class ContainerOrchestratorApp {
     }
 
     // make sure the new configuration is picked up
-    System.setProperty("log4j.configurationFile", "log4j2-orchestrator.xml");
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     ctx.reconfigure();
 
