@@ -26,7 +26,6 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -83,12 +82,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private final ExceptionWrappingDatabase database;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
-  public DatabaseConfigPersistence(final Database database) {
-    this.database = new ExceptionWrappingDatabase(database);
+  public static ConfigPersistence createWithValidation(final Database database) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database));
   }
 
-  public ValidatingConfigPersistence withValidation() {
-    return new ValidatingConfigPersistence(this);
+  public DatabaseConfigPersistence(final Database database) {
+    this.database = new ExceptionWrappingDatabase(database);
   }
 
   @Override
@@ -1689,70 +1688,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
       return false;
     }
-  }
-
-  /**
-   * If this is a migration deployment from an old version that relies on file system config
-   * persistence, copy the existing configs from local files.
-   */
-  public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
-    database.transaction(ctx -> {
-      final boolean isInitialized = ctx.fetchExists(ACTOR_DEFINITION);
-      if (isInitialized) {
-        return null;
-      }
-
-      final boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
-      if (hasExistingFileConfigs) {
-        LOGGER.info("Load existing local config directory into configs database");
-        final ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
-        copyConfigsFromSeed(ctx, fileSystemPersistence);
-      }
-
-      return null;
-    });
-
-    return this;
-  }
-
-  @VisibleForTesting
-  void copyConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
-    LOGGER.info("Loading seed data to config database...");
-
-    final Map<String, Stream<JsonNode>> seedConfigs;
-    try {
-      seedConfigs = seedConfigPersistence.dumpConfigs();
-    } catch (final IOException e) {
-      throw new SQLException(e);
-    }
-
-    seedConfigs.forEach((configType, value) -> value.forEach(configJson -> {
-      if (configType.equals(ConfigSchema.STANDARD_WORKSPACE.name())) {
-        writeStandardWorkspace(Collections.singletonList(Jsons.object(configJson, StandardWorkspace.class)), ctx);
-      } else if (configType.equals(ConfigSchema.STANDARD_SOURCE_DEFINITION.name())) {
-        writeStandardSourceDefinition(Collections.singletonList(Jsons.object(configJson, StandardSourceDefinition.class)), ctx);
-      } else if (configType.equals(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name())) {
-        writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(configJson, StandardDestinationDefinition.class)), ctx);
-      } else if (configType.equals(ConfigSchema.SOURCE_CONNECTION.name())) {
-        writeSourceConnection(Collections.singletonList(Jsons.object(configJson, SourceConnection.class)), ctx);
-      } else if (configType.equals(ConfigSchema.DESTINATION_CONNECTION.name())) {
-        writeDestinationConnection(Collections.singletonList(Jsons.object(configJson, DestinationConnection.class)), ctx);
-      } else if (configType.equals(ConfigSchema.SOURCE_OAUTH_PARAM.name())) {
-        writeSourceOauthParameter(Collections.singletonList(Jsons.object(configJson, SourceOAuthParameter.class)), ctx);
-      } else if (configType.equals(ConfigSchema.DESTINATION_OAUTH_PARAM.name())) {
-        writeDestinationOauthParameter(Collections.singletonList(Jsons.object(configJson, DestinationOAuthParameter.class)), ctx);
-      } else if (configType.equals(ConfigSchema.STANDARD_SYNC_OPERATION.name())) {
-        writeStandardSyncOperation(Collections.singletonList(Jsons.object(configJson, StandardSyncOperation.class)), ctx);
-      } else if (configType.equals(ConfigSchema.STANDARD_SYNC.name())) {
-        writeStandardSync(Collections.singletonList(Jsons.object(configJson, StandardSync.class)), ctx);
-      } else if (configType.equals(ConfigSchema.STANDARD_SYNC_STATE.name())) {
-        writeStandardSyncState(Collections.singletonList(Jsons.object(configJson, StandardSyncState.class)), ctx);
-      } else {
-        throw new IllegalArgumentException("Unknown Config Type " + configType);
-      }
-    }));
-
-    LOGGER.info("Config database data loading completed");
   }
 
   static class ConnectorInfo {
