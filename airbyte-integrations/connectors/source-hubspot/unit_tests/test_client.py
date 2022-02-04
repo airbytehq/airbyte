@@ -6,10 +6,16 @@
 from functools import partial
 
 import pytest
+import logging
+
+from airbyte_cdk.models import Type, ConfiguredAirbyteCatalog
 from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
 from source_hubspot.client import Client
+from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
+
+logger = logging.getLogger('test_client')
 
 
 @pytest.fixture(name="some_credentials")
@@ -260,3 +266,51 @@ class TestSplittingPropertiesFunctionality:
         stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
 
         assert len(stream_records) == 6
+
+
+@pytest.fixture(name="oauth_config")
+def oauth_config_fixture():
+    return {
+        "start_date": "2021-10-10T00:00:00Z",
+        "credentials": {
+            "credentials_title": "OAuth Credentials",
+            "redirect_uri": "https://airbyte.io",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+            "access_token": "test_access_token",
+            "token_expires": "2021-05-30T06:00:00Z"
+        }
+    }
+
+
+@pytest.fixture(name='configured_catalog')
+def configured_catalog_fixture():
+    configured_catalog = {
+      "streams": [
+        {
+          "stream": {
+            "name": "quotes",
+            "json_schema": {},
+            "supported_sync_modes": ["full_refresh", "incremental"],
+            "source_defined_cursor": True,
+            "default_cursor_field": ["updatedAt"]
+          },
+          "sync_mode": "incremental",
+          "cursor_field": ["updatedAt"],
+          "destination_sync_mode": "append"
+        }
+      ]
+    }
+    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+
+
+def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
+    """
+    If 'quotes' stream is not in the client, it should skip it.
+    """
+    source = SourceHubspot()
+
+    all_records = list(source.read(logger, config=oauth_config, catalog=configured_catalog, state=None))
+    records = [record for record in all_records if record.type == Type.RECORD]
+    assert not records
