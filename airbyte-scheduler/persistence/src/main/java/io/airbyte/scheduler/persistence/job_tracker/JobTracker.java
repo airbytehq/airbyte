@@ -179,9 +179,12 @@ public class JobTracker {
   }
 
   /**
-   * Does not support anyOf/allOf. Those aren't really used in config schemas anyway.
+   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e. non-sensitive). Non-const, non-boolean values are
+   * replaced with {@link #SET} to avoid leaking potentially-sensitive information.
+   * <p>
+   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config schemas anyway.
    *
-   * @param jsonPath A prefix to add to all the keys in the returned map
+   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`) separator
    * @param schema   The JSON schema that {@code config} conforms to
    */
   protected static Map<String, Object> configToMetadata(final String jsonPath, final JsonNode config, final JsonNode schema) {
@@ -193,6 +196,9 @@ public class JobTracker {
     return output;
   }
 
+  /**
+   * Does the actually interesting bits of configToMetadata. Returns a map of {null: value} if config is not an object.
+   */
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
     final Map<String, Object> output = new HashMap<>();
 
@@ -203,17 +209,8 @@ public class JobTracker {
       // * Otherwise, do some basic conversions to value-ish data.
       if (config.isObject()) {
         output.putAll(flatten(config));
-      } else if (config.isBoolean()) {
-        output.put(null, config.asBoolean());
-      } else if (config.isLong()) {
-        output.put(null, config.asLong());
-      } else if (config.isDouble()) {
-        output.put(null, config.asDouble());
-      } else if (config.isValueNode() && !config.isNull()) {
-        output.put(null, config.asText());
       } else {
-        // Fallback handling for e.g. arrays
-        output.put(null, config.toString());
+        output.put(null, toMetadataValue(config));
       }
     } else if (maybeOneOfSchemas != null && maybeOneOfSchemas.isArray()) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
@@ -241,7 +238,6 @@ public class JobTracker {
         }
       }
     } else if (config.isBoolean()) {
-      // TODO handle this in the else branch?
       output.put(null, config.asBoolean());
     } else if ((!config.isTextual() && !config.isNull()) || (config.isTextual() && !config.asText().isEmpty())) {
       // This is either non-textual (i.e. array) or non-empty text
@@ -262,24 +258,43 @@ public class JobTracker {
       if (value.isObject()) {
         mergeMaps(output, field, flatten(value));
       } else {
-        if (value.isTextual()) {
-          output.put(field, value.asText());
-        } else {
-          output.put(field, value.toString());
-        }
+        output.put(field, toMetadataValue(value));
       }
     }
     return output;
   }
 
-  private static void mergeMaps(final Map<String, Object> originalMap, final String subField, final Map<String, Object> subMap) {
+  /**
+   * @param node Should not be an object. You may want to use {@link #flatten(JsonNode)} for that case.
+   */
+  private static Object toMetadataValue(final JsonNode node) {
+    if (node.isBoolean()) {
+      return node.asBoolean();
+    } else if (node.isLong()) {
+      return node.asLong();
+    } else if (node.isDouble()) {
+      return node.asDouble();
+    } else if (node.isValueNode() && !node.isNull()) {
+      return node.asText();
+    } else {
+      // Fallback handling for e.g. arrays
+      return node.toString();
+    }
+  }
+
+  /**
+   * Prepend all keys in subMap with prefix, then merge that map into originalMap.
+   * <p>
+   * If subMap contains a null key, then it is replaced with prefix. I.e. {null: value} is treated as {prefix: value} when merging into originalMap.
+   */
+  private static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
     originalMap.putAll(subMap.entrySet().stream().collect(toMap(
         e -> {
           final String key = e.getKey();
           if (key != null) {
-            return subField + "." + key;
+            return prefix + "." + key;
           } else {
-            return subField;
+            return prefix;
           }
         },
         Entry::getValue
