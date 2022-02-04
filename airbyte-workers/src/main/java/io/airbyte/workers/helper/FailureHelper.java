@@ -81,25 +81,26 @@ public class FailureHelper {
         .withPartialSuccess(partialSuccess);
   }
 
-  public static AttemptFailureSummary failureSummaryForCancellation(final Long jobId, final Integer attemptNumber, final Set<FailureReason> failures, final Boolean partialSuccess) {
+  public static AttemptFailureSummary failureSummaryForCancellation(final Long jobId,
+                                                                    final Integer attemptNumber,
+                                                                    final Set<FailureReason> failures,
+                                                                    final Boolean partialSuccess) {
     failures.add(new FailureReason()
         .withFailureType(FailureType.MANUAL_CANCELLATION)
         .withInternalMessage("Setting attempt to FAILED because the job was cancelled")
         .withExternalMessage("This attempt was cancelled")
         .withTimestamp(System.currentTimeMillis())
-        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber))
-    );
+        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber)));
 
     return failureSummary(failures, partialSuccess);
   }
 
   public static FailureReason failureReasonFromWorkflowAndActivity(
-      final String workflowType,
-      final String activityType,
-      final Throwable t,
-      final Long jobId,
-      final Integer attemptNumber
-  ) {
+                                                                   final String workflowType,
+                                                                   final String activityType,
+                                                                   final Throwable t,
+                                                                   final Long jobId,
+                                                                   final Integer attemptNumber) {
     if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_REPLICATE)) {
       return replicationFailure(t, jobId, attemptNumber);
     } else if (workflowType.equals(WORKFLOW_TYPE_SYNC) && activityType.equals(ACTIVITY_TYPE_PERSIST)) {

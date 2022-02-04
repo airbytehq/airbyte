@@ -26,7 +26,6 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.workers.worker_run.WorkerRun;

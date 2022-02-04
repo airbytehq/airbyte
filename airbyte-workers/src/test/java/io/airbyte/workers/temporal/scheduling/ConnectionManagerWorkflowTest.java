@@ -9,7 +9,6 @@ import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.GetMaxAttemptOutput;
@@ -39,7 +38,6 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Queue;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
@@ -426,7 +424,6 @@ public class ConnectionManagerWorkflowTest {
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
 
-
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
@@ -715,6 +712,7 @@ public class ConnectionManagerWorkflowTest {
   }
 
   private class HasFailureFromOrigin implements ArgumentMatcher<AttemptFailureInput> {
+
     private final FailureOrigin expectedFailureOrigin;
 
     public HasFailureFromOrigin(final FailureOrigin failureOrigin) {
@@ -725,9 +723,11 @@ public class ConnectionManagerWorkflowTest {
     public boolean matches(final AttemptFailureInput arg) {
       return arg.getAttemptFailureSummary().getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(expectedFailureOrigin));
     }
+
   }
 
   private class HasCancellationFailure implements ArgumentMatcher<JobCancelledInput> {
+
     private final long expectedJobId;
     private final int expectedAttemptId;
 
@@ -741,6 +741,7 @@ public class ConnectionManagerWorkflowTest {
       return arg.getAttemptFailureSummary().getFailures().stream().anyMatch(f -> f.getFailureType().equals(FailureType.MANUAL_CANCELLATION))
           && arg.getJobId() == expectedJobId && arg.getAttemptId() == expectedAttemptId;
     }
+
   }
 
 }
