@@ -77,7 +77,7 @@ public class DestinationDefinitionsHandler {
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardDestinationDefinition))
-          .releaseDate(LocalDate.parse(standardDestinationDefinition.getReleaseDate()));
+          .releaseDate(getReleaseDate(standardDestinationDefinition));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
@@ -88,6 +88,14 @@ public class DestinationDefinitionsHandler {
       return null;
     }
     return ReleaseStage.fromValue(standardDestinationDefinition.getReleaseStage().value());
+  }
+
+  private static LocalDate getReleaseDate(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseDate() == null || standardDestinationDefinition.getReleaseDate().isBlank()) {
+      return null;
+    }
+
+    return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {

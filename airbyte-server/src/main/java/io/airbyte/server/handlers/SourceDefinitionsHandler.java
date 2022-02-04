@@ -74,7 +74,7 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardSourceDefinition))
-          .releaseDate(LocalDate.parse(standardSourceDefinition.getReleaseDate()));
+          .releaseDate(getReleaseDate(standardSourceDefinition));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
@@ -85,6 +85,14 @@ public class SourceDefinitionsHandler {
       return null;
     }
     return ReleaseStage.fromValue(standardSourceDefinition.getReleaseStage().value());
+  }
+
+  private static LocalDate getReleaseDate(final StandardSourceDefinition standardSourceDefinition) {
+    if (standardSourceDefinition.getReleaseDate() == null || standardSourceDefinition.getReleaseDate().isBlank()) {
+      return null;
+    }
+
+    return LocalDate.parse(standardSourceDefinition.getReleaseDate());
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
