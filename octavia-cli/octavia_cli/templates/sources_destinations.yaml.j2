@@ -41,15 +41,24 @@ definition_version: {{ definition_metadata.version }}
   {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, True)}} 
 {%- endmacro %}
 
-# EDIT THE CONFIGURATION BELOW!
-configuration:
-{%- for f in configuration_fields %}
+{%- macro render_root(root, is_commented) %}
+{%- for f in root %}
   {%- if f.is_one_of %}
   {{ render_one_of(f)|indent(2, True) }}
   {%- elif f.is_array_of_objects %}
   {{ render_array_of_objects(f)|indent(2, True) }}
   {%- else %}
-  {{ render_field(f, is_commented=False)}}
+  {{ render_field(f, is_commented=is_commented)}}
   {%- endif %}
 {%- endfor %}
+{%- endmacro %}
 
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+{%- for root in configuration_fields %}
+{%- if loop.first %}
+{{- render_root(root, is_commented=False)}}
+{%- else %}
+{{- render_root(root, is_commented=True)}}
+{%- endif %}
+{%- endfor %}

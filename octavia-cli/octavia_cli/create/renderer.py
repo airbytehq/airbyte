@@ -11,6 +11,8 @@ JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_a
 
 
 class SpecRenderer:
+    TEMPLATE = JINJA_ENV.get_template("sources_destinations.yaml.j2")
+
     def __init__(
         self,
         definition_name,
@@ -35,20 +37,25 @@ class SpecRenderer:
         self.definition_schema = definition_schema
 
     def parse_schema(self, schema):
-        required_fields = schema.get("required", [])
-        return parse_properties(required_fields, schema["properties"])
+        if schema.get("oneOf"):
+            roots = []
+            for one_of_value in schema.get("oneOf"):
+                required_fields = one_of_value.get("required", [])
+                roots.append(parse_properties(required_fields, one_of_value["properties"]))
+            return roots
+        else:
+            required_fields = schema.get("required", [])
+            return [parse_properties(required_fields, schema["properties"])]
 
     def get_output_path(self, project_path):
         return os.path.join(project_path, f"{self.definition_type}s", f"{self.definition_name}.yaml")
 
     def write_yaml(self, project_path):
-        template = JINJA_ENV.get_template("spec.yaml.j2")
 
         output_path = self.get_output_path(project_path)
+        parsed_schema = self.parse_schema(self.definition_schema)
 
-        rendered = template.render(
-            {"definition_metadata": self.definition_metadata, "configuration_fields": self.parse_schema(self.definition_schema)}
-        )
+        rendered = self.TEMPLATE.render({"definition_metadata": self.definition_metadata, "configuration_fields": parsed_schema})
 
         with open(output_path, "w") as f:
             f.write(rendered)

@@ -60,11 +60,20 @@ class Field:
         if self.description:
             comment_items.append(self.description)
         if self.examples:
-            comment_items.append(f"Examples: {', '.join([str(example) for example in self.examples])}")
+            if isinstance(self.examples, list):
+                comment_items.append(f"Examples: {', '.join([str(example) for example in self.examples])}")
+            else:
+                comment_items.append(f"Example: {self.examples}")
         return " | ".join(comment_items).replace("\n", "")
 
     @property
     def default_value(self):
+        """[summary]
+        Default values are the only YAML values wrote to the yaml file.
+        We need to make sure they are safe for valid yaml parsing.
+        Returns:
+            [type]: [description]
+        """
         default = ""
         if self.const:
             default = self.const
