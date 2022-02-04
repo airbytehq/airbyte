@@ -158,14 +158,8 @@ class AdsInsights(FBMarketingIncrementalStream):
             if ts_start in self._completed_slices:
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
-            total_params = {
-                **params,
-                "time_range": {
-                    "since": ts_start.to_date_string(),
-                    "until": ts_end.to_date_string(),
-                },
-            }
-            yield InsightAsyncJob(self._api.api, edge_object=self._api.account, params=total_params, key=ts_start)
+            interval = pendulum.Period(ts_start, ts_end.date())
+            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
