@@ -184,7 +184,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       // The workflow state will be updated to true if a reset happened while a job was running.
       // We need to propagate that to the new run that will be continued as new.
-      if (workflowState.isResetConnection()) {
+      if (workflowState.isResetConnection() && !workflowState.isCancelled()) {
         connectionUpdaterInput.setResetConnection(true);
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);
