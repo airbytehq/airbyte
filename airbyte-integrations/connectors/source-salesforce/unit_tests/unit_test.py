@@ -564,3 +564,20 @@ def test_csv_reader_dialect_unix():
         m.register_uri("GET", url + "/results", text=text)
         result = [dict(i[1]) for i in stream.download_data(url)]
         assert result == data
+
+
+def test_forwarding_sobject_options(stream_config):
+    sf_object = Salesforce(**stream_config)
+    sf_object.login = Mock()
+    sf_object.access_token = Mock()
+    sf_object.instance_url = "https://fase-account.salesforce.com"
+    sf_object.describe = Mock(
+        return_value={
+            "sobjects": [
+                {"name": "Account", "queryable": True},
+                {"name": "Leads", "queryable": False},
+            ]
+        }
+    )
+    filtered_streams = sf_object.get_validated_streams(config=stream_config)
+    assert list(filtered_streams.keys()) == ["Account"]
