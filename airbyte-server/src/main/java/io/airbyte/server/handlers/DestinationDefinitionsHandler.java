@@ -10,12 +10,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionRead.ReleaseStageEnum;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardDestinationDefinition.ReleaseStage;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -73,10 +75,19 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
-          .icon(loadIcon(standardDestinationDefinition.getIcon()));
+          .icon(loadIcon(standardDestinationDefinition.getIcon()))
+          .releaseStage(getReleaseStage(standardDestinationDefinition))
+          .releaseDate(standardDestinationDefinition.getReleaseDate());
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
+  }
+
+  private static ReleaseStageEnum getReleaseStage(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseStage() == null) {
+      return null;
+    }
+    return ReleaseStageEnum.fromValue(standardDestinationDefinition.getReleaseStage().value());
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
@@ -123,7 +134,8 @@ public class DestinationDefinitionsHandler {
         .withName(destinationDefinitionCreate.getName())
         .withIcon(destinationDefinitionCreate.getIcon())
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(ReleaseStage.CUSTOM);
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -151,7 +163,9 @@ public class DestinationDefinitionsHandler {
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
         .withSpec(spec)
-        .withTombstone(currentDestination.getTombstone());
+        .withTombstone(currentDestination.getTombstone())
+        .withReleaseStage(currentDestination.getReleaseStage())
+        .withReleaseDate(currentDestination.getReleaseDate());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);

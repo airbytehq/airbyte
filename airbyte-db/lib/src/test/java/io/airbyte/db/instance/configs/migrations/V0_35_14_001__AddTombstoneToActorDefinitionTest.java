@@ -13,10 +13,6 @@ import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
-<<<<<<< HEAD
-=======
-import org.jooq.Result;
->>>>>>> eed18bb2f (add test to ensure tombstone defaults to false)
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

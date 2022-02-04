@@ -28,6 +28,8 @@ create table "public"."actor_definition"(
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   "tombstone" bool not null default false,
+  "release_stage" release_stage null,
+  "release_date" date null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

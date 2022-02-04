@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionRead.ReleaseStageEnum;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
@@ -25,6 +26,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardDestinationDefinition.ReleaseStage;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -36,6 +38,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -45,6 +48,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class DestinationDefinitionsHandlerTest {
+
+  private static String TODAY_DATE_STRING = LocalDate.now().toString();
 
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destinationDefinition;
@@ -80,7 +85,9 @@ class DestinationDefinitionsHandlerTest {
         .withDocumentationUrl("https://hulu.com")
         .withIcon("http.svg")
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(ReleaseStage.ALPHA)
+        .withReleaseDate(TODAY_DATE_STRING);
   }
 
   @Test
@@ -96,7 +103,9 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
         .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStageEnum.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(destinationDefinition.getReleaseDate());;
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination2.getDestinationDefinitionId())
@@ -104,7 +113,9 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
         .documentationUrl(new URI(destination2.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
+        .releaseStage(ReleaseStageEnum.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(destinationDefinition.getReleaseDate());
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listDestinationDefinitions();
 
@@ -125,7 +136,9 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
         .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
-        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStageEnum.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(destinationDefinition.getReleaseDate());;
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
         .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId());
@@ -160,13 +173,14 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
+        .releaseStage(ReleaseStageEnum.CUSTOM);
 
     final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository).writeStandardDestinationDefinition(destination);
+    verify(configRepository).writeStandardDestinationDefinition(destination.withReleaseDate(null).withReleaseStage(ReleaseStage.CUSTOM));
   }
 
   @Test
