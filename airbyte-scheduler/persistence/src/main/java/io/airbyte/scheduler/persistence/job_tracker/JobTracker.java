@@ -188,17 +188,9 @@ public class JobTracker {
     final Map<String, Object> metadata = configToMetadata(config, schema);
     // Prepend all the keys with the root jsonPath
     // But leave the values unchanged
-    return metadata.entrySet().stream().collect(toMap(
-        e -> {
-          final String key = e.getKey();
-          if (key != null) {
-            return jsonPath + "." + key;
-          } else {
-            return jsonPath;
-          }
-        },
-        Entry::getValue
-    ));
+    final Map<String, Object> output = new HashMap<>();
+    mergeMaps(output, jsonPath, metadata);
+    return output;
   }
 
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
@@ -245,7 +237,7 @@ public class JobTracker {
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
         if (maybeProperties != null && maybeProperties.hasNonNull(field)) {
-          output.putAll(configToMetadata(field, value, maybeProperties.get(field)));
+          mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
         }
       }
     } else if (config.isBoolean()) {
@@ -268,17 +260,7 @@ public class JobTracker {
       final String field = entry.getKey();
       final JsonNode value = entry.getValue();
       if (value.isObject()) {
-        output.putAll(flatten(entry.getValue()).entrySet().stream().collect(toMap(
-            e -> {
-              final String key = e.getKey();
-              if (key != null) {
-                return field + "." + key;
-              } else {
-                return field;
-              }
-            },
-            Entry::getValue
-        )));
+        mergeMaps(output, field, flatten(value));
       } else {
         if (value.isTextual()) {
           output.put(field, value.asText());
@@ -288,6 +270,20 @@ public class JobTracker {
       }
     }
     return output;
+  }
+
+  private static void mergeMaps(final Map<String, Object> originalMap, final String subField, final Map<String, Object> subMap) {
+    originalMap.putAll(subMap.entrySet().stream().collect(toMap(
+        e -> {
+          final String key = e.getKey();
+          if (key != null) {
+            return subField + "." + key;
+          } else {
+            return subField;
+          }
+        },
+        Entry::getValue
+    )));
   }
 
   private Map<String, Object> generateSyncMetadata(final UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {
