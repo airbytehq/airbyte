@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence.job_tracker;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -201,17 +202,15 @@ public class JobTracker {
    * a primitive string/number/etc, or it's an array) then returns a map of {null: toMetadataValue(config)}.
    */
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
-    final Map<String, Object> output = new HashMap<>();
-
     if (schema.hasNonNull("const")) {
       // If this schema is a const, then just dump it into a map:
       // * If it's an object, flatten it
       // * Otherwise, do some basic conversions to value-ish data.
       // It would be a weird thing to declare const: null, but in that case we don't want to report null anyway, so explicitly use hasNonNull.
       if (config.isObject()) {
-        output.putAll(flatten(config));
+        return flatten(config);
       } else {
-        output.put(null, toMetadataValue(config));
+        return singletonMap(null, toMetadataValue(config));
       }
     } else if (schema.has("oneOf")) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
@@ -229,24 +228,28 @@ public class JobTracker {
       // If the schema is not a oneOf, but the config is an object (i.e. the schema has "type": "object")
       // then we need to recursively convert each field of the object to a map.
       // Note: this doesn't handle additionalProperties, so if a config contains properties that are not explicitly declared in the schema, they will be ignored.
+      final Map<String, Object> output = new HashMap<>();
       final JsonNode maybeProperties = schema.get("properties");
-      for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
-        final Entry<String, JsonNode> entry = it.next();
-        final String field = entry.getKey();
-        final JsonNode value = entry.getValue();
-        if (maybeProperties != null && maybeProperties.hasNonNull(field)) {
-          mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
+      if (maybeProperties != null) {
+        for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
+          final Entry<String, JsonNode> entry = it.next();
+          final String field = entry.getKey();
+          final JsonNode value = entry.getValue();
+          if (maybeProperties.hasNonNull(field)) {
+            mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
+          }
         }
       }
+      return output;
     } else if (config.isBoolean()) {
-      output.put(null, config.asBoolean());
+      return singletonMap(null, config.asBoolean());
     } else if ((!config.isTextual() && !config.isNull()) || (config.isTextual() && !config.asText().isEmpty())) {
       // This is either non-textual (i.e. array) or non-empty text
-      output.put(null, SET);
+      return singletonMap(null, SET);
+    } else {
+      // Otherwise, this is an empty string, so just ignore it
+      return emptyMap();
     }
-    // Otherwise, this is an empty string, so just ignore it
-
-    return output;
   }
 
   private static Map<String, Object> flatten(final JsonNode node) {
