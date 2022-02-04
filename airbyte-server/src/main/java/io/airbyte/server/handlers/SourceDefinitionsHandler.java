@@ -7,17 +7,16 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionRead.ReleaseStageEnum;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -30,6 +29,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -74,17 +74,17 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardSourceDefinition))
-          .releaseDate(standardSourceDefinition.getReleaseDate());
+          .releaseDate(LocalDate.parse(standardSourceDefinition.getReleaseDate()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
-  private static ReleaseStageEnum getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
+  private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
     if (standardSourceDefinition.getReleaseStage() == null) {
       return null;
     }
-    return ReleaseStageEnum.fromValue(standardSourceDefinition.getReleaseStage().value());
+    return ReleaseStage.fromValue(standardSourceDefinition.getReleaseStage().value());
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
@@ -129,7 +129,7 @@ public class SourceDefinitionsHandler {
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(ReleaseStage.CUSTOM);
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM);
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 

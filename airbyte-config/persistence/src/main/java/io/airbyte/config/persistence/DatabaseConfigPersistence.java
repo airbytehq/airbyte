@@ -789,7 +789,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardSourceDefinition.getReleaseDate().toString())) // TODO make sure this works
+                : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -814,7 +814,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
                         io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardSourceDefinition.getReleaseDate().toString())) // TODO make sure this works
+                : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
             .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();

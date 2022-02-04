@@ -2111,15 +2111,11 @@ components:
         icon:
           type: string
         releaseStage:
-          type: string
-          enum:
-            - alpha
-            - beta
-            - generally_available
-            - custom
+          $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
+          format: date
     SourceDefinitionReadList:
       type: object
       required:
@@ -2384,15 +2380,11 @@ components:
         icon:
           type: string
         releaseStage:
-          type: string
-          enum:
-            - alpha
-            - beta
-            - generally_available
-            - custom
+          $ref: "#/components/schemas/ReleaseStage"
         releaseDate:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
+          format: date
     DestinationDefinitionReadList:
       type: object
       required:
@@ -2532,6 +2524,14 @@ components:
           type: string
         destinationName:
           type: string
+    # SOURCE / DESTINATION RELEASE STAGE ENUM
+    ReleaseStage:
+      type: string
+      enum:
+        - alpha
+        - beta
+        - generally_available
+        - custom
     # CONNECTION
     ConnectionId:
       type: string
