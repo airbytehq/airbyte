@@ -29,12 +29,9 @@ import org.slf4j.LoggerFactory;
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
-  private static final String USE_SUPER_REDSHIFT_TYPE_PARAMETER = "use_super_redshift_type";
 
   enum DestinationType {
-    INSERT_WITH_VARCHAR,
     INSERT_WITH_SUPER_TMP_TYPE,
-    COPY_S3_WITH_VARCHAR,
     COPY_S3_WITH_SUPER_TMP_TYPE
   }
 
@@ -48,9 +45,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
     return Map.of(
-        DestinationType.INSERT_WITH_VARCHAR, new RedshiftInsertDestination(RedshiftDataTmpTableMode.VARCHAR),
         DestinationType.INSERT_WITH_SUPER_TMP_TYPE, new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER),
-        DestinationType.COPY_S3_WITH_VARCHAR, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.VARCHAR),
         DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
   }
 
@@ -65,25 +60,13 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
     if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
-      return determineTmpTableDatatype(config) == RedshiftDataTmpTableMode.VARCHAR ?
-          DestinationType.INSERT_WITH_VARCHAR :
-          DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
+      return DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
     }
 
     if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
-    return determineTmpTableDatatype(config) == RedshiftDataTmpTableMode.VARCHAR ?
-        DestinationType.COPY_S3_WITH_VARCHAR :
-        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE;
-  }
-
-  private static RedshiftDataTmpTableMode determineTmpTableDatatype(JsonNode config) {
-    if (config.get(USE_SUPER_REDSHIFT_TYPE_PARAMETER) != null && !config.get(USE_SUPER_REDSHIFT_TYPE_PARAMETER).isNull() && config.get(
-        USE_SUPER_REDSHIFT_TYPE_PARAMETER).asBoolean()) {
-      return RedshiftDataTmpTableMode.SUPER;
-    }
-    return RedshiftDataTmpTableMode.VARCHAR;
+    return DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE;
   }
 
   public static void main(final String[] args) throws Exception {
