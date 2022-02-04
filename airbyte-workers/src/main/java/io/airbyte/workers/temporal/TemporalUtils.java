@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -53,9 +54,7 @@ public class TemporalUtils {
         .setTarget(temporalHost)
         .build();
 
-    final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
-    waitForTemporalServerAndLog(temporalService);
-    return temporalService;
+    return getTemporalClientWhenConnected(() -> WorkflowServiceStubs.newInstance(options));
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
@@ -157,16 +156,24 @@ public class TemporalUtils {
     return ImmutablePair.of(workflowExecution, resultAsync);
   }
 
-  public static void waitForTemporalServerAndLog(final WorkflowServiceStubs temporalService) {
+  /**
+   * Loops and waits for the Temporal service to become available and returns a client.
+   *
+   * This function uses a supplier as input since the creation of a WorkflowServiceStubs can result in
+   * connection exceptions as well.
+   */
+  public static WorkflowServiceStubs getTemporalClientWhenConnected(final Supplier<WorkflowServiceStubs> temporalServiceSupplier) {
     LOGGER.info("Waiting for temporal server...");
 
     boolean temporalStatus = false;
+    WorkflowServiceStubs temporalService = null;
 
     while (!temporalStatus) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
       Exceptions.toRuntime(() -> Thread.sleep(2000));
 
       try {
+        temporalService = temporalServiceSupplier.get();
         temporalStatus = getNamespaces(temporalService).contains("default");
       } catch (final Exception e) {
         // Ignore the exception because this likely means that the Temporal service is still initializing.
@@ -178,6 +185,8 @@ public class TemporalUtils {
     Exceptions.toRuntime(() -> Thread.sleep(5000));
 
     LOGGER.info("Found temporal default namespace!");
+
+    return temporalService;
   }
 
   protected static Set<String> getNamespaces(final WorkflowServiceStubs temporalService) {

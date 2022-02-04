@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal;
 
-import static io.airbyte.workers.temporal.TemporalUtils.waitForTemporalServerAndLog;
+import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -90,13 +91,17 @@ public class TemporalUtilsTest {
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
+    final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
 
     when(namespaceInfo.getName()).thenReturn("default");
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
+    when(serviceSupplier.get())
+        .thenThrow(RuntimeException.class)
+        .thenReturn(workflowServiceStubs);
     when(workflowServiceStubs.blockingStub().listNamespaces(any()).getNamespacesList())
         .thenThrow(RuntimeException.class)
         .thenReturn(List.of(describeNamespaceResponse));
-    waitForTemporalServerAndLog(workflowServiceStubs);
+    getTemporalClientWhenConnected(serviceSupplier);
   }
 
   @WorkflowInterface
