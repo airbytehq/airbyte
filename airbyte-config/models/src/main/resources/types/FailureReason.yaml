@@ -4,7 +4,6 @@
 title: FailureSummary
 type: object
 required:
-  - failureOrigin
   - timestamp
 additionalProperties: false
 properties:
@@ -12,7 +11,6 @@ properties:
     description: Indicates where the error originated. If not set, the origin of error is not well known.
     type: string
     enum:
-      - unknown
       - source
       - destination
       - replication
@@ -23,9 +21,9 @@ properties:
     description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
     type: string
     enum:
-      - unknown
       - configError
       - systemError
+      - manualCancellation
   internalMessage:
     description: Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
     type: string
@@ -39,5 +37,8 @@ properties:
   stacktrace:
     description: Raw stacktrace associated with the failure.
     type: string
+  retryable:
+    description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+    type: boolean
   timestamp:
     type: integer

@@ -3241,12 +3241,11 @@ components:
           items:
             $ref: "#/components/schemas/AttemptFailureReason"
         partialSuccess:
-          description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed records is unknown.
+          description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.
           type: boolean
     AttemptFailureReason:
       type: object
       required:
-        - failureOrigin
         - timestamp
       properties:
         failureOrigin:
@@ -3257,6 +3256,9 @@ components:
           type: string
         stacktrace:
           type: string
+        retryable:
+          description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+          type: boolean
         timestamp:
           type: integer
           format: int64
@@ -3264,7 +3266,6 @@ components:
       description: Indicates where the error originated. If not set, the origin of error is not well known.
       type: string
       enum:
-        - unknown
         - source
         - destination
         - replication
@@ -3275,9 +3276,9 @@ components:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
       enum:
-        - unknown
         - config_error
         - system_error
+        - manual_cancellation
     AttemptStatus:
       type: string
       enum:
