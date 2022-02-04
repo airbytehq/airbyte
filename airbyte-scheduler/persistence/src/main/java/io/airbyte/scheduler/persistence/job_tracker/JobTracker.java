@@ -197,7 +197,8 @@ public class JobTracker {
   }
 
   /**
-   * Does the actually interesting bits of configToMetadata. Returns a map of {null: value} if config is not an object.
+   * Does the actually interesting bits of configToMetadata. If config is an object, returns a flattened map. If config is _not_ an object (i.e. it's
+   * a primitive string/number/etc, or it's an array) then returns a map of {null: toMetadataValue(config)}.
    */
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
     final Map<String, Object> output = new HashMap<>();
