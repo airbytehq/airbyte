@@ -242,7 +242,6 @@ public class JobTracker {
       output.put(null, config.asBoolean());
     } else if ((!config.isTextual() && !config.isNull()) || (config.isTextual() && !config.asText().isEmpty())) {
       // This is either non-textual (i.e. array) or non-empty text
-      // TODO Why do we ignore non-text values (integer/number)?
       output.put(null, SET);
     }
     // Otherwise, this is an empty string, so just ignore it
