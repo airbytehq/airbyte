@@ -63,7 +63,7 @@ public class TemporalUtils {
   private static final Configs configs = new EnvConfigs();
   public static final RetryOptions RETRY = RetryOptions.newBuilder()
       .setMaximumAttempts(configs.getActivityNumberOfAttempt())
-      .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttemps()))
+      .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttempts()))
       .build();
 
   public static final String DEFAULT_NAMESPACE = "default";
