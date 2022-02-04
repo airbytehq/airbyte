@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Iterator, List, Tuple
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.streams.common import JobException
 
-from .async_job import AsyncJob
+from .async_job import AsyncJob, ParentAsyncJob
 
 if TYPE_CHECKING:
     from source_facebook_marketing.api import API
@@ -116,10 +116,11 @@ class InsightAsyncJobManager:
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
                     raise JobException("%s: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...", job)
                 elif job.attempt_number == 2:
-                    logger.info("%s: failed second time, trying to split job into smaller chunks (campaigns).", job)
-                    group_job = job.split_job()
-                    running_jobs.append(group_job)
-                    group_job.start()
+                    logger.info("%s: failed second time, trying to split job into smaller jobs.", job)
+                    smaller_jobs = job.split_job()
+                    grouped_jobs = ParentAsyncJob(api=self._api, jobs=smaller_jobs, interval=job.interval)
+                    running_jobs.append(grouped_jobs)
+                    grouped_jobs.start()
                 else:
                     logger.info("%s: failed, restarting", job)
                     job.restart()

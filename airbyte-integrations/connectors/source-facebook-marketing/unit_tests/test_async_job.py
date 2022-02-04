@@ -31,7 +31,7 @@ def account_fixture(mocker, adreport):
 
 
 @pytest.fixture(name="job")
-def job_fixture(api, account, mocker):
+def job_fixture(api, account):
     params = {
         "level": "ad",
         "action_breakdowns": [],
@@ -67,6 +67,15 @@ def started_job_fixture(job, adreport):
 
 @pytest.fixture(name="completed_job")
 def completed_job_fixture(started_job, adreport):
+    adreport["async_status"] = Status.COMPLETED.value
+    adreport["async_percent_completion"] = 100
+    started_job.update_job()
+
+    return started_job
+
+
+@pytest.fixture(name="late_job")
+def late_job_fixture(started_job, adreport):
     adreport["async_status"] = Status.COMPLETED.value
     adreport["async_percent_completion"] = 100
     started_job.update_job()

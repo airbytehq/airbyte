@@ -6,11 +6,12 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Sequence, Union
+from typing import Any, Iterator, List, Mapping, Optional, Sequence, Union, Type
 
 import pendulum
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
@@ -46,12 +47,12 @@ class AsyncJob(ABC):
         """
         self._api = api
         self._interval = interval
-        self._attempt_number = 1
+        self._attempt_number = 0
 
     @property
-    def key(self) -> Any:
+    def interval(self) -> pendulum.Period:
         """Job identifier, in most cases start of the interval"""
-        return self._interval.start
+        return self._interval
 
     @abstractmethod
     def start(self):
@@ -88,8 +89,8 @@ class AsyncJob(ABC):
         """Retrieve result of the finished job."""
 
     @abstractmethod
-    def split_job(self) -> "AsyncJob":
-        """Split existing job in few smaller ones grouped by ParentAsyncJob"""
+    def split_job(self) -> List["AsyncJob"]:
+        """Split existing job in few smaller ones"""
 
 
 class ParentAsyncJob(AsyncJob):
@@ -104,6 +105,7 @@ class ParentAsyncJob(AsyncJob):
         """Start each job in the group."""
         for job in self._jobs:
             job.start()
+        self._attempt_number += 1
 
     def restart(self):
         """Restart failed jobs"""
@@ -140,21 +142,32 @@ class ParentAsyncJob(AsyncJob):
         for job in self._jobs:
             yield from job.get_result()
 
-    def split_job(self) -> "AsyncJob":
-        """Split existing job in few smaller ones grouped by ParentAsyncJob class. Will be implemented in future versions."""
-        raise RuntimeError("Splitting of ParentAsyncJob is not allowed.")
+    def split_job(self) -> List["AsyncJob"]:
+        """Split existing job in few smaller ones."""
+        new_jobs = []
+        for job in self._jobs:
+            if job.failed:
+                new_jobs.extend(job.split_job())
+            else:
+                new_jobs.append(job)
+        return new_jobs
+
+    def __str__(self) -> str:
+        """String representation of the job wrapper."""
+        return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
 
 
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
+    job_timeout = pendulum.duration(hours=1)
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign], params: Mapping[str, Any], **kwargs):
+    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet], params: Mapping[str, Any], **kwargs):
         """Initialize
 
         :param api: FB API
-        :param edge_object: Account, Campaign, (AdSet or Ad in future)
+        :param edge_object: Account, Campaign, AdSet (or Ad in future)
         :param params: job params, required to start/restart job
         """
         super().__init__(**kwargs)
@@ -170,25 +183,45 @@ class InsightAsyncJob(AsyncJob):
         self._finish_time = None
         self._failed = False
 
-    def split_job(self) -> "AsyncJob":
+    def split_job(self) -> List["AsyncJob"]:
         """Split existing job in few smaller ones grouped by ParentAsyncJob class.
-        TODO: use some cache to avoid expensive queries across different streams.
         """
-        campaign_params = dict(copy.deepcopy(self._params))
-        # get campaigns from attribution window as well (28 day + 1 current day)
+        if isinstance(self._edge_object, AdAccount):
+            return self._split_by_edge_class(Campaign)
+        elif isinstance(self._edge_object, Campaign):
+            return self._split_by_edge_class(AdSet)
+        raise RuntimeError("The job is already splitted to the smallest size.")
+
+    def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet]]) -> List[AsyncJob]:
+        """ Split insight job by creating insight jobs from lower edge object, i.e.
+        Account -> Campaign -> AdSet
+        TODO: use some cache to avoid expensive queries across different streams.
+        :return: list of new jobs
+        """
+        if edge_class == Campaign:
+            pk_name = "campaign_id"
+            level = "campaign"
+        elif edge_class == AdSet:
+            pk_name = "adset_id"
+            level = "adset"
+        else:
+            raise RuntimeError("Unsupported edge_class.")
+
+        params = dict(copy.deepcopy(self._params))
+        # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
-        campaign_params.update(fields=["campaign_id"], level="campaign")
-        campaign_params["time_range"].update(since=new_start.to_date_string())
-        campaign_params.pop("time_increment")  # query all days
-        result = self._edge_object.get_insights(params=campaign_params)
-        campaign_ids = set(row["campaign_id"] for row in result)
-        logger.info(f"Got {len(campaign_ids)} campaigns for period {self._interval}: {campaign_ids}")
+        params.update(fields=[pk_name], level=level)
+        params["time_range"].update(since=new_start.to_date_string())
+        params.pop("time_increment")  # query all days
+        result = self._edge_object.get_insights(params=params)
+        ids = set(row[pk_name] for row in result)
+        logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
         jobs = [
-            InsightAsyncJob(api=self._api, edge_object=Campaign(pk), params=self._params, interval=self._interval)
-            for pk in campaign_ids
+            InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval)
+            for pk in ids
         ]
-        return ParentAsyncJob(api=self._api, interval=self._interval, jobs=jobs)
+        return jobs
 
     def start(self):
         """Start remote job"""
@@ -197,6 +230,7 @@ class InsightAsyncJob(AsyncJob):
 
         self._job = self._edge_object.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
+        self._attempt_number += 1
         logger.info(f"{self}: created AdReportRun")
 
     def restart(self):
@@ -208,7 +242,6 @@ class InsightAsyncJob(AsyncJob):
         self._failed = False
         self._start_time = None
         self._finish_time = None
-        self._attempt_number += 1
         self.start()
         logger.info(f"{self}: restarted.")
 
@@ -271,7 +304,12 @@ class InsightAsyncJob(AsyncJob):
         percent = self._job["async_percent_completion"]
         logger.info(f"{self}: is {percent} complete ({job_status})")
 
-        if job_status == Status.COMPLETED:
+        if self.elapsed_time > self.job_timeout:
+            logger.info(f"{self}: run more than maximum allowed time {self.job_timeout}.")
+            self._finish_time = pendulum.now()
+            self._failed = True
+            return True
+        elif job_status == Status.COMPLETED:
             self._finish_time = pendulum.now()  # TODO: is not actual running time, but interval between check_status calls
             return True
         elif job_status in [Status.FAILED, Status.SKIPPED]:

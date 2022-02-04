@@ -99,8 +99,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         for obj in job.get_result():
             yield obj.export_all_data()
 
-        self._completed_slices.add(job.key)
-        if job.key == self._next_cursor_value:
+        self._completed_slices.add(job.interval.start)
+        if job.interval.start == self._next_cursor_value:
             self._advance_cursor()
 
     @property
