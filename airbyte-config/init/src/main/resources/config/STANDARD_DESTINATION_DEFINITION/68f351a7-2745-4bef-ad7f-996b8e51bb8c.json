@@ -3,5 +3,6 @@
   "name": "ElasticSearch",
   "dockerRepository": "airbyte/destination-elasticsearch",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch",
+  "icon": "elasticsearch.svg"
 }

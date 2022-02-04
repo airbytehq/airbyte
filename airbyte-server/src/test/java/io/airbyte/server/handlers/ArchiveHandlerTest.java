@@ -7,7 +7,6 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,14 +22,17 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -38,7 +40,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +61,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class ArchiveHandlerTest {
@@ -116,12 +118,6 @@ public class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION.serialize());
 
-    final SpecFetcher specFetcher = mock(SpecFetcher.class);
-    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
-    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
-
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
@@ -129,7 +125,6 @@ public class ArchiveHandlerTest {
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        specFetcher,
         true);
   }
 
@@ -169,15 +164,36 @@ public class ArchiveHandlerTest {
         StandardSourceDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion);
+    final Notification notification = new Notification()
+        .withNotificationType(NotificationType.SLACK)
+        .withSendOnFailure(true)
+        .withSendOnSuccess(true)
+        .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook("webhook-url"));
+    final StandardWorkspace standardWorkspace = new StandardWorkspace()
+        .withWorkspaceId(UUID.randomUUID())
+        .withCustomerId(UUID.randomUUID())
+        .withName("test-workspace")
+        .withSlug("random-string")
+        .withEmail("abc@xyz.com")
+        .withInitialSetupComplete(true)
+        .withAnonymousDataCollection(true)
+        .withNews(true)
+        .withSecurityUpdates(true)
+        .withDisplaySetupWizard(true)
+        .withTombstone(false)
+        .withNotifications(Collections.singletonList(notification))
+        .withFirstCompletedSync(true)
+        .withFeedbackDone(true);
     final SourceConnection sourceConnection = new SourceConnection()
         .withSourceDefinitionId(sourceS3DefinitionId)
         .withSourceId(UUID.randomUUID())
-        .withWorkspaceId(UUID.randomUUID())
+        .withWorkspaceId(standardWorkspace.getWorkspaceId())
         .withName("Test source")
         .withConfiguration(Jsons.deserialize("{}"))
         .withTombstone(false);
 
     // Write source connection and an old source definition.
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString(), sourceConnection);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
 
@@ -253,17 +269,28 @@ public class ArchiveHandlerTest {
         .map(SourceConnection::getSourceId)
         .collect(Collectors.toList()).get(0);
 
+    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withSourceType(SourceType.API)
+        .withName("random-source-1")
+        .withDockerImageTag("tag-1")
+        .withDockerRepository("repository-1")
+        .withDocumentationUrl("documentation-url-1")
+        .withIcon("icon-1")
+        .withSpec(new ConnectorSpecification());
+
     final SourceConnection sourceConnection = new SourceConnection()
         .withWorkspaceId(secondWorkspaceId)
         .withSourceId(secondSourceId)
         .withName("Some new names")
-        .withSourceDefinitionId(UUID.randomUUID())
+        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .withTombstone(false)
         .withConfiguration(Jsons.emptyObject());
 
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
 
+    configRepository.writeStandardSourceDefinition(standardSourceDefinition);
     configRepository.writeSourceConnection(sourceConnection, emptyConnectorSpec);
 
     // check that first workspace is unchanged even though modifications were made to second workspace
@@ -281,10 +308,12 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(secondWorkspaceDump, configRepository.dumpConfigs());
   }
 
-  private void setupWorkspaceData(final UUID workspaceId) throws IOException {
+  private void setupWorkspaceData(final UUID workspaceId) throws IOException, JsonValidationException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), new StandardWorkspace()
         .withWorkspaceId(workspaceId)
         .withName("test-workspace")
+        .withSlug(workspaceId.toString())
+        .withInitialSetupComplete(false)
         .withTombstone(false));
   }
 
@@ -295,17 +324,17 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(configRepository.listStandardSourceDefinitions().get(0).getSourceDefinitionId())
+        .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e")) // GitHub source definition
         .withName("test-source")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("start_date", "2021-03-01T00:00:00Z", "repository", "airbytehq/airbyte")))
         .withTombstone(false));
     final UUID destinationId = UUID.randomUUID();
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), new DestinationConnection()
         .withDestinationId(destinationId)
         .withWorkspaceId(workspaceId)
-        .withDestinationDefinitionId(configRepository.listStandardDestinationDefinitions().get(0).getDestinationDefinitionId())
+        .withDestinationDefinitionId(UUID.fromString("079d5540-f236-4294-ba7c-ade8fd918496")) // BigQuery destination definition
         .withName("test-destination")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("project_id", "project", "dataset_id", "dataset")))
         .withTombstone(false));
   }
 
@@ -319,13 +348,16 @@ public class ArchiveHandlerTest {
       final Set<JsonNode> expectedRecords = expected.get(stream).collect(Collectors.toSet());
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
-        assertTrue(actualRecords.contains(expectedRecord),
-            String.format("\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
+        assertTrue(
+            actualRecords.contains(expectedRecord),
+            String.format(
+                "\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
                 Strings.join(actualRecords, "\n")));
       }
       assertEquals(expectedRecords.size(), actualRecords.size(),
-          String.format("The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
+          String.format(
+              "The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
               Strings.join(expectedRecords, "\n"),
               Strings.join(actualRecords, "\n")));
     }

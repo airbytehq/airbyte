@@ -8,15 +8,17 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.30.25-alpha
+    newTag: 0.35.16-alpha
+  - name: airbyte/bootloader
+    newTag: 0.35.16-alpha
   - name: airbyte/scheduler
-    newTag: 0.30.25-alpha
+    newTag: 0.35.16-alpha
   - name: airbyte/server
-    newTag: 0.30.25-alpha
+    newTag: 0.35.16-alpha
   - name: airbyte/webapp
-    newTag: 0.30.25-alpha
+    newTag: 0.35.16-alpha
   - name: airbyte/worker
-    newTag: 0.30.25-alpha
+    newTag: 0.35.16-alpha
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
@@ -27,4 +29,5 @@ configMapGenerator:
 
 secretGenerator:
   - name: airbyte-secrets
-    env: .secrets
+    envs:
+      - .secrets

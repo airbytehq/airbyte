@@ -29,4 +29,5 @@ tests:
       # Because one read response contains this metric, and other doesn't.
       # Therefore, it's needed to ignore fields like this in API responses.
       ignored_fields:
-       "ads_insights_age_and_gender": ["cost_per_estimated_ad_recallers"]
+        "ads_insights_age_and_gender": ["cost_per_estimated_ad_recallers"]
+        "ad_creatives": ["thumbnail_url"]

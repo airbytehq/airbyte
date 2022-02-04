@@ -18,6 +18,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -31,8 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksDestinationAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/config.json";
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer nameTransformer = new DatabricksNameTransformer();
   private JsonNode configJson;
@@ -85,7 +83,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
         .fetch().stream()
         .map(record -> {
-          final JsonNode json = Jsons.deserialize(record.formatJSON(JSON_FORMAT));
+          final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
           final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
           return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
         })
@@ -129,13 +127,17 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
           .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
+    s3Client.shutdown();
 
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
-    final Database database = getDatabase(databricksConfig);
-    // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
-    // Databricks, and it incorrectly quotes the schema name
-    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
+    try (final Database database = getDatabase(databricksConfig)) {
+      // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
+      // Databricks, and it incorrectly quotes the schema name
+      database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
+    } catch (final Exception e) {
+      throw new SQLException(e);
+    }
   }
 
   private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {

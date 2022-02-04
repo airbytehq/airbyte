@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -10,52 +9,35 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
-from vcr.cassette import Cassette
 
-
-def request_cache() -> Cassette:
-    """
-    Builds VCR instance.
-    It deletes file everytime we create it, normally should be called only once.
-    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-    """
-    filename = "request_cache.yml"
-    try:
-        os.remove(filename)
-    except FileNotFoundError:
-        pass
-
-    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
+DEFAULT_PAGE_SIZE = 100
 
 
 class GithubStream(HttpStream, ABC):
-    cache = request_cache()
     url_base = "https://api.github.com/"
 
-    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
-    # Here's an example of dangerous behavior:
-    # cache = Cassette.use('whatever')
-    # with cache:
-    #     with cache:
-    #         pass
-    #
-    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
-    top_level_stream = True
-
     primary_key = "id"
+    use_cache = True
 
-    # GitHub pagination could be from 1 to 100.
-    page_size = 100
+    # Detect streams with high API load
+    large_stream = False
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+
+        # GitHub pagination could be from 1 to 100.
+        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
+
+        MAX_RETRIES = 3
+        adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
@@ -75,18 +57,23 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
             requests.codes.SERVER_ERROR,
             requests.codes.BAD_GATEWAY,
         )
+        if retry_flag:
+            self.logger.info(
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+            )
+        return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == requests.codes.BAD_GATEWAY:
-            return 0.5
+        if response.status_code in [requests.codes.BAD_GATEWAY, requests.codes.SERVER_ERROR]:
+            return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         backoff_time = float(reset_time) - time.time() if reset_time else 60
@@ -94,27 +81,33 @@ class GithubStream(HttpStream, ABC):
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # get out the stream_slice parts for later use.
+        organisation = stream_slice.get("organization", "")
+        repository = stream_slice.get("repository", "")
+        # Reading records while handling the errors
         try:
-            if self.top_level_stream:
-                with self.cache:
-                    yield from super().read_records(stream_slice=stream_slice, **kwargs)
-            else:
-                yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e)
-
+            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
             if e.response.status_code == requests.codes.FORBIDDEN:
-                # When using the `check` method, we should raise an error if we do not have access to the repository.
+                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
-                error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}` and your `access_token`, seems like you don't have permissions for "
-                    f"this stream."
-                )
+                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+                # For all `Organisation` based streams
+                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                    )
+                # For all other `Repository` base streams
+                else:
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                    )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.
@@ -286,55 +279,6 @@ class Assignees(GithubStream):
     """
 
 
-class PullRequestStats(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
-    """
-
-    top_level_stream = False
-
-    @property
-    def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()["properties"].keys())
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
-            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(response.json(), repository=stream_slice["repository"])
-
-    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, repository=repository)
-        return {key: value for key, value in record.items() if key in self.record_keys}
-
-
-class Reviews(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
-    """
-
-    top_level_stream = False
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
-            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
-
-
 class Branches(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-branches
@@ -365,6 +309,9 @@ class Organizations(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
+
+    # GitHub pagination could be from 1 to 100.
+    page_size = 100
 
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
@@ -465,7 +412,8 @@ class PullRequests(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
-    page_size = 50
+    large_stream = True
+    first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -475,7 +423,7 @@ class PullRequests(SemiIncrementalGithubStream):
         """
         Decide if this a first read or not by the presence of the state object
         """
-        self._first_read = not bool(stream_state)
+        self._first_read = not bool(stream_state) or stream_state.get(self.first_read_override_key, False)
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -503,7 +451,7 @@ class PullRequests(SemiIncrementalGithubStream):
         """
         Depending if there any state we read stream in ascending or descending order.
         """
-        return self._first_read
+        return not self._first_read
 
 
 class CommitComments(SemiIncrementalGithubStream):
@@ -594,7 +542,7 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -707,7 +655,7 @@ class Issues(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
-    page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     stream_base_params = {
         "state": "all",
@@ -721,10 +669,93 @@ class ReviewComments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
-    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
+
+
+# Pull request substreams
+
+
+class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
+    use_cache = False
+
+    def __init__(self, parent: PullRequests, **kwargs):
+        super().__init__(parent=parent, **kwargs)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override the parent PullRequests stream configuration to always fetch records in ascending order
+        """
+        parent_state = deepcopy(stream_state) or {}
+        parent_state[PullRequests.first_read_override_key] = True
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
+        for parent_stream_slice in parent_stream_slices:
+            yield {
+                "pull_request_number": parent_stream_slice["parent"]["number"],
+                "repository": parent_stream_slice["parent"]["repository"],
+            }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        We've already determined the list of pull requests to run the stream against.
+        Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
+        """
+        yield from super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+
+
+class PullRequestStats(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
+
+    @property
+    def record_keys(self) -> List[str]:
+        return list(self.get_json_schema()["properties"].keys())
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield self.transform(response.json(), repository=stream_slice["repository"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
+        return {key: value for key, value in record.items() if key in self.record_keys}
+
+
+class Reviews(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
+    """
+
+    cursor_field = "submitted_at"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+
+    # Set the parent stream state's cursor field before fetching its records
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_state = deepcopy(stream_state) or {}
+        for repository in self.repositories:
+            if repository in parent_state and self.cursor_field in parent_state[repository]:
+                parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
+        yield from super().stream_slices(stream_state=parent_state, **kwargs)
 
 
 # Reactions streams
@@ -733,7 +764,7 @@ class ReviewComments(IncrementalGithubStream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
-    top_level_stream = False
+    use_cache = False
 
     def __init__(self, **kwargs):
         self._stream_kwargs = deepcopy(kwargs)
@@ -756,9 +787,6 @@ class ReactionStream(GithubStream, ABC):
         for stream_slice in super().stream_slices(**kwargs):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
 
 
 class CommitCommentReactions(ReactionStream):

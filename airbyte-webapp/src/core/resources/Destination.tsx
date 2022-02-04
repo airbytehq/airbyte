@@ -2,15 +2,7 @@ import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import BaseResource from "./BaseResource";
-
-export interface Destination {
-  destinationId: string;
-  name: string;
-  destinationName: string;
-  workspaceId: string;
-  destinationDefinitionId: string;
-  connectionConfiguration: ConnectionConfiguration;
-}
+import { Destination } from "core/domain/connector";
 
 export class DestinationResource extends BaseResource implements Destination {
   readonly destinationId: string = "";
@@ -44,6 +36,7 @@ export class DestinationResource extends BaseResource implements Destination {
     };
   }
 
+  // TODO: remove?
   static recreateShape<T extends typeof Resource>(
     this: T
   ): MutateShape<SchemaDetail<Destination>> {
@@ -74,11 +67,7 @@ export class DestinationResource extends BaseResource implements Destination {
         _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Destination> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/destinations/create`,
-          body
-        ),
+        await this.fetch("post", `${super.rootUrl()}destinations/create`, body),
     };
   }
 }

@@ -44,6 +44,10 @@ public class CatalogHelpers {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final List<Field> fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
+  }
+
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final Field... fields) {
     return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
@@ -96,7 +100,7 @@ public class CatalogHelpers {
             .stream()
             .collect(Collectors.toMap(
                 Field::getName,
-                field -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString()))))
+                field -> field.getType().getJsonSchemaTypeMap())))
         .build());
   }
 

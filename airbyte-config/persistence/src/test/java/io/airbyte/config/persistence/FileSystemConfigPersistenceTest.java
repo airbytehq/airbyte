@@ -15,7 +15,9 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +57,34 @@ class FileSystemConfigPersistenceTest {
         configPersistence.getConfig(
             ConfigSchema.STANDARD_SOURCE_DEFINITION,
             UUID_1.toString(),
+            StandardSourceDefinition.class));
+  }
+
+  @Test
+  void testReadWriteConfigs() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
+
+      {
+        put(UUID_1.toString(), SOURCE_1);
+        put(UUID_2.toString(), SOURCE_2);
+      }
+
+    };
+
+    configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
+
+    assertEquals(
+        SOURCE_1,
+        configPersistence.getConfig(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            UUID_1.toString(),
+            StandardSourceDefinition.class));
+
+    assertEquals(
+        SOURCE_2,
+        configPersistence.getConfig(
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            UUID_2.toString(),
             StandardSourceDefinition.class));
   }
 

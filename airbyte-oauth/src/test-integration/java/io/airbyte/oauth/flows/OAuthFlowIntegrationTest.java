@@ -14,6 +14,7 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -33,33 +34,43 @@ public abstract class OAuthFlowIntegrationTest {
   protected static final String REDIRECT_URL = "http://localhost/auth_flow";
   protected static final int SERVER_LISTENING_PORT = 80;
 
+  protected HttpClient httpClient;
   protected ConfigRepository configRepository;
   protected OAuthFlowImplementation flow;
   protected HttpServer server;
   protected ServerHandler serverHandler;
 
-  protected abstract Path get_credentials_path();
+  protected Path getCredentialsPath() {
+    return Path.of("secrets/config.json");
+  };
 
-  protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
+  protected String getRedirectUrl() {
+    return REDIRECT_URL;
+  }
+
+  protected abstract OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient);
 
   @BeforeEach
   public void setup() throws IOException {
-    if (!Files.exists(get_credentials_path())) {
+    if (!Files.exists(getCredentialsPath())) {
       throw new IllegalStateException(
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    flow = this.getFlowImplementation(configRepository, httpClient);
 
-    flow = this.getFlowObject(configRepository);
-
-    System.out.println(getServerListeningPort());
     server = HttpServer.create(new InetSocketAddress(getServerListeningPort()), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
     serverHandler = new ServerHandler("code");
     // Same endpoint as we use for airbyte instance
-    server.createContext("/auth_flow", serverHandler);
+    server.createContext(getCallBackServerPath(), serverHandler);
 
+  }
+
+  protected String getCallBackServerPath() {
+    return "/auth_flow";
   }
 
   protected int getServerListeningPort() {

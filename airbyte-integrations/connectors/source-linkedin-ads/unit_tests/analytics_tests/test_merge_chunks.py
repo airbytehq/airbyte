@@ -9,5 +9,5 @@ TEST_MERGE_BY_KEY = "end_date"
 
 
 def test_merge_chunks():
-    """ `merge_chunks` is the generator object, to get the output the list() function is applied """
+    """`merge_chunks` is the generator object, to get the output the list() function is applied"""
     assert list(merge_chunks(test_input_result_record_chunks, TEST_MERGE_BY_KEY)) == test_output_merged_chunks

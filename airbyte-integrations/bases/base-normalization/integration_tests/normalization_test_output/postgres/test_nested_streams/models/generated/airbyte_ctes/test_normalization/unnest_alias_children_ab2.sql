@@ -1,10 +1,10 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('unnest_alias_children_ab1') }}
 select
     _airbyte_unnest_alias_hashid,
     cast(ab_id as {{ dbt_utils.type_bigint() }}) as ab_id,

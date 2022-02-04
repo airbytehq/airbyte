@@ -73,7 +73,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         except KeyError:
             # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
             state_value = cursor_field.parse(record=state, path=state_cursor_paths[stream_name])
-        yield record_value, state_value
+        yield record_value, state_value, stream_name
 
 
 @pytest.mark.default_timeout(20 * 60)
@@ -89,18 +89,18 @@ class TestIncremental(BaseTest):
         assert records_1, "Should produce at least one record"
 
         latest_state = states_1[-1].state.data
-        for record_value, state_value in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
             assert (
                 record_value <= state_value
-            ), "First incremental sync should produce records younger or equal to cursor value from the state"
+            ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)
         records_2 = filter_output(output, type_=Type.RECORD)
 
-        for record_value, state_value in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
             assert (
                 record_value >= state_value
-            ), "Second incremental sync should produce records older or equal to cursor value from the state"
+            ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
 
     def test_state_with_abnormally_large_values(self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner):
         configured_catalog = incremental_only_catalog(configured_catalog)

@@ -23,7 +23,8 @@ REPORT_MAPPING = {
     "shopping_performance_report": "shopping_performance_view",
     "user_location_report": "user_location_view",
     "click_view": "click_view",
-    "keyword_view": "keyword_view"
+    "geographic_report": "geographic_view",
+    "keyword_report": "keyword_view",
 }
 
 

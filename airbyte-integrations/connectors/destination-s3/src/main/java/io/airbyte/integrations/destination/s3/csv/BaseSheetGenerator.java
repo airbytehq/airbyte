@@ -24,6 +24,11 @@ public abstract class BaseSheetGenerator implements CsvSheetGenerator {
     return data;
   }
 
+  @Override
+  public List<Object> getDataRow(JsonNode formattedData) {
+    return new LinkedList<>(getRecordColumns(formattedData));
+  }
+
   abstract List<String> getRecordColumns(JsonNode json);
 
 }

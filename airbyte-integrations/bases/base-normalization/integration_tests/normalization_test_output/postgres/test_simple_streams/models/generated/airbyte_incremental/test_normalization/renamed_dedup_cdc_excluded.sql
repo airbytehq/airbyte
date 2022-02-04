@@ -1,13 +1,15 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}],
+    indexes = [{'columns':['_airbyte_unique_key'],'unique':True}],
     unique_key = "_airbyte_unique_key",
     schema = "test_normalization",
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('renamed_dedup_cdc_excluded_scd') }}
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},
+    _ab_cdc_updated_at,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,

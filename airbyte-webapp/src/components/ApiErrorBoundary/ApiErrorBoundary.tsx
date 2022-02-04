@@ -57,7 +57,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     return !this.state.errorId ? (
       this.props.children
     ) : (
-      <ErrorOccurredView message={"Unknown error occurred"} />
+      <ErrorOccurredView message="Unknown error occurred" />
     );
   }
 }

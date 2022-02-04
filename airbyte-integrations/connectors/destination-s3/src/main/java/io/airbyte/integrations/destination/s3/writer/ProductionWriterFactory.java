@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.s3.writer;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.avro.S3AvroWriter;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
@@ -25,33 +25,31 @@ public class ProductionWriterFactory implements S3WriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+  public DestinationFileWriter create(final S3DestinationConfig config,
+                                      final AmazonS3 s3Client,
+                                      final ConfiguredAirbyteStream configuredStream,
+                                      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       final AirbyteStream stream = configuredStream.getStream();
+      LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
+
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace());
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
-      if (nameUpdater.hasNameUpdate()) {
-        LOGGER.info("The following field names will be standardized: {}", nameUpdater);
-      }
 
       if (format == S3Format.AVRO) {
-        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
       } else {
-        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
       }
     }
 
     if (format == S3Format.CSV) {
-      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+      return new S3CsvWriter.Builder(config, s3Client, configuredStream, uploadTimestamp).build();
     }
 
     if (format == S3Format.JSONL) {

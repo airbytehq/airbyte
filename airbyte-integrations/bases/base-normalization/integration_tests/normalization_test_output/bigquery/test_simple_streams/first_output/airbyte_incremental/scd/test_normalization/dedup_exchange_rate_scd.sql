@@ -5,15 +5,16 @@
             _airbyte_active_row,
             generate_array(0, 1, 1)
         )
-  cluster by _airbyte_unique_key, _airbyte_emitted_at
+  cluster by _airbyte_unique_key_scd, _airbyte_emitted_at
   OPTIONS()
   as (
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_ab3`
+    from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_stg`
     -- dedup_exchange_rate from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
@@ -29,14 +30,14 @@ scd_data as (
 ), '')) as 
     string
 ))) as _airbyte_unique_key,
-        id,
-        currency,
-        date,
-        timestamp_col,
-        HKD_special___characters,
-        HKD_special___characters_1,
-        NZD,
-        USD,
+      id,
+      currency,
+      date,
+      timestamp_col,
+      HKD_special___characters,
+      HKD_special___characters_1,
+      NZD,
+      USD,
       date as _airbyte_start_at,
       lag(date) over (
         partition by id, currency, cast(NZD as 
@@ -47,7 +48,7 @@ scd_data as (
             date desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag(date) over (
+      case when row_number() over (
         partition by id, currency, cast(NZD as 
     string
 )
@@ -55,7 +56,7 @@ scd_data as (
             date is null asc,
             date desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
@@ -66,8 +67,11 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         to_hex(md5(cast(concat(coalesce(cast(_airbyte_unique_key as 
     string
@@ -84,14 +88,14 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        currency,
-        date,
-        timestamp_col,
-        HKD_special___characters,
-        HKD_special___characters_1,
-        NZD,
-        USD,
+    id,
+    currency,
+    date,
+    timestamp_col,
+    HKD_special___characters,
+    HKD_special___characters_1,
+    NZD,
+    USD,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +48,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
-  protected final String secretFilePath = "secrets/config.json";
+  protected static final String SECRET_FILE_PATH = "secrets/config.json";
+  protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficient_roles_config.json";
   protected final S3Format outputFormat;
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
@@ -56,7 +60,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   protected JsonNode getBaseConfigJson() {
-    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
+    return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
   }
 
   @Override
@@ -89,7 +93,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -146,6 +150,29 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
+  }
+
+  /**
+   * Verify that when given user with no Multipart Upload Roles, that check connection returns a
+   * failed response. Assume that the #getInsufficientRolesFailCheckConfig() returns the service
+   * account has storage.objects.create permission but not storage.multipartUploads.create.
+   */
+  @Test
+  public void testCheckConnectionInsufficientRoles() throws Exception {
+    final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(
+        SECRET_FILE_PATH_INSUFFICIENT_ROLES)));
+
+    // Set a random GCS bucket path for each integration test
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final String testBucketPath = String.format(
+        "%s_test_%s",
+        outputFormat.name().toLowerCase(Locale.ROOT),
+        RandomStringUtils.randomAlphanumeric(5));
+    ((ObjectNode) configJson)
+        .put("gcs_bucket_path", testBucketPath)
+        .set("format", getFormatConfig());
+
+    assertEquals(Status.FAILED, runCheck(configJson).getStatus());
   }
 
 }

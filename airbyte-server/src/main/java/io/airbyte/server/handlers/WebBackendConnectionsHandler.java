@@ -40,10 +40,13 @@ import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +55,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@AllArgsConstructor
+@Slf4j
 public class WebBackendConnectionsHandler {
 
   private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
@@ -63,26 +70,25 @@ public class WebBackendConnectionsHandler {
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
-
-  public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
-                                      final SourceHandler sourceHandler,
-                                      final DestinationHandler destinationHandler,
-                                      final JobHistoryHandler jobHistoryHandler,
-                                      final SchedulerHandler schedulerHandler,
-                                      final OperationsHandler operationsHandler) {
-    this.connectionsHandler = connectionsHandler;
-    this.sourceHandler = sourceHandler;
-    this.destinationHandler = destinationHandler;
-    this.jobHistoryHandler = jobHistoryHandler;
-    this.schedulerHandler = schedulerHandler;
-    this.operationsHandler = operationsHandler;
-  }
+  private final FeatureFlags featureFlags;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final ConnectionHelper connectionHelper;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (final ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      reads.add(buildWebBackendConnectionRead(connection));
+    }
+    return new WebBackendConnectionReadList().connections(reads);
+  }
+
+  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    for (final ConnectionRead connection : connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       reads.add(buildWebBackendConnectionRead(connection));
     }
     return new WebBackendConnectionReadList().connections(reads);
@@ -174,7 +180,7 @@ public class WebBackendConnectionsHandler {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
-    final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody);
+    final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
@@ -208,10 +214,11 @@ public class WebBackendConnectionsHandler {
         final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfig();
         outputStreamConfig = new AirbyteStreamConfiguration();
 
-        if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode()))
+        if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode())) {
           outputStreamConfig.setSyncMode(originalStreamConfig.getSyncMode());
-        else
+        } else {
           outputStreamConfig.setSyncMode(discoveredStreamConfig.getSyncMode());
+        }
 
         if (originalStreamConfig.getCursorField().size() > 0) {
           outputStreamConfig.setCursorField(originalStreamConfig.getCursorField());
@@ -250,17 +257,31 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-    final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog())) {
-      final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
+    ConnectionRead connectionRead;
+    boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
+    if (!featureFlags.usesNewScheduler()) {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+      if (needReset) {
+        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
+        // wait for this to execute
+        schedulerHandler.resetConnection(connectionId);
 
-      // wait for this to execute
-      schedulerHandler.resetConnection(connectionId);
+        // just create the job
+        schedulerHandler.syncConnection(connectionId);
+      }
+    } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate, !needReset);
 
-      // just create the job
-      schedulerHandler.syncConnection(connectionId);
+      if (needReset) {
+        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+
+        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+
+        connectionRead = connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
+      }
     }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 
@@ -276,7 +297,7 @@ public class WebBackendConnectionsHandler {
   private List<UUID> updateOperations(final WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = connectionsHandler
-        .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
+        .getConnection(webBackendConnectionUpdate.getConnectionId());
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
 
@@ -295,7 +316,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private UUID getWorkspaceIdForConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final UUID sourceId = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getSourceId();
+    final UUID sourceId = connectionsHandler.getConnection(connectionId).getSourceId();
     return getWorkspaceIdForSource(sourceId);
   }
 

@@ -25,6 +25,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.ORACLE.value: 128,
     # https://docs.microsoft.com/en-us/sql/odbc/microsoft/column-name-limitations?view=sql-server-ver15
     DestinationType.MSSQL.value: 64,
+    # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
+    DestinationType.CLICKHOUSE.value: 63,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -148,6 +150,11 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
+        if result[0].isdigit():
+            if self.destination_type == DestinationType.MSSQL:
+                result = "_" + result
+            elif self.destination_type == DestinationType.ORACLE:
+                result = "ab_" + result
         return result
 
     def __normalize_identifier_name(
@@ -163,11 +170,7 @@ class DestinationNameTransformer:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
             result = self.__normalize_identifier_case(result, is_quoted=True)
-            if self.destination_type == DestinationType.ORACLE:
-                # Oracle dbt lib doesn't implemented adapter quote yet.
-                result = f"quote('{result}')"
-            else:
-                result = f"adapter.quote('{result}')"
+            result = self.apply_quote(result)
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -177,6 +180,14 @@ class DestinationNameTransformer:
             # to refer to columns while already in jinja context, always quote
             return f"'{result}'"
         return result
+
+    def apply_quote(self, input: str) -> str:
+        if self.destination_type == DestinationType.ORACLE:
+            # Oracle dbt lib doesn't implemented adapter quote yet.
+            return f"quote('{input}')"
+        elif self.destination_type == DestinationType.CLICKHOUSE:
+            return f"quote('{input}')"
+        return f"adapter.quote('{input}')"
 
     def __normalize_naming_conventions(self, input_name: str) -> str:
         result = input_name
@@ -213,6 +224,46 @@ class DestinationNameTransformer:
                 result = input_name.lower()
             else:
                 result = input_name.upper()
+        elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
+        else:
+            raise KeyError(f"Unknown destination type {self.destination_type}")
+        return result
+
+    def normalize_column_identifier_case_for_lookup(self, input_name: str, is_quoted: bool = False) -> str:
+        """
+        This function adds an additional normalization regarding the column name casing to determine if multiple columns
+        are in collisions. On certain destinations/settings, case sensitivity matters, in others it does not.
+        We separate this from standard identifier normalization "__normalize_identifier_case",
+        so the generated SQL queries are keeping the original casing from the catalog.
+        But we still need to determine if casing matters or not, thus by using this function.
+        """
+        result = input_name
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
+            # Columns are considered identical regardless of casing
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.REDSHIFT.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.POSTGRES.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.MYSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+            else:
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
