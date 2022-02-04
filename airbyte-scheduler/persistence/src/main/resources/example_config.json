@@ -6,7 +6,8 @@
   "null_value": null,
   "one_of": {
     "type_key": "foo",
-    "some_key": 100
+    "some_key": 100,
+    "some_undeclared_key": "ignored"
   },
   "const_object": {
     "sub_key": "bar",
