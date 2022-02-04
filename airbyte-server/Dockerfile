@@ -7,7 +7,7 @@ ENV APPLICATION airbyte-server
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-0.35.15-alpha.tar /app
+ADD bin/${APPLICATION}-0.35.16-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.15-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.16-alpha/bin/${APPLICATION}"]
