@@ -510,6 +510,38 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Test
+    @DisplayName("Test that cancelling a reset don't restart a reset")
+    public void cancelResetDontContinueAsReset() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = Mockito.spy(new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState,
+          true));
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.cancelJob();
+      testEnv.sleep(Duration.ofMinutes(2L));
+      testEnv.shutdown();
+
+      Assertions.assertThat(testStateListener.events(testId))
+          .filteredOn((event) -> event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
+          .isEmpty();
+
+      Assertions.assertThat(testStateListener.events(testId))
+          .filteredOn((event) -> !event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
+          .hasSizeGreaterThanOrEqualTo(2);
+    }
+
+    @Test
     @DisplayName("Test workflow which recieved an update signal wait for the current run and report the job status")
     public void updatedSignalRecievedWhileRunning() {
 

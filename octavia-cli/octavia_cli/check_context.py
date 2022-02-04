@@ -44,7 +44,7 @@ def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
             )
     except (airbyte_api_client.ApiException, MaxRetryError) as e:
         raise UnreachableAirbyteInstanceError(
-            f"Could not reach your Airbyte instance, make sure the instance is up and running an network reachable: {e}"
+            f"Could not reach your Airbyte instance, make sure the instance is up and running and network reachable: {e}"
         )
 
 

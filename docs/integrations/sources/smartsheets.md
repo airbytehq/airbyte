@@ -84,3 +84,10 @@ To setup your new Smartsheets source, Airbyte will need:
 1. Your API access token
 2. The spreadsheet ID
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject             |
+|:--------|:-----------| :--- |:--------------------|
+| 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792) | Added oauth support |
+
+
