@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-    This is our primary log4j2 configuration file.
-
-    If you are updating log configurations that need to run on the container orchestrator containers, remember to
-    update airbyte-container-orchestrator/src/main/resources/log4j2-orchestrator.xml
--->
 <Configuration status="INFO">
     <Properties>
 
