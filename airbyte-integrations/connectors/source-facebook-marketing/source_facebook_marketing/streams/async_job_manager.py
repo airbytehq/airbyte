@@ -118,7 +118,7 @@ class InsightAsyncJobManager:
                 elif job.attempt_number == 2:
                     logger.info("%s: failed second time, trying to split job into smaller jobs.", job)
                     smaller_jobs = job.split_job()
-                    grouped_jobs = ParentAsyncJob(api=self._api, jobs=smaller_jobs, interval=job.interval)
+                    grouped_jobs = ParentAsyncJob(api=self._api.api, jobs=smaller_jobs, interval=job.interval)
                     running_jobs.append(grouped_jobs)
                     grouped_jobs.start()
                 else:

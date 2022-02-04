@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Sequence, Union, Type
 
 import pendulum
+from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
@@ -96,7 +97,7 @@ class AsyncJob(ABC):
 class ParentAsyncJob(AsyncJob):
     """Group of async jobs"""
 
-    def __init__(self, jobs: List[AsyncJob], **kwargs):
+    def __init__(self, jobs: List["InsightAsyncJob"], **kwargs):
         """Initialize jobs"""
         super().__init__(**kwargs)
         self._jobs = jobs
@@ -104,7 +105,8 @@ class ParentAsyncJob(AsyncJob):
     def start(self):
         """Start each job in the group."""
         for job in self._jobs:
-            job.start()
+            if job.elapsed_time is None:
+                job.start()
         self._attempt_number += 1
 
     def restart(self):
@@ -190,9 +192,11 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(Campaign)
         elif isinstance(self._edge_object, Campaign):
             return self._split_by_edge_class(AdSet)
+        elif isinstance(self._edge_object, AdSet):
+            return self._split_by_edge_class(Ad)
         raise RuntimeError("The job is already splitted to the smallest size.")
 
-    def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet]]) -> List[AsyncJob]:
+    def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
         """ Split insight job by creating insight jobs from lower edge object, i.e.
         Account -> Campaign -> AdSet
         TODO: use some cache to avoid expensive queries across different streams.
@@ -204,6 +208,9 @@ class InsightAsyncJob(AsyncJob):
         elif edge_class == AdSet:
             pk_name = "adset_id"
             level = "adset"
+        elif edge_class == Ad:
+            pk_name = "ad_id"
+            level = "ad"
         else:
             raise RuntimeError("Unsupported edge_class.")
 
