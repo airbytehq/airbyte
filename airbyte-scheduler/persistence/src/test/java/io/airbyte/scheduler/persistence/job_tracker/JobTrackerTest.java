@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
@@ -36,6 +38,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
@@ -56,6 +59,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JobTrackerTest {
+
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "WORKSPACE_TEST";
@@ -99,6 +104,38 @@ class JobTrackerTest {
       .put("table_prefix", false)
       .put("operation_count", 0)
       .build();
+
+  private static final ConnectorSpecification SOURCE_SPEC;
+  private static final ConnectorSpecification DESTINATION_SPEC;
+
+  static {
+    try {
+      SOURCE_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
+          """
+              {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  }
+                }
+              }
+              """));
+      DESTINATION_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
+          """
+              {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "boolean"
+                  }
+                }
+              }
+              """));
+    } catch (final JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   private ConfigRepository configRepository;
 
@@ -312,26 +349,30 @@ class JobTrackerTest {
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(SOURCE_SPEC));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(DESTINATION_SPEC));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(SOURCE_SPEC));
     when(configRepository.getStandardDestinationDefinition(UUID2))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(DESTINATION_SPEC));
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
