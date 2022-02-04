@@ -62,6 +62,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -85,12 +86,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-class WebBackendConnectionsHandlerTest {
+class WebBackendHandlerTest {
 
   private ConnectionsHandler connectionsHandler;
   private OperationsHandler operationsHandler;
   private SchedulerHandler schedulerHandler;
-  private WebBackendConnectionsHandler wbHandler;
+  private WebBackendHandler wbHandler;
 
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
@@ -107,11 +108,12 @@ class WebBackendConnectionsHandlerTest {
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     featureFlags = mock(FeatureFlags.class);
     temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler, featureFlags, temporalWorkerRunFactory);
+    wbHandler = new WebBackendHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
+        operationsHandler, featureFlags, temporalWorkerRunFactory, configRepository);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -347,7 +349,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog);
 
-    final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
+    final ConnectionCreate actual = WebBackendHandler.toConnectionCreate(input, operationIds);
 
     assertEquals(expected, actual);
   }
@@ -386,7 +388,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
+    final ConnectionUpdate actual = WebBackendHandler.toConnectionUpdate(input, operationIds);
 
     assertEquals(expected, actual);
   }
@@ -470,7 +472,7 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendOperationCreateOrUpdate operationCreateOrUpdate = new WebBackendOperationCreateOrUpdate()
         .name("Test Operation")
         .operationId(connectionRead.getOperationIds().get(0));
-    final OperationUpdate operationUpdate = WebBackendConnectionsHandler.toOperationUpdate(operationCreateOrUpdate);
+    final OperationUpdate operationUpdate = WebBackendHandler.toOperationUpdate(operationCreateOrUpdate);
     final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
         .namespaceDefinition(expected.getNamespaceDefinition())
         .namespaceFormat(expected.getNamespaceFormat())
@@ -579,7 +581,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
+    final InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
     orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
     orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
@@ -611,7 +613,7 @@ class WebBackendConnectionsHandlerTest {
         .primaryKey(Collections.emptyList())
         .aliasName("stream1");
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendHandler.updateSchemaWithDiscovery(original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -660,7 +662,7 @@ class WebBackendConnectionsHandlerTest {
         .primaryKey(Collections.emptyList())
         .aliasName("stream1");
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendHandler.updateSchemaWithDiscovery(original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -735,7 +737,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName("stream2");
     expected.getStreams().add(expectedNewStream);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendHandler.updateSchemaWithDiscovery(original, discovered);
 
     assertEquals(expected, actual);
   }

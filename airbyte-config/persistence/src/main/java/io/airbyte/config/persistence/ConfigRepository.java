@@ -551,6 +551,25 @@ public class ConfigRepository {
     }
   }
 
+  public int countConnectionsForWorkspace(final UUID workspaceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    // TODO: Missing implementation
+    return 0;
+  }
+
+  public long countSourcesForWorkspace(final UUID workspaceId) throws JsonValidationException, IOException {
+    // TODO: Should use a dedicated count query in the persistence layer
+    return this.listSourceConnection().stream()
+        .filter(source -> Objects.equals(source.getWorkspaceId(), workspaceId))
+        .count();
+  }
+
+  public long countDestinationsForWorkspace(final UUID workspaceId) throws JsonValidationException, IOException {
+    // TODO: Should use a dedicated count query in the persistence layer
+    return this.listDestinationConnection().stream()
+        .filter(dest -> Objects.equals(dest.getWorkspaceId(), workspaceId) && !dest.getTombstone())
+        .count();
+  }
+
   /**
    * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
    * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
