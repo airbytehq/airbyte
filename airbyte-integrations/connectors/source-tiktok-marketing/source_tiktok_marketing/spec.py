@@ -13,62 +13,83 @@ from pydantic import BaseModel, Field
 from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
+class OauthCredSpec(BaseModel):
+    class Config:
+        title = "OAuth2.0"
+
+    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
+
+    app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
+
+    secret: str = Field(title="Secret", description="The private key of the developer's application.", airbyte_secret=True)
+
+    access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
+
+
 class SandboxEnvSpec(BaseModel):
     class Config:
-        title = "Sandbox"
+        title = "Sandbox Access Token"
 
-    environment: str = Field("sandbox", const=True)
+    auth_type: str = Field(default="sandbox_access_token", const=True, order=0, enum=["sandbox_access_token"])
 
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
-        description="The Advertiser ID  which generated for the developer's Sandbox application.",
+        title="Advertiser ID", description="The Advertiser ID  which generated for the developer's Sandbox application."
     )
+
+    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
 
 class ProductionEnvSpec(BaseModel):
     class Config:
-        title = "Production"
+        title = "Production Access Token"
 
-    environment: str = Field("prod", const=True)
+    auth_type: str = Field(default="prod_access_token", const=True, order=0, enum=["prod_access_token"])
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
-    app_id: str = Field(
-        description="The App ID applied by the developer.",
-    )
-    secret: str = Field(description="The private key of the developer application.", airbyte_secret=True)
+    app_id: str = Field(description="The App ID applied by the developer.", title="App ID")
+    secret: str = Field(title="Secret", description="The private key of the developer application.", airbyte_secret=True)
+
+    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, order=2)
-
-    access_token: str = Field(description="The Long-term Authorized Access Token.", order=1, airbyte_secret=True)
-
     start_date: str = Field(
-        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
+        title="Start Date",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        order=3,
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
+        "If this parameter is not set, all data will be replicated.",
+        order=0,
     )
 
     report_granularity: str = Field(
+        title="Report Granularity",
         description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
         "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
-        order=4,
+        order=1,
     )
 
-    @staticmethod
-    def change_format_to_oneOf(schema: dict, field_name: str) -> dict:
+    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
+        title="Authorization Method", order=3, default={}, type="object"
+    )
 
-        schema["properties"][field_name]["type"] = "object"
-        if "oneOf" not in schema["properties"][field_name]:
-            schema["properties"][field_name]["oneOf"] = schema["properties"][field_name].pop("anyOf")
-
-        return schema
+    @classmethod
+    def change_format_to_oneOf(cls, schema: dict) -> dict:
+        new_schema = {}
+        for key, value in schema.items():
+            if isinstance(value, dict):
+                value = cls.change_format_to_oneOf(value)
+            if key == "anyOf":
+                new_schema["oneOf"] = value
+            else:
+                new_schema[key] = value
+        return new_schema
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
@@ -85,5 +106,19 @@ class SourceTiktokMarketingSpec(BaseModel):
     def schema(cls) -> dict:
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
-        schema = cls.change_format_to_oneOf(schema, "environment")
+        schema = cls.change_format_to_oneOf(schema)
         return cls.resolve_refs(schema)
+
+
+class CompleteOauthOutputSpecification(BaseModel):
+    access_token: str = Field(path_in_connector_config=["credentials", "access_token"])
+
+
+class CompleteOauthServerInputSpecification(BaseModel):
+    app_id: str = Field()
+    secret: str = Field()
+
+
+class CompleteOauthServerOutputSpecification(BaseModel):
+    app_id: str = Field(path_in_connector_config=["credentials", "app_id"])
+    secret: str = Field(path_in_connector_config=["credentials", "secret"])

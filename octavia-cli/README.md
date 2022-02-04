@@ -14,17 +14,17 @@ The project is under development: readers can refer to our [tech spec deck](http
 We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
 The project is under development: we have not yet published any docker image to our Docker registry.
 
-1. Build the image locally:
+1. Build the project locally (from the root of the repo):
 ```bash
-docker build -t octavia-cli:dev --rm .
+SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 ```
 2. Run the CLI from docker:
 ```bash
-docker run octavia-cli:dev 
+docker run airbyte/octavia-cli:dev 
 ````
 3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
 ````bash
-echo 'alias octavia="docker run octavia-cli:dev"'  >> ~/.zshrc
+echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
 source ~/.zshrc
 octavia
 ````
@@ -34,10 +34,14 @@ Octavia is currently under development.
 You can find a detailed and updated execution plan [here](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0).
 We welcome community contributions!
 
-Summary of achievements:
+**Summary of achievements**:
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-01-25 | Implement `octavia init` + some context checks|
+| 2022-01-19 | Implement `octavia list workspace sources`, `octavia list workspace destinations`, `octavia list workspace connections`|
+| 2022-01-17 | Implement `octavia list connectors source` and `octavia list connectors destinations`|
+| 2022-01-17 | Generate an API Python client from our Open API spec |
 | 2021-12-22 | Bootstrapping the project's code base |
 
 # Developing locally
@@ -47,7 +51,7 @@ Summary of achievements:
 4. Install dev dependencies: `pip install -e .\[dev\]`
 5. Install `pre-commit` hooks: `pre-commit install`
 6. Run the test suite: `pytest --cov=octavia_cli unit_tests`
-7. Iterate; please check the [Contributing](#contributing) for instructions on contributing.
+7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
 # Contributing
 1. Please sign up to [Airbyte's Slack workspace](https://slack.airbyte.io/) and join the `#octavia-cli`. We'll sync up community efforts in this channel.

@@ -20,7 +20,7 @@
     "additionalProperties": true,
     "properties": {
       "host": {
-        "description": "Host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
+        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
         "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
         "type": "string",
         "title": "Host",
@@ -48,7 +48,7 @@
         "order": 3
       },
       "schema": {
-        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace. Schema name would be transformed to allowed by Snowflake if it not follow Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions ",
+        "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.. Schema name would be transformed to allowed by Snowflake if it not follow Snowflake Naming Conventions https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions ",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
         "title": "Default Schema",
@@ -62,17 +62,23 @@
         "order": 5
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
         "title": "Password",
         "order": 6
       },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 7
+      },
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "Loading method used to send data to Snowflake.",
-        "order": 7,
+        "description": "The loading method used to send data to Snowflake.",
+        "order": 8,
         "oneOf": [
           {
             "title": "[Recommended] Internal Staging",
@@ -128,7 +134,7 @@
                 "title": "S3 Bucket Region",
                 "type": "string",
                 "default": "",
-                "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+                "description": "The region of the S3 staging bucket which is used when utilising a copy strategy.",
                 "enum": [
                   "",
                   "us-east-1",
@@ -178,6 +184,13 @@
                 "description": "Optional. Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
                 "title": "Stream Part Size",
                 "order": 5
+              },
+              "purge_staging_data": {
+                "title": "Purge Staging Files and Tables",
+                "type": "boolean",
+                "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. Only relevant for COPY. Defaults to true.",
+                "default": true,
+                "order": 6
               }
             }
           },

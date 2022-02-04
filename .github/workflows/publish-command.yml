@@ -34,6 +34,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   publish-image:
     needs: start-publish-image-runner
@@ -66,10 +67,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
-      - name: Install Unzip for Databricks
-        if: github.event.inputs.connector == 'connectors/destination-databricks'
-        run: |
-          apt-get update && apt-get install -y unzip
       - name: Install Java
         uses: actions/setup-java@v1
         with:
@@ -93,15 +90,39 @@ jobs:
           ci_credentials ${{ github.event.inputs.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      - run: |
+      - name: Prepare Sentry Release
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          source tools/lib/lib.sh
+          DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
+          echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+      - name: Create Sentry Release
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+          SENTRY_ORG: airbyte-5j
+          SENTRY_PROJECT: airbyte-connectors
+      - name: Publish ${{ github.event.inputs.connector }}
+        run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
-        name: publish ${{ github.event.inputs.connector }}
         id: publish
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+      - name: Finalize Sentry release
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+          SENTRY_ORG: airbyte-5j
+          SENTRY_PROJECT: airbyte-connectors
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1

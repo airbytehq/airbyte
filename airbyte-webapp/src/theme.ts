@@ -38,6 +38,8 @@ export const theme = {
   whiteColor: "#FFFFFF",
   beigeColor: "#FEF9F4",
   darkBeigeColor: "#FFEBD7",
+  borderTableColor: "#D3DCE4",
+  lightTableColor: "#F5F7F9",
   darkGreyColor: "#8B8BA0",
   redColor: "#FF6A4D",
   lightRedColor: "#FF8870",

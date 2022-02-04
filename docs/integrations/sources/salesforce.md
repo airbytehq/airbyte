@@ -21,7 +21,9 @@ Several output streams are available from this source. A list of these streams c
 
 ### Performance considerations
 
-The connector is restricted by normal Salesforce rate limiting. For large transfers we recommend using the BULK API.
+The connector is restricted by daily Salesforce rate limiting.
+The connector uses as much rate limit as it can every day, then ends the sync early with success status and continues the sync from where it left the next time.
+Note that, picking up from where it ends will work only for incremental sync.
 
 ## Getting started
 
@@ -737,6 +739,12 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject                                                                   |
 |:--------|:-----------| :--- |:--------------------------------------------------------------------------|
+| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
+| 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757) | Parse CSV with "unix" dialect |
+| 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
+| 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478) | Add available stream filtering by `queryable` flag |
+| 0.1.17  | 2022-01-19 | [9302](https://github.com/airbytehq/airbyte/pull/9302) | Deprecate API Type parameter                                             |
+| 0.1.16  | 2022-01-18 | [9151](https://github.com/airbytehq/airbyte/pull/9151) | Fix pagination in REST API streams                                       |
 | 0.1.15  | 2022-01-11 | [9409](https://github.com/airbytehq/airbyte/pull/9409) | Correcting the presence of an extra `else` handler in the error handling |
 | 0.1.14  | 2022-01-11 | [9386](https://github.com/airbytehq/airbyte/pull/9386) | Handling 400 error, while `sobject` doesn't support `query` or `queryAll` requests |
 | 0.1.13  | 2022-01-11 | [8797](https://github.com/airbytehq/airbyte/pull/8797) | Switched from authSpecification to advanced_auth in specefication         |
@@ -753,4 +761,3 @@ List of available streams:
 | 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
 | 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209) | Fix bug with pagination for BULK API                                      |
 | 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector                                       |
-

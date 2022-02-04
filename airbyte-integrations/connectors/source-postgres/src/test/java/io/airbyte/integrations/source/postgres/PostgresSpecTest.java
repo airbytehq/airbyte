@@ -30,6 +30,7 @@ public class PostgresSpecTest {
       + "\"password\" : \"pwd\",  "
       + "\"username\" : \"postgres\",  "
       + "\"database\" : \"postgres_db\",  "
+      + "\"schemas\" : [\"public\"],  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
       + "\"ssl\" : true, "
@@ -51,6 +52,13 @@ public class PostgresSpecTest {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config).remove("database");
     assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testSchemaMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("schemas");
+    assertTrue(validator.test(schema, config));
   }
 
   @Test

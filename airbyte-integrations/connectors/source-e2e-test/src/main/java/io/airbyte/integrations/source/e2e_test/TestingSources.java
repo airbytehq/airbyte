@@ -18,33 +18,33 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This source is designed to be a switch statement for our suite of highly-specific test sourcess.
- */
 public class TestingSources extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
 
-  private final Map<TestDestinationType, Source> sourceMap;
+  private final Map<TestingSourceType, Source> sourceMap;
 
-  public enum TestDestinationType {
-    INFINITE_FEED,
-    EXCEPTION_AFTER_N
+  public enum TestingSourceType {
+    CONTINUOUS_FEED,
+    // the following are legacy types
+    EXCEPTION_AFTER_N,
+    INFINITE_FEED
   }
 
   public TestingSources() {
-    this(ImmutableMap.<TestDestinationType, Source>builder()
-        .put(TestDestinationType.INFINITE_FEED, new InfiniteFeedSource())
-        .put(TestDestinationType.EXCEPTION_AFTER_N, new ExceptionAfterNSource())
+    this(ImmutableMap.<TestingSourceType, Source>builder()
+        .put(TestingSourceType.CONTINUOUS_FEED, new ContinuousFeedSource())
+        .put(TestingSourceType.EXCEPTION_AFTER_N, new LegacyExceptionAfterNSource())
+        .put(TestingSourceType.INFINITE_FEED, new LegacyInfiniteFeedSource())
         .build());
   }
 
-  public TestingSources(final Map<TestDestinationType, Source> sourceMap) {
+  public TestingSources(final Map<TestingSourceType, Source> sourceMap) {
     this.sourceMap = sourceMap;
   }
 
   private Source selectSource(final JsonNode config) {
-    return sourceMap.get(TestDestinationType.valueOf(config.get("type").asText()));
+    return sourceMap.get(TestingSourceType.valueOf(config.get("type").asText()));
   }
 
   @Override
@@ -67,9 +67,7 @@ public class TestingSources extends BaseConnector implements Source {
 
   public static void main(final String[] args) throws Exception {
     final Source source = new TestingSources();
-    LOGGER.info("starting source: {}", TestingSources.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", TestingSources.class);
   }
 
 }
