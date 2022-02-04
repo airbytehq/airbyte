@@ -210,7 +210,7 @@ public class JobTracker {
       // * If it's an object, flatten it
       // * Otherwise, do some basic conversions to value-ish data.
       if (config.isObject()) {
-        // TODO flatten object
+        output.putAll(flatten(config));
       } else if (config.isBoolean()) {
         output.put(null, config.asBoolean());
       } else if (config.isLong()) {
@@ -238,19 +238,16 @@ public class JobTracker {
     } else if (config.isObject()) {
       // If the schema is not a oneOf, but the config is an object (i.e. the schema has "type": "object")
       // then we need to recursively convert each field of the object to a map.
-      // Note: this doesn't handle additionalProperties, but that seems unnecessary.
+      // Note: this doesn't handle additionalProperties, so if a config contains properties that are not explicitly declared in the schema, they will be ignored.
       final JsonNode maybeProperties = schema.get("properties");
       for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
-        if (maybeProperties != null) {
+        if (maybeProperties != null && maybeProperties.hasNonNull(field)) {
           output.putAll(configToMetadata(field, value, maybeProperties.get(field)));
         }
-        // TODO should we handle weird null cases?
       }
-      // make sure to prepend the field name to the key
-      // TODO how to handle additionalProperties?
     } else if (config.isBoolean()) {
       // TODO handle this in the else branch?
       output.put(null, config.asBoolean());
@@ -261,6 +258,35 @@ public class JobTracker {
     }
     // Otherwise, this is an empty string, so just ignore it
 
+    return output;
+  }
+
+  private static Map<String, Object> flatten(final JsonNode node) {
+    final Map<String, Object> output = new HashMap<>();
+    for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+      final Entry<String, JsonNode> entry = it.next();
+      final String field = entry.getKey();
+      final JsonNode value = entry.getValue();
+      if (value.isObject()) {
+        output.putAll(flatten(entry.getValue()).entrySet().stream().collect(toMap(
+            e -> {
+              final String key = e.getKey();
+              if (key != null) {
+                return field + "." + key;
+              } else {
+                return field;
+              }
+            },
+            Entry::getValue
+        )));
+      } else {
+        if (value.isTextual()) {
+          output.put(field, value.asText());
+        } else {
+          output.put(field, value.toString());
+        }
+      }
+    }
     return output;
   }
 

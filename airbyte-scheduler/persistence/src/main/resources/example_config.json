@@ -7,5 +7,8 @@
   "one_of": {
     "type_key": "foo",
     "some_key": 100
+  },
+  "const_object": {
+    "sub_key": "bar"
   }
 }
