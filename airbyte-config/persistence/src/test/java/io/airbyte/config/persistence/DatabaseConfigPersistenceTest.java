@@ -202,7 +202,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2")
-        .withName("random-name");
+        .withName("random-name")
+        .withTombstone(false);
     writeSource(configPersistence, source1);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
@@ -214,7 +215,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.5")
-        .withName("random-name-2");
+        .withName("random-name-2")
+        .withTombstone(false);
     writeSource(configPersistence, source2);
     assertRecordCount(2, ACTOR_DEFINITION);
     assertHasSource(source2);
