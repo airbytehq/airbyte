@@ -177,7 +177,7 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStageEnum.CUSTOM);
 
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createSourceDefinition(create);
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);

@@ -119,7 +119,7 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefinitionCreate.getDockerRepository(),

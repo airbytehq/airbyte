@@ -115,7 +115,7 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
+  public SourceDefinitionRead createCustomSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 

@@ -49,7 +49,7 @@ import org.junit.jupiter.api.Test;
 
 class DestinationDefinitionsHandlerTest {
 
-  private static String TODAY_DATE_STRING = LocalDate.now().toString();
+  private static final String TODAY_DATE_STRING = LocalDate.now().toString();
 
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destinationDefinition;
@@ -176,7 +176,7 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
         .releaseStage(ReleaseStageEnum.CUSTOM);
 
-    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createDestinationDefinition(create);
+    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
