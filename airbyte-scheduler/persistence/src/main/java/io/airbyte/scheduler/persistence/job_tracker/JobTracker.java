@@ -240,7 +240,7 @@ public class JobTracker {
     } else if (config.isBoolean()) {
       return singletonMap(null, config.asBoolean());
     } else if ((!config.isTextual() && !config.isNull()) || (config.isTextual() && !config.asText().isEmpty())) {
-      // This is either non-textual (i.e. array) or non-empty text
+      // This is either non-textual (e.g. integer, array, etc) or non-empty text
       return singletonMap(null, SET);
     } else {
       // Otherwise, this is an empty string, so just ignore it
