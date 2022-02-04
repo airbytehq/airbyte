@@ -202,7 +202,6 @@ public class JobTracker {
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
     final Map<String, Object> output = new HashMap<>();
 
-    final JsonNode maybeOneOfSchemas = schema.get("oneOf");
     if (schema.hasNonNull("const")) {
       // If this schema is a const, then just dump it into a map:
       // * If it's an object, flatten it
@@ -212,11 +211,11 @@ public class JobTracker {
       } else {
         output.put(null, toMetadataValue(config));
       }
-    } else if (maybeOneOfSchemas != null && maybeOneOfSchemas.isArray()) {
+    } else if (schema.has("oneOf")) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
       // and use that sub-schema to convert the config to a map
       final JsonSchemaValidator validator = new JsonSchemaValidator();
-      for (final Iterator<JsonNode> it = maybeOneOfSchemas.elements(); it.hasNext(); ) {
+      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext(); ) {
         final JsonNode subSchema = it.next();
         if (validator.test(subSchema, config)) {
           return configToMetadata(config, subSchema);
