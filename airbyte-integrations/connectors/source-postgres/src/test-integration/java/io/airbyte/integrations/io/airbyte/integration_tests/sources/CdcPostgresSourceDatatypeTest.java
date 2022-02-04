@@ -225,7 +225,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'January 7, 1999'", "'1999-01-08'", "'1/9/1999'", "'January 10, 99 BC'", "'January 11, 99 AD'", "null")
-            .addExpectedValues("1999-01-07", "1999-01-08", "1999-01-09", "0099-01-10", "1999-01-11", null)
+            .addExpectedValues("1999-01-07T00:00:00Z", "1999-01-08T00:00:00Z", "1999-01-09T00:00:00Z", "0099-01-10T00:00:00Z", "1999-01-11T00:00:00Z",
+                null)
             .build());
 
     addDataTypeTestData(

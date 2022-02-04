@@ -18,3 +18,4 @@ export * from "./SimpleTableComponents";
 export * from "./Spinner";
 export * from "./StatusIcon";
 export * from "./TextWithHTML";
+export * from "./ProgressBar";

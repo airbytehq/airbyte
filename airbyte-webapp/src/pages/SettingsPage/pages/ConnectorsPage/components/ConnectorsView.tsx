@@ -50,6 +50,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   connectorsDefinitions,
 }) => {
   const { hasFeature } = useFeatureService();
+  const allowUpdateConnectors = hasFeature(FeatureItem.AllowUpdateConnectors);
 
   const columns = React.useMemo(
     () => [
@@ -61,7 +62,9 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <ConnectorCell
             connectorName={cell.value}
             img={row.original.icon}
-            hasUpdate={Connector.hasNewerVersion(row.original)}
+            hasUpdate={
+              allowUpdateConnectors && Connector.hasNewerVersion(row.original)
+            }
             isDeprecated={Connector.isDeprecated(row.original)}
           />
         ),
@@ -82,7 +85,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      ...(hasFeature(FeatureItem.AllowUpdateConnectors)
+      ...(allowUpdateConnectors
         ? [
             {
               Header: (
@@ -105,7 +108,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           ]
         : []),
     ],
-    [feedbackList, onUpdateVersion]
+    [feedbackList, onUpdateVersion, allowUpdateConnectors]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
@@ -116,7 +119,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <CreateConnector type={type} />
         </WithFeature>
         {(hasNewConnectorVersion || isUpdateSuccess) &&
-          hasFeature(FeatureItem.AllowUpdateConnectors) && (
+          allowUpdateConnectors && (
             <UpgradeAllButton
               isLoading={loading}
               hasError={!!error && !loading}

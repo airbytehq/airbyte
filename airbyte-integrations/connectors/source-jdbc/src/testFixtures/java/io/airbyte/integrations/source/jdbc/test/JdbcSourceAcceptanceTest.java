@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -69,8 +70,10 @@ import org.junit.jupiter.api.Test;
 // 4. Then implement the abstract methods documented below.
 public abstract class JdbcSourceAcceptanceTest {
 
-  public static String SCHEMA_NAME = "jdbc_integration_test1";
-  public static String SCHEMA_NAME2 = "jdbc_integration_test2";
+  // schema name must be randomized for each test run,
+  // otherwise parallel runs can interfere with each other
+  public static String SCHEMA_NAME = Strings.addRandomSuffix("jdbc_integration_test1", "_", 5).toLowerCase();
+  public static String SCHEMA_NAME2 = Strings.addRandomSuffix("jdbc_integration_test2", "_", 5).toLowerCase();
   public static Set<String> TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
 
   public static String TABLE_NAME = "id_and_name";
