@@ -5,12 +5,14 @@
 import csv
 import io
 import json
+import re
 from unittest.mock import Mock
 
 import pytest
 import requests_mock
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import ConfiguredAirbyteStream, AirbyteStream, DestinationSyncMode
 from requests.exceptions import HTTPError
 
 from source_salesforce.api import Salesforce
@@ -566,18 +568,56 @@ def test_csv_reader_dialect_unix():
         assert result == data
 
 
-def test_forwarding_sobject_options(stream_config):
-    sf_object = Salesforce(**stream_config)
-    sf_object.login = Mock()
-    sf_object.access_token = Mock()
-    sf_object.instance_url = "https://fase-account.salesforce.com"
-    sf_object.describe = Mock(
-        return_value={
-            "sobjects": [
-                {"name": "Account", "queryable": True},
-                {"name": "Leads", "queryable": False},
-            ]
-        }
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "stream_names,catalog_stream_names,", (
+            (["stream_1", "stream_2"], None,),
+            (["stream_1", "stream_2"], ["stream_1", "stream_2"],),
+            (["stream_1", "stream_2", "stream_3"], ["stream_1"],),
+
     )
-    filtered_streams = sf_object.get_validated_streams(config=stream_config)
-    assert list(filtered_streams.keys()) == ["Account"]
+)
+def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_names) -> None:
+    sobjects_matcher = re.compile('/sobjects$')
+    token_matcher = re.compile('/token$')
+    describe_matcher = re.compile('/describe$')
+    catalog = None
+    if catalog_stream_names:
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name=catalog_stream_name, json_schema={"type": "object"}),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                ) for catalog_stream_name in catalog_stream_names]
+        )
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", token_matcher, json={
+            "instance_url": "https://fake-url.com",
+            "access_token": "fake-token"
+        })
+        m.register_uri("GET", describe_matcher, json={
+            "fields": [
+                {
+                    "name": "field",
+                    "type": "string",
+                }
+            ]
+        })
+        m.register_uri("GET", sobjects_matcher, json={
+            "sobjects": [
+                {
+                    "name": stream_name,
+                    "flag1": True,
+                    "queryable": True,
+                } for stream_name in stream_names
+            ],
+
+        })
+        streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
+    expected_names = catalog_stream_names if catalog else stream_names
+    assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
+
+    for stream in streams:
+        assert stream.sobject_options == {"flag1": True, "queryable": True}
+    return
