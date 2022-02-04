@@ -50,11 +50,14 @@ public class TemporalUtils {
 
   public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-        // todo move to env.
-        .setTarget(temporalHost)
+        .setTarget(temporalHost) // todo: move to EnvConfigs
         .build();
 
-    return getTemporalClientWhenConnected(() -> WorkflowServiceStubs.newInstance(options));
+    return getTemporalClientWhenConnected(
+        Duration.ofSeconds(2),
+        Duration.ofMinutes(2),
+        Duration.ofSeconds(5),
+        () -> WorkflowServiceStubs.newInstance(options));
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
@@ -162,15 +165,25 @@ public class TemporalUtils {
    * This function uses a supplier as input since the creation of a WorkflowServiceStubs can result in
    * connection exceptions as well.
    */
-  public static WorkflowServiceStubs getTemporalClientWhenConnected(final Supplier<WorkflowServiceStubs> temporalServiceSupplier) {
+  public static WorkflowServiceStubs getTemporalClientWhenConnected(
+                                                                    final Duration waitInterval,
+                                                                    final Duration maxTimeToConnect,
+                                                                    final Duration waitAfterConnection,
+                                                                    final Supplier<WorkflowServiceStubs> temporalServiceSupplier) {
     LOGGER.info("Waiting for temporal server...");
 
     boolean temporalStatus = false;
     WorkflowServiceStubs temporalService = null;
+    long millisWaited = 0;
 
     while (!temporalStatus) {
+      if (millisWaited >= maxTimeToConnect.toMillis()) {
+        throw new RuntimeException("Could not create Temporal client within max timeout!");
+      }
+
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      Exceptions.toRuntime(() -> Thread.sleep(2000));
+      Exceptions.toRuntime(() -> Thread.sleep(waitInterval.toMillis()));
+      millisWaited = millisWaited + waitInterval.toMillis();
 
       try {
         temporalService = temporalServiceSupplier.get();
@@ -182,7 +195,7 @@ public class TemporalUtils {
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
-    Exceptions.toRuntime(() -> Thread.sleep(5000));
+    Exceptions.toRuntime(() -> Thread.sleep(waitAfterConnection.toMillis()));
 
     LOGGER.info("Found temporal default namespace!");
 
