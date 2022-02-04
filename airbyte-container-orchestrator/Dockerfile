@@ -26,12 +26,12 @@ RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] htt
 RUN apt-get update && apt-get install -y kubectl
 
 ENV APPLICATION airbyte-container-orchestrator
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.35.16-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 
 # Move orchestrator app
-ADD bin/${APPLICATION}-0.35.12-alpha.tar /app
+ADD bin/${APPLICATION}-0.35.16-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.12-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.35.16-alpha/bin/${APPLICATION}"]
