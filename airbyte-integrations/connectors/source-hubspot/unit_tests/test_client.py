@@ -3,19 +3,18 @@
 #
 
 
+import logging
 from functools import partial
 
 import pytest
-import logging
-
-from airbyte_cdk.models import Type, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
 from source_hubspot.client import Client
 from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
 
-logger = logging.getLogger('test_client')
+logger = logging.getLogger("test_client")
 
 
 @pytest.fixture(name="some_credentials")
@@ -279,28 +278,28 @@ def oauth_config_fixture():
             "client_secret": "test_client_secret",
             "refresh_token": "test_refresh_token",
             "access_token": "test_access_token",
-            "token_expires": "2021-05-30T06:00:00Z"
-        }
+            "token_expires": "2021-05-30T06:00:00Z",
+        },
     }
 
 
-@pytest.fixture(name='configured_catalog')
+@pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture():
     configured_catalog = {
-      "streams": [
-        {
-          "stream": {
-            "name": "quotes",
-            "json_schema": {},
-            "supported_sync_modes": ["full_refresh", "incremental"],
-            "source_defined_cursor": True,
-            "default_cursor_field": ["updatedAt"]
-          },
-          "sync_mode": "incremental",
-          "cursor_field": ["updatedAt"],
-          "destination_sync_mode": "append"
-        }
-      ]
+        "streams": [
+            {
+                "stream": {
+                    "name": "quotes",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "source_defined_cursor": True,
+                    "default_cursor_field": ["updatedAt"],
+                },
+                "sync_mode": "incremental",
+                "cursor_field": ["updatedAt"],
+                "destination_sync_mode": "append",
+            }
+        ]
     }
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
