@@ -3204,6 +3204,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptStreamStats"
+        failureSummary:
+          $ref: "#/components/schemas/AttemptFailureSummary"
     AttemptStats:
       type: object
       properties:
@@ -3229,6 +3231,54 @@ components:
           type: string
         stats:
           $ref: "#/components/schemas/AttemptStats"
+    AttemptFailureSummary:
+      type: object
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptFailureReason"
+        partialSuccess:
+          description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.
+          type: boolean
+    AttemptFailureReason:
+      type: object
+      required:
+        - timestamp
+      properties:
+        failureOrigin:
+          $ref: "#/components/schemas/AttemptFailureOrigin"
+        failureType:
+          $ref: "#/components/schemas/AttemptFailureType"
+        externalMessage:
+          type: string
+        stacktrace:
+          type: string
+        retryable:
+          description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+          type: boolean
+        timestamp:
+          type: integer
+          format: int64
+    AttemptFailureOrigin:
+      description: Indicates where the error originated. If not set, the origin of error is not well known.
+      type: string
+      enum:
+        - source
+        - destination
+        - replication
+        - persistence
+        - normalization
+        - dbt
+    AttemptFailureType:
+      description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
+      type: string
+      enum:
+        - config_error
+        - system_error
+        - manual_cancellation
     AttemptStatus:
       type: string
       enum:
