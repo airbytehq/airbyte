@@ -12,9 +12,11 @@ import requests_mock
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from requests.exceptions import HTTPError
+
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, \
+    IncrementalSalesforceStream, SalesforceStream
 
 
 @pytest.fixture(scope="module")
@@ -93,7 +95,7 @@ def stream_api_v2(stream_config):
 
 
 def _generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, [stream_name], stream_api, state=state)[0]
+    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -148,7 +150,7 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
 def test_bulk_sync_pagination(item_number, stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
     test_ids = [i for i in range(1, item_number)]
-    pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
+    pages = [test_ids[i: i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
     if not pages:
         pages = [[]]
     with requests_mock.Mocker() as m:
@@ -244,12 +246,12 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
     ],
 )
 def test_stream_start_date(
-    start_date_provided,
-    stream_name,
-    expected_start_date,
-    stream_config,
-    stream_api,
-    stream_config_without_start_date,
+        start_date_provided,
+        stream_name,
+        expected_start_date,
+        stream_config,
+        stream_api,
+        stream_config_without_start_date,
 ):
     if start_date_provided:
         stream = _generate_stream(stream_name, stream_config, stream_api)
@@ -288,25 +290,25 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
     [
         ([{"criteria": "exacts", "value": "Account"}], ["Account"]),
         (
-            [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
+                [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
+                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
         ),
         ([{"criteria": "starts with", "value": "lead"}], ["Leads", "LeadHistory"]),
         (
-            [{"criteria": "starts not with", "value": "custom"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+                [{"criteria": "starts not with", "value": "custom"}],
+                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
         ),
         ([{"criteria": "ends with", "value": "story"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
         ([{"criteria": "ends not with", "value": "s"}], ["Account", "LeadHistory", "OrderHistory", "CustomStream", "CustomStreamHistory"]),
         ([{"criteria": "contains", "value": "applicat"}], ["AIApplications"]),
         ([{"criteria": "contains", "value": "hist"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
         (
-            [{"criteria": "not contains", "value": "stream"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+                [{"criteria": "not contains", "value": "stream"}],
+                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
         ),
         (
-            [{"criteria": "not contains", "value": "Account"}],
-            ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
+                [{"criteria": "not contains", "value": "Account"}],
+                ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
         ),
     ],
 )
@@ -330,8 +332,8 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
             ]
         }
     )
-    filtered_streams, _ = sf_object.get_validated_streams(config=updated_config)
-    assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
+    filtered_streams = sf_object.get_validated_streams(config=updated_config)
+    assert sorted(filtered_streams.keys()) == sorted(predicted_filtered_streams)
 
 
 def test_check_connection_rate_limit(stream_config):
@@ -492,8 +494,8 @@ def test_discover_only_queryable(stream_config):
             ]
         }
     )
-    filtered_streams, _ = sf_object.get_validated_streams(config=stream_config)
-    assert filtered_streams == ["Account"]
+    filtered_streams = sf_object.get_validated_streams(config=stream_config)
+    assert list(filtered_streams.keys()) == ["Account"]
 
 
 def test_pagination_rest(stream_config, stream_api):

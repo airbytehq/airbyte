@@ -14,7 +14,8 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, \
+    SalesforceStream
 
 
 class SourceSalesforce(AbstractSource):
@@ -37,21 +38,22 @@ class SourceSalesforce(AbstractSource):
 
     @classmethod
     def generate_streams(
-        cls,
-        config: Mapping[str, Any],
-        stream_names: List[str],
-        sf_object: Salesforce,
-        state: Mapping[str, Any] = None,
-        stream_objects: List = None,
+            cls,
+            config: Mapping[str, Any],
+            stream_objects: Mapping[str, Any],
+            sf_object: Salesforce,
+            state: Mapping[str, Any] = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams = []
-        for stream_name in stream_names:
-            streams_kwargs = {}
+        for stream_name, sobject_options in stream_objects.items():
+            streams_kwargs = {
+                "sobject_options": sobject_options
+            }
             stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema(stream_name, stream_objects).get("properties", {})
+            selected_properties = sf_object.generate_schema(stream_name, sobject_options).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
@@ -77,11 +79,17 @@ class SourceSalesforce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_names, stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_names, sf, state=state, stream_objects=stream_objects)
+        stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
+
+        stream_objects = {"CategoryNode": stream_objects.pop("CategoryNode")}
+        # for stream_name in stream_objects:
+        #     if stream_name["name"] in stream_names:
+        #         raise Exception(str(stream_name))
+        return self.generate_streams(config, stream_objects, sf, state=state)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
+            state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains

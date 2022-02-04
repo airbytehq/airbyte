@@ -11,7 +11,7 @@ from requests.exceptions import HTTPError
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
-from .utils import filter_streams
+from .utils import filter_streams_by_criteria
 
 STRING_TYPES = [
     "byte",
@@ -175,14 +175,14 @@ class Salesforce:
     version = "v52.0"
 
     def __init__(
-        self,
-        refresh_token: str = None,
-        token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        is_sandbox: bool = None,
-        start_date: str = None,
-        **kwargs,
+            self,
+            refresh_token: str = None,
+            token: str = None,
+            client_id: str = None,
+            client_secret: str = None,
+            is_sandbox: bool = None,
+            start_date: str = None,
+            **kwargs,
     ):
         self.refresh_token = refresh_token
         self.token = token
@@ -191,7 +191,9 @@ class Salesforce:
         self.access_token = None
         self.instance_url = None
         self.session = requests.Session()
-        self.is_sandbox = is_sandbox is True or (isinstance(is_sandbox, str) and is_sandbox.lower() == "true")
+        self.is_sandbox = is_sandbox in [True, "true"]
+        if self.is_sandbox:
+            self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
 
     def _get_standard_headers(self):
@@ -206,34 +208,38 @@ class Salesforce:
             return False
         return True
 
-    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None):
-        salesforce_objects = self.describe()["sobjects"]
-        stream_objects = []
-        for stream_object in salesforce_objects:
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> Mapping[str, Any]:
+        """Selects all validated streams with additional filtering:
+           1) skip all sobjects with negative value of the flag "queryable"
+           2) user can set search criterias of necessary streams
+           3) selection by catalog settings
+        """
+        stream_objects = {}
+        for stream_object in self.describe()["sobjects"]:
             if stream_object["queryable"]:
-                stream_objects.append(stream_object)
+                stream_objects[stream_object.pop("name")] = stream_object
             else:
                 self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
-        stream_names = [stream_object["name"] for stream_object in stream_objects]
         if catalog:
-            return [configured_stream.stream.name for configured_stream in catalog.streams], stream_objects
+            return {configured_stream.stream.name: stream_objects[configured_stream.stream.name] for configured_stream in catalog.streams if
+                    configured_stream.stream.name in stream_objects}
 
+        stream_names = list(stream_objects.keys())
         if config.get("streams_criteria"):
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
-                filtered_stream_list += filter_streams(
+                filtered_stream_list += filter_streams_by_criteria(
                     streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
                 )
             stream_names = list(set(filtered_stream_list))
 
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
-        validated_stream_objects = [stream_object for stream_object in stream_objects if stream_object["name"] in validated_streams]
-        return validated_streams, validated_stream_objects
+        return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+            self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
         try:
             if http_method == "GET":
@@ -261,7 +267,7 @@ class Salesforce:
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
 
-    def describe(self, sobject: str = None, stream_objects: List = None) -> Mapping[str, Any]:
+    def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
 
@@ -269,12 +275,12 @@ class Salesforce:
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
-        if resp.status_code == 404:
-            self.logger.error(f"Filtered stream objects: {stream_objects}")
+        if resp.status_code == 404 and sobject:
+            self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
         return resp.json()
 
-    def generate_schema(self, stream_name: str = None, stream_objects: List = None) -> Mapping[str, Any]:
-        response = self.describe(stream_name, stream_objects)
+    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
