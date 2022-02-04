@@ -156,6 +156,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
             e -> fromJsonNode(e).equals(new AirbyteStreamNameNamespacePair(nullToEmpty(streamName),
                 nullToEmpty(namespace))))
         .map(e -> e.get("data"))
+        .distinct()
         .collect(Collectors.toList());
   }
 
