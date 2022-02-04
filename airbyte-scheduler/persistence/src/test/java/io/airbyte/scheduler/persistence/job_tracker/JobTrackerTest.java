@@ -268,7 +268,9 @@ class JobTrackerTest {
         JobTracker.CONFIG + ".password", JobTracker.SET,
         JobTracker.CONFIG + ".one_of.type_key", "foo",
         JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET,
-        JobTracker.CONFIG + ".const_object.sub_key", "bar");
+        JobTracker.CONFIG + ".const_object.sub_key", "bar",
+        JobTracker.CONFIG + ".const_object.sub_array", "[1,2,3]",
+        JobTracker.CONFIG + ".const_object.sub_object.sub_sub_key", "baz");
 
     final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config, schema);
 

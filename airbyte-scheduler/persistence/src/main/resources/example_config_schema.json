@@ -34,7 +34,11 @@
     },
     "const_object": {
       "const": {
-        "sub_key": "bar"
+        "sub_key": "bar",
+        "sub_array": [1, 2, 3],
+        "sub_object": {
+          "sub_sub_key": "baz"
+        }
       }
     }
   }
