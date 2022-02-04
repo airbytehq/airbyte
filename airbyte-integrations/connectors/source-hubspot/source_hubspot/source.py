@@ -17,8 +17,11 @@ class SourceHubspot(BaseSource):
     def _read_stream(
         self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
     ):
+        """
+        This method is overridden to check if the stream exists in the client.
+        """
         stream_name = configured_stream.stream.name
         if not client._apis.get(stream_name):
-            logger.warning(f"Stream {stream_name} is not in the source.")
+            logger.warning(f"Stream {stream_name} does not exist in the client.")
             return
         yield from super()._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=state)
