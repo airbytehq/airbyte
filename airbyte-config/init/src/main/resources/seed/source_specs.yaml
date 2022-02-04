@@ -7303,7 +7303,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-smartsheets:0.1.7"
+- dockerImage: "airbyte/source-smartsheets:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
     connectionSpecification:
@@ -7313,7 +7313,7 @@
       required:
       - "access_token"
       - "spreadsheet_id"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         access_token:
           title: "Access Token"
@@ -7328,6 +7328,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key: []
+      predicate_value: ""
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "access_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
