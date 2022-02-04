@@ -35,6 +35,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -74,6 +76,11 @@ public class ContainerOrchestratorApp {
         System.setProperty(envVar, envMap.get(envVar));
       }
     }
+
+    // make sure the new configuration is picked up
+    System.setProperty("log4j.configurationFile", "log4j2-orchestrator.xml");
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    ctx.reconfigure();
 
     final var logClient = LogClientSingleton.getInstance();
     logClient.setJobMdc(

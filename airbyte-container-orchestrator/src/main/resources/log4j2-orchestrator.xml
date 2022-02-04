@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    This is our primary log4j2 configuration file.
-
-    If you are updating log configurations that need to run on the container orchestrator containers, remember to
-    update airbyte-container-orchestrator/src/main/resources/log4j2-orchestrator.xml
+    This file is different than our main log4j2.xml so the orchestrator can load from system properties which are
+    filled on-the-fly from a file transferred to the orchestrator app.
 -->
 <Configuration status="INFO">
     <Properties>
@@ -14,16 +12,16 @@
         <Property name="simple-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0}%replace{ %X{log_source}}{^ -}{} > %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
 
         <!-- Always log INFO by default. -->
-        <Property name="log-level">${env:LOG_LEVEL:-INFO}</Property>
+        <Property name="log-level">${sys:LOG_LEVEL:-INFO}</Property>
 
-        <Property name="s3-bucket">${env:S3_LOG_BUCKET}</Property>
-        <Property name="s3-region">${env:S3_LOG_BUCKET_REGION}</Property>
-        <Property name="s3-aws-key">${env:AWS_ACCESS_KEY_ID}</Property>
-        <Property name="s3-aws-secret">${env:AWS_SECRET_ACCESS_KEY}</Property>
-        <Property name="s3-minio-endpoint">${env:S3_MINIO_ENDPOINT}</Property>
-        <Property name="s3-path-style-access">${env:S3_PATH_STYLE_ACCESS}</Property>
+        <Property name="s3-bucket">${sys:S3_LOG_BUCKET}</Property>
+        <Property name="s3-region">${sys:S3_LOG_BUCKET_REGION}</Property>
+        <Property name="s3-aws-key">${sys:AWS_ACCESS_KEY_ID}</Property>
+        <Property name="s3-aws-secret">${sys:AWS_SECRET_ACCESS_KEY}</Property>
+        <Property name="s3-minio-endpoint">${sys:S3_MINIO_ENDPOINT}</Property>
+        <Property name="s3-path-style-access">${sys:S3_PATH_STYLE_ACCESS}</Property>
 
-        <Property name="gcs-log-bucket">${env:GCS_LOG_BUCKET}</Property>
+        <Property name="gcs-log-bucket">${sys:GCS_LOG_BUCKET}</Property>
     </Properties>
 
     <Appenders>
@@ -93,12 +91,12 @@
                 </Route>
                 <Route>
                     <Log4j2Appender name="${ctx:cloud_job_log_path}"
-                      verbose="true"
-                      stagingBufferAge="1"
-                      s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:cloud_job_log_path}" s3Region="${s3-region}"
-                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
-                      s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
-                      gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
+                                    verbose="true"
+                                    stagingBufferAge="1"
+                                    s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:cloud_job_log_path}" s3Region="${s3-region}"
+                                    s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
+                                    s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
+                                    gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
                         <PatternLayout pattern="${default-pattern}"/>
                     </Log4j2Appender>
                 </Route>
@@ -160,11 +158,11 @@
                 </Route>
                 <Route>
                     <Log4j2Appender name="app-logging/${ctx:cloud_workspace_app_root}/"
-                      stagingBufferAge="1"
-                      s3Bucket="${s3-bucket}" s3Path="app-logging${ctx:cloud_workspace_app_root}" s3Region="${s3-region}"
-                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
-                      s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
-                      gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:cloud_workspace_app_root}">
+                                    stagingBufferAge="1"
+                                    s3Bucket="${s3-bucket}" s3Path="app-logging${ctx:cloud_workspace_app_root}" s3Region="${s3-region}"
+                                    s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
+                                    s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
+                                    gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:cloud_workspace_app_root}">
                         <PatternLayout pattern="${default-pattern}"/>
                     </Log4j2Appender>
                 </Route>
