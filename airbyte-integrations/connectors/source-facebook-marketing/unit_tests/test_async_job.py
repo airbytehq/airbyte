@@ -6,6 +6,7 @@ import time
 from typing import Iterator
 from unittest.mock import call
 
+import pendulum
 import pytest
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch
@@ -38,23 +39,21 @@ def job_fixture(api, account, mocker):
         "fields": ["field1", "field2"],
         "time_increment": 1,
         "action_attribution_windows": [],
-        "time_range": {
-            "since": "2019-01-01",
-            "until": "2019-01-01",
-        },
     }
+    interval = pendulum.Period(pendulum.Date(2019, 1, 1), pendulum.Date(2019, 1, 1))
 
-    return InsightAsyncJob(edge_object=account, api=api, params=params)
+    return InsightAsyncJob(edge_object=account, api=api, interval=interval, params=params)
 
 
 @pytest.fixture(name="grouped_jobs")
 def grouped_jobs_fixture(mocker):
-    return [mocker.Mock(spec=InsightAsyncJob, restart_number=0, failed=False, completed=False) for _ in range(10)]
+    return [mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False) for _ in range(10)]
 
 
 @pytest.fixture(name="parent_job")
 def parent_job_fixture(api, grouped_jobs):
-    return ParentAsyncJob(api=api, jobs=grouped_jobs)
+    interval = pendulum.Period(pendulum.Date(2019, 1, 1), pendulum.Date(2019, 1, 1))
+    return ParentAsyncJob(api=api, jobs=grouped_jobs, interval=interval)
 
 
 @pytest.fixture(name="started_job")
@@ -121,12 +120,12 @@ class TestInsightAsyncJob:
             job.start()
 
     def test_restart(self, failed_job, api, adreport):
-        assert failed_job.restart_number == 0
+        assert failed_job.attempt_number == 1
 
         failed_job.restart()
 
         assert not failed_job.failed, "restart should reset fail flag"
-        assert failed_job.restart_number == 1
+        assert failed_job.attempt_number == 2
 
     def test_restart_when_job_not_failed(self, job, api):
         job.start()
@@ -220,9 +219,12 @@ class TestInsightAsyncJob:
         assert failed_job.failed, "should return True if the job previously failed"
 
     def test_str(self, api, account):
-        job = InsightAsyncJob(edge_object=account, api=api, params={"time_range": 123, "breakdowns": [10, 20]})
+        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2011, 1, 1))
+        job = InsightAsyncJob(
+            edge_object=account, api=api, params={"breakdowns": [10, 20]}, interval=interval,
+        )
 
-        assert str(job) == f"AdReportRun(id=<None>, {account}, time_range=123, breakdowns=[10, 20]"
+        assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
 
     def test_get_result(self, job, adreport):
         job.start()
@@ -233,11 +235,11 @@ class TestInsightAsyncJob:
         assert result == adreport.get_result.return_value, "should return result from job"
 
     def test_get_result_when_job_is_not_started(self, job):
-        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started of failed"):
+        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
             job.get_result()
 
     def test_get_result_when_job_is_failed(self, failed_job):
-        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started of failed"):
+        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
             failed_job.get_result()
 
     def test_split_job(self, job, account, mocker, api):
@@ -251,8 +253,7 @@ class TestInsightAsyncJob:
         campaign_mock.assert_has_calls([call(1), call(2), call(3)])
         assert parent_job_mock.called
         assert parent_job
-        args, kwargs = parent_job_mock.call_args
-        assert args == (api,)
+        _args, kwargs = parent_job_mock.call_args
         assert len(kwargs["jobs"]) == 3, "number of jobs should match number of campaigns"
 
 
@@ -267,15 +268,15 @@ class TestParentAsyncJob:
 
         # fail some jobs
         grouped_jobs[0].failed = True
-        grouped_jobs[0].restart_number = 1
+        grouped_jobs[0].attempt_number = 2
         grouped_jobs[5].failed = True
-        grouped_jobs[0].restart_number = 1
-        grouped_jobs[6].restart_number = 3
+        grouped_jobs[0].attempt_number = 2
+        grouped_jobs[6].attempt_number = 3
 
         assert parent_job.failed, "should be failed if any job failed"
         parent_job.restart()
         assert parent_job.failed
-        assert parent_job.restart_number == 3, "restart should be max value of all jobs"
+        assert parent_job.attempt_number == 3, "restart should be max value of all jobs"
 
     def test_completed(self, parent_job, grouped_jobs):
         assert not parent_job.completed, "initially not completed"
