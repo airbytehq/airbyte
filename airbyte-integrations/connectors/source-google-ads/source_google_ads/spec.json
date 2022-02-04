@@ -50,9 +50,11 @@
         }
       },
       "customer_id": {
-        "title": "Customer ID",
+        "title": "Customer ID(s)",
         "type": "string",
-        "description": "Customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
+        "description": "Comma separated list of (client) customer IDs. Each customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
+        "pattern": "^[0-9]{10}(,[0-9]{10})*$",
+        "examples": ["6783948572,5839201945"],
         "order": 1
       },
       "start_date": {
@@ -98,6 +100,8 @@
         "type": "string",
         "title": "Login Customer ID for Managed Accounts (Optional)",
         "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). More information about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">here</a>",
+        "pattern": "^([0-9]{10})?$",
+        "examples": ["7349206847"],
         "order": 4
       },
       "conversion_window_days": {

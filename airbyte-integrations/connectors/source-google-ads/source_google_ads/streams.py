@@ -61,8 +61,9 @@ class GoogleAdsStream(Stream, ABC):
             yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        response = self.google_ads_client.send_request(self.get_query(stream_slice))
-        yield from self.parse_response(response)
+        account_responses = self.google_ads_client.send_request(self.get_query(stream_slice))
+        for response in account_responses:
+            yield from self.parse_response(response)
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
