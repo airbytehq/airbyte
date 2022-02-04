@@ -29,14 +29,8 @@ class DestinationNGPVAN(Destination):
                 # ignore other message types for now
                 continue
 
-        #write to a csv
-        writer.write_to_local_csv()
-
-        #upload to GCS
-        writer.upload_output_to_gcs()
-
-        #generate signed URL
-        writer.generate_download_signed_url_v4()
+        jobId=writer.run_bulk_import_job()
+        print(f'Bulk import job created: ID {jobId}')
 
         """
         TODO

@@ -8,25 +8,42 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Ngpvan",
     "type": "object",
-    "required": ["van_api_key","local_test"],
+    "required": ["van_api_key","bulk_import_type","gcs_bucket","local_test"],
     "additionalProperties": true,
     "properties": {
       "van_api_key": {
         "title": "VAN API Key",
         "type": "string",
         "description": "VAN API Key.",
+        "airbyte_secret": true,
         "order": 1
+      },
+      "bulk_import_type": {
+        "title": "Bulk import type",
+        "type": "string",
+        "description": "Choose the type of bulk import you are running.",
+        "examples": [
+          "Contacts","Activist Codes"
+        ],
+        "order": 2
       },
       "service_account_key": {
         "title": "Service account key (JSON)",
         "type": "string",
         "description": "If no key is provided, default application credentials will be used instead.",
-        "order": 2
+        "airbyte_secret": true,
+        "order": 3
+      },
+      "gcs_bucket": {
+        "title": "GCS bucket",
+        "type": "string",
+        "description": "GCS bucket where data will be staged/stored.",
+        "order": 4
       },
       "local_test": {
         "title": "local_test",
         "type": "boolean",
-        "order": 3
+        "order": 5
       }
     }
   }

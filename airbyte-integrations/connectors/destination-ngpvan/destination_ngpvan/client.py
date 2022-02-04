@@ -10,9 +10,18 @@ import requests
 class NGPVANClient:
     base_uri = "https://api.securevan.com/v4/"
 
-    def __init__(self, local_test: bool = True, van_api_key: str = None, service_account_key: str = None):
+    def __init__(self,
+                 local_test: bool = True,
+                 bulk_import_type: str = None,
+                 van_api_key: str = None,
+                 gcs_bucket: str = None,
+                 service_account_key: str = None
+                 ):
+
         self.local_test = local_test
+        self.bulk_import_type = bulk_import_type
         self.van_api_key = van_api_key
+        self.gcs_bucket = gcs_bucket
         self.service_account_key = service_account_key
         self.auth = ('default',
                      van_api_key + '|1')  # adding '|1' authorizes for MyCampaign; we can parameterize this when we need to interact with MyVoters
@@ -30,7 +39,7 @@ class NGPVANClient:
         endpoint = "bulkImportMappingTypes"
         return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
 
-    def bulk_upsert_contacts(self, sourceUrl: str) -> requests.Response:
+    def bulk_upsert_contacts(self, fileName: str, columns: list, sourceUrl: str) -> requests.Response:
         """
         Bulk create or update contact records. Provide a Parsons table of contact data to
         create or update records.
@@ -147,7 +156,7 @@ class NGPVANClient:
                    "file": {
                        "columnDelimiter": 'csv',
                        "columns": [{'name': c} for c in columns],
-                       "fileName": 'test_upsert_contacts.csv',
+                       "fileName": fileName,
                        "hasHeader": "True",
                        "hasQuotes": "True",
                        "sourceUrl": sourceUrl},
@@ -156,6 +165,9 @@ class NGPVANClient:
                                 "actionType": "loadMappedFile",
                                 "mappingTypes": [{'name': 'CreateOrUpdateContact'}]}]
                    }
+
+        print('PAYLOAD:')
+        print(payload)
 
         return self._request(method="POST", endpoint=endpoint, auth=self.auth, json=payload)
 
