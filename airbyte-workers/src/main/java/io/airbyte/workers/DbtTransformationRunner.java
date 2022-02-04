@@ -33,7 +33,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("dbt")
-      .setPrefixColor(Color.MAGENTA);
+      .setPrefixColor(Color.PURPLE_BACKGROUND);
 
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;

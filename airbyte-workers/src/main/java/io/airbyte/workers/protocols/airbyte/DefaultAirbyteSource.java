@@ -38,7 +38,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
-      .setPrefixColor(Color.BLUE);
+      .setPrefixColor(Color.BLUE_BACKGROUND);
 
   private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
