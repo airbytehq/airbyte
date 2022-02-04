@@ -13,6 +13,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+DEFAULT_PAGE_SIZE = 100
+
 
 class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
@@ -20,14 +22,17 @@ class GithubStream(HttpStream, ABC):
     primary_key = "id"
     use_cache = True
 
-    # GitHub pagination could be from 1 to 100.
-    page_size = 100
+    # Detect streams with high API load
+    large_stream = False
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+
+        # GitHub pagination could be from 1 to 100.
+        self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
@@ -52,10 +57,15 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
             requests.codes.SERVER_ERROR,
             requests.codes.BAD_GATEWAY,
         )
+        if retry_flag:
+            self.logger.info(
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+            )
+        return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
@@ -71,23 +81,33 @@ class GithubStream(HttpStream, ABC):
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # get out the stream_slice parts for later use.
+        organisation = stream_slice.get("organization", "")
+        repository = stream_slice.get("repository", "")
+        # Reading records while handling the errors
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e)
-
+            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
             if e.response.status_code == requests.codes.FORBIDDEN:
-                # When using the `check` method, we should raise an error if we do not have access to the repository.
+                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
-                error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}` and your `access_token`, seems like you don't have permissions for "
-                    f"this stream."
-                )
+                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+                # For all `Organisation` based streams
+                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                    )
+                # For all other `Repository` base streams
+                else:
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                    )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.
@@ -290,6 +310,9 @@ class Organizations(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
 
+    # GitHub pagination could be from 1 to 100.
+    page_size = 100
+
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
@@ -389,7 +412,7 @@ class PullRequests(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
-    page_size = 50
+    large_stream = True
     first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
@@ -519,7 +542,7 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -632,7 +655,7 @@ class Issues(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
-    page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     stream_base_params = {
         "state": "all",
@@ -646,7 +669,7 @@ class ReviewComments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
-    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
+    large_stream = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
@@ -764,9 +787,6 @@ class ReactionStream(GithubStream, ABC):
         for stream_slice in super().stream_slices(**kwargs):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
 
 
 class CommitCommentReactions(ReactionStream):

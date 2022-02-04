@@ -33,6 +33,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   integration-test:
     timeout-minutes: 240
@@ -61,10 +62,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.inputs.repo }}
-      - name: Install Unzip for Databricks
-        if: github.event.inputs.connector == 'connectors/destination-databricks'
-        run: |
-          apt-get update && apt-get install -y unzip
       - name: Install Java
         uses: actions/setup-java@v1
         with:

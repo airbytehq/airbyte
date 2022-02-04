@@ -117,12 +117,7 @@ public class KubeProcessFactory implements ProcessFactory {
       final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
-      final var allLabels = new HashMap<>(customLabels);
-      final var generalKubeLabels = Map.of(
-          JOB_LABEL_KEY, jobId,
-          ATTEMPT_LABEL_KEY, String.valueOf(attempt),
-          WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
-      allLabels.putAll(generalKubeLabels);
+      final var allLabels = getLabels(jobId, attempt, customLabels);
 
       return new KubePodProcess(
           isOrchestrator,
@@ -153,6 +148,19 @@ public class KubeProcessFactory implements ProcessFactory {
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }
+  }
+
+  public static Map<String, String> getLabels(final String jobId, final int attemptId, final Map<String, String> customLabels) {
+    final var allLabels = new HashMap<>(customLabels);
+
+    final var generalKubeLabels = Map.of(
+        JOB_LABEL_KEY, jobId,
+        ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
+        WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+
+    allLabels.putAll(generalKubeLabels);
+
+    return allLabels;
   }
 
   /**

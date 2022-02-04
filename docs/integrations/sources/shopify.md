@@ -101,6 +101,9 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.30 | 2021-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
+| 0.1.29 | 2022-01-20 | [9049](https://github.com/airbytehq/airbyte/pull/9248) | Added `shop_url` to the record for all streams |
+| 0.1.28 | 2022-01-19 | [9591](https://github.com/airbytehq/airbyte/pull/9591) | Implemented `OAuth2.0` authentication method for Airbyte Cloud |
 | 0.1.27 | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049) | Update connector fields title/description |
 | 0.1.26 | 2021-12-14 | [8597](https://github.com/airbytehq/airbyte/pull/8597) | Fix `mismatched number of tables` for base-normalization, increased performance of `order_refunds` stream |
 | 0.1.25 | 2021-12-02 | [8297](https://github.com/airbytehq/airbyte/pull/8297) | Added Shop stream |

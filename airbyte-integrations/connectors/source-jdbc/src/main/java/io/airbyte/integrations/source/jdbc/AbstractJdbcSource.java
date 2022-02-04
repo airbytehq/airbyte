@@ -150,7 +150,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                                          final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
-        return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+        return false;
       }
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))

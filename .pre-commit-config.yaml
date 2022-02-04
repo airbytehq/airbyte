@@ -7,19 +7,22 @@ repos:
     hooks:
       - id: licenseheaders
         args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
-
   - repo: https://github.com/ambv/black
     rev: 21.11b1
     hooks:
       - id: black
-
+        args: ["--line-length=140"]
   - repo: https://github.com/timothycrosley/isort
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--dont-follow-links", "--jobs=-1"]
+        args:
+          [
+            "--settings-path=tools/python/.isort.cfg",
+            "--dont-follow-links",
+            "--jobs=-1",
+          ]
         additional_dependencies: ["colorama"]
-
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.0
     hooks:
@@ -29,21 +32,26 @@ repos:
           (?x)^.*(
               .github/|
               source_specs.yaml|
-              destination_specs.yaml
+              destination_specs.yaml|
+              .gitlab-ci.yml
           ).?$
 
   - repo: https://github.com/csachs/pyproject-flake8
     rev: v0.0.1a2.post1
     hooks:
       - id: pyproject-flake8
+        args: ["--config=tools/python/.flake8"]
         additional_dependencies: ["mccabe"]
         alias: flake8
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1
     hooks:
       - id: mypy
-
+        args: ["--config-file=tools/python/.mypy.ini"]
+        exclude: |
+          (?x)^.*(
+              octavia-cli/unit_tests/|
+          ).?$
   - repo: local
     hooks:
       - id: spec-linter

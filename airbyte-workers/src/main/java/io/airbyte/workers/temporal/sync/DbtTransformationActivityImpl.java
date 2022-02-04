@@ -18,20 +18,21 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DbtTransformationWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class DbtTransformationActivityImpl implements DbtTransformationActivity {
 
-  private final boolean containerOrchestratorEnabled;
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory jobProcessFactory;
-  private final ProcessFactory orchestratorProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
   private final AirbyteConfigValidator validator;
@@ -41,11 +42,11 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private final String databasePassword;
   private final String databaseUrl;
   private final String airbyteVersion;
+  private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
 
-  public DbtTransformationActivityImpl(final boolean containerOrchestratorEnabled,
+  public DbtTransformationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
                                        final WorkerConfigs workerConfigs,
                                        final ProcessFactory jobProcessFactory,
-                                       final ProcessFactory orchestratorProcessFactory,
                                        final SecretsHydrator secretsHydrator,
                                        final Path workspaceRoot,
                                        final WorkerEnvironment workerEnvironment,
@@ -54,10 +55,9 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                        final String databasePassword,
                                        final String databaseUrl,
                                        final String airbyteVersion) {
-    this.containerOrchestratorEnabled = containerOrchestratorEnabled;
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
     this.jobProcessFactory = jobProcessFactory;
-    this.orchestratorProcessFactory = orchestratorProcessFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
     this.validator = new AirbyteConfigValidator();
@@ -74,31 +74,32 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                   final IntegrationLauncherConfig destinationLauncherConfig,
                   final ResourceRequirements resourceRequirements,
                   final OperatorDbtInput input) {
+    return TemporalUtils.withBackgroundHeartbeat(() -> {
+      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-    final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
-    final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+      final Supplier<OperatorDbtInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
+        return fullInput;
+      };
 
-    final Supplier<OperatorDbtInput> inputSupplier = () -> {
-      validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(fullInput));
-      return fullInput;
-    };
+      final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
 
-    final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
+      if (containerOrchestratorConfig.isPresent()) {
+        workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+      } else {
+        workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
+      }
 
-    if (containerOrchestratorEnabled) {
-      workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-    } else {
-      workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
-    }
+      final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot, workerEnvironment, logConfigs,
+          jobRunConfig,
+          workerFactory,
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
-    final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
-        jobRunConfig,
-        workerFactory,
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
-
-    return temporalAttemptExecution.get();
+      return temporalAttemptExecution.get();
+    });
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
@@ -122,11 +123,10 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                        final JobRunConfig jobRunConfig) {
     return () -> new DbtLauncherWorker(
-        workspaceRoot,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
-        orchestratorProcessFactory,
+        containerOrchestratorConfig.get(),
         airbyteVersion);
   }
 

@@ -482,6 +482,7 @@ jobs:
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
+          # github-self-hosted-runner-ubuntu-20-with-120gdisk-docker-20.10.7
           ec2-image-id: ami-0d4083c04fde515c4
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -565,6 +566,12 @@ jobs:
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
 
+      - name: Run Logging Tests
+        run: ./tools/bin/cloud_storage_logging_test.sh
+        env:
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
@@ -580,12 +587,6 @@ jobs:
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
-
-      - name: Run Logging Tests
-        run: ./tools/bin/cloud_storage_logging_test.sh
-        env:
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Show Disk Usage
         run: |
