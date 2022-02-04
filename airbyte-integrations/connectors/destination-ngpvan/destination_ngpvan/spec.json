@@ -11,13 +11,6 @@
     "required": ["van_api_key","bulk_import_type","gcs_bucket","local_test"],
     "additionalProperties": true,
     "properties": {
-      "van_api_key": {
-        "title": "VAN API Key",
-        "type": "string",
-        "description": "VAN API Key.",
-        "airbyte_secret": true,
-        "order": 1
-      },
       "bulk_import_type": {
         "title": "Bulk import type",
         "type": "string",
@@ -25,12 +18,19 @@
         "examples": [
           "Contacts","Activist Codes"
         ],
+        "order": 1
+      },
+      "van_api_key": {
+        "title": "VAN API Key",
+        "type": "string",
+        "description": "VAN API Key.",
+        "airbyte_secret": true,
         "order": 2
       },
       "service_account_key": {
-        "title": "Service account key (JSON)",
+        "title": "Service account key",
         "type": "string",
-        "description": "If no key is provided, default application credentials will be used instead.",
+        "description": "Keyfile JSON for authenticating as a service account with GCS access & blob writing permissions.",
         "airbyte_secret": true,
         "order": 3
       },

@@ -23,7 +23,7 @@ class NGPVANWriter:
         self.client=client
         self.local_test=client.local_test
         self.destination_bucket = client.gcs_bucket
-        self.timestamp_milliseconds=str(time.time_ns() / 1_000_000)
+        self.timestamp_milliseconds=str(int(round(time.time() * 1000)))
         self.output_blob_name = "output_airbyte_compressed_"+self.timestamp_milliseconds
         self.csv_name=self.output_blob_name+'.csv'
         self.zip_name=self.output_blob_name+'.zip'
