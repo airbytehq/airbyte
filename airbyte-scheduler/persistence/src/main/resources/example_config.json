@@ -14,5 +14,6 @@
     "sub_object": {
       "sub_sub_key": "baz"
     }
-  }
+  },
+  "const_null": null
 }

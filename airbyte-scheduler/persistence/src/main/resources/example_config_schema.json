@@ -40,6 +40,9 @@
           "sub_sub_key": "baz"
         }
       }
+    },
+    "const_null": {
+      "const": null
     }
   }
 }

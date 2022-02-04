@@ -207,6 +207,7 @@ public class JobTracker {
       // If this schema is a const, then just dump it into a map:
       // * If it's an object, flatten it
       // * Otherwise, do some basic conversions to value-ish data.
+      // It would be a weird thing to declare const: null, but in that case we don't want to report null anyway, so explicitly use hasNonNull.
       if (config.isObject()) {
         output.putAll(flatten(config));
       } else {
