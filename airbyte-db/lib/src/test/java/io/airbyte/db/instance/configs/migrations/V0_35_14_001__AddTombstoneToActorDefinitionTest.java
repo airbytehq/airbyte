@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,8 +43,8 @@ public class V0_35_14_001__AddTombstoneToActorDefinitionTest extends AbstractCon
             "repo",
             "1.0.0",
             ActorType.source,
-            JSONB.valueOf("{}")
-        ).execute();
+            JSONB.valueOf("{}"))
+        .execute();
 
     Assertions.assertFalse(tombstoneColumnExists(context));
 
