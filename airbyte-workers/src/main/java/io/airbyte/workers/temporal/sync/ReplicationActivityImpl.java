@@ -36,8 +36,10 @@ import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,8 +118,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
       if (containerOrchestratorConfig.isPresent()) {
-        workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
-            jobRunConfig, syncInput);
+        workerFactory = getContainerLauncherWorkerFactory(
+            containerOrchestratorConfig.get(),
+            sourceLauncherConfig,
+            destinationLauncherConfig,
+            jobRunConfig);
       } else {
         workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
       }
@@ -202,9 +207,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                     final JobRunConfig jobRunConfig,
-                                                                                                                     final StandardSyncInput syncInput) {
+                                                                                                                     final JobRunConfig jobRunConfig)
+      throws IOException {
+
+    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+    final var connectionId = UUID.fromString(jobScope);
+
     return () -> new ReplicationLauncherWorker(
+        connectionId,
         containerOrchestratorConfig,
         sourceLauncherConfig,
         destinationLauncherConfig,

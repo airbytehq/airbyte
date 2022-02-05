@@ -24,8 +24,10 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class NormalizationActivityImpl implements NormalizationActivity {
@@ -114,8 +116,13 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getContainerLauncherWorkerFactory(
                                                                                                          final WorkerConfigs workerConfigs,
                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                         final JobRunConfig jobRunConfig) {
+                                                                                                         final JobRunConfig jobRunConfig)
+      throws IOException {
+    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+    final var connectionId = UUID.fromString(jobScope);
+
     return () -> new NormalizationLauncherWorker(
+        connectionId,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,

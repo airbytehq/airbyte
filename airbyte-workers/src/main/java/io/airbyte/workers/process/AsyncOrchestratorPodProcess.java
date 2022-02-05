@@ -243,7 +243,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
 
     final var mainContainer = new ContainerBuilder()
-        .withName("main")
+        .withName(KubePodProcess.MAIN_CONTAINER_NAME)
         .withImage("airbyte/container-orchestrator:" + airbyteVersion)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withPorts(containerPorts)

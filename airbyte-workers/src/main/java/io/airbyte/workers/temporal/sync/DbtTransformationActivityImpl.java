@@ -26,8 +26,10 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class DbtTransformationActivityImpl implements DbtTransformationActivity {
@@ -118,8 +120,13 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
                                                                                                        final WorkerConfigs workerConfigs,
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                       final JobRunConfig jobRunConfig) {
+                                                                                                       final JobRunConfig jobRunConfig)
+      throws IOException {
+    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+    final var connectionId = UUID.fromString(jobScope);
+
     return () -> new DbtLauncherWorker(
+        connectionId,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,

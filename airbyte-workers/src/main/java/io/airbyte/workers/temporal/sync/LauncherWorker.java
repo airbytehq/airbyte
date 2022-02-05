@@ -13,12 +13,16 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.Pod;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
+  private static final String CONNECTION_ID_LABEL_KEY = "connection_id";
+
+  private final UUID connectionId;
   private final String application;
   private final String podNamePrefix;
   private final JobRunConfig jobRunConfig;
@@ -45,7 +52,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
 
-  public LauncherWorker(
+  public LauncherWorker(final UUID connectionId,
                         final String application,
                         final String podNamePrefix,
                         final JobRunConfig jobRunConfig,
@@ -54,6 +61,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final String airbyteVersion,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass) {
+    this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
     this.jobRunConfig = jobRunConfig;
@@ -89,11 +97,11 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var allLabels = KubeProcessFactory.getLabels(
             jobRunConfig.getJobId(),
             Math.toIntExact(jobRunConfig.getAttemptId()),
-            Collections.emptyMap());
+            Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()));
+
+        killRunningPodsForConnection();
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
-        killLowerAttemptIdsIfPresent(podNameAndJobPrefix, jobRunConfig.getAttemptId());
-
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
@@ -136,29 +144,46 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   }
 
   /**
-   * If the sync workflow has advanced to the next attempt, we don't want to leave a zombie of the
-   * older job running (if it exists). In order to ensure a consistent state, we should kill the older
-   * versions.
+   * It is imperative that we do not run multiple replications, normalizations, syncs, etc. at the
+   * same time. Our best bet is to kill everything that is labelled with the connection id and wait
+   * until no more pods exist with that connection id.
    */
-  private void killLowerAttemptIdsIfPresent(final String podNameAndJobPrefix, final long currentAttempt) {
-    for (long previousAttempt = currentAttempt - 1; previousAttempt >= 0; previousAttempt--) {
-      final var podName = podNameAndJobPrefix + previousAttempt;
-      final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
-      final var oldProcess = new AsyncOrchestratorPodProcess(
-          kubePodInfo,
-          containerOrchestratorConfig.documentStoreClient(),
-          containerOrchestratorConfig.kubernetesClient());
+  private void killRunningPodsForConnection() {
+    final var client = containerOrchestratorConfig.kubernetesClient();
 
-      try {
-        // todo: how to kill from previous job, not just previous attempt
-        oldProcess.destroy();
+    // delete all pods with the connection id label
+    final var runningPods = getNonTerminalPodsWithLabels();
 
-        // todo: wait for it to actually destroy with oldProcess.hasExited()
-        log.info("Found and destroyed a previous attempt: " + previousAttempt);
-      } catch (Exception e) {
-        log.warn("Wasn't able to find and destroy a previous attempt: " + previousAttempt);
+    if (!runningPods.isEmpty()) {
+      log.warn("There are currently running pods for the connection: " + getPodNames(runningPods).toString());
+
+      final var allDeleted =
+          runningPods.stream().allMatch(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
+
+      if (!allDeleted) {
+        final var runningPodsAfterDeletion = getNonTerminalPodsWithLabels();
+        if (!runningPodsAfterDeletion.isEmpty()) {
+          throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPodsAfterDeletion).toString());
+        } else {
+          log.info("Successfully deleted all running pods for the connection!");
+        }
       }
     }
+  }
+
+  private List<String> getPodNames(final List<Pod> pods) {
+    return pods.stream().map(pod -> pod.getMetadata().getName()).collect(Collectors.toList());
+  }
+
+  private List<Pod> getNonTerminalPodsWithLabels() {
+    return containerOrchestratorConfig.kubernetesClient().pods()
+        .inNamespace(containerOrchestratorConfig.namespace())
+        .withLabels(Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()))
+        .list()
+        .getItems()
+        .stream()
+        .filter(kubePod -> !KubePodProcess.isTerminal(kubePod))
+        .collect(Collectors.toList());
   }
 
   @Override
