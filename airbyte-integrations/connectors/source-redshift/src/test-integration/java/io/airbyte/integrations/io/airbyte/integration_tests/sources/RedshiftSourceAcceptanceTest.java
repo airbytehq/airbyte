@@ -56,17 +56,18 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
     schemaToIgnore = schemaName + "shouldIgnore";
+    streamName = "customer";
 
     // limit the connection to one schema only
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     // create a test data
-    createTestData(database, schemaName, "customer", true);
+    createTestData(database, schemaName, streamName, true);
     createTestData(database, schemaName, "not_readable", false);
 
     // create a schema with data that will not be used for testing, but would be used to check schema
     // filtering. This one should not be visible in results
-    createTestData(database, schemaToIgnore, "customer", true);
+    createTestData(database, schemaToIgnore, streamName, true);
   }
 
   protected JdbcDatabase createDatabase(final JsonNode config) {
@@ -103,7 +104,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     });
 
     if (!isReadable) {
-      final String revokeSelect = String.format("REVOKE SELECT ON %s FROM %s;\n", fqTableName, database.getMetaData().getUserName());
+      final String revokeSelect = String.format("REVOKE SELECT ON %s FROM %s;\n", fqTableName, config.get("username").asText());
       database.execute(connection -> {
         connection.createStatement().execute(revokeSelect);
       });
