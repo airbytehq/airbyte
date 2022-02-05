@@ -36,6 +36,11 @@ definition_version: {{ definition_metadata.version }}
 {% endfor %}  
 {%- endmacro %}
 
+{%- macro render_object_field(field) %}
+{{ field.name }}: 
+  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, True)}} 
+{%- endmacro %}
+
 {%- macro render_array_of_objects(field) %}
 {{ field.name }}: 
   {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, True)}} 
@@ -43,7 +48,9 @@ definition_version: {{ definition_metadata.version }}
 
 {%- macro render_root(root, is_commented) %}
 {%- for f in root %}
-  {%- if f.is_one_of %}
+  {%- if f.type == "object" and not f.oneOf %}
+  {{- render_object_field(f)|indent(2, True) }}
+  {%- elif f.oneOf %}
   {{ render_one_of(f)|indent(2, True) }}
   {%- elif f.is_array_of_objects %}
   {{ render_array_of_objects(f)|indent(2, True) }}
