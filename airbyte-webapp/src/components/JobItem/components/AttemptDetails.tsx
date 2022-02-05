@@ -17,6 +17,18 @@ const Details = styled.div`
   line-height: 15px;
   color: ${({ theme }) => theme.greyColor40};
 `;
+const FailureReasonDetails = styled.div`
+  margin-top: 10px;
+`;
+
+const getFailureReason = (attempt: Attempt) => {
+  const {
+    failureSummary: { failures },
+  } = attempt;
+  const lastFailure = failures[failures.length - 1];
+
+  return `${lastFailure.failureOrigin} - ${lastFailure.failureType}`;
+};
 
 const AttemptDetails: React.FC<IProps> = ({
   attempt,
@@ -61,36 +73,58 @@ const AttemptDetails: React.FC<IProps> = ({
   const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
   const seconds =
     Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
+  const isFailed = attempt.status === Status.FAILED;
 
   return (
     <Details className={className}>
-      <span>{formatBytes(attempt.bytesSynced)} | </span>
-      <span>
-        <FormattedMessage
-          id="sources.countRecords"
-          values={{ count: attempt.recordsSynced }}
-        />{" "}
-        |{" "}
-      </span>
-      <span>
-        {hours ? (
-          <FormattedMessage id="sources.hour" values={{ hour: hours }} />
-        ) : null}
-        {hours || minutes ? (
-          <FormattedMessage id="sources.minute" values={{ minute: minutes }} />
-        ) : null}
-        <FormattedMessage id="sources.second" values={{ second: seconds }} />
-      </span>
-      {configType ? (
+      <div>
+        <span>{formatBytes(attempt.bytesSynced)} | </span>
         <span>
-          {" "}
+          <FormattedMessage
+            id="sources.countEmittedRecords"
+            values={{ count: attempt.totalStats?.recordsEmitted }}
+          />{" "}
           |{" "}
+        </span>
+        <span>
+          <FormattedMessage
+            id="sources.countCommittedRecords"
+            values={{ count: attempt.totalStats?.recordsCommitted }}
+          />{" "}
+          |{" "}
+        </span>
+        <span>
+          {hours ? (
+            <FormattedMessage id="sources.hour" values={{ hour: hours }} />
+          ) : null}
+          {hours || minutes ? (
+            <FormattedMessage
+              id="sources.minute"
+              values={{ minute: minutes }}
+            />
+          ) : null}
+          <FormattedMessage id="sources.second" values={{ second: seconds }} />
+        </span>
+        {configType ? (
+          <span>
+            {" "}
+            |{" "}
+            <FormattedMessage
+              id={`sources.${configType}`}
+              defaultMessage={configType}
+            />
+          </span>
+        ) : null}
+      </div>
+      {isFailed && (
+        <FailureReasonDetails>
           <FormattedMessage
             id={`sources.${configType}`}
             defaultMessage={configType}
           />
-        </span>
-      ) : null}
+          : {getFailureReason(attempt)}
+        </FailureReasonDetails>
+      )}
     </Details>
   );
 };

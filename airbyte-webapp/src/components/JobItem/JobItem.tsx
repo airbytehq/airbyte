@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import { JobInfo, JobListItem, Logs } from "core/domain/job/Job";
+import { JobInfo, JobListItem, Logs, Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
 import JobLogs from "./components/JobLogs";
@@ -45,6 +45,14 @@ const JobCurrentLogs: React.FC<{
   return <LogsDetails {...props} path={path} />;
 };
 
+const isPartialSuccessCheck = (attempts: Attempt[]) => {
+  return (
+    attempts.filter(
+      (attempt: Attempt) => attempt?.failureSummary?.partialSuccess
+    ).length > 0
+  );
+};
+
 type IProps = {
   shortInfo?: boolean;
 } & ({ job: JobListItem } | { jobInfo: JobInfo });
@@ -55,6 +63,9 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
 
   const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
   const isFailed = jobMeta.status === Status.FAILED;
+  const isPartialSuccess = isJobEntity(props)
+    ? isPartialSuccessCheck(props.job.attempts)
+    : undefined;
 
   return (
     <Item isFailed={isFailed}>
@@ -62,6 +73,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
         shortInfo={shortInfo}
         isOpen={isOpen}
         isFailed={isFailed}
+        isPartialSuccess={isPartialSuccess}
         onExpand={onExpand}
         job={jobMeta}
         attempts={isJobEntity(props) ? props.job.attempts : undefined}

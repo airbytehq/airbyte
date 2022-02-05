@@ -15,6 +15,42 @@ export interface Logs {
   logLines: string[];
 }
 
+enum FailureOrigin {
+  SOURCE = "source",
+  DESTINATION = "destination",
+  REPLICATION = "replication",
+  PERSISTENCE = "persistence",
+  NORMALIZATION = "normalization",
+  DBT = "dbt",
+}
+
+enum FailureType {
+  CONFIG_ERROR = "config_error",
+  SYSTEM_ERROR = "system_error",
+  MANUAL_CANCELLATION = "manual_cancellation",
+}
+
+export interface Failure {
+  failureOrigin: FailureOrigin;
+  failureType: FailureType;
+  externalMessage: string;
+  stacktrace: string;
+  retryable: boolean;
+  timestamp: number;
+}
+
+export interface FailedSummary {
+  failures: Failure[];
+  partialSuccess: boolean;
+}
+
+export interface TotalStats {
+  recordsEmitted: number;
+  bytesEmitted: number;
+  stateMessagesEmitted: number;
+  recordsCommitted: number;
+}
+
 export interface Attempt {
   id: number;
   status: string;
@@ -23,6 +59,8 @@ export interface Attempt {
   endedAt: number;
   bytesSynced: number;
   recordsSynced: number;
+  totalStats: TotalStats;
+  failureSummary: FailedSummary;
 }
 
 export interface AttemptInfo {
