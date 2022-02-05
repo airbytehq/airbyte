@@ -105,7 +105,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     if (!isReadable) {
       final String revokeSelect = String.format("REVOKE SELECT ON %s FROM %s;\n", fqTableName, database.getMetaData().getUserName());
       database.execute(connection -> {
-        connection.createStatement().execute(insertTestData);
+        connection.createStatement().execute(revokeSelect);
       });
     }
   }
