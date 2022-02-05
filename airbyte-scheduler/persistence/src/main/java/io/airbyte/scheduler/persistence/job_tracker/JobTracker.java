@@ -180,13 +180,16 @@ public class JobTracker {
   }
 
   /**
-   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e. non-sensitive). Non-const, non-boolean values are
-   * replaced with {@link #SET} to avoid leaking potentially-sensitive information.
+   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e.
+   * non-sensitive). Non-const, non-boolean values are replaced with {@link #SET} to avoid leaking
+   * potentially-sensitive information.
    * <p>
-   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config schemas anyway.
+   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config
+   * schemas anyway.
    *
-   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`) separator
-   * @param schema   The JSON schema that {@code config} conforms to
+   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`)
+   *        separator
+   * @param schema The JSON schema that {@code config} conforms to
    */
   protected static Map<String, Object> configToMetadata(final String jsonPath, final JsonNode config, final JsonNode schema) {
     final Map<String, Object> metadata = configToMetadata(config, schema);
@@ -198,21 +201,23 @@ public class JobTracker {
   }
 
   /**
-   * Does the actually interesting bits of configToMetadata. If config is an object, returns a flattened map. If config is _not_ an object (i.e. it's
-   * a primitive string/number/etc, or it's an array) then returns a map of {null: toMetadataValue(config)}.
+   * Does the actually interesting bits of configToMetadata. If config is an object, returns a
+   * flattened map. If config is _not_ an object (i.e. it's a primitive string/number/etc, or it's an
+   * array) then returns a map of {null: toMetadataValue(config)}.
    */
   private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
     if (schema.hasNonNull("const")) {
       // If this schema is a const, then just dump it into a map:
       // * If it's an object, flatten it
       // * Otherwise, do some basic conversions to value-ish data.
-      // It would be a weird thing to declare const: null, but in that case we don't want to report null anyway, so explicitly use hasNonNull.
+      // It would be a weird thing to declare const: null, but in that case we don't want to report null
+      // anyway, so explicitly use hasNonNull.
       return flatten(config);
     } else if (schema.has("oneOf")) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
       // and use that sub-schema to convert the config to a map
       final JsonSchemaValidator validator = new JsonSchemaValidator();
-      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext(); ) {
+      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext();) {
         final JsonNode subSchema = it.next();
         if (validator.test(subSchema, config)) {
           return configToMetadata(config, subSchema);
@@ -223,11 +228,12 @@ public class JobTracker {
     } else if (config.isObject()) {
       // If the schema is not a oneOf, but the config is an object (i.e. the schema has "type": "object")
       // then we need to recursively convert each field of the object to a map.
-      // Note: this doesn't handle additionalProperties, so if a config contains properties that are not explicitly declared in the schema, they will be ignored.
+      // Note: this doesn't handle additionalProperties, so if a config contains properties that are not
+      // explicitly declared in the schema, they will be ignored.
       final Map<String, Object> output = new HashMap<>();
       final JsonNode maybeProperties = schema.get("properties");
       if (maybeProperties != null) {
-        for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
+        for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext();) {
           final Entry<String, JsonNode> entry = it.next();
           final String field = entry.getKey();
           final JsonNode value = entry.getValue();
@@ -249,13 +255,13 @@ public class JobTracker {
   }
 
   /**
-   * Naively flattens a JsonNode, or dumps it into a {null: node} map. Does _not_ mask values; ONLY use this if you're sure that node does NOT contain
-   * potentially-sensitive data.
+   * Naively flattens a JsonNode, or dumps it into a {null: node} map. Does _not_ mask values; ONLY
+   * use this if you're sure that node does NOT contain potentially-sensitive data.
    */
   private static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
-      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
@@ -283,8 +289,8 @@ public class JobTracker {
   /**
    * Prepend all keys in subMap with prefix, then merge that map into originalMap.
    * <p>
-   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is treated as {prefix: value} when merging into
-   * originalMap.
+   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
+   * treated as {prefix: value} when merging into originalMap.
    */
   private static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
     originalMap.putAll(subMap.entrySet().stream().collect(toMap(
@@ -296,8 +302,7 @@ public class JobTracker {
             return prefix;
           }
         },
-        Entry::getValue
-    )));
+        Entry::getValue)));
   }
 
   private Map<String, Object> generateSyncMetadata(final UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {

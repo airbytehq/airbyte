@@ -112,26 +112,26 @@ class JobTrackerTest {
     try {
       SOURCE_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
           """
-              {
-                "type": "object",
-                "properties": {
-                  "key": {
-                    "type": "string"
-                  }
-                }
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
               }
-              """));
+            }
+          }
+          """));
       DESTINATION_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
           """
-              {
-                "type": "object",
-                "properties": {
-                  "key": {
-                    "type": "boolean"
-                  }
-                }
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "boolean"
               }
-              """));
+            }
+          }
+          """));
     } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
