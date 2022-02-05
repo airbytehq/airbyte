@@ -18,6 +18,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
@@ -54,9 +55,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
 
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
 
   public ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
@@ -66,13 +65,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final String databaseUser,
-                                 final String databasePassword,
-                                 final String databaseUrl,
+                                 final JobPersistence jobPersistence,
                                  final String airbyteVersion) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), databaseUser,
-        databasePassword, databaseUrl, airbyteVersion);
+        new AirbyteConfigValidator(), jobPersistence, airbyteVersion);
   }
 
   @VisibleForTesting
@@ -84,9 +80,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
-                          final String databaseUser,
-                          final String databasePassword,
-                          final String databaseUrl,
+                          final JobPersistence jobPersistence,
                           final String airbyteVersion) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
@@ -96,9 +90,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.validator = validator;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -138,9 +130,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           workerFactory,
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler(),
-          databaseUser,
-          databasePassword,
-          databaseUrl,
+          jobPersistence,
           airbyteVersion);
 
       final ReplicationOutput attemptOutput = temporalAttempt.get();

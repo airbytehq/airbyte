@@ -91,7 +91,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             Math.toIntExact(jobRunConfig.getAttemptId()),
             Collections.emptyMap());
 
-        final var podNameAndJobPrefix = podNamePrefix + "-j-" + jobRunConfig.getJobId() + "-a-";
+        final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         killLowerAttemptIdsIfPresent(podNameAndJobPrefix, jobRunConfig.getAttemptId());
 
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
@@ -150,7 +150,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           containerOrchestratorConfig.kubernetesClient());
 
       try {
+        // todo: how to kill from previous job, not just previous attempt
         oldProcess.destroy();
+
+        // todo: wait for it to actually destroy with oldProcess.hasExited()
         log.info("Found and destroyed a previous attempt: " + previousAttempt);
       } catch (Exception e) {
         log.warn("Wasn't able to find and destroy a previous attempt: " + previousAttempt);
