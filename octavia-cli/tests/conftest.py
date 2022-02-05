@@ -10,3 +10,8 @@ def octavia_project_directory(tmpdir):
     for directory in OCTAVIA_PROJECT_DIRECTORIES:
         tmpdir.mkdir(directory)
     return tmpdir
+
+
+@pytest.fixture
+def mock_api_client(mocker):
+    return mocker.Mock()

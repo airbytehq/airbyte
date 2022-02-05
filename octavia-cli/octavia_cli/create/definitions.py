@@ -19,8 +19,10 @@ class DefinitionNotFoundError(click.ClickException):
     pass
 
 
-class Definition(abc.ABC):
+class BaseDefinition(abc.ABC):
     COMMON_GET_FUNCTION_KWARGS = {"_check_return_type": False}
+
+    specification = None
 
     @property
     @abc.abstractmethod
@@ -48,7 +50,7 @@ class Definition(abc.ABC):
         return getattr(self.api, self.get_function_name)
 
     @property
-    def _get_fn_kwargs() -> dict:
+    def _get_fn_kwargs(self) -> dict:
         return {}
 
     def __init__(self, api_client, id: str) -> None:
@@ -70,37 +72,29 @@ class Definition(abc.ABC):
         raise AttributeError(f"{self.__class__.__name__}.{name} is invalid.")
 
 
-class SourceDefinition(Definition):
+class SourceDefinition(BaseDefinition):
     api = source_definition_api.SourceDefinitionApi
     type = "source"
     get_function_name = "get_source_definition"
 
-    def __init__(self, api_client, id: str) -> None:
-        super().__init__(api_client, id)
-
     @property
     def _get_fn_kwargs(self):
-        return {"source_definition_id_request_body": SourceDefinitionIdRequestBody(source_definition_id=self.id)}
+        return {"source_definition_id_request_body": SourceDefinitionIdRequestBody(self.id)}
 
 
 class SourceDefinitionSpecification(SourceDefinition):
     api = source_definition_specification_api.SourceDefinitionSpecificationApi
-    type = "source"
     get_function_name = "get_source_definition_specification"
 
 
-class DestinationDefinition(Definition):
+class DestinationDefinition(BaseDefinition):
     api = destination_definition_api.DestinationDefinitionApi
     type = "destination"
     get_function_name = "get_destination_definition"
 
-    def __init__(self, api_client, id: str) -> None:
-        super().__init__(api_client, id)
-        self.specification = DestinationDefinitionSpecification(api_client, id)
-
     @property
     def _get_fn_kwargs(self):
-        return {"destination_definition_id_request_body": DestinationDefinitionIdRequestBody(destination_definition_id=self.id)}
+        return {"destination_definition_id_request_body": DestinationDefinitionIdRequestBody(self.id)}
 
 
 class DestinationDefinitionSpecification(DestinationDefinition):
@@ -115,5 +109,7 @@ def factory(definition_type, api_client, definition_id):
     elif definition_type == "destination":
         definition = DestinationDefinition(api_client, definition_id)
         specification = DestinationDefinitionSpecification(api_client, definition_id)
+    else:
+        raise ValueError(f"{definition_type} does not exist")
     definition.specification = specification
     return definition
