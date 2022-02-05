@@ -99,6 +99,10 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    // TODO (liren): The bufferedResultSetQuery method is used here instead of the
+    // query method. This is because the latter close the connection in the onClose method
+    // of the stream it returns. However, sometimes the onClose method is somehow never
+    // executed. This seems to happen when the result is empty from Redshift. Issue #10128.
     return new HashSet<>(database.bufferedResultSetQuery(
         connection -> {
           connection.setAutoCommit(true);
