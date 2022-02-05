@@ -47,9 +47,13 @@ const JobCurrentLogs: React.FC<{
 
 const isPartialSuccessCheck = (attempts: Attempt[]) => {
   return (
-    attempts.filter(
-      (attempt: Attempt) => attempt?.failureSummary?.partialSuccess
-    ).length > 0
+    if(attempts.[attempts.length - 1] === Status.FAILED)) {
+        attempts.filter(
+          (attempt: Attempt) => attempt?.failureSummary?.partialSuccess
+        ).length > 0
+    } else {
+        return false;
+    }
   );
 };
 
