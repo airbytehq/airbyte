@@ -262,8 +262,13 @@
   "sources.countGB": "{count} GB",
   "sources.countTB": "{count} TB",
   "sources.downloadLogs": "Download logs",
+  "sources.debugInfoDetails": "Debug Info details",
   "sources.reset_connection": "Reset",
   "sources.sync": "Sync",
+  "sources.debugInfoModalTitle": "Information about this job",
+  "sources.airbyteVersion": "Airbyte Version",
+  "sources.copyText": "Copy",
+  "sources.copied": "Copied",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",

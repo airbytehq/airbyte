@@ -1,4 +1,5 @@
 import Status from "core/statuses";
+import { SourceDefinition, DestinationDefinition } from "core/domain/connector";
 
 export interface JobMeta {
   id: number | string;
@@ -35,6 +36,21 @@ export interface JobInfo extends JobMeta {
 
 export interface JobDetails {
   job: JobMeta;
+  attempts: AttemptInfo[];
+}
+
+export interface JobDebugInfoMeta {
+  airbyteVersion: string;
+  id: number | string;
+  configType: string;
+  configId: string;
+  status: Status | null;
+  sourceDefinition: SourceDefinition;
+  destinationDefinition: DestinationDefinition;
+}
+
+export interface JobDebugInfoDetails {
+  job: JobDebugInfoMeta;
   attempts: AttemptInfo[];
 }
 

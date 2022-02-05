@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import Status from "core/statuses";
-import { useGetJob } from "services/job/JobService";
+import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
 
 import Logs from "./Logs";
 import Tabs from "./Tabs";
@@ -15,6 +15,7 @@ type IProps = {
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const job = useGetJob(id);
+  const debugInfo = useGetDebugInfoJob(id);
 
   const [attemptNumber, setAttemptNumber] = useState<number>(
     job.attempts.length ? job.attempts.length - 1 : 0
@@ -27,6 +28,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const currentAttempt = job.attempts[attemptNumber].attempt;
   const logs = job.attempts[attemptNumber]?.logs;
   const path = ["/tmp/workspace", id, currentAttempt.id, "logs.log"].join("/");
+  const jobDebugInfo = debugInfo.job;
 
   const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),
@@ -58,6 +60,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
         path={path}
         currentAttempt={job.attempts.length > 1 ? currentAttempt : null}
         logs={logs}
+        jobDebugInfo={jobDebugInfo}
       />
     </>
   );
