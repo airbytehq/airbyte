@@ -158,20 +158,18 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     if (!runningPods.isEmpty()) {
       log.warn("There are currently running pods for the connection: " + getPodNames(runningPods).toString());
 
-      final var allDeleted =
-          runningPods.stream().allMatch(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
+      runningPods.stream().forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
-      if (!allDeleted) {
-        // wait to make sure any currently terminating pods have some time to stop
-        Exceptions.toRuntime(() -> Thread.sleep(5000));
+      // wait to make sure any currently terminating pods have some time to stop
+      Exceptions.toRuntime(() -> Thread.sleep(7000));
 
-        final var runningPodsAfterDeletion = getNonTerminalPodsWithLabels();
-        if (!runningPodsAfterDeletion.isEmpty()) {
-          throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPodsAfterDeletion).toString());
-        }
+      final var runningPodsAfterDeletion = getNonTerminalPodsWithLabels();
+
+      if (!runningPodsAfterDeletion.isEmpty()) {
+        throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPodsAfterDeletion).toString());
+      } else {
+        log.info("Successfully deleted all running pods for the connection!");
       }
-
-      log.info("Successfully deleted all running pods for the connection!");
     }
   }
 
