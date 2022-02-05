@@ -5,7 +5,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -14,7 +13,6 @@ import io.airbyte.integrations.source.redshift.RedshiftSource;
 import java.nio.file.Path;
 import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -22,18 +20,15 @@ import org.junit.jupiter.api.BeforeEach;
 // Redshift.
 class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private ObjectNode config;
+  private JsonNode config;
 
-  private static ObjectNode getStaticConfig() {
-    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  private static JsonNode getStaticConfig() {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @BeforeEach
   public void setup() throws Exception {
     config = getStaticConfig();
-    // limit the connection to one schema only
-    config = config.set("schemas", Jsons.jsonNode(List.of(SCHEMA_NAME, SCHEMA_NAME2)));
-
     super.setup();
   }
 
