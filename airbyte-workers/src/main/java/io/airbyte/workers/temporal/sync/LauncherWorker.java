@@ -136,6 +136,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         }
       } catch (Exception e) {
         if (cancelled.get()) {
+          try {
+            log.info("Destroying process due to cancellation.");
+            process.destroy();
+          } catch (Exception e2) {
+            log.error("Failed to destroy process on cancellation.", e2);
+          }
           throw new WorkerException("Launcher " + application + " was cancelled.", e);
         } else {
           throw new WorkerException("Running the launcher " + application + " failed", e);
