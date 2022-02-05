@@ -91,21 +91,9 @@ class Field:
         Returns:
             [type]: [description]
         """
-        default = ""
         if self.const:
-            default = self.const
-        if self.default is not None:
-            default = self.default
-        if default == '"':
-            default = "'\"'"
-        elif default == "'":
-            default = '"\'"'
-        elif isinstance(default, str):
-            if '"' not in default:
-                default = f'"{default}"'
-            else:
-                default = f"'{default}'"
-        return default
+            return self.const
+        return self.default
 
     @staticmethod
     def build_comment(comment_functions):

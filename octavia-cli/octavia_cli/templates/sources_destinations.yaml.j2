@@ -7,7 +7,7 @@ definition_image: {{ definition_metadata.image }}
 definition_version: {{ definition_metadata.version }}
 
 {%- macro render_field(field, is_commented) %}
-{%- if is_commented %}# {% endif %}{{ field.name }}: {{ field.default_value}} # {{ field.comment }}
+{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default_value %} {{ field.default_value | tojson() }}{% endif %} # {{ field.comment }}
 {%- endmacro %}
 
 {%- macro render_sub_fields(sub_fields, is_commented) %}
@@ -27,35 +27,35 @@ definition_version: {{ definition_metadata.version }}
 {{ field.name }}: 
 {%- for one_of_value in field.one_of_values %}
   {%- if loop.first %}
-  # Pick one valid structure among the examples below:
-  {{- render_sub_fields(one_of_value, False)|indent(2, True) }}
+  ## Pick one valid structure among the examples below:
+  {{- render_sub_fields(one_of_value, False)|indent(2, False) }}
   {%- else %}
-  # Another valid structure for {{ field.name }}:
-  {{- render_sub_fields(one_of_value, True)|indent(2, True) }}
+  ## Another valid structure for {{ field.name }}:
+  {{- render_sub_fields(one_of_value, True)|indent(2, False) }}
   {%- endif %}
-{% endfor %}  
+{%- endfor %}  
 {%- endmacro %}
 
 {%- macro render_object_field(field) %}
 {{ field.name }}: 
-  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, True)}} 
+  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, False)}} 
 {%- endmacro %}
 
 {%- macro render_array_of_objects(field) %}
 {{ field.name }}: 
-  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, True)}} 
+  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, False)}} 
 {%- endmacro %}
 
 {%- macro render_root(root, is_commented) %}
 {%- for f in root %}
   {%- if f.type == "object" and not f.oneOf %}
-  {{- render_object_field(f)|indent(2, True) }}
+  {{- render_object_field(f)|indent(2, False) }}
   {%- elif f.oneOf %}
-  {{ render_one_of(f)|indent(2, True) }}
+  {{- render_one_of(f)|indent(2, False) }}
   {%- elif f.is_array_of_objects %}
-  {{ render_array_of_objects(f)|indent(2, True) }}
+  {{- render_array_of_objects(f)|indent(2, False) }}
   {%- else %}
-  {{ render_field(f, is_commented=is_commented)}}
+  {{ render_field(f, is_commented=is_commented) }}
   {%- endif %}
 {%- endfor %}
 {%- endmacro %}
@@ -68,4 +68,4 @@ configuration:
 {%- else %}
 {{- render_root(root, is_commented=True)}}
 {%- endif %}
-{%- endfor %}
+{% endfor %}
