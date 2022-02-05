@@ -154,14 +154,33 @@ class Transactions(XolaStream):
         for data in raw_response:
 
             resp = {"id": data["id"], "amount": data["amount"], "balance": data["balance"],
-                    "createdAt": data["createdAt"], "createdBy": data["createdBy"], "currency": data["currency"],
+                    "createdAt": data["createdAt"], "currency": data["currency"],
                     "method": data["method"], "source": data["source"],
-                    "type": data["type"], "seller_id": data["seller"]}
+                    "type": data["type"]}
 
             if "order" in data.keys():
-                resp["order_id"] = data["order"]["id"]
+                if isinstance(data["order"], dict):
+                    resp["order_id"] = data["order"]["id"]
+                else:
+                    resp["order_id"] = data["order"]
             else:
                 resp["order_id"] = ""
+
+            if "seller" in data.keys():
+                if isinstance(data["seller"], dict):
+                    resp["seller_id"] = data["seller"]["id"]
+                else:
+                    resp["seller_id"] = data["seller"]
+            else:
+                resp["seller_id"] = ""
+
+            if "createdBy" in data.keys():
+                if isinstance(data["createdBy"], dict):
+                    resp["createdBy"] = data["createdBy"]["id"]
+                else:
+                    resp["createdBy"] = data["createdBy"]
+            else:
+                resp["createdBy"] = ""
 
             modified_response.append(resp)
         return modified_response
