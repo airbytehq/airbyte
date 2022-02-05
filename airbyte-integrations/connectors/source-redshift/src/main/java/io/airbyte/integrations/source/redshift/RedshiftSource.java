@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.redshift;
 
-import static java.util.stream.Collectors.toSet;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -21,6 +19,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -100,21 +99,23 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database.query(connection -> {
-      final PreparedStatement ps = connection.prepareStatement(
-          "SELECT DISTINCT table_schema, table_name \n"
-              + "FROM   information_schema.table_privileges\n"
-              + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
-      return ps;
-    }, sourceOperations::rowToJson)
-        .collect(toSet())
-        .stream()
-        .map(e -> JdbcPrivilegeDto.builder()
-            .schemaName(e.get("table_schema").asText())
-            .tableName(e.get("table_name").asText())
-            .build())
-        .collect(toSet());
+    return new HashSet<>(database.bufferedResultSetQuery(
+        connection -> {
+          connection.setAutoCommit(true);
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT DISTINCT table_schema, table_name "
+                  + "FROM   information_schema.table_privileges "
+                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+          ps.setString(1, database.getDatabaseConfig().get("username").asText());
+          return ps.executeQuery();
+        },
+        resultSet -> {
+          final JsonNode json = sourceOperations.rowToJson(resultSet);
+          return JdbcPrivilegeDto.builder()
+              .schemaName(json.get("table_schema").asText())
+              .tableName(json.get("table_name").asText())
+              .build();
+        }));
   }
 
   public static void main(final String[] args) throws Exception {

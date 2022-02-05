@@ -7,6 +7,7 @@ package io.airbyte.db.jdbc;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -106,9 +107,17 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
     }
   }
 
+  // TODO (liren): closing the data source is not enough because
+  // the allocation connection may still be open (issue #1128).
   @Override
   public void close() throws Exception {
     database.close();
+    if (dataSource instanceof AutoCloseable) {
+      ((AutoCloseable) dataSource).close();
+    }
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
 }

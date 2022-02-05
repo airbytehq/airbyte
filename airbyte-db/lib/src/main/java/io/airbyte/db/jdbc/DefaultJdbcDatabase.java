@@ -140,6 +140,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       return dataSource.getConnection();
     }
 
+    // TODO (liren): closing the data source is not enough because
+    // the allocation connection may still be open (issue #1128).
     @Override
     public void close() throws Exception {
       // Just a safety in case we are using a datasource implementation that requires closing.
