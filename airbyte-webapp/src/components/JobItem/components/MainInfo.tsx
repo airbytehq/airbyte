@@ -20,8 +20,8 @@ const MainView = styled(Row)<{
   isFailed?: boolean;
 }>`
   cursor: pointer;
-  height: 59px;
-  padding: 10px 44px 10px 40px;
+  height: 75px;
+  padding: 15px 44px 10px 40px;
   justify-content: space-between;
   border-bottom: 1px solid
     ${({ theme, isOpen, isFailed }) =>
@@ -113,18 +113,27 @@ const MainInfo: React.FC<IProps> = ({
     [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
 
   const jobStatus = isPartialSuccess ? (
-    <FormattedMessage id="sources.additionLogs" />
+    <FormattedMessage id="sources.partialSuccess" />
   ) : (
-    <FormattedMessage id="sources.additionLogs" />
+    <FormattedMessage id={`sources.${job.status}`} />
   );
+
+  const getIcon = () => {
+    if (isPartialSuccess) {
+      return <ErrorSign warning />;
+    } else if (isFailed && !shortInfo) {
+      return <ErrorSign />;
+    }
+    return <></>;
+  };
 
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
       <InfoCell>
         <Title isFailed={isFailed}>
-          {isFailed && !shortInfo && <ErrorSign />}
-          <FormattedMessage id={`sources.${job.status}`} />
-          {shortInfo ? jobStatus : null}
+          {getIcon()}
+          {jobStatus}
+          {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
             <AttemptDetails
               attempt={attempts[attempts.length - 1]}

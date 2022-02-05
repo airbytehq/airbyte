@@ -46,15 +46,15 @@ const JobCurrentLogs: React.FC<{
 };
 
 const isPartialSuccessCheck = (attempts: Attempt[]) => {
-  return (
-    if(attempts.[attempts.length - 1] === Status.FAILED)) {
-        attempts.filter(
-          (attempt: Attempt) => attempt?.failureSummary?.partialSuccess
-        ).length > 0
-    } else {
-        return false;
-    }
-  );
+  if (attempts[attempts.length - 1].status === Status.FAILED) {
+    return (
+      attempts.filter(
+        (attempt: Attempt) => attempt?.failureSummary?.partialSuccess
+      ).length > 0
+    );
+  } else {
+    return false;
+  }
 };
 
 type IProps = {

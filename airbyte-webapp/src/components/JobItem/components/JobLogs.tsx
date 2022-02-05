@@ -28,7 +28,6 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const currentAttempt = job.attempts[attemptNumber].attempt;
   const logs = job.attempts[attemptNumber]?.logs;
   const path = ["/tmp/workspace", id, currentAttempt.id, "logs.log"].join("/");
-  const jobDebugInfo = debugInfo.job;
 
   const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),
@@ -60,7 +59,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
         path={path}
         currentAttempt={job.attempts.length > 1 ? currentAttempt : null}
         logs={logs}
-        jobDebugInfo={jobDebugInfo}
+        jobDebugInfo={debugInfo.job}
       />
     </>
   );

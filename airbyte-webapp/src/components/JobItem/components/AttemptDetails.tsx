@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import dayjs from "dayjs";
 
@@ -18,16 +18,15 @@ const Details = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 const FailureReasonDetails = styled.div`
-  margin-top: 10px;
+  padding-bottom: 10px;
 `;
 
-const getFailureReason = (attempt: Attempt) => {
-  const {
-    failureSummary: { failures },
-  } = attempt;
-  const lastFailure = failures[failures.length - 1];
+const getFailureFromAttempt = (attempt: Attempt) => {
+  if (attempt?.failureSummary?.failures.length > 0) {
+    return attempt.failureSummary.failures[0];
+  }
 
-  return `${lastFailure.failureOrigin} - ${lastFailure.failureType}`;
+  return undefined;
 };
 
 const AttemptDetails: React.FC<IProps> = ({
@@ -35,6 +34,8 @@ const AttemptDetails: React.FC<IProps> = ({
   className,
   configType,
 }) => {
+  const formatMessage = useIntl().formatMessage;
+
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
     return (
       <Details className={className}>
@@ -67,6 +68,32 @@ const AttemptDetails: React.FC<IProps> = ({
     );
   };
 
+  const getFailureOrigin = (attempt: Attempt) => {
+    const failure = getFailureFromAttempt(attempt);
+    let failureOrigin = formatMessage({ id: "errorView.unknown" });
+
+    if (failure) {
+      failureOrigin = failure.failureOrigin;
+    }
+
+    return `${formatMessage({
+      id: "sources.failureOrigin",
+    })}: ${failureOrigin}`;
+  };
+
+  const getFailureMessage = (attempt: Attempt) => {
+    const failure = getFailureFromAttempt(attempt);
+    let failureMessage = formatMessage({ id: "errorView.unknown" });
+
+    if (failure) {
+      failureMessage = failure.failureOrigin;
+    }
+
+    return `${formatMessage({
+      id: "sources.message",
+    })}: ${failureMessage}`;
+  };
+
   const date1 = dayjs(attempt.createdAt * 1000);
   const date2 = dayjs(attempt.updatedAt * 1000);
   const hours = Math.abs(date2.diff(date1, "hour"));
@@ -82,14 +109,14 @@ const AttemptDetails: React.FC<IProps> = ({
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
-            values={{ count: attempt.totalStats?.recordsEmitted }}
+            values={{ count: attempt.totalStats?.recordsEmitted || 0 }}
           />{" "}
           |{" "}
         </span>
         <span>
           <FormattedMessage
             id="sources.countCommittedRecords"
-            values={{ count: attempt.totalStats?.recordsCommitted }}
+            values={{ count: attempt.totalStats?.recordsCommitted || 0 }}
           />{" "}
           |{" "}
         </span>
@@ -118,11 +145,7 @@ const AttemptDetails: React.FC<IProps> = ({
       </div>
       {isFailed && (
         <FailureReasonDetails>
-          <FormattedMessage
-            id={`sources.${configType}`}
-            defaultMessage={configType}
-          />
-          : {getFailureReason(attempt)}
+          {getFailureOrigin(attempt)}, {getFailureMessage(attempt)}
         </FailureReasonDetails>
       )}
     </Details>

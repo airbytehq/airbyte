@@ -273,6 +273,7 @@
   "sources.copyText": "Copy",
   "sources.copied": "Copied",
   "sources.failureOrigin": "Failure Origin",
+  "sources.message": "Message",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",
@@ -443,5 +444,6 @@
 
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.startOver": "Continue using the app",
-  "errorView.notFound": "Resource not found"
+  "errorView.notFound": "Resource not found",
+  "errorView.unknown": "Unknown"
 }
