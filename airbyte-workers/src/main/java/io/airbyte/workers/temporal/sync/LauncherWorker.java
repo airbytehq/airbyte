@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
@@ -161,13 +162,16 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           runningPods.stream().allMatch(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
       if (!allDeleted) {
+        // wait to make sure any currently terminating pods have some time to stop
+        Exceptions.toRuntime(() -> Thread.sleep(5000));
+
         final var runningPodsAfterDeletion = getNonTerminalPodsWithLabels();
         if (!runningPodsAfterDeletion.isEmpty()) {
           throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPodsAfterDeletion).toString());
-        } else {
-          log.info("Successfully deleted all running pods for the connection!");
         }
       }
+
+      log.info("Successfully deleted all running pods for the connection!");
     }
   }
 
