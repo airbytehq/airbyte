@@ -30,6 +30,9 @@ public class WorkflowState {
   private boolean failed = false;
   private boolean resetConnection = false;
   private boolean continueAsReset = false;
+  private boolean retryFailedActivity = false;
+  private boolean stuck = false;
+  private boolean success = true;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -95,6 +98,30 @@ public class WorkflowState {
     this.continueAsReset = continueAsReset;
   }
 
+  public void setRetryFailedActivity(final boolean retryFailedActivity) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.RETRY_FAILED_ACTIVITY,
+        retryFailedActivity);
+    stateChangedListener.addEvent(id, event);
+    this.retryFailedActivity = retryFailedActivity;
+  }
+
+  public void setStuck(final boolean stuck) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.STUCK,
+        stuck);
+    stateChangedListener.addEvent(id, event);
+    this.stuck = stuck;
+  }
+
+  public void setSuccess(final boolean success) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SUCCESS,
+        success);
+    stateChangedListener.addEvent(id, event);
+    this.success = success;
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
@@ -104,6 +131,8 @@ public class WorkflowState {
     this.setFailed(false);
     this.setResetConnection(false);
     this.setContinueAsReset(false);
+    this.setRetryFailedActivity(false);
+    this.setSuccess(false);
   }
 
 }

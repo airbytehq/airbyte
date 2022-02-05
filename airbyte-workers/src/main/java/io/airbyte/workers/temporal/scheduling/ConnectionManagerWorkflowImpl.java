@@ -45,6 +45,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -96,82 +98,89 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           Workflow.await(scheduleRetrieverOutput.getTimeToWait(),
               () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
-          if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
-            // Job and attempt creation
-            maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
-              final JobCreationOutput jobCreationOutput = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(
-                  connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
-              connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
-              return Optional.ofNullable(jobCreationOutput.getJobId());
-            });
+          maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
+            final JobCreationOutput jobCreationOutput =
+                runActivityWithOutput(
+                    (input) -> jobCreationAndStatusUpdateActivity.createNewJob(input),
+                    new JobCreationInput(
+                        connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
+            connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
+            return Optional.ofNullable(jobCreationOutput.getJobId());
+          });
 
-            maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
-              final AttemptCreationOutput attemptCreationOutput = jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
-                  jobId));
-              connectionUpdaterInput.setAttemptId(attemptCreationOutput.getAttemptId());
-              return attemptCreationOutput.getAttemptId();
-            }));
+          maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
+            final AttemptCreationOutput attemptCreationOutput =
+                runActivityWithOutput(
+                    (input) -> jobCreationAndStatusUpdateActivity.createNewAttempt(input),
+                    new AttemptCreationInput(
+                        jobId));
+            connectionUpdaterInput.setAttemptId(attemptCreationOutput.getAttemptId());
+            return attemptCreationOutput.getAttemptId();
+          }));
 
-            // Sync workflow
-            final SyncInput getSyncInputActivitySyncInput = new SyncInput(
-                maybeAttemptId.get(),
-                maybeJobId.get(),
-                workflowState.isResetConnection());
+          // Sync workflow
+          final SyncInput getSyncInputActivitySyncInput = new SyncInput(
+              maybeAttemptId.get(),
+              maybeJobId.get(),
+              workflowState.isResetConnection());
 
-            jobCreationAndStatusUpdateActivity.reportJobStart(new ReportJobStartInput(
-                maybeJobId.get()));
+          runActivity(
+              (input) -> jobCreationAndStatusUpdateActivity.reportJobStart(input),
+              new ReportJobStartInput(
+                  maybeJobId.get()));
 
-            final SyncOutput syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivitySyncInput);
+          final SyncOutput syncWorkflowInputs = runActivityWithOutput(
+              (input) -> getSyncInputActivity.getSyncWorkflowInput(input),
+              getSyncInputActivitySyncInput);
 
-            workflowState.setRunning(true);
+          workflowState.setRunning(true);
 
-            final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
-                ChildWorkflowOptions.newBuilder()
-                    .setWorkflowId("sync_" + maybeJobId.get())
-                    .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                    // This will cancel the child workflow when the parent is terminated
-                    .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
-                    .build());
+          final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
+              ChildWorkflowOptions.newBuilder()
+                  .setWorkflowId("sync_" + maybeJobId.get())
+                  .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
+                  // This will cancel the child workflow when the parent is terminated
+                  .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
+                  .build());
 
-            final UUID connectionId = connectionUpdaterInput.getConnectionId();
+          final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
-            try {
-              standardSyncOutput = Optional.ofNullable(childSync.run(
-                  syncWorkflowInputs.getJobRunConfig(),
-                  syncWorkflowInputs.getSourceLauncherConfig(),
-                  syncWorkflowInputs.getDestinationLauncherConfig(),
-                  syncWorkflowInputs.getSyncInput(),
-                  connectionId));
+          try {
+            standardSyncOutput = Optional.ofNullable(childSync.run(
+                syncWorkflowInputs.getJobRunConfig(),
+                syncWorkflowInputs.getSourceLauncherConfig(),
+                syncWorkflowInputs.getDestinationLauncherConfig(),
+                syncWorkflowInputs.getSyncInput(),
+                connectionId));
 
-              final StandardSyncSummary standardSyncSummary = standardSyncOutput.get().getStandardSyncSummary();
+            final StandardSyncSummary standardSyncSummary = standardSyncOutput.get().getStandardSyncSummary();
 
-              if (workflowState.isResetConnection()) {
-                workflowState.setResetConnection(false);
-              }
+            if (workflowState.isResetConnection()) {
+              workflowState.setResetConnection(false);
+            }
 
-              if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
-                failures.addAll(standardSyncOutput.get().getFailures());
-                partialSuccess = standardSyncSummary.getTotalStats().getRecordsCommitted() > 0;
-                workflowState.setFailed(true);
-              }
-            } catch (final ChildWorkflowFailure childWorkflowFailure) {
-              if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
-                // do nothing, cancellation handled by cancellationScope
+            if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
+              failures.addAll(standardSyncOutput.get().getFailures());
+              partialSuccess = standardSyncSummary.getTotalStats().getRecordsCommitted() > 0;
+              workflowState.setFailed(true);
+            }
+          } catch (final ChildWorkflowFailure childWorkflowFailure) {
+            if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
+              // do nothing, cancellation handled by cancellationScope
 
-              } else if (childWorkflowFailure.getCause() instanceof ActivityFailure) {
-                final ActivityFailure af = (ActivityFailure) childWorkflowFailure.getCause();
-                failures.add(FailureHelper.failureReasonFromWorkflowAndActivity(
-                    childWorkflowFailure.getWorkflowType(),
-                    af.getActivityType(),
-                    af.getCause(),
-                    maybeJobId.get(),
-                    maybeAttemptId.get()));
-                throw childWorkflowFailure;
-              } else {
-                failures.add(
-                    FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), maybeJobId.get(), maybeAttemptId.get()));
-                throw childWorkflowFailure;
-              }
+            } else if (childWorkflowFailure.getCause() instanceof ActivityFailure) {
+              final ActivityFailure af = (ActivityFailure) childWorkflowFailure.getCause();
+              failures.add(FailureHelper.failureReasonFromWorkflowAndActivity(
+                  childWorkflowFailure.getWorkflowType(),
+                  af.getActivityType(),
+                  af.getCause(),
+                  maybeJobId.get(),
+                  maybeAttemptId.get()));
+              throw childWorkflowFailure;
+            } else {
+              failures.add(
+                  FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), maybeJobId.get(), maybeAttemptId.get()));
+              throw childWorkflowFailure;
             }
           }
         });
@@ -203,13 +212,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else if (workflowState.isDeleted()) {
         // Stop the runs
         final ConnectionDeletionInput connectionDeletionInput = new ConnectionDeletionInput(connectionUpdaterInput.getConnectionId());
-        connectionDeletionActivity.deleteConnection(connectionDeletionInput);
+        runActivity((input) -> connectionDeletionActivity.deleteConnection(input), connectionDeletionInput);
         return;
       } else if (workflowState.isCancelled()) {
-        jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
-            maybeJobId.get(),
-            maybeAttemptId.get(),
-            failures.isEmpty() ? null : FailureHelper.failureSummary(failures, partialSuccess)));
+        runActivity((input) -> jobCreationAndStatusUpdateActivity.jobCancelled(input),
+            new JobCancelledInput(
+                maybeJobId.get(),
+                maybeAttemptId.get(),
+                failures.isEmpty() ? null : FailureHelper.failureSummary(failures, partialSuccess)));
         resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
         reportFailure(connectionUpdaterInput);
@@ -227,7 +237,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput) {
-    jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(
+    workflowState.setSuccess(true);
+    runActivity((input) -> jobCreationAndStatusUpdateActivity.jobSuccess(input), new JobSuccessInput(
         maybeJobId.get(),
         maybeAttemptId.get(),
         standardSyncOutput.orElse(null)));
@@ -236,7 +247,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
-    jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
+    runActivity((input) -> jobCreationAndStatusUpdateActivity.attemptFailure(input), new AttemptFailureInput(
         connectionUpdaterInput.getJobId(),
         connectionUpdaterInput.getAttemptId(),
         standardSyncOutput.orElse(null),
@@ -250,7 +261,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
     } else {
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(
+      runActivity((input) -> jobCreationAndStatusUpdateActivity.jobFailure(input), new JobFailureInput(
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
 
@@ -306,6 +317,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
+  public void retryFailActivity() {
+    workflowState.setRetryFailedActivity(true);
+  }
+
+  @Override
+  public void simulateFailure() {
+    workflowState.setFailed(true);
+  }
+
+  @Override
   public WorkflowState getState() {
     return workflowState;
   }
@@ -315,6 +336,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return new JobInformation(
         maybeJobId.orElse(NON_RUNNING_JOB_ID),
         maybeAttemptId.orElse(NON_RUNNING_ATTEMPT_ID));
+  }
+
+  @Override
+  public StuckInformation getStuckInformation() {
+    return new StuckInformation(
+        connectionId,
+        maybeJobId.orElse(NON_RUNNING_JOB_ID),
+        maybeAttemptId.orElse(NON_RUNNING_ATTEMPT_ID),
+        workflowState.isStuck());
   }
 
   private Boolean skipScheduling() {
@@ -331,6 +361,34 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowState.reset();
     if (!isDeleted) {
       Workflow.continueAsNew(connectionUpdaterInput);
+    }
+  }
+
+  private <INPUT, OUTPUT> OUTPUT runActivityWithOutput(Function<INPUT, OUTPUT> mapper, INPUT input) {
+    try {
+      return mapper.apply(input);
+    } catch (Exception e) {
+      log.error("Failed to run an activity for the connection " + connectionId, e);
+      workflowState.setStuck(true);
+      Workflow.await(() -> workflowState.isRetryFailedActivity());
+      log.error("Retrying an activity for the connection " + connectionId, e);
+      workflowState.setStuck(false);
+      workflowState.setRetryFailedActivity(false);
+      return runActivityWithOutput(mapper, input);
+    }
+  }
+
+  private <INPUT> void runActivity(Consumer<INPUT> consumer, INPUT input) {
+    try {
+      consumer.accept(input);
+    } catch (Exception e) {
+      log.error("Failed to run an activity for the connection " + connectionId, e);
+      workflowState.setStuck(true);
+      Workflow.await(() -> workflowState.isRetryFailedActivity());
+      log.error("Retrying an activity for the connection " + connectionId, e);
+      workflowState.setStuck(false);
+      workflowState.setRetryFailedActivity(false);
+      runActivity(consumer, input);
     }
   }
 
