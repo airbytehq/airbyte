@@ -1,10 +1,10 @@
-# Configuration for {{ definition_metadata.image }}
-# Documentation about this connector can be found at {{ definition_metadata.documentation_url }}
-definition_name: {{ definition_metadata.name}}
-definition_type: {{ definition_metadata.type}}
-definition_id: {{ definition_metadata.id }}
-definition_image: {{ definition_metadata.image }}
-definition_version: {{ definition_metadata.version }}
+# Configuration for {{ definition.docker_repository }}
+# Documentation about this connector can be found at {{ definition.documentation_url }}
+resource_name: {{ resource_name}}
+definition_type: {{ definition.type}}
+definition_id: {{ definition.id }}
+definition_image: {{ definition.docker_repository }}
+definition_version: {{ definition.docker_image_tag }}
 
 {%- macro render_field(field, is_commented) %}
 {%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default_value %} {{ field.default_value | tojson() }}{% endif %} # {{ field.comment }}

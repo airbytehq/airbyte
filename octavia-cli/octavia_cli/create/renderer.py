@@ -5,36 +5,112 @@ import os
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from .schema_utils import parse_properties
-
 JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
 
-class SpecRenderer:
-    TEMPLATE = JINJA_ENV.get_template("sources_destinations.yaml.j2")
+class FieldToRender:
+    def __init__(self, name, required, field_metadata):
+        self.name = name
+        self.required = required
+        self.field_metadata = field_metadata
+        self.one_of_values = self.get_one_of_values()
+        self.object_properties = get_object_properties(field_metadata)
+        self.array_items = self.get_array_items()
+        self.comment = self.build_comment(
+            [
+                self.get_secret_comment,
+                self.get_required_comment,
+                self.get_type_comment,
+                self.get_description_comment,
+                self.get_example_comment,
+            ]
+        )
 
-    def __init__(
-        self,
-        definition_name,
-        definition_type,
-        definition_id,
-        definition_image,
-        definition_version,
-        definition_documentation_url,
-        definition_schema,
-    ) -> None:
-        self.definition_name = definition_name
-        self.definition_type = definition_type
+    def __getattr__(self, name: str):
+        """Map field_metadata keys to attributes of Field"""
+        if name in self.field_metadata:
+            return self.field_metadata.get(name)
 
-        self.definition_metadata = {
-            "name": definition_name,
-            "type": definition_type,
-            "id": definition_id,
-            "image": definition_image,
-            "version": definition_version,
-            "documentation_url": definition_documentation_url,
-        }
-        self.definition_schema = definition_schema
+    @property
+    def is_array_of_objects(self):
+        if self.type == "array" and self.items:
+            if self.items["type"] == "object":
+                return True
+        return False
+
+    def get_one_of_values(self):
+        if not self.oneOf:
+            return []
+        one_of_values = []
+        for one_of_value in self.oneOf:
+            properties = get_object_properties(one_of_value)
+            one_of_values.append(properties)
+        return one_of_values
+
+    def get_array_items(self):
+        if self.is_array_of_objects:
+            required_fields = self.items.get("required", [])
+            return parse_properties(required_fields, self.items["properties"])
+        return []
+
+    def get_required_comment(self):
+        return "REQUIRED" if self.required else "OPTIONAL"
+
+    def get_type_comment(self):
+        return str(self.type) if self.type else None
+
+    def get_secret_comment(self):
+        return "🤫" if self.airbyte_secret else None
+
+    def get_description_comment(self):
+        return self.description if self.description else None
+
+    def get_example_comment(self):
+        example_comment = None
+        if self.examples:
+            if isinstance(self.examples, list):
+                if len(self.examples) > 1:
+                    example_comment = f"Examples: {', '.join([str(example) for example in self.examples])}"
+                else:
+                    example_comment = f"Example: {self.examples[0]}"
+            else:
+                example_comment = f"Example: {self.examples}"
+        return example_comment
+
+    @property
+    def default_value(self):
+        """[summary]
+        Default values are the only YAML values wrote to the yaml file.
+        We need to make sure they are safe for valid yaml parsing.
+        Returns:
+            [type]: [description]
+        """
+        if self.const:
+            return self.const
+        return self.default
+
+    @staticmethod
+    def build_comment(comment_functions):
+        return " | ".join(filter(None, [comment_fn() for comment_fn in comment_functions])).replace("\n", "")
+
+
+def parse_properties(required_fields, properties):
+    return [FieldToRender(f_name, f_name in required_fields, f_metadata) for f_name, f_metadata in properties.items()]
+
+
+def get_object_properties(field_metadata):
+    if field_metadata.get("properties"):
+        required_fields = field_metadata.get("required", [])
+        return parse_properties(required_fields, field_metadata["properties"])
+    return []
+
+
+class ConnectionSpecificationRenderer:
+    TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
+
+    def __init__(self, resource_name, definition) -> None:
+        self.resource_name = resource_name
+        self.definition = definition
 
     def parse_schema(self, schema):
         if schema.get("oneOf"):
@@ -48,14 +124,15 @@ class SpecRenderer:
             return [parse_properties(required_fields, schema["properties"])]
 
     def get_output_path(self, project_path):
-        return os.path.join(project_path, f"{self.definition_type}s", f"{self.definition_name}.yaml")
+        return os.path.join(project_path, f"{self.definition.type}s", f"{self.resource_name}.yaml")
 
     def write_yaml(self, project_path):
-
         output_path = self.get_output_path(project_path)
-        parsed_schema = self.parse_schema(self.definition_schema)
+        parsed_schema = self.parse_schema(self.definition.specification.connection_specification)
 
-        rendered = self.TEMPLATE.render({"definition_metadata": self.definition_metadata, "configuration_fields": parsed_schema})
+        rendered = self.TEMPLATE.render(
+            {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
+        )
 
         with open(output_path, "w") as f:
             f.write(rendered)
