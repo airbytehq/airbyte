@@ -3,6 +3,8 @@
 #
 
 import csv
+import ctypes
+import io
 import math
 import time
 from abc import ABC
@@ -18,6 +20,10 @@ from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
+
+# https://stackoverflow.com/a/54517228
+CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
+csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -133,6 +139,8 @@ class BulkSalesforceStream(SalesforceStream):
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json)
+        if response.status_code not in [200, 204]:
+            self.logger.error(f"error body: {response.text}")
         response.raise_for_status()
         return response
 
@@ -141,6 +149,7 @@ class BulkSalesforceStream(SalesforceStream):
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+
         try:
             response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
@@ -191,6 +200,10 @@ class BulkSalesforceStream(SalesforceStream):
             job_info = self._send_http_request("GET", url=url).json()
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
+                if job_status != "JobComplete":
+                    # this is only job metadata without payload
+                    self.logger.error(f"JobStatus: {job_status}, full job response: {job_info}")
+
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
@@ -237,12 +250,10 @@ class BulkSalesforceStream(SalesforceStream):
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
         decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
-        csv_data = csv.reader(decoded_content.splitlines(), delimiter=",")
-        for i, row in enumerate(csv_data):
-            if i == 0:
-                head = row
-            else:
-                yield i, dict(zip(head, row))
+        fp = io.StringIO(decoded_content, newline="")
+        csv_data = csv.DictReader(fp, dialect="unix")
+        for n, row in enumerate(csv_data, 1):
+            yield n, row
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}

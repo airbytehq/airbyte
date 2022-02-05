@@ -38,6 +38,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Dixa](sources/dixa.md) | Alpha |
 | [Drift](sources/drift.md) | Beta |
 | [Drupal](sources/drupal.md) | Beta |
+| [End-to-End Testing](sources/e2e-test.md) | Alpha |
 | [Exchange Rates API](sources/exchangeratesapi.md) | Certified |
 | [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
@@ -58,6 +59,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
+| [Jenkins](sources/jenkins.md) | Alpha |
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
@@ -89,6 +91,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Outreach](./sources/outreach.md)| Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
+| [PersistIq](sources/persistiq.md) | Alpha |
 | [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
@@ -147,6 +150,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [ClickHouse](destinations/clickhouse.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
 | [Elasticsearch](destinations/elasticsearch.md) | Alpha |
+| [End-to-End Testing](destinations/e2e-test.md) | Beta |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
 | [Google Firestore](destinations/firestore.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
@@ -173,3 +177,4 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Scylla](destinations/scylla.md) | Alpha |
 | [Redis](destinations/redis.md) | Alpha |
 | [Kinesis](destinations/kinesis.md) | Alpha |
+| [Streamr](destinations/streamr.md) | Alpha |

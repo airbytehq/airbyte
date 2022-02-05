@@ -209,10 +209,17 @@ public class ConnectionsHandler {
 
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    return updateConnection(connectionUpdate, false);
+  }
+
+  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate, boolean isAReset)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     if (featureFlags.usesNewScheduler()) {
       connectionHelper.updateConnection(connectionUpdate);
 
-      temporalWorkerRunFactory.update(connectionUpdate);
+      if (!isAReset) {
+        temporalWorkerRunFactory.update(connectionUpdate);
+      }
 
       return connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
     }

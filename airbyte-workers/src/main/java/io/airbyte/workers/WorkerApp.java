@@ -269,8 +269,7 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork(),
-          false);
+          configs.getDockerNetwork());
     }
   }
 
@@ -302,7 +301,7 @@ public class WorkerApp {
     }
   }
 
-  public static void main(final String[] args) throws IOException, InterruptedException {
+  private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
@@ -323,6 +322,8 @@ public class WorkerApp {
     final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+
+    TemporalUtils.configureTemporalNamespace(temporalService);
 
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -406,6 +407,15 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker).start();
+  }
+
+  public static void main(final String[] args) {
+    try {
+      launchWorkerApp();
+    } catch (Throwable t) {
+      LOGGER.error("Worker app failed", t);
+      System.exit(1);
+    }
   }
 
 }

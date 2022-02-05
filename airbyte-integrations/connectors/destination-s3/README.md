@@ -23,5 +23,5 @@ As a community contributor, you will need access to AWS to run the integration t
 - Modify `spec.json` to specify the configuration of this new format.
 - Update `S3FormatConfigs` to be able to construct a config for this new format.
 - Create a new package under `io.airbyte.integrations.destination.s3`.
-- Implement a new `S3Writer`. The implementation can extend `BaseS3Writer`.
+- Implement a new `DestinationFileWriter`. The implementation can extend `BaseS3Writer`.
 - Write an acceptance test for the new output format. The test can extend `S3DestinationAcceptanceTest`.
