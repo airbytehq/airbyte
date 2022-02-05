@@ -108,8 +108,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
     final long startTime = System.currentTimeMillis();
-    final AtomicReference<FailureReason> sourceFailureRef = new AtomicReference<>();
-    final AtomicReference<FailureReason> destinationFailureRef = new AtomicReference<>();
+    final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
+    final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
 
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
@@ -132,7 +132,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
-                destinationFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+                if (ex.getCause() instanceof DestinationException) {
+                  destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+                } else {
+                  destinationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+                }
               }
             });
 
@@ -140,7 +144,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
-                sourceFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
+                if (ex.getCause() instanceof SourceException) {
+                  replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
+                } else if (ex.getCause() instanceof DestinationException) {
+                  replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+                } else {
+                  replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+                }
               }
             });
 
@@ -220,8 +230,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withOutputCatalog(destinationConfig.getCatalog());
 
       // only .setFailures() if a failure occurred
-      final FailureReason sourceFailure = sourceFailureRef.get();
-      final FailureReason destinationFailure = destinationFailureRef.get();
+      final FailureReason sourceFailure = replicationRunnableFailureRef.get();
+      final FailureReason destinationFailure = destinationRunnableFailureRef.get();
       final List<FailureReason> failures = new ArrayList<>();
       if (sourceFailure != null) {
         failures.add(sourceFailure);
@@ -269,12 +279,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       var recordsRead = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional = source.attemptRead();
+          final Optional<AirbyteMessage> messageOptional;
+          try {
+            messageOptional = source.attemptRead();
+          } catch (final Exception e) {
+            throw new SourceException("Source process read attempt failed", e);
+          }
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
             messageTracker.acceptFromSource(message);
-            destination.accept(message);
+            try {
+              destination.accept(message);
+            } catch (final Exception e) {
+              throw new DestinationException("Destination process message delivery failed", e);
+            }
             recordsRead += 1;
 
             if (recordsRead % 1000 == 0) {
@@ -282,10 +301,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           }
         }
-        destination.notifyEndOfStream();
-        if (!cancelled.get() && source.getExitValue() != 0) {
-          throw new RuntimeException("Source process exited with non-zero exit code " + source.getExitValue());
+        try {
+          destination.notifyEndOfStream();
+        } catch (final Exception e) {
+          throw new DestinationException("Destination process end of stream notification failed", e);
         }
+        if (!cancelled.get() && source.getExitValue() != 0) {
+          throw new SourceException("Source process exited with non-zero exit code " + source.getExitValue());
+        }
+      } catch (final SourceException | DestinationException e) {
+        // Surface source and destination exceptions to caller so they can be classified properly
+        throw e;
       } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
@@ -307,15 +333,23 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Destination output thread started.");
       try {
         while (!cancelled.get() && !destination.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
+          final Optional<AirbyteMessage> messageOptional;
+          try {
+            messageOptional = destination.attemptRead();
+          } catch (final Exception e) {
+            throw new DestinationException("Destination process read attempt failed", e);
+          }
           if (messageOptional.isPresent()) {
             LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
             messageTracker.acceptFromDestination(messageOptional.get());
           }
         }
         if (!cancelled.get() && destination.getExitValue() != 0) {
-          throw new RuntimeException("Destination process exited with non-zero exit code " + destination.getExitValue());
+          throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
         }
+      } catch (final DestinationException e) {
+        // Surface DestinationException to the caller so that it can be classified properly
+        throw e;
       } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the destination's closure and can attempt one
@@ -353,6 +387,28 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Error cancelling source: ", e);
     }
 
+  }
+
+  private static class SourceException extends RuntimeException {
+
+    SourceException(final String message) {
+      super(message);
+    }
+
+    SourceException(final String message, final Throwable cause) {
+      super(message, cause);
+    }
+  }
+
+  private static class DestinationException extends RuntimeException {
+
+    DestinationException(final String message) {
+      super(message);
+    }
+
+    DestinationException(final String message, final Throwable cause) {
+      super(message, cause);
+    }
   }
 
 }
