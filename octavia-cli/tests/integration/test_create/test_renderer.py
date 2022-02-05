@@ -64,6 +64,6 @@ def test_expected_output(definition_name, spec_type, input_spec_path, expected_y
         input_spec["spec"]["documentationUrl"],
         input_spec["spec"]["connectionSpecification"],
     )
-    output_path = renderer.write_yaml("/users/augustin/Desktop")
+    output_path = renderer.write_yaml(octavia_project_directory)
     expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
     assert filecmp.cmp(output_path, expect_output_path)
