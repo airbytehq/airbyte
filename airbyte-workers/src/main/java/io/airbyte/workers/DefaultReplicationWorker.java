@@ -309,16 +309,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!cancelled.get() && source.getExitValue() != 0) {
           throw new SourceException("Source process exited with non-zero exit code " + source.getExitValue());
         }
-      } catch (final SourceException | DestinationException e) {
-        // Surface source and destination exceptions to caller so they can be classified properly
-        throw e;
       } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
           // final read after the source is closed before it's terminated.
           // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
           // was not cancelled.
-          throw new RuntimeException(e);
+
+          if (e instanceof SourceException || e instanceof DestinationException) {
+            // Surface Source and Destination exceptions directly so that they can be classified properly by the worker
+            throw e;
+          } else{
+            throw new RuntimeException(e);
+          }
         }
       }
     };
@@ -347,16 +350,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!cancelled.get() && destination.getExitValue() != 0) {
           throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
         }
-      } catch (final DestinationException e) {
-        // Surface DestinationException to the caller so that it can be classified properly
-        throw e;
       } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the destination's closure and can attempt one
           // final read after the destination is closed before it's terminated.
           // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
           // was not cancelled.
-          throw new RuntimeException(e);
+
+          if (e instanceof DestinationException) {
+            // Surface Destination exceptions directly so that they can be classified properly by the worker
+            throw e;
+          } else{
+            throw new RuntimeException(e);
+          }
         }
       }
     };
