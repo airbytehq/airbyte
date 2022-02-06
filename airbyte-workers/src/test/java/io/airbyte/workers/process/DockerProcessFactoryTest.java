@@ -106,9 +106,11 @@ class DockerProcessFactoryTest {
             null,
             "host");
 
-    // for some reason, on our CI the first processFactory.create call is failing but all runs after it
-    // succeed
-    // this is why this is added and why the overall test case is repeated
+    // For some reason, on our CI the first processFactory.create call is failing but all runs after it
+    // succeed. This is why this is added and why the overall test case is repeated.
+    // The failure case without this workaround is:
+    // Process failed with stdout: and stderr: WARNING: Error loading config file:
+    // .dockercfg: $HOME is not defined ==> expected: <0> but was: <143>
     processFactory.create(
         "job_id2",
         0,
