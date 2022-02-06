@@ -2,7 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import abc
+from typing import Any, Callable, Union
 
+import airbyte_api_client
 import click
 from airbyte_api_client.api import (
     destination_definition_api,
@@ -46,19 +48,19 @@ class BaseDefinition(abc.ABC):
         pass
 
     @property
-    def _get_fn(self):
+    def _get_fn(self) -> Callable:
         return getattr(self.api, self.get_function_name)
 
     @property
     def _get_fn_kwargs(self) -> dict:
         return {}
 
-    def __init__(self, api_client, id: str) -> None:
+    def __init__(self, api_client: airbyte_api_client.ApiClient, id: str) -> None:
         self.id = id
         self.api_instance = self.api(api_client)
         self._api_data = self._read()
 
-    def _read(self):
+    def _read(self) -> dict:
         try:
             return self._get_fn(self.api_instance, **self._get_fn_kwargs, **self.COMMON_GET_FUNCTION_KWARGS)
         except ApiException as e:
@@ -66,7 +68,18 @@ class BaseDefinition(abc.ABC):
                 raise DefinitionNotFoundError(f"Definition {self.id} does not exists on your Airbyte instance.")
             raise e
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
+        """Map attribute of the API response the BaseDefinition object.
+
+        Args:
+            name (str): Attribute name
+
+        Raises:
+            AttributeError: Raised if the attributed was not found in the API response payload.
+
+        Returns:
+            [Any]: Attribute value
+        """
         if name in self._api_data:
             return self._api_data.get(name)
         raise AttributeError(f"{self.__class__.__name__}.{name} is invalid.")
@@ -78,7 +91,7 @@ class SourceDefinition(BaseDefinition):
     get_function_name = "get_source_definition"
 
     @property
-    def _get_fn_kwargs(self):
+    def _get_fn_kwargs(self) -> dict:
         return {"source_definition_id_request_body": SourceDefinitionIdRequestBody(self.id)}
 
 
@@ -93,7 +106,7 @@ class DestinationDefinition(BaseDefinition):
     get_function_name = "get_destination_definition"
 
     @property
-    def _get_fn_kwargs(self):
+    def _get_fn_kwargs(self) -> dict:
         return {"destination_definition_id_request_body": DestinationDefinitionIdRequestBody(self.id)}
 
 
@@ -102,7 +115,9 @@ class DestinationDefinitionSpecification(DestinationDefinition):
     get_function_name = "get_destination_definition_specification"
 
 
-def factory(definition_type, api_client, definition_id):
+def factory(
+    definition_type: str, api_client: airbyte_api_client.ApiClient, definition_id: str
+) -> Union[SourceDefinition, DestinationDefinition]:
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)
         specification = SourceDefinitionSpecification(api_client, definition_id)

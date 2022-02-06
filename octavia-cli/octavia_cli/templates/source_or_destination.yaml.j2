@@ -7,7 +7,7 @@ definition_image: {{ definition.docker_repository }}
 definition_version: {{ definition.docker_image_tag }}
 
 {%- macro render_field(field, is_commented) %}
-{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default_value %} {{ field.default_value | tojson() }}{% endif %} # {{ field.comment }}
+{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default %} {{ field.default | tojson() }}{% endif %} # {{ field.comment }}
 {%- endmacro %}
 
 {%- macro render_sub_fields(sub_fields, is_commented) %}
@@ -52,7 +52,7 @@ definition_version: {{ definition.docker_image_tag }}
   {{- render_object_field(f)|indent(2, False) }}
   {%- elif f.oneOf %}
   {{- render_one_of(f)|indent(2, False) }}
-  {%- elif f.is_array_of_objects %}
+  {%- elif f._is_array_of_objects %}
   {{- render_array_of_objects(f)|indent(2, False) }}
   {%- else %}
   {{ render_field(f, is_commented=is_commented) }}
