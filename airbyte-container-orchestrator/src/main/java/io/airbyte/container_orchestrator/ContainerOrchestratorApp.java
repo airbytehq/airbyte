@@ -38,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message

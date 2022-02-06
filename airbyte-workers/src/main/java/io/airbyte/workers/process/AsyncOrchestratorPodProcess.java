@@ -6,7 +6,6 @@ package io.airbyte.workers.process;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.storage.DocumentStoreClient;

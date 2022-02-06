@@ -175,8 +175,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
       log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
       runningPods.stream()
-              .parallel()
-              .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
+          .parallel()
+          .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
       log.info("Waiting for deletion...");
       Exceptions.toRuntime(() -> Thread.sleep(1000));
@@ -184,7 +184,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
       runningPods = getNonTerminalPodsWithLabels();
     }
 
-    if(runningPods.isEmpty()) {
+    if (runningPods.isEmpty()) {
       log.info("Successfully deleted all running pods for the connection!");
     } else {
       throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPods).toString());
