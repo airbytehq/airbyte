@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
@@ -109,7 +110,7 @@ class DockerProcessFactoryTest {
             null,
             "host");
 
-    waitForDockerToInitialize();
+    waitForDockerToInitialize(processFactory, jobRoot, workerConfigs);
 
     final Process process = processFactory.create(
         "job_id",
@@ -136,21 +137,34 @@ class DockerProcessFactoryTest {
     assertEquals("ENV_VAR_1=ENV_VALUE_1", out.toString(), String.format("Output did not contain the expected string. stdout: %s", out));
   }
 
-  private void waitForDockerToInitialize() throws IOException, InterruptedException {
+  private void waitForDockerToInitialize(final ProcessFactory processFactory, final Path jobRoot, final WorkerConfigs workerConfigs)
+      throws InterruptedException, WorkerException {
     final var stopwatch = Stopwatch.createStarted();
 
     while (stopwatch.elapsed().compareTo(Duration.ofSeconds(30)) < 0) {
-      Process p = Runtime.getRuntime().exec(new String[] {"docker", "info"});
+      final Process p = processFactory.create(
+          "job_id_" + RandomStringUtils.randomAlphabetic(4),
+          0,
+          jobRoot,
+          "busybox",
+          false,
+          Map.of(),
+          "/bin/sh",
+          workerConfigs.getResourceRequirements(),
+          Map.of(),
+          Map.of(),
+          "-c",
+          "echo ENV_VAR_1=$ENV_VAR_1");
       p.waitFor();
       int exitStatus = p.exitValue();
 
       if (exitStatus == 0) {
-        log.info("Successfully ran docker info command.");
+        log.info("Successfully ran test docker command.");
         return;
       }
     }
 
-    throw new RuntimeException("Failed to run docker info command after timeout.");
+    throw new RuntimeException("Failed to run test docker command after timeout.");
   }
 
 }
