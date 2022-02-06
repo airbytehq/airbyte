@@ -25,6 +25,7 @@ class FieldToRender:
                 self.get_example_comment,
             ]
         )
+        self.default = self.get_default()
 
     def __getattr__(self, name: str):
         """Map field_metadata keys to attributes of Field"""
@@ -57,7 +58,7 @@ class FieldToRender:
         return "REQUIRED" if self.required else "OPTIONAL"
 
     def get_type_comment(self):
-        return str(self.type) if self.type else None
+        return self.type if self.type else None
 
     def get_secret_comment(self):
         return "🤫" if self.airbyte_secret else None
@@ -77,14 +78,7 @@ class FieldToRender:
                 example_comment = f"Example: {self.examples}"
         return example_comment
 
-    @property
-    def default_value(self):
-        """[summary]
-        Default values are the only YAML values wrote to the yaml file.
-        We need to make sure they are safe for valid yaml parsing.
-        Returns:
-            [type]: [description]
-        """
+    def get_default(self):
         if self.const:
             return self.const
         return self.default
