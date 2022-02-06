@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.sync;
 
 import com.google.common.base.Stopwatch;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
@@ -178,11 +179,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
       log.info("Waiting for deletion...");
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      Exceptions.toRuntime(() -> Thread.sleep(1000));
 
       runningPods = getNonTerminalPodsWithLabels();
     }
