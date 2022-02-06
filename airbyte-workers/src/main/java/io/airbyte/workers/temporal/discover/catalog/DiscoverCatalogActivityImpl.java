@@ -13,7 +13,6 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
@@ -35,7 +34,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final JobPersistence jobPersistence;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
   private final String airbyteVersion;
 
   public DiscoverCatalogActivityImpl(final WorkerConfigs workerConfigs,
@@ -44,7 +45,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-                                     final JobPersistence jobPersistence,
+                                     final String databaseUser,
+                                     final String databasePassword,
+                                     final String databaseUrl,
                                      final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -52,7 +55,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
     this.airbyteVersion = airbyteVersion;
 
   }
@@ -75,9 +80,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(),
-        jobPersistence,
-        airbyteVersion);
+        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     return temporalAttemptExecution.get();
   }

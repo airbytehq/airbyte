@@ -18,7 +18,6 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
@@ -36,10 +35,8 @@ import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +54,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
 
-  private final JobPersistence jobPersistence;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
   private final String airbyteVersion;
 
   public ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
@@ -67,10 +66,13 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final JobPersistence jobPersistence,
+                                 final String databaseUser,
+                                 final String databasePassword,
+                                 final String databaseUrl,
                                  final String airbyteVersion) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), jobPersistence, airbyteVersion);
+        new AirbyteConfigValidator(), databaseUser,
+        databasePassword, databaseUrl, airbyteVersion);
   }
 
   @VisibleForTesting
@@ -82,7 +84,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteConfigValidator validator,
-                          final JobPersistence jobPersistence,
+                          final String databaseUser,
+                          final String databasePassword,
+                          final String databaseUrl,
                           final String airbyteVersion) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
@@ -92,7 +96,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.validator = validator;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -118,11 +124,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
       if (containerOrchestratorConfig.isPresent()) {
-        workerFactory = getContainerLauncherWorkerFactory(
-            containerOrchestratorConfig.get(),
-            sourceLauncherConfig,
-            destinationLauncherConfig,
-            jobRunConfig);
+        workerFactory = getContainerLauncherWorkerFactory(containerOrchestratorConfig.get(), sourceLauncherConfig, destinationLauncherConfig,
+            jobRunConfig, syncInput);
       } else {
         workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
       }
@@ -135,7 +138,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           workerFactory,
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler(),
-          jobPersistence,
+          databaseUser,
+          databasePassword,
+          databaseUrl,
           airbyteVersion);
 
       final ReplicationOutput attemptOutput = temporalAttempt.get();
@@ -207,14 +212,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                     final JobRunConfig jobRunConfig)
-      throws IOException {
-
-    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
-    final var connectionId = UUID.fromString(jobScope);
-
+                                                                                                                     final JobRunConfig jobRunConfig,
+                                                                                                                     final StandardSyncInput syncInput) {
     return () -> new ReplicationLauncherWorker(
-        connectionId,
         containerOrchestratorConfig,
         sourceLauncherConfig,
         destinationLauncherConfig,

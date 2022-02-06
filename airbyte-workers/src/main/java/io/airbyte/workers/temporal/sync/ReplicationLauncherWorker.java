@@ -12,7 +12,6 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Launches a container-orchestrator container/pod to manage the message passing for the replication
@@ -26,7 +25,7 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
   public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
   public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
 
-  public ReplicationLauncherWorker(final UUID connectionId,
+  public ReplicationLauncherWorker(
                                    final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
@@ -34,7 +33,6 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
                                    final String airbyteVersion,
                                    final WorkerConfigs workerConfigs) {
     super(
-        connectionId,
         REPLICATION,
         POD_NAME_PREFIX,
         jobRunConfig,

@@ -309,7 +309,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         while (!cancelled.get() && !destination.isFinished()) {
           final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
           if (messageOptional.isPresent()) {
-            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
+            LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
             messageTracker.acceptFromDestination(messageOptional.get());
           }
         }

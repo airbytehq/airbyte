@@ -11,7 +11,6 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
@@ -141,7 +140,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final var wasDestroyed = kubernetesClient.pods()
         .inNamespace(getInfo().namespace())
         .withName(getInfo().name())
-        .withPropagationPolicy(DeletionPropagation.FOREGROUND)
         .delete();
 
     if (wasDestroyed) {
@@ -245,7 +243,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
 
     final var mainContainer = new ContainerBuilder()
-        .withName(KubePodProcess.MAIN_CONTAINER_NAME)
+        .withName("main")
         .withImage("airbyte/container-orchestrator:" + airbyteVersion)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withPorts(containerPorts)
