@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -21,13 +22,15 @@ import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.RepeatedTest;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
+@Slf4j
 class DockerProcessFactoryTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
@@ -90,8 +93,8 @@ class DockerProcessFactoryTest {
   /**
    * Tests that the env var map passed in is accessible within the process.
    */
-  @RepeatedTest(5)
-  public void testEnvMapSet() throws IOException, WorkerException {
+  @Test
+  public void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
@@ -106,24 +109,7 @@ class DockerProcessFactoryTest {
             null,
             "host");
 
-    // For some reason, on our CI the first processFactory.create call is failing but all runs after it
-    // succeed. This is why this is added and why the overall test case is repeated.
-    // The failure case without this workaround is:
-    // Process failed with stdout: and stderr: WARNING: Error loading config file:
-    // .dockercfg: $HOME is not defined ==> expected: <0> but was: <143>
-    processFactory.create(
-        "job_id2",
-        0,
-        jobRoot,
-        "busybox",
-        false,
-        Map.of(),
-        "/bin/sh",
-        workerConfigs.getResourceRequirements(),
-        Map.of(),
-        Map.of(),
-        "-c",
-        "echo ENV_VAR_1=$ENV_VAR_1");
+    waitForDockerToInitialize();
 
     final Process process = processFactory.create(
         "job_id",
@@ -148,6 +134,23 @@ class DockerProcessFactoryTest {
 
     assertEquals(0, process.exitValue(), String.format("Process failed with stdout: %s and stderr: %s", out, err));
     assertEquals("ENV_VAR_1=ENV_VALUE_1", out.toString(), String.format("Output did not contain the expected string. stdout: %s", out));
+  }
+
+  private void waitForDockerToInitialize() throws IOException, InterruptedException {
+    final var stopwatch = Stopwatch.createStarted();
+
+    while (stopwatch.elapsed().compareTo(Duration.ofSeconds(30)) < 0) {
+      Process p = Runtime.getRuntime().exec(new String[] {"docker", "info"});
+      p.waitFor();
+      int exitStatus = p.exitValue();
+
+      if (exitStatus == 0) {
+        log.info("Successfully ran docker info command.");
+        return;
+      }
+    }
+
+    throw new RuntimeException("Failed to run docker info command after timeout.");
   }
 
 }
