@@ -97,4 +97,8 @@ def test_not_implemented_commands(command):
 
 
 def test_available_commands():
-    assert entrypoint.AVAILABLE_COMMANDS == [entrypoint.list_commands._list, entrypoint.init_commands.init]
+    assert entrypoint.AVAILABLE_COMMANDS == [
+        entrypoint.list_commands._list,
+        entrypoint.init_commands.init,
+        entrypoint.create_commands.create,
+    ]
