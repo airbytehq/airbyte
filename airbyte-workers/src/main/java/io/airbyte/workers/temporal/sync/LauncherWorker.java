@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import com.google.common.base.Stopwatch;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
@@ -20,10 +21,12 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
   private static final String CONNECTION_ID_LABEL_KEY = "connection_id";
+  private static final Duration MAX_DELETION_TIMEOUT = Duration.ofSeconds(45);
 
   private final UUID connectionId;
   private final String application;
@@ -123,6 +127,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         // this waitFor can resume if the activity is re-run
         process.waitFor();
 
+        if (cancelled.get()) {
+          throw new CancellationException();
+        }
+
         if (process.exitValue() != 0) {
           throw new WorkerException("Non-zero exit code!");
         }
@@ -159,23 +167,27 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final var client = containerOrchestratorConfig.kubernetesClient();
 
     // delete all pods with the connection id label
-    final var runningPods = getNonTerminalPodsWithLabels();
+    List<Pod> runningPods = getNonTerminalPodsWithLabels();
+    final Stopwatch stopwatch = Stopwatch.createStarted();
 
-    if (!runningPods.isEmpty()) {
+    while (!runningPods.isEmpty() && stopwatch.elapsed().compareTo(MAX_DELETION_TIMEOUT) < 0) {
       log.warn("There are currently running pods for the connection: " + getPodNames(runningPods).toString());
 
-      runningPods.stream().forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
+      log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
+      runningPods.stream()
+              .parallel()
+              .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
-      // wait to make sure any currently terminating pods have some time to stop
-      Exceptions.toRuntime(() -> Thread.sleep(7000));
+      log.info("Waiting for deletion...");
+      Exceptions.toRuntime(() -> Thread.sleep(1000));
 
-      final var runningPodsAfterDeletion = getNonTerminalPodsWithLabels();
+      runningPods = getNonTerminalPodsWithLabels();
+    }
 
-      if (!runningPodsAfterDeletion.isEmpty()) {
-        throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPodsAfterDeletion).toString());
-      } else {
-        log.info("Successfully deleted all running pods for the connection!");
-      }
+    if(runningPods.isEmpty()) {
+      log.info("Successfully deleted all running pods for the connection!");
+    } else {
+      throw new RuntimeException("Unable to delete pods: " + getPodNames(runningPods).toString());
     }
   }
 
@@ -203,13 +215,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     }
 
     log.debug("Closing sync runner process");
-    process.destroy();
+    killRunningPodsForConnection();
 
     if (process.hasExited()) {
       log.info("Successfully cancelled process.");
     } else {
       // try again
-      process.destroy();
+      killRunningPodsForConnection();
 
       if (process.hasExited()) {
         log.info("Successfully cancelled process.");

@@ -37,6 +37,8 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -146,6 +148,12 @@ public class ContainerOrchestratorApp {
 
   public static void main(final String[] args) {
     try {
+      // otherwise the pod hangs on closing
+      Signal.handle(new Signal("TERM"), sig -> {
+        log.error("Received termination signal, failing...");
+        System.exit(1);
+      });
+
       // wait for config files to be copied
       final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
 
@@ -163,6 +171,7 @@ public class ContainerOrchestratorApp {
       app.run();
     } catch (Throwable t) {
       log.info("Orchestrator failed...", t);
+      // otherwise the pod hangs on closing
       System.exit(1);
     }
   }
