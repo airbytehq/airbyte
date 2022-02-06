@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
@@ -89,7 +91,7 @@ class DockerProcessFactoryTest {
   /**
    * Tests that the env var map passed in is accessible within the process.
    */
-  @Test
+  @RepeatedTest(20)
   public void testEnvMapSet() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
