@@ -18,3 +18,4 @@ export * from "./ContentCard";
 export * from "./ImageBlock";
 export * from "./LabeledRadioButton";
 export * from "./Modal";
+export * from "./ProgressBar";
