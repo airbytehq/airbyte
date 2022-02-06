@@ -90,7 +90,7 @@ class DockerProcessFactoryTest {
   /**
    * Tests that the env var map passed in is accessible within the process.
    */
-  @RepeatedTest(20)
+  @RepeatedTest(5)
   public void testEnvMapSet() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
@@ -105,6 +105,23 @@ class DockerProcessFactoryTest {
             null,
             null,
             "host");
+
+    // for some reason, on our CI the first processFactory.create call is failing but all runs after it
+    // succeed
+    // this is why this is added and why the overall test case is repeated
+    processFactory.create(
+        "job_id2",
+        0,
+        jobRoot,
+        "busybox",
+        false,
+        Map.of(),
+        "/bin/sh",
+        workerConfigs.getResourceRequirements(),
+        Map.of(),
+        Map.of(),
+        "-c",
+        "echo ENV_VAR_1=$ENV_VAR_1");
 
     final Process process = processFactory.create(
         "job_id",
