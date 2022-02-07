@@ -10,10 +10,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.*;
+import io.airbyte.api.model.AttemptFailureOrigin;
+import io.airbyte.api.model.AttemptFailureReason;
+import io.airbyte.api.model.AttemptFailureSummary;
+import io.airbyte.api.model.AttemptFailureType;
+import io.airbyte.api.model.AttemptInfoRead;
+import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStats;
+import io.airbyte.api.model.AttemptStreamStats;
+import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobDebugRead;
+import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.JobRead;
+import io.airbyte.api.model.JobWithAttemptsRead;
+import io.airbyte.api.model.LogRead;
+import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
@@ -53,6 +71,10 @@ class JobConverterTest {
   private static final long RECORDS_COMMITTED = 10L;
   private static final long STATE_MESSAGES_EMITTED = 2L;
   private static final String STREAM_NAME = "stream1";
+  private static final String FAILURE_EXTERNAL_MESSAGE = "something went wrong";
+  private static final long FAILURE_TIMESTAMP = System.currentTimeMillis();
+  private static final String FAILURE_STACKTRACE = "stacktrace";
+  private static final boolean PARTIAL_SUCCESS = false;
 
   private static final JobOutput JOB_OUTPUT = new JobOutput()
       .withOutputType(OutputType.SYNC)
@@ -105,7 +127,15 @@ class JobConverterTest {
                           .recordsCommitted(RECORDS_COMMITTED))))
                   .updatedAt(CREATED_AT)
                   .createdAt(CREATED_AT)
-                  .endedAt(CREATED_AT))
+                  .endedAt(CREATED_AT)
+                  .failureSummary(new AttemptFailureSummary()
+                      .failures(Lists.newArrayList(new AttemptFailureReason()
+                          .failureOrigin(AttemptFailureOrigin.SOURCE)
+                          .failureType(AttemptFailureType.SYSTEM_ERROR)
+                          .externalMessage(FAILURE_EXTERNAL_MESSAGE)
+                          .stacktrace(FAILURE_STACKTRACE)
+                          .timestamp(FAILURE_TIMESTAMP)))
+                      .partialSuccess(PARTIAL_SUCCESS)))
               .logs(new LogRead().logLines(new ArrayList<>()))));
 
   private static final String version = "0.33.4";
@@ -128,6 +158,15 @@ class JobConverterTest {
       .job(JOB_INFO.getJob())
       .attempts(JOB_INFO.getAttempts().stream().map(AttemptInfoRead::getAttempt).collect(Collectors.toList()));
 
+  private static final io.airbyte.config.AttemptFailureSummary FAILURE_SUMMARY = new io.airbyte.config.AttemptFailureSummary()
+      .withFailures(Lists.newArrayList(new FailureReason()
+          .withFailureOrigin(FailureOrigin.SOURCE)
+          .withFailureType(FailureType.SYSTEM_ERROR)
+          .withExternalMessage(FAILURE_EXTERNAL_MESSAGE)
+          .withStacktrace(FAILURE_STACKTRACE)
+          .withTimestamp(FAILURE_TIMESTAMP)))
+      .withPartialSuccess(PARTIAL_SUCCESS);
+
   @BeforeEach
   public void setUp() {
     jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY);
@@ -148,6 +187,7 @@ class JobConverterTest {
     when(attempt.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
     when(attempt.getEndedAtInSecond()).thenReturn(Optional.of(CREATED_AT));
+    when(attempt.getFailureSummary()).thenReturn(Optional.of(FAILURE_SUMMARY));
 
   }
 

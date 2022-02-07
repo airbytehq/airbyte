@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/recharge",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Recharge Spec",
@@ -9,13 +9,15 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "description": "The date from which you'd like to replicate data for Recharge API, in the format YYYY-MM-DDT00:00:00Z.",
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for Recharge API, in the format YYYY-MM-DDT00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2021-05-14T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
       "access_token": {
         "type": "string",
-        "description": "The value of the Access Token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/recharge\">docs</a> for more information",
+        "title": "Access Token",
+        "description": "The value of the Access Token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/recharge\">docs</a> for more information.",
         "airbyte_secret": true
       }
     }

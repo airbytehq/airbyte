@@ -252,7 +252,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -314,7 +314,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.37
+  dockerImageTag: 0.1.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -606,7 +606,7 @@
 - name: Recharge
   sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
   icon: recharge.svg
   sourceType: api
@@ -648,7 +648,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -690,7 +690,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
