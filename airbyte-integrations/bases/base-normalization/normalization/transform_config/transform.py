@@ -190,7 +190,9 @@ class TransformConfig:
     def transform_snowflake(config: Dict[str, Any]):
         print("transform_snowflake")
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
-        account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
+        account = config["host"].replace("http://", "").replace("https://", "").replace(".aws", "").replace(".snowflakecomputing.com", "")
+        # we automatically add postfix ".aws.snowflakecomputing.com" to config host, so need to add missed ".aws"
+        account = account + ".aws"
         # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         # snowflake coerces most of these values to uppercase, but if dbt has them as a different casing it has trouble finding the resources it needs. thus we coerce them to upper.
         dbt_config = {

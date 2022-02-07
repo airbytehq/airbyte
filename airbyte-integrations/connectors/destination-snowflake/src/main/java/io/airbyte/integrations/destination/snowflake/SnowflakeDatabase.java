@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase.CloseableConnectionSupplier;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -66,11 +67,19 @@ public class SnowflakeDatabase {
     return new DefaultJdbcDatabase(new SnowflakeConnectionSupplier(config));
   }
 
+  private static String getHost(JsonNode config) {
+    String host = config.get("host").asText();
+    return host.endsWith(".aws.snowflakecomputing.com")
+        ? host
+        : host.concat(".aws.snowflakecomputing.com");
+  }
+
   private static final class SnowflakeConnectionSupplier implements CloseableConnectionSupplier {
 
     private final JsonNode config;
 
     public SnowflakeConnectionSupplier(final JsonNode config) {
+      ((ObjectNode)config).put("host", getHost(config));
       this.config = config;
     }
 
