@@ -166,13 +166,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
                         # If range days is 1, no need in retry, because it's the minimum date range
                         self.logger.error("Page token has expired.")
                         raise exception
-                    elif state.get(self.cursor_field) == stream_slice["start_date"]:
+                    elif state.get(self._customer_id, {}).get(self.cursor_field) == stream_slice["start_date"]:
                         # It couldn't read all the records within one day, it will enter an infinite loop,
                         # so raise the error
                         self.logger.error("Page token has expired.")
                         raise exception
                     # Retry reading records from where it crushed
-                    stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
+                    stream_slice["start_date"] = state.get(self._customer_id, {}).get(self.cursor_field, stream_slice["start_date"])
                 else:
                     # raise caught error for other error statuses
                     raise exception
