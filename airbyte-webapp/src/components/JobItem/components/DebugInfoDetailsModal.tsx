@@ -35,7 +35,7 @@ const ButtonWithMargin = styled(Button)`
 `;
 
 const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const getAirbyteVersion = () => {
     return jobDebugInfo.airbyteVersion;
