@@ -162,7 +162,13 @@ class AirbyteSentry:
 
         return if_enabled
 
-    @classmethod
+    # according to issue CDK: typing errors #9500, mypy raises error on this line
+    # 'Argument 1 to "if_enabled" has incompatible type "Callable[[Type[AirbyteSentry], str, Any], Any]"; expected "AirbyteSentry"'
+    # there are a few similar opened issues
+    # https://github.com/python/mypy/issues/12110
+    # https://github.com/python/mypy/issues/11619
+    # it is ignored for now
+    @classmethod  # type: ignore
     @if_enabled
     def set_tag(cls, tag_name: str, value: Any):
         """
@@ -170,7 +176,8 @@ class AirbyteSentry:
         """
         sentry_sdk.set_tag(tag_name, value)
 
-    @classmethod
+    # same ignored as for line 171
+    @classmethod  # type: ignore
     @if_enabled
     def add_breadcrumb(cls, message, data=None):
         """
@@ -178,7 +185,8 @@ class AirbyteSentry:
         """
         sentry_sdk.add_breadcrumb(message=message, data=data)
 
-    @classmethod
+    # same ignored as for line 171
+    @classmethod  # type: ignore
     @if_enabled
     def set_context(cls, name, data):
         # Global context being used by transaction event as well. Since we cant
@@ -187,7 +195,8 @@ class AirbyteSentry:
         cls.replace_value(None, data)
         sentry_sdk.set_context(name, data)
 
-    @classmethod
+    # same ignored as for line 171
+    @classmethod  # type: ignore
     @if_enabled
     def capture_message(cls, message):
         """
@@ -195,7 +204,8 @@ class AirbyteSentry:
         """
         sentry_sdk.capture_message(message)
 
-    @classmethod
+    # same ignored as for line 171
+    @classmethod  # type: ignore
     @if_enabled
     def capture_exception(
         cls,
@@ -208,16 +218,18 @@ class AirbyteSentry:
         """
         sentry_sdk.capture_exception(error, scope=scope, **scope_args)
 
+    # same ignored as for line 171
     @classmethod
-    @if_enabled_else(contextlib.nullcontext())
+    @if_enabled_else(contextlib.nullcontext())  # type: ignore
     def start_transaction(cls, op, name=None):
         """
         Return context manager for starting sentry transaction for performance monitoring.
         """
         return sentry_sdk.start_transaction(op=op, name=f"{cls.source_tag}.{name}")
 
+    # same ignored as for line 171
     @classmethod
-    @if_enabled_else(contextlib.nullcontext())
+    @if_enabled_else(contextlib.nullcontext())  # type: ignore
     def start_transaction_span(cls, op, description=None):
         """
         Return context manager for starting sentry transaction span inside existing sentry transaction.
