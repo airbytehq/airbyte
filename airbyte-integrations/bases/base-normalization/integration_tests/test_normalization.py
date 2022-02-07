@@ -14,7 +14,7 @@ from typing import Any, Dict
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.catalog_processor import CatalogProcessor
+from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 
@@ -285,10 +285,16 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     """
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
-    catalog_processor = CatalogProcessor(os.path.join(test_root_dir, output_dir, "generated"), destination_type)
-    catalog_processor.process(
-        os.path.join("resources", test_resource_name, "data_input", catalog_file), "_airbyte_data", dbt_test_utils.target_schema
-    )
+    transform_catalog = TransformCatalog()
+    transform_catalog.config = {
+        "integration_type": destination_type.value,
+        "schema": dbt_test_utils.target_schema,
+        "catalog": [os.path.join("resources", test_resource_name, "data_input", catalog_file)],
+        "output_path": os.path.join(test_root_dir, output_dir, "generated"),
+        "json_column": "_airbyte_data",
+        "profile_config_dir": test_root_dir,
+    }
+    transform_catalog.process_catalog()
 
 
 def setup_dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
