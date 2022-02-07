@@ -297,7 +297,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    primary_key = None
+    primary_key = ["account_id", "campaign_id", "adset_id", "ad_id"]
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
