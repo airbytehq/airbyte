@@ -10,7 +10,6 @@ import tempfile
 import time
 
 import pytest
-import yaml
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.transform import extract_schema
 from normalization.transform_config.transform import TransformConfig
@@ -401,16 +400,3 @@ class TestTransformConfig:
         TransformConfig.write_ssh_config(tmp_path, original_config_input, transformed_config_input)
         with open(os.path.join(tmp_path, "ssh.json"), "r") as f:
             assert json.load(f) == expected
-
-    def test_update_dbt_project(self, tmp_path):
-        f = tmp_path / TransformConfig.DBT_PROJECT
-
-        f.write_text("{}")
-        dbt_vars = {"var": "value"}
-        TransformConfig.update_dbt_project(tmp_path, dbt_vars)
-        assert yaml.safe_load(f.read_text()) == {"vars": {"var": "value"}}
-
-        f.write_text("vars:\n  var: value\n  redshift_super_type: false\n")
-        dbt_vars = {"redshift_super_type": True, "new_var": 10}
-        TransformConfig.update_dbt_project(tmp_path, dbt_vars)
-        assert yaml.safe_load(f.read_text()) == {"vars": {"new_var": 10, "redshift_super_type": True, "var": "value"}}
