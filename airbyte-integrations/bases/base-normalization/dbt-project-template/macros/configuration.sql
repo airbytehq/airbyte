@@ -3,9 +3,11 @@
         {{ return("") }}
     {%- endif -%}
 
+    {%- set schemaname, _, tablename = var("models_to_source")[this.identifier].partition(".") -%}
+
     {%- call statement("get_column_type", fetch_result=True) -%}
-        set search_path to '$user', public, {{ target.schema }};
-        select type from pg_table_def where tablename = '{{ var("models_to_source")[this.identifier] }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ target.schema }}';
+        set search_path to '$user', public, {{ schemaname }};
+        select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
     {%- endcall -%}
 
     {%- set column_type = load_result("get_column_type")["data"][0][0] -%}
