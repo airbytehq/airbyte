@@ -34,7 +34,7 @@ const AttemptDetails: React.FC<IProps> = ({
   className,
   configType,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
     return (
