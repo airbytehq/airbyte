@@ -58,7 +58,10 @@ def test_incremental_sync(config):
     for record in records:
         if record and record.type == Type.STATE:
             print(record)
-            current_state = record.state.data["ad_group_ad_report"][config["customer_id"]]["segments.date"]
+            temp_state = record.state.data["ad_group_ad_report"]
+            current_state = (
+                temp_state[config["customer_id"]]["segments.date"] if temp_state.get(config["customer_id"]) else temp_state["segments.date"]
+            )
         if record and record.type == Type.RECORD:
             assert record.record.data["segments.date"] >= current_state
 
