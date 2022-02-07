@@ -46,6 +46,7 @@ EXPECTED_CRED = {
     "client_id": "client_id",
     "client_secret": "client_secret",
     "refresh_token": "refresh_token",
+    "use_proto_plus": True,
 }
 
 
@@ -62,9 +63,10 @@ def test_send_request(mocker):
     google_ads_client = GoogleAds(**SAMPLE_CONFIG)
     query = "Query"
     page_size = 1000
-    response = list(google_ads_client.send_request(query))
+    customer_id = SAMPLE_CONFIG["customer_id"].split(",")[0]
+    response = list(google_ads_client.send_request(query, customer_id=customer_id))
 
-    assert response[0].customer_id == SAMPLE_CONFIG["customer_id"].split(",")[0]
+    assert response[0].customer_id == customer_id
     assert response[0].query == query
     assert response[0].page_size == page_size
 

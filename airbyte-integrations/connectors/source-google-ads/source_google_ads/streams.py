@@ -116,7 +116,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer_id in self.google_ads_client.customer_ids:
-            self.customer_id = customer_id
+            self._customer_id = customer_id
             stream_state = stream_state or {}
             if stream_state.get(customer_id):
                 start_date = stream_state[customer_id].get(self.cursor_field) or self._start_date
@@ -185,17 +185,17 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
 
         if current_stream_state.get(self.cursor_field):
             stream_state = current_stream_state.pop(self.cursor_field)
-        elif current_stream_state.get(self.customer_id) and current_stream_state[self.customer_id].get(self.cursor_field):
-            stream_state = current_stream_state[self.customer_id][self.cursor_field]
+        elif current_stream_state.get(self._customer_id) and current_stream_state[self._customer_id].get(self.cursor_field):
+            stream_state = current_stream_state[self._customer_id][self.cursor_field]
         else:
-            current_stream_state.update({self.customer_id: {self.cursor_field: latest_record[self.cursor_field]}})
+            current_stream_state.update({self._customer_id: {self.cursor_field: latest_record[self.cursor_field]}})
             return current_stream_state
 
         date_in_current_stream = pendulum.parse(stream_state)
         date_in_latest_record = pendulum.parse(latest_record[self.cursor_field])
 
         current_stream_state.update(
-            {self.customer_id: {self.cursor_field: (max(date_in_current_stream, date_in_latest_record)).to_date_string()}}
+            {self._customer_id: {self.cursor_field: (max(date_in_current_stream, date_in_latest_record)).to_date_string()}}
         )
 
         return current_stream_state
