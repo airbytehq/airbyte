@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test;
 class WorkspaceHelperTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
-  private static final UUID WORKSPACE_NEW_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final UUID SOURCE_ID = UUID.randomUUID();
   private static final UUID DEST_DEFINITION_ID = UUID.randomUUID();
@@ -161,17 +160,14 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testOperation() throws IOException, JsonValidationException {
-    configRepository.writeStandardSyncOperation(OPERATION);
-
+  public void testOperation() throws IOException, JsonValidationException, ConfigNotFoundException {
     // test retrieving by connection id
     final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
+    verify(configRepository, times(1)).getStandardSyncOperation(OPERATION_ID);
 
-    // check that caching is working
-    configRepository.writeStandardSyncOperation(Jsons.clone(OPERATION).withWorkspaceId(WORKSPACE_NEW_ID));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
-    assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
+    workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
+    verify(configRepository, times(1)).getStandardSyncOperation(OPERATION_ID);
   }
 
   @Test
