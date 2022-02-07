@@ -66,8 +66,8 @@ public class DateTimeUtils {
 
   /**
    *
-   * @param data "YYYY-MM-dd HH:mm:ss"
-   * @return converted data "{\"member0\":2021-01-01 01:01:01,\"member1\":null}"
+   * @param data "2021-01-03T01:01:01.544+01:00"
+   * @return converted data "2021-01-03T01:01:01.544000"
    */
   public static String convertToBigqueryDenormalizedFormat(String data) {
     Instant instant = null;
