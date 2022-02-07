@@ -84,7 +84,7 @@ class SourceGoogleAds(AbstractSource):
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
 
                 req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                google_api.send_request(req_q)
+                google_api.send_request(req_q, google_api.customer_ids[0])
             return True, None
         except GoogleAdsException as error:
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
