@@ -90,7 +90,7 @@ import org.slf4j.MDC;
  */
 
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
-public class KubePodProcess extends Process {
+public class KubePodProcess extends Process implements KubePod {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
@@ -105,11 +105,12 @@ public class KubePodProcess extends Process {
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
   private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
-  private static final String CONFIG_DIR = "/config";
+  public static final String CONFIG_DIR = "/config";
   private static final String TERMINATION_DIR = "/termination";
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
-  private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+  public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+  public static final String MAIN_CONTAINER_NAME = "main";
 
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
@@ -182,7 +183,7 @@ public class KubePodProcess extends Process {
 
     // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
     // fails
-    final var mainCommand = MoreResources.readResource("entrypoints/main.sh")
+    final var mainCommand = MoreResources.readResource("entrypoints/sync/main.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("OPTIONAL_STDIN", optionalStdin)
@@ -191,18 +192,14 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
-    final List<ContainerPort> containerPorts = internalToExternalPorts.keySet().stream()
-        .map(integer -> new ContainerPortBuilder()
-            .withContainerPort(integer)
-            .build())
-        .collect(Collectors.toList());
+    final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     final List<EnvVar> envVars = envMap.entrySet().stream()
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
-        .withName("main")
+        .withName(MAIN_CONTAINER_NAME)
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
@@ -218,9 +215,17 @@ public class KubePodProcess extends Process {
     return containerBuilder.build();
   }
 
-  private static void copyFilesToKubeConfigVolume(final KubernetesClient client,
-                                                  final Pod podDefinition,
-                                                  final Map<String, String> files) {
+  public static List<ContainerPort> createContainerPortList(final Map<Integer, Integer> internalToExternalPorts) {
+    return internalToExternalPorts.keySet().stream()
+        .map(integer -> new ContainerPortBuilder()
+            .withContainerPort(integer)
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  public static void copyFilesToKubeConfigVolume(final KubernetesClient client,
+                                                 final Pod podDefinition,
+                                                 final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed
@@ -262,7 +267,11 @@ public class KubePodProcess extends Process {
         throw new RuntimeException(e);
       } finally {
         if (tmpFile != null) {
-          tmpFile.toFile().delete();
+          try {
+            tmpFile.toFile().delete();
+          } catch (Exception e) {
+            LOGGER.info("Caught exception when deleting temp file but continuing to allow process deletion.", e);
+          }
         }
         if (proc != null) {
           proc.destroy();
@@ -429,7 +438,7 @@ public class KubePodProcess extends Process {
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
     // main container completes
-    final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
+    final String heartbeatCommand = MoreResources.readResource("entrypoints/sync/check.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("HEARTBEAT_URL", kubeHeartbeatUrl);
@@ -552,7 +561,7 @@ public class KubePodProcess extends Process {
   public int waitFor() throws InterruptedException {
     final Pod refreshedPod =
         fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-    fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    fabricClient.resource(refreshedPod).waitUntilCondition(KubePodProcess::isTerminal, 10, TimeUnit.DAYS);
     wasKilled.set(true);
     return exitValue();
   }
@@ -584,6 +593,11 @@ public class KubePodProcess extends Process {
   @Override
   public Info info() {
     return new KubePodProcessInfo(podDefinition.getMetadata().getName());
+  }
+
+  @Override
+  public KubePodInfo getInfo() {
+    return new KubePodInfo(podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName());
   }
 
   /**
@@ -620,14 +634,14 @@ public class KubePodProcess extends Process {
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }
 
-  private boolean isTerminal(final Pod pod) {
+  public static boolean isTerminal(final Pod pod) {
     if (pod.getStatus() != null) {
       // Check if "main" container has terminated, as that defines whether the parent process has
       // terminated.
       final ContainerStatus mainContainerStatus = pod.getStatus()
           .getContainerStatuses()
           .stream()
-          .filter(containerStatus -> containerStatus.getName().equals("main"))
+          .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
           .collect(MoreCollectors.onlyElement());
 
       return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
@@ -670,7 +684,7 @@ public class KubePodProcess extends Process {
 
     final ContainerStatus mainContainerStatus = refreshedPod.getStatus().getContainerStatuses()
         .stream()
-        .filter(containerStatus -> containerStatus.getName().equals("main"))
+        .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
         .collect(MoreCollectors.onlyElement());
 
     if (mainContainerStatus.getState() == null || mainContainerStatus.getState().getTerminated() == null) {
@@ -698,7 +712,7 @@ public class KubePodProcess extends Process {
     return returnCode;
   }
 
-  private static ResourceRequirementsBuilder getResourceRequirementsBuilder(final ResourceRequirements resourceRequirements) {
+  public static ResourceRequirementsBuilder getResourceRequirementsBuilder(final ResourceRequirements resourceRequirements) {
     if (resourceRequirements != null) {
       final Map<String, Quantity> requestMap = new HashMap<>();
       // if null then use unbounded resource allocation
