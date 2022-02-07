@@ -207,11 +207,19 @@ def get_secret_values(schema: Mapping[str, Any], config: Mapping[str, Any]) -> L
                     traverse_schema(i, path)
             else:
                 if path[-1] == "airbyte_secret" and schema is True:
-                    path = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])
+                    # mypy raises error 'Incompatible types in assignment (expression has type "str", variable has type "List[str]")'
+                    # type of path is first initialized as List[str] on the line 201
+                    # however str is assigned on the line below, it causes error
+                    # to avoid code changing it was ignored for resolving issue CDK: typing errors #9500
+                    path = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])  # type: ignore
                     pathes.add(path)
 
         traverse_schema(schema, [])
-        return pathes
+        # mypy raises error 'Incompatible return value type (got "Set[List[str]]", expected "Set[str]")'
+        # path is added into pathes, type of path is initialized as List[str] on the line 201
+        # however Set[str] is expected returned type
+        # to avoid code changing it was ignored for resolving issue CDK: typing errors #9500
+        return pathes  # type: ignore
 
     secret_pathes = get_secret_pathes(schema)
     result = []
