@@ -7,7 +7,7 @@ import logging
 from functools import partial
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
 from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
 from source_hubspot.client import Client
 from source_hubspot.source import SourceHubspot

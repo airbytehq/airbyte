@@ -5,8 +5,7 @@
 import logging
 from typing import Any, MutableMapping
 
-from airbyte_cdk.models import ConfiguredAirbyteStream
-from airbyte_cdk.sources.deprecated.base_source import BaseClient, BaseSource
+from airbyte_cdk.sources.deprecated.base_source import BaseClient, BaseSource, ConfiguredAirbyteStream
 
 from .client import Client
 
