@@ -70,11 +70,8 @@ const AttemptDetails: React.FC<IProps> = ({
 
   const getFailureOrigin = (attempt: Attempt) => {
     const failure = getFailureFromAttempt(attempt);
-    let failureOrigin = formatMessage({ id: "errorView.unknown" });
-
-    if (failure) {
-      failureOrigin = failure.failureOrigin;
-    }
+    const failureOrigin =
+      failure?.failureOrigin ?? formatMessage({ id: "errorView.unknown" });
 
     return `${formatMessage({
       id: "sources.failureOrigin",
