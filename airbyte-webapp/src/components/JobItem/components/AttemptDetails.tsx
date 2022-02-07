@@ -22,11 +22,7 @@ const FailureReasonDetails = styled.div`
 `;
 
 const getFailureFromAttempt = (attempt: Attempt) => {
-  if (attempt?.failureSummary?.failures.length > 0) {
-    return attempt.failureSummary.failures[0];
-  }
-
-  return undefined;
+  return attempt.failureSummary.failures[0];
 };
 
 const AttemptDetails: React.FC<IProps> = ({
@@ -80,11 +76,8 @@ const AttemptDetails: React.FC<IProps> = ({
 
   const getFailureMessage = (attempt: Attempt) => {
     const failure = getFailureFromAttempt(attempt);
-    let failureMessage = formatMessage({ id: "errorView.unknown" });
-
-    if (failure) {
-      failureMessage = failure.failureOrigin;
-    }
+    const failureMessage =
+      failure?.externalMessage ?? formatMessage({ id: "errorView.unknown" });
 
     return `${formatMessage({
       id: "sources.message",
@@ -142,7 +135,15 @@ const AttemptDetails: React.FC<IProps> = ({
       </div>
       {isFailed && (
         <FailureReasonDetails>
-          {getFailureOrigin(attempt)}, {getFailureMessage(attempt)}
+          {formatMessage(
+            {
+              id: "ui.keyValuePairv3",
+            },
+            {
+              key: getFailureOrigin(attempt),
+              value: getFailureMessage(attempt),
+            }
+          )}
         </FailureReasonDetails>
       )}
     </Details>

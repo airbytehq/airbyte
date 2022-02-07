@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { JobDebugInfoDetails } from "core/domain/job/Job";
 
 type ListParams = {
   configId: string;
@@ -32,7 +33,9 @@ class JobsService extends AirbyteRequestService {
     return job;
   }
 
-  public async getDebugInfo(jobId: string | number): Promise<any> {
+  public async getDebugInfo(
+    jobId: string | number
+  ): Promise<JobDebugInfoDetails> {
     const jobDebugInfo = await this.fetch<any>(`${this.url}/get_debug_info`, {
       id: jobId,
     });

@@ -11,9 +11,10 @@ import { LogsDetails } from "./LogsDetails";
 type IProps = {
   id: number | string;
   jobIsFailed?: boolean;
+  isPartialSuccess?: boolean;
 };
 
-const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
+const JobLogs: React.FC<IProps> = ({ id, jobIsFailed, isPartialSuccess }) => {
   const job = useGetJob(id);
   const debugInfo = useGetDebugInfoJob(id);
 
@@ -31,6 +32,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
 
   const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),
+    isPartialSuccess,
     status:
       item.attempt.status === Status.FAILED ||
       item.attempt.status === Status.SUCCEEDED
