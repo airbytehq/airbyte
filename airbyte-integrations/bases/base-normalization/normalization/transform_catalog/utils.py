@@ -3,10 +3,12 @@
 #
 
 
-from typing import Set
+from typing import Set, Union
+
+from normalization.transform_catalog import dbt_macro
 
 
-def jinja_call(command: str) -> str:
+def jinja_call(command: Union[str, dbt_macro.Macro]) -> str:
     return "{{ " + command + " }}"
 
 

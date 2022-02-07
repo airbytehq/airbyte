@@ -63,6 +63,3 @@ models:
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['airbyte_utils', 'dbt_utils']
-
-vars:
-  redshift_super_type: false

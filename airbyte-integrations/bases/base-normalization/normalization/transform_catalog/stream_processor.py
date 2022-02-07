@@ -6,11 +6,12 @@
 import os
 import re
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
@@ -92,7 +93,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ):
         """
         See StreamProcessor.create()
@@ -108,7 +109,7 @@ class StreamProcessor(object):
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
         self.tables_registry: TableNameRegistry = tables_registry
-        self.from_table: str = from_table
+        self.from_table: Union[str, dbt_macro.Macro] = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
@@ -121,6 +122,7 @@ class StreamProcessor(object):
         self.airbyte_emitted_at = "_airbyte_emitted_at"
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
+        self.models_to_source: Dict[str, str] = {}
 
     @staticmethod
     def create_from_parent(
@@ -177,7 +179,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
@@ -219,6 +221,16 @@ class StreamProcessor(object):
         for child in self.find_children_streams(self.from_table, column_names):
             child.collect_table_names()
 
+    def get_stream_source(self):
+        if not self.parent:
+            return self.from_table.table_name
+        cur = self.parent
+        while True:
+            if not cur.parent:
+                break
+            cur = cur.parent
+        return cur.from_table.table_name
+
     def process(self) -> List["StreamProcessor"]:
         """
         See description of StreamProcessor class.
@@ -236,7 +248,7 @@ class StreamProcessor(object):
             print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
             return []
 
-        from_table = self.from_table
+        from_table = str(self.from_table)
         # Transformation Pipeline for this stream
         from_table = self.add_to_outputs(
             self.generate_json_parsing_model(from_table, column_names),
@@ -1094,7 +1106,8 @@ where 1 = 1
         self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(file_name)
+        self.models_to_source[file_name] = self.get_stream_source()
+        return str(dbt_macro.Ref(file_name))
 
     def get_model_materialization_mode(self, is_intermediate: bool, column_count: int = 0) -> TableMaterializationType:
         if is_intermediate:
@@ -1254,10 +1267,6 @@ where 1 = 1
 
 
 # Static Functions
-
-
-def ref_table(file_name: str) -> str:
-    return f"ref('{file_name}')"
 
 
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
