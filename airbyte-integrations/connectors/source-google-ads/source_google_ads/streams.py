@@ -130,14 +130,14 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         current_stream_state = current_stream_state or {}
 
         if current_stream_state.get(self.cursor_field):
-            current_stream = current_stream_state.pop(self.cursor_field)
+            stream_state = current_stream_state.pop(self.cursor_field)
         elif current_stream_state.get(self.customer_id) and current_stream_state[self.customer_id].get(self.cursor_field):
-            current_stream = current_stream_state[self.customer_id][self.cursor_field]
+            stream_state = current_stream_state[self.customer_id][self.cursor_field]
         else:
             current_stream_state.update({self.customer_id: {self.cursor_field: latest_record[self.cursor_field]}})
             return current_stream_state
 
-        date_in_current_stream = pendulum.parse(current_stream)
+        date_in_current_stream = pendulum.parse(stream_state)
         date_in_latest_record = pendulum.parse(latest_record[self.cursor_field])
 
         current_stream_state.update(
