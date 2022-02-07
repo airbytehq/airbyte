@@ -96,8 +96,8 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.32  | 2022-01-07 | [10137](https://github.com/airbytehq/airbyte/pull/10137) | Add `primary_key` for all insights streams. |
-| 0.2.31  | 2021-12-28 | [](https://github.com/airbytehq/airbyte/pull/) | Fixed videos stream format field incorrect type |
+| 0.2.32  | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams. |
+| 0.2.31  | 2021-12-29 | [9138](https://github.com/airbytehq/airbyte/pull/9138) | Fixed videos stream format field incorrect type |
 | 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Added `asset_feed_spec` field to `ad creatives` stream |
 | 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrive ad_creatives image as data encoded |
 | 0.2.28  | 2021-12-13 | [8742](https://github.com/airbytehq/airbyte/pull/8742) | Fix for schema generation related to "breakdown" fields |
