@@ -59,6 +59,7 @@
     * [Close.com](integrations/sources/close-com.md)
     * [CockroachDB](integrations/sources/cockroachdb.md)
     * [Confluence](integrations/sources/confluence.md)
+    * [DCL Logistics](integrations/sources/dcl-logistics.md)
     * [Delighted](integrations/sources/delighted.md)
     * [Db2](integrations/sources/db2.md)
     * [Dixa](integrations/sources/dixa.md)

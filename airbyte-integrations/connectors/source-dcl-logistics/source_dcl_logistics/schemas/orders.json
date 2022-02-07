@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": ["null", "string"]
+    },
+    "account_number": {
+      "type": ["null", "string"]
+    },
+    "order_status": {
+      "type": ["null", "integer"]
+    },
+    "is_cancelled": {
+      "type": ["null", "boolean"]
+    },
+    "is_back_order": {
+      "type": ["null", "boolean"]
+    },
+    "order_type": {
+      "type": ["null", "string"]
+    },
+    "customer_number": {
+      "type": ["null", "string"]
+    },
+    "shipments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "ship_date": {
+            "type": ["null", "string"]
+          },
+          "shipping_address": {
+            "type": ["null", "object"],
+            "properties": {
+              "company": {
+                "type": ["null", "string"]
+              },
+              "attention": {
+                "type": ["null", "string"]
+              },
+              "address1": {
+                "type": ["null", "string"]
+              },
+              "address2": {
+                "type": ["null", "string"]
+              },
+              "email": {
+                "type": ["null", "string"]
+              },
+              "phone": {
+                "type": ["null", "string"]
+              },
+              "city": {
+                "type": ["null", "string"]
+              },
+              "state_province": {
+                "type": ["null", "string"]
+              },
+              "postal_code": {
+                "type": ["null", "string"]
+              },
+              "country": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "packages": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "carton_id": {
+                  "type": ["null", "string"]
+                },
+                "tracking_number": {
+                  "type": ["null", "string"]
+                },
+                "shipped_items": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "item_number": {
+                        "type": ["null", "string"]
+                      },
+                      "quantity": {
+                        "type": ["null", "integer"]
+                      },
+                      "description": {
+                        "type": ["null", "string"]
+                      },
+                      "serial_numbers": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "modified_at": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -158,6 +158,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
   icon: confluence.svg
   sourceType: api
+- name: DCL Logistics
+  sourceDefinitionId: e9a1a710-e392-4e36-bf73-4cf4f61f425d
+  dockerRepository: airbyte/source-dcl-logistics
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dcl-logistics
+  icon: dcl_logistics.svg
+  sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
