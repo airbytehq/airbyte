@@ -317,9 +317,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           // was not cancelled.
 
           if (e instanceof SourceException || e instanceof DestinationException) {
-            // Surface Source and Destination exceptions directly so that they can be classified properly by the worker
+            // Surface Source and Destination exceptions directly so that they can be classified properly by the
+            // worker
             throw e;
-          } else{
+          } else {
             throw new RuntimeException(e);
           }
         }
@@ -360,7 +361,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           if (e instanceof DestinationException) {
             // Surface Destination exceptions directly so that they can be classified properly by the worker
             throw e;
-          } else{
+          } else {
             throw new RuntimeException(e);
           }
         }
@@ -404,6 +405,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     SourceException(final String message, final Throwable cause) {
       super(message, cause);
     }
+
   }
 
   private static class DestinationException extends RuntimeException {
@@ -415,6 +417,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     DestinationException(final String message, final Throwable cause) {
       super(message, cause);
     }
+
   }
 
 }
