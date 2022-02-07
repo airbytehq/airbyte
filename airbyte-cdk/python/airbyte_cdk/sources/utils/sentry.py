@@ -167,7 +167,7 @@ class AirbyteSentry:
     # there are a few similar opened issues
     # https://github.com/python/mypy/issues/12110
     # https://github.com/python/mypy/issues/11619
-    # it is ignored for now
+    # ignored for now
     @classmethod  # type: ignore
     @if_enabled
     def set_tag(cls, tag_name: str, value: Any):
