@@ -175,14 +175,14 @@ class Salesforce:
     version = "v52.0"
 
     def __init__(
-            self,
-            refresh_token: str = None,
-            token: str = None,
-            client_id: str = None,
-            client_secret: str = None,
-            is_sandbox: bool = None,
-            start_date: str = None,
-            **kwargs,
+        self,
+        refresh_token: str = None,
+        token: str = None,
+        client_id: str = None,
+        client_secret: str = None,
+        is_sandbox: bool = None,
+        start_date: str = None,
+        **kwargs,
     ):
         self.refresh_token = refresh_token
         self.token = token
@@ -210,9 +210,9 @@ class Salesforce:
 
     def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> Mapping[str, Any]:
         """Selects all validated streams with additional filtering:
-           1) skip all sobjects with negative value of the flag "queryable"
-           2) user can set search criterias of necessary streams
-           3) selection by catalog settings
+        1) skip all sobjects with negative value of the flag "queryable"
+        2) user can set search criterias of necessary streams
+        3) selection by catalog settings
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
@@ -222,8 +222,11 @@ class Salesforce:
                 self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
-            return {configured_stream.stream.name: stream_objects[configured_stream.stream.name] for configured_stream in catalog.streams if
-                    configured_stream.stream.name in stream_objects}
+            return {
+                configured_stream.stream.name: stream_objects[configured_stream.stream.name]
+                for configured_stream in catalog.streams
+                if configured_stream.stream.name in stream_objects
+            }
 
         stream_names = list(stream_objects.keys())
         if config.get("streams_criteria"):
@@ -239,7 +242,7 @@ class Salesforce:
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
-            self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
         try:
             if http_method == "GET":

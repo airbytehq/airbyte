@@ -14,8 +14,7 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, \
-    SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
 
 
 class SourceSalesforce(AbstractSource):
@@ -38,19 +37,17 @@ class SourceSalesforce(AbstractSource):
 
     @classmethod
     def generate_streams(
-            cls,
-            config: Mapping[str, Any],
-            stream_objects: Mapping[str, Any],
-            sf_object: Salesforce,
-            state: Mapping[str, Any] = None,
+        cls,
+        config: Mapping[str, Any],
+        stream_objects: Mapping[str, Any],
+        sf_object: Salesforce,
+        state: Mapping[str, Any] = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
-            streams_kwargs = {
-                "sobject_options": sobject_options
-            }
+            streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
 
             selected_properties = sf_object.generate_schema(stream_name, sobject_options).get("properties", {})
@@ -65,7 +62,6 @@ class SourceSalesforce(AbstractSource):
             else:
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
-                streams_kwargs["wait_timeout"] = config.get("wait_timeout")
 
             json_schema = sf_object.generate_schema(stream_name, stream_objects)
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
@@ -80,16 +76,11 @@ class SourceSalesforce(AbstractSource):
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-
-        stream_objects = {"CategoryNode": stream_objects.pop("CategoryNode")}
-        # for stream_name in stream_objects:
-        #     if stream_name["name"] in stream_names:
-        #         raise Exception(str(stream_name))
+        # stream_objects = {"CategoryNode": stream_objects.pop("CategoryNode")}
         return self.generate_streams(config, stream_objects, sf, state=state)
 
     def read(
-            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains

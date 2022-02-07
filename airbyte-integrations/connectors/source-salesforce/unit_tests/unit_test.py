@@ -11,14 +11,11 @@ from unittest.mock import Mock
 import pytest
 import requests_mock
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from airbyte_cdk.models import ConfiguredAirbyteStream, AirbyteStream, DestinationSyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from requests.exceptions import HTTPError
-
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, \
-    IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
 
 
 @pytest.fixture(scope="module")
@@ -152,7 +149,7 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
 def test_bulk_sync_pagination(item_number, stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
     test_ids = [i for i in range(1, item_number)]
-    pages = [test_ids[i: i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
+    pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
     if not pages:
         pages = [[]]
     with requests_mock.Mocker() as m:
@@ -215,7 +212,8 @@ def test_bulk_sync_successful_long_response(stream_config, stream_api):
 @pytest.mark.timeout(17)
 def test_bulk_sync_successful_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
+
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         # 2 failed attempts, 3rd one should be successful
@@ -229,7 +227,7 @@ def test_bulk_sync_successful_retry(stream_config, stream_api):
 @pytest.mark.timeout(30)
 def test_bulk_sync_failed_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "InProgress", "id": job_id})
@@ -248,12 +246,12 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
     ],
 )
 def test_stream_start_date(
-        start_date_provided,
-        stream_name,
-        expected_start_date,
-        stream_config,
-        stream_api,
-        stream_config_without_start_date,
+    start_date_provided,
+    stream_name,
+    expected_start_date,
+    stream_config,
+    stream_api,
+    stream_config_without_start_date,
 ):
     if start_date_provided:
         stream = _generate_stream(stream_name, stream_config, stream_api)
@@ -292,25 +290,25 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
     [
         ([{"criteria": "exacts", "value": "Account"}], ["Account"]),
         (
-                [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
-                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
+            [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
         ),
         ([{"criteria": "starts with", "value": "lead"}], ["Leads", "LeadHistory"]),
         (
-                [{"criteria": "starts not with", "value": "custom"}],
-                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+            [{"criteria": "starts not with", "value": "custom"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
         ),
         ([{"criteria": "ends with", "value": "story"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
         ([{"criteria": "ends not with", "value": "s"}], ["Account", "LeadHistory", "OrderHistory", "CustomStream", "CustomStreamHistory"]),
         ([{"criteria": "contains", "value": "applicat"}], ["AIApplications"]),
         ([{"criteria": "contains", "value": "hist"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
         (
-                [{"criteria": "not contains", "value": "stream"}],
-                ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
+            [{"criteria": "not contains", "value": "stream"}],
+            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
         ),
         (
-                [{"criteria": "not contains", "value": "Account"}],
-                ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
+            [{"criteria": "not contains", "value": "Account"}],
+            ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
         ),
     ],
 )
@@ -505,7 +503,7 @@ def test_pagination_rest(stream_config, stream_api):
     state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
 
     stream: SalesforceStream = _generate_stream(stream_name, stream_config, stream_api, state=state)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
         resp_1 = {
@@ -546,7 +544,7 @@ def test_pagination_rest(stream_config, stream_api):
 
 
 def test_csv_reader_dialect_unix():
-    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
+    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, sf_api=None, pk=None)
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
@@ -570,17 +568,26 @@ def test_csv_reader_dialect_unix():
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "stream_names,catalog_stream_names,", (
-            (["stream_1", "stream_2"], None,),
-            (["stream_1", "stream_2"], ["stream_1", "stream_2"],),
-            (["stream_1", "stream_2", "stream_3"], ["stream_1"],),
-
-    )
+    "stream_names,catalog_stream_names,",
+    (
+        (
+            ["stream_1", "stream_2"],
+            None,
+        ),
+        (
+            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2"],
+        ),
+        (
+            ["stream_1", "stream_2", "stream_3"],
+            ["stream_1"],
+        ),
+    ),
 )
 def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_names) -> None:
-    sobjects_matcher = re.compile('/sobjects$')
-    token_matcher = re.compile('/token$')
-    describe_matcher = re.compile('/describe$')
+    sobjects_matcher = re.compile("/sobjects$")
+    token_matcher = re.compile("/token$")
+    describe_matcher = re.compile("/describe$")
     catalog = None
     if catalog_stream_names:
         catalog = ConfiguredAirbyteCatalog(
@@ -589,31 +596,38 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                     stream=AirbyteStream(name=catalog_stream_name, json_schema={"type": "object"}),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
-                ) for catalog_stream_name in catalog_stream_names]
+                )
+                for catalog_stream_name in catalog_stream_names
+            ]
         )
     with requests_mock.Mocker() as m:
-        m.register_uri("POST", token_matcher, json={
-            "instance_url": "https://fake-url.com",
-            "access_token": "fake-token"
-        })
-        m.register_uri("GET", describe_matcher, json={
-            "fields": [
-                {
-                    "name": "field",
-                    "type": "string",
-                }
-            ]
-        })
-        m.register_uri("GET", sobjects_matcher, json={
-            "sobjects": [
-                {
-                    "name": stream_name,
-                    "flag1": True,
-                    "queryable": True,
-                } for stream_name in stream_names
-            ],
-
-        })
+        m.register_uri("POST", token_matcher, json={"instance_url": "https://fake-url.com", "access_token": "fake-token"})
+        m.register_uri(
+            "GET",
+            describe_matcher,
+            json={
+                "fields": [
+                    {
+                        "name": "field",
+                        "type": "string",
+                    }
+                ]
+            },
+        )
+        m.register_uri(
+            "GET",
+            sobjects_matcher,
+            json={
+                "sobjects": [
+                    {
+                        "name": stream_name,
+                        "flag1": True,
+                        "queryable": True,
+                    }
+                    for stream_name in stream_names
+                ],
+            },
+        )
         streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
     expected_names = catalog_stream_names if catalog else stream_names
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"

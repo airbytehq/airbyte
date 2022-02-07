@@ -25,8 +25,9 @@ class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None,
-                 **kwargs):
+    def __init__(
+        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+    ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
         self.pk = pk
@@ -59,7 +60,7 @@ class SalesforceStream(HttpStream, ABC):
         return response_data.get("nextRecordsUrl")
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -109,13 +110,9 @@ class SalesforceStream(HttpStream, ABC):
 
 class BulkSalesforceStream(SalesforceStream):
     page_size = 30000
-    DEFAULT_WAIT_TIMEOUT_MINS = 10
+    DEFAULT_WAIT_TIMEOUT_SECONDS = 600
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
-
-    def __init__(self, wait_timeout: Optional[int], **kwargs):
-        super().__init__(**kwargs)
-        self._wait_timeout = wait_timeout or self.DEFAULT_WAIT_TIMEOUT_MINS
 
     def path(self, **kwargs) -> str:
         return f"/services/data/{self.sf_api.version}/jobs/query"
@@ -146,15 +143,9 @@ class BulkSalesforceStream(SalesforceStream):
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
-        self.logger.warning(str(json))
-        # json = {'operation': 'queryAll',
-        #         'query': 'SELECT Id,ParentId,MasterLabel,SortOrder,SortStyle,CreatedDate,CreatedById,LastModifiedDate,LastModifiedById,SystemModstamp FROM CategoryNode ORDER BY SystemModstamp ASC LIMIT 10',
-        #         'contentType': 'CSV', 'columnDelimiter': 'COMMA', 'lineEnding': 'LF'}
         try:
             response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
-            # self.logger.info(f"Created Job: {job_id} to sync {self.name}")
-            self.logger.warning(f"Created Job: {job_id} to sync {self.name}, {json}")
             return job_id
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
@@ -174,16 +165,22 @@ class BulkSalesforceStream(SalesforceStream):
                 error_code = error_data.get("errorCode")
                 error_message = error_data.get("message", "")
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
-                        error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
+                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
                 ):
-                    self.logger.error(f"Cannot receive data for stream '{self.name}' using BULK API, "
-                                      f"sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.error(
+                        f"Cannot receive data for stream '{self.name}' using BULK API, "
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
                 elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}' ,"
-                                      f"sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.error(
+                        f"Cannot receive data for stream '{self.name}' ,"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
-                    self.logger.error(f"The stream '{self.name}' is not queryable, "
-                                      f"sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.error(
+                        f"The stream '{self.name}' is not queryable, "
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
                 else:
                     raise error
             else:
@@ -191,8 +188,7 @@ class BulkSalesforceStream(SalesforceStream):
         return None
 
     def wait_for_job(self, url: str) -> str:
-        # using "seconds" argument because self._wait_timeout can be changed by tests
-        expiration_time: DateTime = pendulum.now().add(seconds=int(self._wait_timeout * 60.0))
+        expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
         job_status = "InProgress"
         delay_timeout = 0
         delay_cnt = 0
@@ -210,8 +206,9 @@ class BulkSalesforceStream(SalesforceStream):
                     if not error_message:
                         # not all failed response can have "errorMessage" and we need to print full response body
                         error_message = job_info
-                    self.logger.error(f"JobStatus: {job_status}, "
-                                      f"sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.error(
+                        f"JobStatus: {job_status}, " f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
 
                 return job_status
 
@@ -225,15 +222,15 @@ class BulkSalesforceStream(SalesforceStream):
                 f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id}" f" to complete. Current state: {job_status}"
             )
 
-        self.logger.warning(f"Not wait the {self.name} data for {self._wait_timeout} minutes, data: {job_info}!!")
+        self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: str, url: str) -> str:
+    def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
         job_status = "Failed"
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None
+                return None, None
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -244,8 +241,8 @@ class BulkSalesforceStream(SalesforceStream):
 
         if job_status in ["Aborted", "Failed"]:
             self.delete_job(url=job_full_url)
-            raise Exception(f"Job for {self.name} stream using BULK API was failed.")
-        return job_full_url
+            return None, job_status
+        return job_full_url, job_status
 
     def filter_null_bytes(self, s: str):
         """
@@ -277,7 +274,7 @@ class BulkSalesforceStream(SalesforceStream):
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -294,11 +291,11 @@ class BulkSalesforceStream(SalesforceStream):
         return {"q": query}
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
@@ -306,9 +303,20 @@ class BulkSalesforceStream(SalesforceStream):
         while True:
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+            job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
             if not job_full_url:
-                return
+                if job_status == "Failed":
+                    # As rule as BULK logic returns unhandled error. For instance:
+                    # error message: 'Unexpected exception encountered in query processing.
+                    #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
+                    # Thus we can try to switch to GET sync request because its response returns obvious error message
+                    standard_instance = self.get_standard_instance()
+                    self.logger.info("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                    yield from standard_instance.read_records(
+                        sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                    )
+                    return
+                raise Exception(f"Job for {self.name} stream using BULK API was failed.")
 
             count = 0
             for count, record in self.download_data(url=job_full_url):
@@ -323,6 +331,25 @@ class BulkSalesforceStream(SalesforceStream):
             if not next_page_token:
                 # not found a next page data.
                 break
+
+    def get_standard_instance(self) -> SalesforceStream:
+        """Returns a instance of standard logic(non-BULK) with same settings"""
+        stream_kwargs = dict(
+            sf_api=self.sf_api,
+            pk=self.pk,
+            stream_name=self.stream_name,
+            schema=self.schema,
+            sobject_options=self.sobject_options,
+            authenticator=self.authenticator,
+        )
+
+        if isinstance(self, BulkIncrementalSalesforceStream):
+            stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
+            new_cls = IncrementalSalesforceStream
+        else:
+            new_cls = SalesforceStream
+
+        return new_cls(**stream_kwargs)
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
@@ -340,7 +367,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             """
@@ -381,7 +408,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
             return last_record[self.cursor_field]
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
 

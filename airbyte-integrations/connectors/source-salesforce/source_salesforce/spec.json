@@ -4,7 +4,11 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Salesforce Source Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token"],
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token"
+    ],
     "additionalProperties": true,
     "properties": {
       "auth_type": {
@@ -33,7 +37,10 @@
         "description": "Date in the format 2017-01-25. Any data before this date will not be replicated. This field uses the \"updated\" field if available, otherwise the \"created\" fields if they are available for a stream. If not set, then by default all your data is replicated.",
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["2021-07-25", "2021-07-25T00:00:00Z"]
+        "examples": [
+          "2021-07-25",
+          "2021-07-25T00:00:00Z"
+        ]
       },
       "is_sandbox": {
         "title": "Sandbox",
@@ -45,7 +52,10 @@
         "type": "array",
         "items": {
           "type": "object",
-          "required": ["criteria", "value"],
+          "required": [
+            "criteria",
+            "value"
+          ],
           "properties": {
             "criteria": {
               "type": "string",
@@ -70,20 +80,14 @@
         },
         "title": "Streams filter criteria",
         "description": "Add selection criteria for streams to get only streams that are relevant to you"
-      },
-      "wait_timeout": {
-        "title": "Response Waiting Time",
-        "description": "Maximum wait time of Salesforce responses in minutes. This option is used for the BULK mode only. The default wait time of the Parent Batch in the Bulk Mode to wait for all the batches to finish processing is 20 minutes.",
-        "type": "integer",
-        "minimum": 5,
-        "maximum": 60,
-        "default": 10
       }
     }
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["auth_type"],
+    "predicate_key": [
+      "auth_type"
+    ],
     "predicate_value": "Client",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
@@ -92,7 +96,9 @@
         "properties": {
           "is_sandbox": {
             "type": "boolean",
-            "path_in_connector_config": ["is_sandbox"]
+            "path_in_connector_config": [
+              "is_sandbox"
+            ]
           }
         }
       },
@@ -102,7 +108,9 @@
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": ["refresh_token"]
+            "path_in_connector_config": [
+              "refresh_token"
+            ]
           }
         }
       },
@@ -124,11 +132,15 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": ["client_id"]
+            "path_in_connector_config": [
+              "client_id"
+            ]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": ["client_secret"]
+            "path_in_connector_config": [
+              "client_secret"
+            ]
           }
         }
       }
