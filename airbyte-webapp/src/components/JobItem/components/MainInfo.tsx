@@ -124,7 +124,7 @@ const MainInfo: React.FC<IProps> = ({
     } else if (isFailed && !shortInfo) {
       return <ErrorSign />;
     }
-    return <></>;
+    return null;
   };
 
   return (
