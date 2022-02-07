@@ -192,7 +192,7 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void closeStagingFileWriter() throws Exception {
+  public void closeCurrentStagingFileWriter() throws Exception {
     parquetWriter.close(false);
   }
 

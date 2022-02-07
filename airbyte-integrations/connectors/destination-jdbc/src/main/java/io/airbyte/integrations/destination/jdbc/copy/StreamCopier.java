@@ -23,7 +23,7 @@ public interface StreamCopier {
    * certain size specified in GlobalDataSizeConstants + one more buffer. The writer for the stream
    * will close with a note that no errors were found.
    */
-  void closeStagingFileWriter() throws Exception;
+  void closeCurrentStagingFileWriter() throws Exception;
 
   /**
    * Closes the writer for the stream to the staging persistence. This method should block until all

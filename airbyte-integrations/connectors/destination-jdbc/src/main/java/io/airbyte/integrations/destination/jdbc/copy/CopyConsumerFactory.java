@@ -107,7 +107,7 @@ public class CopyConsumerFactory {
     return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
       String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (!stagingFileName.isBlank() && !currentFileName.isBlank() && !stagingFileName.equals(currentFileName)) {
-        pairToCopier.get(pair).closeStagingFileWriter();
+        pairToCopier.get(pair).closeCurrentStagingFileWriter();
       }
       return currentFileName;
     };
