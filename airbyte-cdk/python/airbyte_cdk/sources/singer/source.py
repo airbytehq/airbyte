@@ -25,7 +25,10 @@ class ConfigContainer:
 class SingerSource(Source):
 
     # can be overridden to change an input config
-    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:
+    # according to issue CDK: typing errors #9500, mypy raises error on this line
+    # 'Return type "ConfigContainer" of "configure" incompatible with return type "Mapping[str, Any]" in supertype "Connector"'
+    # need to fix, ignored for now
+    def configure(self, raw_config: Mapping[str, Any], temp_dir: str) -> ConfigContainer:  # type: ignore
         """
         Persist raw_config in temporary directory to run the Source job
         This can be overridden if extra temporary files need to be persisted in the temp dir
@@ -43,14 +46,20 @@ class SingerSource(Source):
         return config
 
     # Overriding to change an input catalog as path instead
-    def read_catalog(self, catalog_path: str) -> str:
+    # according to issue CDK: typing errors #9500, mypy raises error on this line
+    # 'Return type "str" of "read_catalog" incompatible with return type "ConfiguredAirbyteCatalog" in supertype "Source"'
+    # need to fix, ignored for now
+    def read_catalog(self, catalog_path: str) -> str:  # type: ignore
         """
         Since singer source don't need actual catalog object, we override this to return path only
         """
         return catalog_path
 
     # Overriding to change an input state as path instead
-    def read_state(self, state_path: str) -> str:
+    # according to issue CDK: typing errors #9500, mypy raises error on this line
+    # 'Return type "str" of "read_state" incompatible with return type "Dict[str, Any]" in supertype "Source"'
+    # need to fix, ignored for now
+    def read_state(self, state_path: str) -> str:  # type: ignore
         """
         Since singer source don't need actual state object, we override this to return path only
         """
@@ -85,13 +94,20 @@ class SingerSource(Source):
         )
         return catalogs
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    # according to issue CDK: typing errors #9500, mypy raises errors on this line
+    # 'Argument 1 of "check" is incompatible with supertype "Connector"; supertype defines the argument type as "Logger"'
+    # 'Argument 2 of "check" is incompatible with supertype "Connector"; supertype defines the argument type as "Mapping[str, Any]"'
+    # need to fix, ignored for now
+    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:  # type: ignore
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
         return self.check_config(logger, config_container.config_path, config_container.config)
 
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
+    # according to issue CDK: typing errors #9500, mypy raises errors on this line
+    # 'Argument 1 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
+    # need to fix, ignored for now
+    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:  # type: ignore
         """
         Implements the parent class discover method.
         """
@@ -100,7 +116,13 @@ class SingerSource(Source):
         else:
             return self._discover_internal(logger, config_container).airbyte_catalog
 
-    def read(
+    # according to issue CDK: typing errors #9500, mypy raises errors on this line
+    # 'Argument 1 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
+    # 'Argument 2 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
+    # 'Argument 3 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "ConfiguredAirbyteCatalog"'
+    # 'Argument 4 of "read" is incompatible with supertype "Source"; supertype defines the argument type as "Optional[MutableMapping[str, Any]]"'
+    # need to fix, ignored for now
+    def read(  # type: ignore
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
     ) -> Iterable[AirbyteMessage]:
         """
@@ -169,7 +191,11 @@ class BaseSingerSource(SingerSource):
 
         return f"{self.tap_cmd} {cmd}"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    # according to issue CDK: typing errors #9500, mypy raises errors on this line
+    # 'Argument 1 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Logger"'
+    # 'Argument 2 of "discover" is incompatible with supertype "Source"; supertype defines the argument type as "Mapping[str, Any]"'
+    # need to fix, ignored for now
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:  # type: ignore
         catalog = super().discover(logger, config_container)
         if self.force_full_refresh:
             return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
