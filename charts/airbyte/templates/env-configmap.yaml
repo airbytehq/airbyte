@@ -11,7 +11,7 @@ data:
   AWS_ACCESS_KEY_ID: {{ .Values.logs.accessKey.password }}
   AWS_SECRET_ACCESS_KEY: {{ .Values.logs.secretKey.password }}
   CONFIG_ROOT: /configs
-  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.1.001"
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.17.001"
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
