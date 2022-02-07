@@ -241,7 +241,7 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
