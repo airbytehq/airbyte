@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Twitter Ads Spec",
     "type": "object",
-    "required": [ "CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID", "START_TIME", "END_TIME"],
+    "required": [ "CONSUMER_KEY","CONSUMER_SECRET","ACCESS_TOKEN","ACCESS_TOKEN_SECRET", "ACCOUNT_ID", "START_TIME"],
     "additionalProperties": true,
     "properties": {
       "CONSUMER_KEY": {
