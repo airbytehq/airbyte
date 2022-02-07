@@ -20,6 +20,7 @@ import gzip
 from io import BytesIO
 import time
 
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -66,12 +67,11 @@ class TwitterAdsStream(HttpStream, ABC):
         # TODO: Fill in the url base. Required.
     url_base = "https://ads-api.twitter.com/"
 
-    def __init__(self, base,  account_id,  authenticator,  start_time, end_time, granularity, metric_groups, placement, segmentation, **kwargs):
+    def __init__(self, base,  account_id,  authenticator,  start_time, granularity, metric_groups, placement, segmentation, **kwargs):
         super().__init__(authenticator, **kwargs)
         self.account_id = account_id
         self.auth = authenticator
         self.start_time = start_time
-        self.end_time = end_time
         self.granularity = granularity
         self.metric_groups = metric_groups
         self.placement = placement
@@ -115,18 +115,23 @@ class TwitterAdsStream(HttpStream, ABC):
 
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
             job_urls = self.job_urls
-            data = {}
+            results = []
             
             for job_url in job_urls:
                 with requests.get(job_url) as zipped_result:
                  json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
 
                 json_str = json_bytes.decode('utf-8') 
-                result = json.loads(json_str)
+                result = dict(json.loads(json_str))
 
-                result = result.get("data")
-                data.update(result)
-            return data
+                results.append(result.get("data"))
+
+
+            results =[ item for sublist in results for item in sublist]
+            
+            results_dict = {item["id"]:item for item in results}
+
+            return results_dict.values()
         else:
             response_json = response.json()
             result = response_json.get("data")
@@ -207,6 +212,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
     primary_key = "id"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -280,7 +286,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
 
         for job_success_url,job_status in zip(job_success_urls, job_statuses):
             while job_status != "SUCCESS":
-                time.sleep(300)
+                time.sleep(30)
                 job_success_response = requests.get(job_success_url, auth=auth)
                 job_success_response = job_success_response.json()
                 job_status = job_success_response['data'][0]['status']
@@ -379,7 +385,7 @@ class SourceTwitterAds(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
-        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
-        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
-        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], end_time = config["END_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"])]
+        return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"],granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"])]
