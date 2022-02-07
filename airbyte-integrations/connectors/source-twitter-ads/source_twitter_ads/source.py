@@ -159,7 +159,7 @@ class Campaigns(TwitterAdsStream):
         auth = self.auth
         account_id = self.account_id
 
-        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns"
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns?count=1000"
         
         return request_url
 
@@ -181,7 +181,7 @@ class LineItems(TwitterAdsStream):
         auth = self.auth
         account_id = self.account_id
 
-        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/line_items"
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/line_items?count=1000"
         
         return request_url
 
@@ -203,7 +203,7 @@ class PromotedTweets(TwitterAdsStream):
         auth = self.auth
         account_id = self.account_id
 
-        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets"
+        request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets?count=1000"
         
         return request_url
 
@@ -223,7 +223,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         
         auth = self.auth
         # we need to specifiy a start/end time different from the one in the config as maximum time span is 7day for this endpoint
-        start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
+        start_time = str((datetime.date.today() - datetime.timedelta(days=45)).strftime("%Y-%m-%d"))
         end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
         metric_groups =  self.metric_groups
@@ -386,6 +386,6 @@ class SourceTwitterAds(AbstractSource):
         # TODO remove the authenticator if not required.
         auth = OAuth1(config["CONSUMER_KEY"], config["CONSUMER_SECRET"], config["ACCESS_TOKEN"], config["ACCESS_TOKEN_SECRET"])  # Oauth2Authenticator is also available if you need oauth support
         return [Campaigns(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
-        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"],granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
         LineItems(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
-        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"])]
+        PromotedTweets(base="https://ads-api.twitter.com/", authenticator=auth,account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"], granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"]),
+        AdsAnalyticsMetrics(base="https://ads-api.twitter.com/", authenticator=auth, account_id = config["ACCOUNT_ID"] , start_time = config["START_TIME"],granularity = config["GRANULARITY"], metric_groups = config["METRIC_GROUPS"], placement = config["PLACEMENT"], segmentation = config["SEGMENTATION"])]
