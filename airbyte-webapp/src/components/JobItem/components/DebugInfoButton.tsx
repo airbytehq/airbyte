@@ -22,7 +22,7 @@ type IProps = {
 };
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
