@@ -151,6 +151,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/commercetools
   icon: commercetools.svg
   sourceType: api
+- name: Confluence
+  sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
+  dockerRepository: airbyte/source-confluence
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
+  icon: confluence.svg
+  sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
@@ -175,7 +182,7 @@
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
-  dockerImageTag: 1.0.0
+  dockerImageTag: 2.0.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/e2e-test
   icon: airbyte.svg
   sourceType: api
@@ -189,7 +196,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.31
+  dockerImageTag: 0.2.32
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -203,7 +210,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -231,7 +238,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -245,7 +252,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -307,14 +314,14 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.37
+  dockerImageTag: 0.1.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -338,6 +345,13 @@
   dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
+  sourceType: api
+- name: Jenkins
+  sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
+  dockerRepository: farosai/airbyte-jenkins-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/jenkins
+  icon: jenkins.svg
   sourceType: api
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
@@ -592,7 +606,7 @@
 - name: Recharge
   sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
   icon: recharge.svg
   sourceType: api
@@ -620,7 +634,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -634,7 +648,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -676,7 +690,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
@@ -787,7 +801,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api

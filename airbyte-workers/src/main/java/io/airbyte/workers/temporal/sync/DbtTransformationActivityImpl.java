@@ -15,6 +15,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DbtTransformationWorker;
 import io.airbyte.workers.Worker;
@@ -25,8 +26,10 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class DbtTransformationActivityImpl implements DbtTransformationActivity {
@@ -38,9 +41,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private final AirbyteConfigValidator validator;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
   private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
 
@@ -51,9 +52,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                        final Path workspaceRoot,
                                        final WorkerEnvironment workerEnvironment,
                                        final LogConfigs logConfigs,
-                                       final String databaseUser,
-                                       final String databasePassword,
-                                       final String databaseUrl,
+                                       final JobPersistence jobPersistence,
                                        final String airbyteVersion) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
@@ -63,9 +62,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
     this.validator = new AirbyteConfigValidator();
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -96,7 +93,9 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
           jobRunConfig,
           workerFactory,
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+          new CancellationHandler.TemporalCancellationHandler(),
+          jobPersistence,
+          airbyteVersion);
 
       return temporalAttemptExecution.get();
     });
@@ -121,8 +120,13 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
                                                                                                        final WorkerConfigs workerConfigs,
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                       final JobRunConfig jobRunConfig) {
+                                                                                                       final JobRunConfig jobRunConfig)
+      throws IOException {
+    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+    final var connectionId = UUID.fromString(jobScope);
+
     return () -> new DbtLauncherWorker(
+        connectionId,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,

@@ -1,0 +1,8 @@
+{
+  "destinationDefinitionId": "27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4",
+  "name": "Google Firestore",
+  "dockerRepository": "airbyte/destination-firestore",
+  "dockerImageTag": "0.1.1",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/firestore",
+  "icon": "firestore.svg"
+}

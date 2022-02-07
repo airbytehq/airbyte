@@ -35,6 +35,9 @@ class SourceGoogleAds(AbstractSource):
     @staticmethod
     def get_credentials(config: Mapping[str, Any]) -> Mapping[str, Any]:
         credentials = config["credentials"]
+        # use_proto_plus is set to True, because setting to False returned wrong value types, which breakes the backward compatibility.
+        # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
+        credentials.update(use_proto_plus=True)
 
         # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
         if "login_customer_id" in config and config["login_customer_id"].strip():
