@@ -154,6 +154,7 @@
     * [Stripe](integrations/sources/stripe.md)
     * [Sugar CRM](integrations/sources/sugar-crm.md)
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
+    * [Talkdesk](integrations/sources/talkdesk-explore.md)
     * [Tempo](integrations/sources/tempo.md)
     * [TikTok Marketing](integrations/sources/tiktok-marketing.md)
     * [Trello](integrations/sources/trello.md)
