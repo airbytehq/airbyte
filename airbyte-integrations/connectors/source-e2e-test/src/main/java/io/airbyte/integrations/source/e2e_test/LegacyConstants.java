@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.source.e2e_test;
 
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 
 public final class LegacyConstants {
 

@@ -8,7 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {
