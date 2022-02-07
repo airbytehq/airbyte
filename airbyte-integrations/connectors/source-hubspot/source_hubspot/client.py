@@ -76,7 +76,7 @@ class Client(BaseClient):
             "products": CRMObjectIncrementalStream(entity="product", **common_params),
             "property_history": PropertyHistoryStream(**common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
-            "tickets": CRMObjectIncrementalStream(entity="ticket", **common_params),
+            "tickets": CRMObjectIncrementalStream(entity="ticket", associations=["contacts", "deals"], **common_params),
             "ticket_pipelines": TicketPipelineStream(**common_params),
             "workflows": WorkflowStream(**common_params),
         }
