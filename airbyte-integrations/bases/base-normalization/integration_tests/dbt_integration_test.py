@@ -17,6 +17,7 @@ from copy import copy
 from typing import Any, Callable, Dict, List
 
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog.transform import read_yaml_config, write_yaml_config
 from normalization.transform_config.transform import TransformConfig
 
 NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
@@ -316,10 +317,6 @@ class DbtIntegrationTest(object):
         """
         config_generator = TransformConfig()
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
-        dbt_vars = config_generator.get_dbt_vars(destination_type, profiles_config)
-        if dbt_vars:
-            config_generator.update_dbt_project(test_root_dir, dbt_vars)
-
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
             credentials = profiles_config["basic_bigquery_config"]
@@ -526,8 +523,7 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def update_yaml_file(filename: str, callback: Callable):
-        config_generator = TransformConfig()
-        config = config_generator.read_yaml_config(filename)
+        config = read_yaml_config(filename)
         updated, config = callback(config)
         if updated:
-            config_generator.write_yaml_config(os.path.dirname(filename), config, os.path.basename(filename))
+            write_yaml_config(config, filename)
