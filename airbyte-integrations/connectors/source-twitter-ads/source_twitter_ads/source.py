@@ -20,6 +20,7 @@ import gzip
 from io import BytesIO
 import time
 
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -115,18 +116,23 @@ class TwitterAdsStream(HttpStream, ABC):
 
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
             job_urls = self.job_urls
-            data = {}
+            results = []
             
             for job_url in job_urls:
                 with requests.get(job_url) as zipped_result:
                  json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
 
                 json_str = json_bytes.decode('utf-8') 
-                result = json.loads(json_str)
+                result = dict(json.loads(json_str))
 
-                result = result.get("data")
-                data.update(result)
-            return data
+                results.append(result.get("data"))
+
+
+            results =[ item for sublist in results for item in sublist]
+            
+            results_dict = {item["id"]:item for item in results}
+
+            return results_dict.values()
         else:
             response_json = response.json()
             result = response_json.get("data")
@@ -207,6 +213,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
     primary_key = "id"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -280,7 +287,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
 
         for job_success_url,job_status in zip(job_success_urls, job_statuses):
             while job_status != "SUCCESS":
-                time.sleep(300)
+                time.sleep(30)
                 job_success_response = requests.get(job_success_url, auth=auth)
                 job_success_response = job_success_response.json()
                 job_status = job_success_response['data'][0]['status']
