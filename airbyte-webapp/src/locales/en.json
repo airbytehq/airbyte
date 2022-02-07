@@ -198,7 +198,7 @@
   "onboarding.createFirstSource": "Create your <name>first source</name>",
   "onboarding.createFirstSource.text": "Sources are connectors that pull data from a data source.",
   "onboarding.createFirstDestination": "Create your <name>first destination</name>",
-  "onboarding.createFirstDestination.text": "Destinations are connectors that pushes data to a data source.",
+  "onboarding.createFirstDestination.text": "Destinations are connectors that push data to a data store.",
   "onboarding.createConnection": "Set up <name>the connection</name>",
   "onboarding.createConnection.text": "Connections represent a sync between a source and a destination.",
   "onboarding.synchronizationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronization</sync> in progress",
