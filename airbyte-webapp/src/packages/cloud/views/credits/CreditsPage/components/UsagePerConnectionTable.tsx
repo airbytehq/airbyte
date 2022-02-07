@@ -52,10 +52,9 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
         ...item,
         sourceIcon: currentSourceDefinition?.icon,
         destinationIcon: currentDestinationDefinition?.icon,
-        creditsConsumedPercent:
-          item.creditsConsumed !== 0
-            ? (item.creditsConsumed / sumCreditsConsumed) * 100
-            : 0,
+        creditsConsumedPercent: sumCreditsConsumed
+          ? (item.creditsConsumed / sumCreditsConsumed) * 100
+          : 0,
       };
     });
   }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
