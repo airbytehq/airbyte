@@ -19,17 +19,6 @@ public enum RedshiftDataTmpTableMode {
     public String getInsertRowMode() {
       return "(?, JSON_PARSE(?), ?),\n";
     }
-  },
-  VARCHAR {
-    @Override
-    public String getTableCreationMode() {
-      return "VARCHAR(MAX)";
-    }
-
-    @Override
-    public String getInsertRowMode() {
-      return "(?, ?, ?),\n";
-    }
   };
 
   public abstract String getTableCreationMode();
@@ -38,11 +27,12 @@ public enum RedshiftDataTmpTableMode {
 
   public String getTmpTableSqlStatement(String schemaName, String tableName) {
     return String.format("""
-            CREATE TABLE IF NOT EXISTS %s.%s (
+            DROP TABLE IF EXISTS %s.%s;
+            CREATE TABLE %s.%s (
             %s VARCHAR PRIMARY KEY,
             %s %s,
             %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-            """, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
+            """, schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         getTableCreationMode(),
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
