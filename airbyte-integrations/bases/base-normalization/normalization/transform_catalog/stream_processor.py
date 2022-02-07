@@ -223,13 +223,13 @@ class StreamProcessor(object):
 
     def get_stream_source(self):
         if not self.parent:
-            return self.from_table.table_name
+            return self.from_table.source_name + "." + self.from_table.table_name
         cur = self.parent
         while True:
             if not cur.parent:
                 break
             cur = cur.parent
-        return cur.from_table.table_name
+        return cur.from_table.source_name + "." + cur.from_table.table_name
 
     def process(self) -> List["StreamProcessor"]:
         """
