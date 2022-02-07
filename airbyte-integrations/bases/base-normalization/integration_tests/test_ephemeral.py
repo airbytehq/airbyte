@@ -14,7 +14,7 @@ from typing import Any, Dict
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.catalog_processor import CatalogProcessor
+from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -175,7 +175,6 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     """
     output_directory = os.path.join(test_root_dir, "models", "generated")
     shutil.rmtree(output_directory, ignore_errors=True)
-    catalog_processor = CatalogProcessor(output_directory, destination_type)
     catalog_config = {
         "streams": [
             {
@@ -203,4 +202,14 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     catalog = os.path.join(test_root_dir, "catalog.json")
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
-    catalog_processor.process(catalog, "_airbyte_data", dbt_test_utils.target_schema)
+
+    transform_catalog = TransformCatalog()
+    transform_catalog.config = {
+        "integration_type": destination_type.value,
+        "schema": dbt_test_utils.target_schema,
+        "catalog": [catalog],
+        "output_path": output_directory,
+        "json_column": "_airbyte_data",
+        "profile_config_dir": test_root_dir,
+    }
+    transform_catalog.process_catalog()
