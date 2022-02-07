@@ -51,6 +51,7 @@ def chunk_date_range(
 class GoogleAdsStream(Stream, ABC):
     def __init__(self, api: GoogleAds):
         self.google_ads_client = api
+        self._customer_id = None
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
         query = GoogleAds.convert_schema_into_query(schema=self.get_json_schema(), report_name=self.name)
@@ -61,7 +62,8 @@ class GoogleAdsStream(Stream, ABC):
             yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        account_responses = self.google_ads_client.send_request(self.get_query(stream_slice))
+        stream_slice = stream_slice or {}
+        account_responses = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=self._customer_id)
         for response in account_responses:
             yield from self.parse_response(response)
 
@@ -80,18 +82,29 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field) or self._start_date
-        end_date = self._end_date
+        for customer_id in self.google_ads_client.customer_ids:
+            self.customer_id = customer_id
+            stream_state = stream_state or {}
+            if stream_state.get(customer_id):
+                start_date = stream_state[customer_id].get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(
-            start_date=start_date,
-            end_date=end_date,
-            conversion_window=self.conversion_window_days,
-            field=self.cursor_field,
-            days_of_data_storage=self.days_of_data_storage,
-            range_days=self.range_days,
-        )
+            # We should keep backward compatibility with the previous version
+            elif stream_state.get(self.cursor_field) and len(self.google_ads_client.customer_ids) == 1:
+                start_date = stream_state.get(self.cursor_field) or self._start_date
+            else:
+                start_date = self._start_date
+
+            end_date = self._end_date
+
+            for chunk in chunk_date_range(
+                start_date=start_date,
+                end_date=end_date,
+                conversion_window=self.conversion_window_days,
+                field=self.cursor_field,
+                days_of_data_storage=self.days_of_data_storage,
+                range_days=self.range_days,
+            ):
+                yield chunk
 
     def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
         """
@@ -116,16 +129,20 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
-        # When state is none return date from latest record
-        if current_stream_state.get(self.cursor_field) is None:
-            current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
-
+        if current_stream_state.get(self.cursor_field):
+            current_stream = current_stream_state.pop(self.cursor_field)
+        elif current_stream_state.get(self.customer_id) and current_stream_state[self.customer_id].get(self.cursor_field):
+            current_stream = current_stream_state[self.customer_id][self.cursor_field]
+        else:
+            current_stream_state.update({self.customer_id: {self.cursor_field: latest_record[self.cursor_field]}})
             return current_stream_state
 
-        date_in_current_stream = pendulum.parse(current_stream_state.get(self.cursor_field))
+        date_in_current_stream = pendulum.parse(current_stream)
         date_in_latest_record = pendulum.parse(latest_record[self.cursor_field])
 
-        current_stream_state[self.cursor_field] = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
+        current_stream_state.update(
+            {self.customer_id: {self.cursor_field: (max(date_in_current_stream, date_in_latest_record)).to_date_string()}}
+        )
 
         return current_stream_state
 

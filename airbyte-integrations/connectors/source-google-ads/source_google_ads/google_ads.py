@@ -36,13 +36,14 @@ class GoogleAds:
         self.customer_ids = customer_id.split(",")
         self.ga_service = self.client.get_service("GoogleAdsService")
 
-    def send_request(self, query: str) -> Iterator[SearchGoogleAdsResponse]:
+    def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
         client = self.client
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
 
-        for customer_id in self.customer_ids:
+        customer_ids_list = [customer_id] if customer_id else self.customer_ids
+        for customer_id in customer_ids_list:
             search_request.customer_id = customer_id
             yield self.ga_service.search(search_request)
 
