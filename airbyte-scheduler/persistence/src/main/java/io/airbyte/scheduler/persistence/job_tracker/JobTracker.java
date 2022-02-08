@@ -6,7 +6,6 @@ package io.airbyte.scheduler.persistence.job_tracker;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -14,6 +13,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.JobConfig;
@@ -196,7 +196,7 @@ public class JobTracker {
     // Prepend all the keys with the root jsonPath
     // But leave the values unchanged
     final Map<String, Object> output = new HashMap<>();
-    mergeMaps(output, jsonPath, metadata);
+    Jsons.mergeMaps(output, jsonPath, metadata);
     return output;
   }
 
@@ -212,7 +212,7 @@ public class JobTracker {
       // * Otherwise, do some basic conversions to value-ish data.
       // It would be a weird thing to declare const: null, but in that case we don't want to report null
       // anyway, so explicitly use hasNonNull.
-      return flatten(config);
+      return Jsons.flatten(config);
     } else if (schema.has("oneOf")) {
       // If this schema is a oneOf, then find the first sub-schema which the config matches
       // and use that sub-schema to convert the config to a map
@@ -238,7 +238,7 @@ public class JobTracker {
           final String field = entry.getKey();
           final JsonNode value = entry.getValue();
           if (maybeProperties.hasNonNull(field)) {
-            mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
+            Jsons.mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
           }
         }
       }
@@ -252,57 +252,6 @@ public class JobTracker {
       // Otherwise, this is an empty string, so just ignore it
       return emptyMap();
     }
-  }
-
-  /**
-   * Naively flattens a JsonNode, or dumps it into a {null: node} map. Does _not_ mask values; ONLY
-   * use this if you're sure that node does NOT contain potentially-sensitive data.
-   */
-  private static Map<String, Object> flatten(final JsonNode node) {
-    if (node.isObject()) {
-      final Map<String, Object> output = new HashMap<>();
-      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-        final Entry<String, JsonNode> entry = it.next();
-        final String field = entry.getKey();
-        final JsonNode value = entry.getValue();
-        mergeMaps(output, field, flatten(value));
-      }
-      return output;
-    } else {
-      final Object metadataValue;
-      if (node.isBoolean()) {
-        metadataValue = node.asBoolean();
-      } else if (node.isLong()) {
-        metadataValue = node.asLong();
-      } else if (node.isDouble()) {
-        metadataValue = node.asDouble();
-      } else if (node.isValueNode() && !node.isNull()) {
-        metadataValue = node.asText();
-      } else {
-        // Fallback handling for e.g. arrays
-        metadataValue = node.toString();
-      }
-      return singletonMap(null, metadataValue);
-    }
-  }
-
-  /**
-   * Prepend all keys in subMap with prefix, then merge that map into originalMap.
-   * <p>
-   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
-   * treated as {prefix: value} when merging into originalMap.
-   */
-  private static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
-    originalMap.putAll(subMap.entrySet().stream().collect(toMap(
-        e -> {
-          final String key = e.getKey();
-          if (key != null) {
-            return prefix + "." + key;
-          } else {
-            return prefix;
-          }
-        },
-        Entry::getValue)));
   }
 
   private Map<String, Object> generateSyncMetadata(final UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {
