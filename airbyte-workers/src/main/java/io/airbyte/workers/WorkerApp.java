@@ -266,7 +266,11 @@ public class WorkerApp {
   public static record ContainerOrchestratorConfig(
                                                    String namespace,
                                                    DocumentStoreClient documentStoreClient,
-                                                   KubernetesClient kubernetesClient) {}
+                                                   KubernetesClient kubernetesClient,
+                                                   String secretName,
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage,
+                                                   String googleApplicationCredentials) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -279,7 +283,11 @@ public class WorkerApp {
       return Optional.of(new ContainerOrchestratorConfig(
           configs.getJobKubeNamespace(),
           documentStoreClient,
-          kubernetesClient));
+          kubernetesClient,
+          configs.getContainerOrchestratorSecretName(),
+          configs.getContainerOrchestratorSecretMountPath(),
+          configs.getContainerOrchestratorImage(),
+          configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
     }
