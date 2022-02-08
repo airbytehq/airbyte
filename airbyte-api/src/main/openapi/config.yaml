@@ -3290,7 +3290,7 @@ components:
         - source
         - destination
         - replication
-        - replicationWorker # todo (parker) remove this in favor of replication
+        - replication_worker # todo (parker) remove this in favor of replication
         - persistence
         - normalization
         - dbt
