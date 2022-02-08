@@ -34,9 +34,7 @@ public class ActivityConfiguration {
       .build();
 
   public static final ActivityOptions SHORT_ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(DB_INTERACTION_TIMEOUT)
       .setStartToCloseTimeout(DB_INTERACTION_TIMEOUT)
-      .setScheduleToStartTimeout(DB_INTERACTION_TIMEOUT)
       .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
       .setRetryOptions(TemporalUtils.RETRY)
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
