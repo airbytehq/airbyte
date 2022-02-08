@@ -92,7 +92,7 @@
       "type": ["object", "null"],
       "properties": {
         "choices": {
-          "type": "array",
+          "type": ["array", "null"],
           "items": {
             "type": ["object", "null"],
             "properties": {
