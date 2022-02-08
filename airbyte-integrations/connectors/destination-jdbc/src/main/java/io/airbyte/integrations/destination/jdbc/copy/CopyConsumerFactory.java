@@ -106,8 +106,8 @@ public class CopyConsumerFactory {
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
     return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
       String currentFileName = pairToCopier.get(pair).getCurrentFile();
-      if (!stagingFileName.isBlank() && !currentFileName.isBlank() && !stagingFileName.equals(currentFileName)) {
-        pairToCopier.get(pair).closeCurrentStagingFileWriter();
+      if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
+        pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
       }
       return currentFileName;
     };

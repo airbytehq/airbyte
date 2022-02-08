@@ -124,7 +124,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void closeCurrentStagingFileWriter() throws Exception {
+  public void closeNonCurrentStagingFileWriters() throws Exception {
     // TODO need to update this method when updating whole class for using GcsWriter
   }
 

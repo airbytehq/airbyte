@@ -10,8 +10,9 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 public interface CheckAndRemoveRecordWriter {
 
   /**
-   * Compares the name of the current staging file with the method argument. If the names are different,
-   * then the staging writer is closed and the name of the new file where the record will be sent will be returned.
+   * Compares the name of the current staging file with the method argument. If the names are
+   * different, then the staging writer corresponding to `stagingFileName` is closed and the name
+   * of the new file where the record will be sent will be returned.
    */
   String apply(AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair, String stagingFileName) throws Exception;
 

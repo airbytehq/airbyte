@@ -128,7 +128,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void closeCurrentStagingFileWriter() throws Exception {
+  public void closeNonCurrentStagingFileWriters() throws Exception {
     Set<String> removedKeys = new HashSet<>();
     for (String key : activeStagingWriterFileNames) {
       if (!key.equals(currentFile)) {
