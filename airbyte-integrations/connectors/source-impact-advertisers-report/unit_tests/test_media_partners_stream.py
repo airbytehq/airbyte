@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_impact_advertisers_report.source import Report
+from source_impact_advertisers_report.source import MediaPartners
 from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 
 DEFAULT_CONFIG = {
@@ -20,13 +20,13 @@ DEFAULT_CONFIG = {
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(Report, "path", "v0/example_endpoint")
-    mocker.patch.object(Report, "primary_key", "test_primary_key")
-    mocker.patch.object(Report, "__abstractmethods__", set())
+    mocker.patch.object(MediaPartners, "path", "v0/example_endpoint")
+    mocker.patch.object(MediaPartners, "primary_key", "test_primary_key")
+    mocker.patch.object(MediaPartners, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
-    stream = Report(
+def test_report_request_params(patch_base_class):
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -37,15 +37,13 @@ def test_request_params(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {
         "Page": 1,
-        "PageSize": 5000,
-        "START_DATE": DEFAULT_CONFIG["start_date"],
-        "SUBAID": DEFAULT_CONFIG["sub_ad_id"]
+        "PageSize": 5000
     }
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = Report(
+def test_report_next_page_token(patch_base_class):
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -62,8 +60,8 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(**inputs) == expected_token
 
 
-def test_parse_response(patch_base_class):
-    stream = Report(
+def test_report_parse_response(patch_base_class):
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -71,7 +69,7 @@ def test_parse_response(patch_base_class):
         start_date=DEFAULT_CONFIG["start_date"],
         sub_ad_id=DEFAULT_CONFIG["sub_ad_id"]
     )
-    records = [
+    media_partners = [
         {"key": "value"},
         {"key": "value2"},
     ]
@@ -88,16 +86,16 @@ def test_parse_response(patch_base_class):
         "@previouspageuri": "",
         "@nextpageuri": "",
         "@lastpageuri": f'/Advertisers/{DEFAULT_CONFIG["account_sid"]}/Reports/{DEFAULT_CONFIG["report_id"]}?PageSize=5000&Page=1&START_DATE={DEFAULT_CONFIG["start_date"]}&SUBAID={DEFAULT_CONFIG["sub_ad_id"]}',
-        "Records": records
+        "MediaPartners": media_partners
     }
     inputs = {"response": response}
 
-    expected_parsed_object = records
+    expected_parsed_object = media_partners
     assert list(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
-    stream = Report(
+def test_report_request_headers(patch_base_class):
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -110,8 +108,8 @@ def test_request_headers(patch_base_class):
     assert stream.request_headers(**inputs) == expected_headers
 
 
-def test_http_method(patch_base_class):
-    stream = Report(
+def test_report_http_method(patch_base_class):
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -132,10 +130,10 @@ def test_http_method(patch_base_class):
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
+def test_report_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = Report(
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],
@@ -146,9 +144,9 @@ def test_should_retry(patch_base_class, http_status, should_retry):
     assert stream.should_retry(response_mock) == should_retry
 
 
-def test_backoff_time(patch_base_class):
+def test_report_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = Report(
+    stream = MediaPartners(
         authenticator=NoAuth,
         account_sid=DEFAULT_CONFIG["account_sid"],
         auth_token=DEFAULT_CONFIG["auth_token"],

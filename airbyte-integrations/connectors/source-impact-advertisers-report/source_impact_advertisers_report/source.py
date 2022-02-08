@@ -48,6 +48,9 @@ class ImpactAdvertisersReportStream(HttpStream, ABC):
             **auth_header,
         }
 
+class Report(ImpactAdvertisersReportStream):
+    primary_key = "Media"
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -67,15 +70,35 @@ class ImpactAdvertisersReportStream(HttpStream, ABC):
         result = response_json.get("Records", [])
         yield from result
 
-
-class Report(ImpactAdvertisersReportStream):
-    primary_key = "Media"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"{self.account_sid}/Reports/{self.report_id}"
 
+class MediaPartners(ImpactAdvertisersReportStream):
+    primary_key = "Id"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        params = {
+            "PageSize": 5000,
+            "Page": 1
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        result = response_json.get("MediaPartners", [])
+        yield from result
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"{self.account_sid}/MediaPartners"
 
 # Source
 class SourceImpactAdvertisersReport(AbstractSource):
@@ -93,6 +116,14 @@ class SourceImpactAdvertisersReport(AbstractSource):
         auth = HttpBasicAuthenticator(config["account_sid"], config["auth_token"], auth_method="Basic")
         return [
             Report(
+                authenticator=auth,
+                account_sid=config["account_sid"],
+                auth_token=config["auth_token"],
+                report_id=config["report_id"],
+                start_date=config["start_date"],
+                sub_ad_id=config["sub_ad_id"]
+            ),
+            MediaPartners(
                 authenticator=auth,
                 account_sid=config["account_sid"],
                 auth_token=config["auth_token"],
