@@ -328,9 +328,20 @@ public interface Configs {
 
   // Container Orchestrator
   /**
-   * Define if Airbyte should use Scheduler V2. Internal-use only.
+   * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
   boolean getContainerOrchestratorEnabled();
+
+  /**
+   * Get the name of the container orchestrator secret. Internal-use only.
+   */
+  String getContainerOrchestratorSecretName();
+
+  /**
+   * Get the mount path for a secret that should be loaded onto container orchestrator pods.
+   * Internal-use only.
+   */
+  String getContainerOrchestratorSecretMountPath();
 
   /**
    * Get the longest duration of non long running activity
