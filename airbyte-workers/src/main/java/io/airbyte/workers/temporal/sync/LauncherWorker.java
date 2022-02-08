@@ -114,7 +114,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
-            containerOrchestratorConfig.containerOrchestratorImage());
+            containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.googleApplicationCredentials());
 
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           process.create(

@@ -269,7 +269,8 @@ public class WorkerApp {
                                                    KubernetesClient kubernetesClient,
                                                    String secretName,
                                                    String secretMountPath,
-                                                   String containerOrchestratorImage) {}
+                                                   String containerOrchestratorImage,
+                                                   String googleApplicationCredentials) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -285,7 +286,8 @@ public class WorkerApp {
           kubernetesClient,
           configs.getContainerOrchestratorSecretName(),
           configs.getContainerOrchestratorSecretMountPath(),
-          configs.getContainerOrchestratorImage()));
+          configs.getContainerOrchestratorImage(),
+          configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
     }
