@@ -102,6 +102,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.26` | 2022-02-09 | [10150](https://github.com/airbytehq/airbyte/pull/10150) | Add support for multiple `customer IDs` in specs. |
 | `0.1.25` | 2022-02-04 | [9812](https://github.com/airbytehq/airbyte/pull/9812) | Handle `EXPIRED_PAGE_TOKEN` exception and retry with updated state. |
 | `0.1.24` | 2022-02-04 | [9996](https://github.com/airbytehq/airbyte/pull/9996) | Use Google Ads API version V9. |
 | `0.1.23` | 2022-01-25 | [8669](https://github.com/airbytehq/airbyte/pull/8669) | Add end date parameter in spec. |
