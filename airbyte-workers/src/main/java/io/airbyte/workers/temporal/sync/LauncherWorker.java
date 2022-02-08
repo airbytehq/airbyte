@@ -113,7 +113,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
-            containerOrchestratorConfig.kubernetesClient());
+            containerOrchestratorConfig.kubernetesClient(),
+            containerOrchestratorConfig.secretName(),
+            containerOrchestratorConfig.secretMountPath());
 
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           process.create(
