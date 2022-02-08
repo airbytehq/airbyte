@@ -20,7 +20,7 @@ temporary_folders = set()
 
 # dbt models and final sql outputs from the following git versioned tests will be written in a folder included in
 # airbyte git repository.
-git_versioned_tests = ["test_simple_streams"]
+git_versioned_tests = ["test_simple_streams", "test_nested_streams"]
 
 dbt_test_utils = DbtIntegrationTest()
 
@@ -142,10 +142,6 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
     normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/modified_models/generated/", "third_output")
     dbt_test(destination_type, test_root_dir)
-
-    fp = open(os.path.join(test_root_dir, "logs/dbt.log"))
-    print(fp.read(), flush=True)
-    fp.close()
 
 
 def normalize_dbt_output(test_root_dir: str, input_dir: str, output_dir: str):

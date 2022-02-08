@@ -4,9 +4,6 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-mysql
 
-RUN echo destination-mysql
-RUN echo ${APPLICATION}
-
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
