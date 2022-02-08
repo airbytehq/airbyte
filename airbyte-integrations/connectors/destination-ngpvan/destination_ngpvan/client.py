@@ -39,6 +39,17 @@ class NGPVANClient:
         endpoint = "bulkImportMappingTypes"
         return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
 
+    def get_bulk_import_job_status(self, jobId: str) -> requests.Response:
+        """Returns status of bulk import job"""
+        endpoint="bulkImportJobs/"+jobId
+
+        return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
+
+
+    """
+    BULK IMPORT METHODS
+    """
+
     def bulk_upsert_contacts(self, fileName: str, columns: list, sourceUrl: str) -> requests.Response:
         """
         Bulk create or update contact records. Provide a Parsons table of contact data to
@@ -171,9 +182,8 @@ class NGPVANClient:
 
         return self._request(method="POST", endpoint=endpoint, auth=self.auth, json=payload)
 
-    def bulk_apply_activist_codes(self, sourceUrl: str) -> requests.Response:
+    def bulk_apply_activist_codes(self, fileName: str, columns: list, sourceUrl: str) -> requests.Response:
         """
-        TODO: need to figure out how the mapping stuff works. This successfully sends a file to the VAN API but the bulk import fails.
         Bulk import job history: https://app.ngpvan.com/BulkUploadBatchesList.aspx
 
         Bulk apply activist codes.
@@ -223,7 +233,7 @@ class NGPVANClient:
                    "file": {
                        "columnDelimiter": 'csv',
                        "columns": [{'name': c} for c in columns],
-                       "fileName": 'output_airbyte.csv',
+                       "fileName": fileName,
                        "hasHeader": "True",
                        "hasQuotes": "True",
                        "sourceUrl": sourceUrl},
@@ -232,5 +242,8 @@ class NGPVANClient:
                                 "actionType": "loadMappedFile",
                                 "mappingTypes": [{'name': 'ActivistCode'}]}]
                    }
+
+        print('PAYLOAD:')
+        print(payload)
 
         return self._request(method="POST", endpoint=endpoint, auth=self.auth, json=payload)

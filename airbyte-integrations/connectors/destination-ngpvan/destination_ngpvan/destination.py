@@ -11,14 +11,16 @@
 """
 TODO()
 - test the Activist Codes import a bit more to make sure it's doing the thing
-- add a time.sleep(3) and check job status; throw an error if job has failed (return the text from the job status endpoint)
+- ask airbyte about waiting for job status? what is bp?
+- add a time.sleep(5) and check job status; throw an error if job has failed (return the text from the job status endpoint)
 - need to parse source data (from AirbyteMessage) to conform to format required by VAN API
+- ENABLE DBT? is that hard?
 - test different data sources (Sheets, BQ, GCS, any others?) to make sure the connector still works
 - support additional bulk import operations
 - test larger files? can we generate larger amounts of synthetic data using Hudson's strats?
-- what user stories are we still missing after all this?
+- what user stories are we still missing after all this?ping import Mapping, Any, Iterable
 """
-
+import time
 from typing import Mapping, Any, Iterable
 
 from airbyte_cdk import AirbyteLogger
@@ -26,6 +28,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_ngpvan.client import NGPVANClient
 from destination_ngpvan.writer import NGPVANWriter
+from destination_ngpvan.validator import NGPVANValidator
 
 class DestinationNGPVAN(Destination):
 
@@ -46,8 +49,31 @@ class DestinationNGPVAN(Destination):
                 # ignore other message types for now
                 continue
 
-        jobId=writer.run_bulk_import_job()
+        jobId=str(writer.run_bulk_import_job())
+
         print(f'Bulk import job created: ID {jobId}')
+
+        validator=NGPVANValidator(client=NGPVANClient(**config),jobId=jobId)
+        validator.monitorBulkImportStatus()
+
+        #start_import_time=time.perf_counter()
+#
+        #status=""
+        #print("Keeping an eye on it...")
+        #while status!="Completed":
+        #    time.sleep(5)
+        #    status_json=writer.client.get_bulk_import_job_status(str(jobId))
+        #    status=status_json["status"]
+        #    time_elapsed=round(time.perf_counter()-start_import_time)
+        #    print(f"Job status: {status} (time elapsed: {time_elapsed} seconds)")
+#
+        #    if status=="Error":
+        #        print("Bulk import failed with error. Here is the full status response:")
+        #        print(status_json)
+        #        break
+#
+        #results_url=status_json["resultFiles"][0]["url"]
+        #print(f"Bulk import complete. Results file located at: {results_url}")
 
         """
         TODO
