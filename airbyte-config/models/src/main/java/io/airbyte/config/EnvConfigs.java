@@ -513,6 +513,11 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getGoogleApplicationCredentials() {
+    return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, null);
+  }
+
+  @Override
   public CloudStorageConfigs getStateStorageCloudConfigs() {
     return stateStorageCloudConfigs;
   }
