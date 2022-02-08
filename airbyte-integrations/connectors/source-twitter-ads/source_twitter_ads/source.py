@@ -129,12 +129,13 @@ class TwitterAdsStream(HttpStream, ABC):
 
             results =[ item for sublist in results for item in sublist]
             
-            results_dict = {item["id"]:item for item in results}
+            
 
-            return results_dict.values()
+            return results
         else:
             response_json = response.json()
             result = response_json.get("data")
+
             return result
         
 

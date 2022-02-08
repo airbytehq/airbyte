@@ -1,109 +1,2638 @@
-
-   
 {
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "billed_charge_local_micro": {
-      "type": "number"
+    "segment": {
+      "type": "object",
+      "properties": {
+        "segment_name": {
+          "type": "string"
+        },
+        "segment_value": {
+          "type": "string"
+        }
+      }
     },
-    "billed_engagements": {
-      "type": "number"
-    },
-    "card_engagements": {
-      "type": "number"
-    },
-    "clicks": {
-      "type": "number"
-    },
-    "country": {
-      "type": "string"
-    },
-    "end_time": {
-      "type": "string"
-    },
-    "engagements": {
-      "type": "number"
-    },
-    "entity": {
-      "type": "string"
-    },
-    "follows": {
-      "type": "number"
-    },
-    "granularity": {
-      "type": "string"
-    },
-    "id": {
-      "type": "string"
-    },
-    "impression": {
-      "type": "number"
-    },
-    "likes": {
-      "type": "number"
-    },
-    "media_engagements": {
-      "type": "number"
-    },
-    "media_views": {
-      "type": "number"
-    },
-    "placement": {
-      "type": "string"
-    },
-    "platform": {
-      "type": "string"
-    },
-    "qualified_impressions": {
-      "type": "number"
-    },
-    "replies": {
-      "type": "number"
-    },
-    "retweets": {
-      "type": "number"
-    },
-    "segement_name": {
-      "type": "string"
-    },
-    "segment_value": {
-      "type": "number"
-    },
-    "segment_type": {
-      "type": "number"
-    },
-    "start_time": {
-      "type": "string"
-    },
-    "url_clicks": {
-      "type": "number"
-    },
-    "video_3s100pct_views": {
-      "type": "number"
-    },
-    "video_cta_clicks": {
-      "type": "number"
-    },
-    "video_total_views": {
-      "type": "number"
-    },
-    "video_views_100": {
-      "type": "number"
-    },
-    "video_mrc_views": {
-      "type": "number"
-    },
-    "video_total_views": {
-      "type": "number"
-    },
-    "video_views_100": {
-      "type": "number"
-    },
-    "video_views_50": {
-      "type": "number"
-    },
-    "video_views_75": {
-      "type": "number"
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "video_views_50": {
+          "type": "null"
+        },
+        "impressions": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_spent_credits": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_installs": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_content_views": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_add_to_wishlists": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_checkouts_initiated": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "tweets_send": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "conversion_purchases": {
+          "type": "object",
+          "properties": {
+            "order_quantity_engagement": {
+              "type": "null"
+            },
+            "sale_amount_engagement": {
+              "type": "null"
+            },
+            "sale_amount_view": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "metric": {
+              "type": "null"
+            },
+            "order_quantity_view": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_reservations": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_tutorials_completed": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "billed_charge_local_micro": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "qualified_impressions": {
+          "type": "null"
+        },
+        "video_views_75": {
+          "type": "null"
+        },
+        "conversion_sign_ups": {
+          "type": "object",
+          "properties": {
+            "order_quantity_engagement": {
+              "type": "null"
+            },
+            "sale_amount_engagement": {
+              "type": "null"
+            },
+            "sale_amount_view": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "metric": {
+              "type": "null"
+            },
+            "order_quantity_view": {
+              "type": "null"
+            }
+          }
+        },
+        "media_engagements": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "follows": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_achievements_unlocked": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "video_3s100pct_views": {
+          "type": "null"
+        },
+        "app_clicks": {
+          "type": "null"
+        },
+        "mobile_conversion_searches": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_site_visits": {
+          "type": "object",
+          "properties": {
+            "order_quantity": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "retweets": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_key_page_views": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            }
+          }
+        },
+        "video_cta_clicks": {
+          "type": "null"
+        },
+        "unfollows": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "likes": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_add_to_carts": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_payment_info_additions": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_re_engages": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "video_content_starts": {
+          "type": "null"
+        },
+        "video_views_25": {
+          "type": "null"
+        },
+        "mobile_conversion_shares": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "conversion_site_visits": {
+          "type": "object",
+          "properties": {
+            "order_quantity_engagement": {
+              "type": "null"
+            },
+            "sale_amount_engagement": {
+              "type": "null"
+            },
+            "sale_amount_view": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "metric": {
+              "type": "null"
+            },
+            "order_quantity_view": {
+              "type": "null"
+            }
+          }
+        },
+        "engagements": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "conversion_custom": {
+          "type": "object",
+          "properties": {
+            "order_quantity_engagement": {
+              "type": "null"
+            },
+            "sale_amount_engagement": {
+              "type": "null"
+            },
+            "sale_amount_view": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "metric": {
+              "type": "null"
+            },
+            "order_quantity_view": {
+              "type": "null"
+            }
+          }
+        },
+        "video_views_100": {
+          "type": "null"
+        },
+        "clicks": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_sign_ups": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "media_views": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "card_engagements": {
+          "type": "null"
+        },
+        "video_6s_views": {
+          "type": "null"
+        },
+        "poll_card_vote": {
+          "type": "null"
+        },
+        "replies": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "video_15s_views": {
+          "type": "null"
+        },
+        "url_clicks": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_purchases": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_rates": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_logins": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "billed_engagements": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "mobile_conversion_updates": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "conversion_downloads": {
+          "type": "object",
+          "properties": {
+            "order_quantity_engagement": {
+              "type": "null"
+            },
+            "sale_amount_engagement": {
+              "type": "null"
+            },
+            "sale_amount_view": {
+              "type": "null"
+            },
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "metric": {
+              "type": "null"
+            },
+            "order_quantity_view": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_levels_achieved": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "mobile_conversion_downloads": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            }
+          }
+        },
+        "video_total_views": {
+          "type": "null"
+        },
+        "mobile_conversion_invites": {
+          "type": "object",
+          "properties": {
+            "post_view": {
+              "type": "null"
+            },
+            "order_quantity": {
+              "type": "null"
+            },
+            "assisted": {
+              "type": "null"
+            },
+            "post_engagement": {
+              "type": "null"
+            },
+            "sale_amount": {
+              "type": "null"
+            }
+          }
+        },
+        "carousel_swipes": {
+          "type": "null"
+        }
+      }
     }
   }
 }
