@@ -4,6 +4,9 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-mssql
 
+RUN echo destination-mssql
+RUN echo ${APPLICATION}
+
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
