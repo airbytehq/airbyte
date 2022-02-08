@@ -24,6 +24,7 @@ from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
+    AdAccount,
     AdCreatives,
     Ads,
     AdSets,
@@ -36,6 +37,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsRegion,
     Campaigns,
     Videos,
+    Images,
 )
 
 logger = logging.getLogger("airbyte")
@@ -139,6 +141,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         streams = [
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            AdAccount(api=api),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
@@ -150,6 +153,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsPlatformAndDevice(**insights_args),
             AdsInsightsActionType(**insights_args),
             Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
