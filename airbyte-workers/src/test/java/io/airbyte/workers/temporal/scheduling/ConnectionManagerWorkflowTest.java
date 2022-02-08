@@ -157,7 +157,8 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(2);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
+              && changedStateEvent.isValue())
           .isEmpty();
 
       testEnv.shutdown();
@@ -189,7 +190,8 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
+              && changedStateEvent.isValue())
           .isEmpty();
 
       testEnv.shutdown();
@@ -230,7 +232,8 @@ public class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(
               changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
-                  && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING)
+                  && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING
+                  && changedStateEvent.getField() != StateField.SUCCESS)
                   && changedStateEvent.isValue())
           .isEmpty();
 
@@ -271,7 +274,8 @@ public class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(
-              changedStateEvent -> changedStateEvent.getField() != StateField.UPDATED && changedStateEvent.isValue())
+              changedStateEvent -> (changedStateEvent.getField() != StateField.UPDATED && changedStateEvent.getField() != StateField.SUCCESS)
+                  && changedStateEvent.isValue())
           .isEmpty();
 
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
@@ -313,7 +317,8 @@ public class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(
-              changedStateEvent -> changedStateEvent.getField() != StateField.CANCELLED && changedStateEvent.isValue())
+              changedStateEvent -> (changedStateEvent.getField() != StateField.CANCELLED && changedStateEvent.getField() != StateField.SUCCESS)
+                  && changedStateEvent.isValue())
           .isEmpty();
 
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
@@ -355,7 +360,8 @@ public class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(
-              changedStateEvent -> changedStateEvent.getField() != StateField.DELETED && changedStateEvent.isValue())
+              changedStateEvent -> changedStateEvent.getField() != StateField.DELETED && changedStateEvent.getField() != StateField.SUCCESS
+                  && changedStateEvent.isValue())
           .isEmpty();
 
       Mockito.verify(mConnectionDeletionActivity).deleteConnection(Mockito.any());
