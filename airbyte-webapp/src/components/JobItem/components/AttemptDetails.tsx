@@ -22,7 +22,7 @@ const FailureReasonDetails = styled.div`
 `;
 
 const getFailureFromAttempt = (attempt: Attempt) => {
-  return attempt.failureSummary.failures[0];
+  return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
 const AttemptDetails: React.FC<IProps> = ({
@@ -137,7 +137,7 @@ const AttemptDetails: React.FC<IProps> = ({
         <FailureReasonDetails>
           {formatMessage(
             {
-              id: "ui.keyValuePairv3",
+              id: "ui.keyValuePairV3",
             },
             {
               key: getFailureOrigin(attempt),

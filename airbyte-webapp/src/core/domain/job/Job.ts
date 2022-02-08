@@ -31,17 +31,17 @@ enum FailureType {
 }
 
 export interface Failure {
-  failureOrigin: FailureOrigin;
-  failureType: FailureType;
-  externalMessage: string;
-  stacktrace: string;
-  retryable: boolean;
+  failureOrigin?: FailureOrigin;
+  failureType?: FailureType;
+  externalMessage?: string;
+  stacktrace?: string;
+  retryable?: boolean;
   timestamp: number;
 }
 
 export interface FailedSummary {
   failures: Failure[];
-  partialSuccess: boolean;
+  partialSuccess?: boolean;
 }
 
 export interface TotalStats {
@@ -59,8 +59,8 @@ export interface Attempt {
   endedAt: number;
   bytesSynced: number;
   recordsSynced: number;
-  totalStats: TotalStats;
-  failureSummary: FailedSummary;
+  totalStats?: TotalStats;
+  failureSummary?: FailedSummary;
 }
 
 export interface AttemptInfo {
@@ -79,7 +79,7 @@ export interface JobDetails {
 
 export interface JobDebugInfoMeta {
   airbyteVersion: string;
-  id: number | string;
+  id: number;
   configType: string;
   configId: string;
   status: Status | null;

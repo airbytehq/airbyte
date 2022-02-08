@@ -48,7 +48,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
   const getSourceDetails = () => {
     const sourceDetails = formatMessage(
       {
-        id: "ui.keyValuePairv2",
+        id: "ui.keyValuePairV2",
       },
       {
         key: jobDebugInfo.sourceDefinition.name,
@@ -70,7 +70,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
   const getDestinationDetails = () => {
     const destinationDetails = formatMessage(
       {
-        id: "ui.keyValuePairv2",
+        id: "ui.keyValuePairV2",
       },
       {
         key: jobDebugInfo.destinationDefinition.name,
