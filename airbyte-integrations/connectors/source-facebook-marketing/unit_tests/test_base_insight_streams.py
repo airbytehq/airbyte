@@ -122,15 +122,21 @@ class TestBaseInsightsStream:
         [
             {
                 AdsInsights.cursor_field: "2010-10-03",
-                "slices": ["2010-01-01", "2010-01-02", ]
+                "slices": [
+                    "2010-01-01",
+                    "2010-01-02",
+                ],
             },
             {
                 AdsInsights.cursor_field: "2010-10-03",
             },
             {
-                "slices": ["2010-01-01", "2010-01-02",]
+                "slices": [
+                    "2010-01-01",
+                    "2010-01-02",
+                ]
             },
-        ]
+        ],
     )
     def test_state(self, api, state):
         """State setter/getter should work with all combinations"""

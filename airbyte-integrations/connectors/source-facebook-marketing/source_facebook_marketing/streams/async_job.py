@@ -6,7 +6,7 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Sequence, Union, Type
+from typing import Any, Iterator, List, Mapping, Optional, Sequence, Type, Union
 
 import pendulum
 from facebook_business.adobjects.ad import Ad
@@ -27,7 +27,7 @@ def chunks(data: Sequence[Any], n: int) -> Iterator[Any]:
 
 
 def update_in_batch(batch: FacebookAdsApiBatch, jobs: List["AsyncJob"]):
-    """ Update status of each job in the list in a batch, making it most efficient way to update status.
+    """Update status of each job in the list in a batch, making it most efficient way to update status.
 
     :param batch:
     :param jobs:
@@ -199,8 +199,7 @@ class InsightAsyncJob(AsyncJob):
         self._failed = False
 
     def split_job(self) -> List["AsyncJob"]:
-        """Split existing job in few smaller ones grouped by ParentAsyncJob class.
-        """
+        """Split existing job in few smaller ones grouped by ParentAsyncJob class."""
         if isinstance(self._edge_object, AdAccount):
             return self._split_by_edge_class(Campaign)
         elif isinstance(self._edge_object, Campaign):
@@ -210,7 +209,7 @@ class InsightAsyncJob(AsyncJob):
         raise RuntimeError("The job is already splitted to the smallest size.")
 
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
-        """ Split insight job by creating insight jobs from lower edge object, i.e.
+        """Split insight job by creating insight jobs from lower edge object, i.e.
         Account -> Campaign -> AdSet
         TODO: use some cache to avoid expensive queries across different streams.
         :return: list of new jobs
@@ -237,10 +236,7 @@ class InsightAsyncJob(AsyncJob):
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
-        jobs = [
-            InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval)
-            for pk in ids
-        ]
+        jobs = [InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval) for pk in ids]
         return jobs
 
     def start(self):

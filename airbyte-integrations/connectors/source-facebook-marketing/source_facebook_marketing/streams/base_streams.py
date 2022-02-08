@@ -15,7 +15,7 @@ from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
-from .common import deep_merge, MAX_BATCH_SIZE
+from .common import MAX_BATCH_SIZE, deep_merge
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API

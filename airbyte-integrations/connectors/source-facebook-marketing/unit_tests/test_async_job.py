@@ -4,7 +4,6 @@
 
 import time
 from typing import Iterator
-from unittest.mock import call
 
 import pendulum
 import pytest
@@ -233,7 +232,10 @@ class TestInsightAsyncJob:
     def test_str(self, api, account):
         interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2011, 1, 1))
         job = InsightAsyncJob(
-            edge_object=account, api=api, params={"breakdowns": [10, 20]}, interval=interval,
+            edge_object=account,
+            api=api,
+            params={"breakdowns": [10, 20]},
+            interval=interval,
         )
 
         assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
@@ -328,7 +330,9 @@ class TestParentAsyncJob:
         grouped_jobs[0].split_job.return_value = [mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob)]
         grouped_jobs[5].failed = True
         grouped_jobs[5].split_job.return_value = [
-            mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob)
+            mocker.Mock(spec=InsightAsyncJob),
+            mocker.Mock(spec=InsightAsyncJob),
+            mocker.Mock(spec=InsightAsyncJob),
         ]
 
         small_jobs = parent_job.split_job()

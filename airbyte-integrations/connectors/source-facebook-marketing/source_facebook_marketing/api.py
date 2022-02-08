@@ -36,6 +36,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     @dataclass
     class Throttle:
         """Utilization of call rate in %, from 0 to 100"""
+
         per_application: float
         per_account: float
 
@@ -120,7 +121,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=ads_insights_throttle.get("app_id_util_pct", 0), per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
+                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
             )
 
     @backoff_policy

@@ -5,9 +5,9 @@
 import pytest
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.common import JobException
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
+from source_facebook_marketing.streams.common import JobException
 
 
 @pytest.fixture(name="api")
@@ -47,8 +47,8 @@ class TestInsightAsyncManager:
         time_mock.sleep.assert_not_called()
 
     def test_jobs_wait(self, api, mocker, time_mock, update_job_mock):
-        """ Manager should return completed jobs and wait for others
-        """
+        """Manager should return completed jobs and wait for others"""
+
         def update_job_behaviour():
             jobs[1].completed = True
             yield
@@ -75,8 +75,8 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_restarted(self, api, mocker, time_mock, update_job_mock):
-        """ Manager should restart failed jobs
-        """
+        """Manager should restart failed jobs"""
+
         def update_job_behaviour():
             jobs[1].failed = True
             yield
@@ -102,8 +102,8 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_split(self, api, mocker, time_mock, update_job_mock):
-        """ Manager should split failed jobs when they fail second time
-        """
+        """Manager should split failed jobs when they fail second time"""
+
         def update_job_behaviour():
             jobs[1].failed = True
             jobs[1].attempt_number = 2
@@ -135,8 +135,8 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_failed_too_many_times(self, api, mocker, time_mock, update_job_mock):
-        """ Manager should fail when job failed too many times
-        """
+        """Manager should fail when job failed too many times"""
+
         def update_job_behaviour():
             jobs[1].failed = True
             jobs[1].attempt_number = InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS
