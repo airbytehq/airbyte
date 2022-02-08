@@ -105,7 +105,9 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     final var asyncProcess = new AsyncOrchestratorPodProcess(
         kubePodInfo,
         documentStoreClient,
-        kubernetesClient);
+        kubernetesClient,
+        null,
+        null);
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
