@@ -160,6 +160,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     };
   }
 
+  // needs to override isNotInternalSchema for connectors that override getPrivilegesTableForCurrentUser()
   protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
     return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
   }
