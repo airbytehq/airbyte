@@ -36,8 +36,8 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
-    Videos,
     Images,
+    Videos,
 )
 
 logger = logging.getLogger("airbyte")

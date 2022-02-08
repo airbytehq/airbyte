@@ -20,8 +20,6 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
-from facebook_business.adobjects.adimage import AdImage
-from facebook_business.adobjects.adaccount import AdAccount as FAdAccount
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
@@ -357,7 +355,7 @@ class Images(FBMarketingIncrementalStream):
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             filter_value = self._start_date
 
-        first_sync = (not stream_state and str(self._start_date) <= record[self.cursor_field])
+        first_sync = not stream_state and str(self._start_date) <= record[self.cursor_field]
 
         if first_sync or pendulum.parse(record[self.cursor_field]) > filter_value:
             yield record
