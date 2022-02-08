@@ -133,6 +133,7 @@ public class WorkflowState {
     this.setContinueAsReset(false);
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
+    this.setStuck(false);
   }
 
 }
