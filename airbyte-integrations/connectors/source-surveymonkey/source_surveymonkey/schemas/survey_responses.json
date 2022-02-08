@@ -3,31 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "recipient_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "collection_mode": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "response_status": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "custom_value": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "email_address": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ip_address": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "logic_path": {
       "type": "object"
@@ -41,63 +41,63 @@
       }
     },
     "page_path": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "collector_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "survey_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "custom_variables": {
       "type": "object"
     },
     "edit_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "analyze_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "total_time": {
       "type": "integer"
     },
     "date_modified": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "date_created": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "href": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "pages": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "questions": {
-            "type": "array",
+            "type": ["array", "null"],
             "items": {
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "answers": {
-                  "type": "array",
+                  "type": ["array", "null"],
                   "items": {
                     "type": "object",
                     "properties": {
                       "choice_id": {
-                        "type": "string"
+                        "type": ["string", "null"]
                       }
                     }
                   }

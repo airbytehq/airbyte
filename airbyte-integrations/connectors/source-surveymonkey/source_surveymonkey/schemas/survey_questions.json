@@ -3,22 +3,22 @@
   "type": "object",
   "properties": {
     "page_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "position": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "visible": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "family": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "subtype": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "layout": {
       "type": ["object", "null"]
@@ -27,10 +27,10 @@
       "type": ["object", "null"],
       "properties": {
         "ignore_last": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
@@ -38,13 +38,13 @@
       "type": ["object", "null"],
       "properties": {
         "amount": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "text": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
@@ -64,15 +64,15 @@
           "type": ["string", "null"]
         },
         "text": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "forced_ranking": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "headings": {
       "type": "array",
@@ -80,13 +80,13 @@
         "type": "object",
         "properties": {
           "heading": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }
     },
     "href": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "answers": {
       "type": "object",
@@ -97,24 +97,24 @@
             "type": "object",
             "properties": {
               "position": {
-                "type": "integer"
+                "type": ["integer", "null"]
               },
               "visible": {
-                "type": "boolean"
+                "type": ["boolean", "null"]
               },
               "text": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "quiz_options": {
                 "type": "object",
                 "properties": {
                   "score": {
-                    "type": "integer"
+                    "type": ["integer", "null"]
                   }
                 }
               },
               "id": {
-                "type": "string"
+                "type": ["string", "null"]
               }
             }
           }

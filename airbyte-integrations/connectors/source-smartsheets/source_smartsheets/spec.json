@@ -50,8 +50,7 @@
       "complete_oauth_server_output_specification": {
         "type": "object",
         "additionalProperties": false,
-        "properties": {
-        }
+        "properties": {}
       }
     }
   }
