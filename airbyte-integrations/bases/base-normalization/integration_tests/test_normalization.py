@@ -143,12 +143,9 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
     normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/modified_models/generated/", "third_output")
     dbt_test(destination_type, test_root_dir)
 
-    print("run_schema_change_normalization")
-    print("run_schema_change_normalization")
-    print("run_schema_change_normalization")
-    print("run_schema_change_normalization")
-    import time
-    time.sleep(600)
+    fp = open(os.path.join(test_root_dir, "logs/dbt.log"))
+    print(fp.read(), flush=True)
+    fp.close()
 
 
 def normalize_dbt_output(test_root_dir: str, input_dir: str, output_dir: str):
