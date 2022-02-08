@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -407,6 +408,34 @@ public class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
           .hasSize(1);
+    }
+
+    @Disabled
+    @Test
+    @DisplayName("Test that cancelling a running workflow cancel the sync")
+    public void cancelRunning() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          1L,
+          1,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(10L));
+      workflow.cancelJob();
+      testEnv.sleep(Duration.ofMinutes(2L));
+      testEnv.shutdown();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
     }
 
     @Test
@@ -848,7 +877,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(2L));
       workflow.submitManualSync();
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromSource(FailureOrigin.REPLICATION_WORKER)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromSource(FailureOrigin.REPLICATION)));
 
       testEnv.shutdown();
     }
