@@ -5,8 +5,8 @@
         "name": "orders",
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["modified_at"],
-        "source_defined_primary_key": [["order_number", "account_number"]],
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["account_number" , "item_number", "order_number", "serial_number"]],
         "json_schema": {}
       },
       "sync_mode": "incremental",

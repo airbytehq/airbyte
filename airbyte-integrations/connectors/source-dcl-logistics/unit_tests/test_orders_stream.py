@@ -2,9 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
+from source_dcl_logistics.models.order import Order
 from source_dcl_logistics.source import Orders
 
 
@@ -24,12 +26,43 @@ def test_request_params(patch_base_class):
 
 
 def test_parse_response(patch_base_class):
+    fake_date_pdt_str = "2014-11-25T09:01:28-08:00"
+    fake_date = datetime.strptime(fake_date_pdt_str, "%Y-%m-%dT%H:%M:%S%z")
+
     stream = Orders()
-    fake_order_dict = {"order_number": 1}
-    fake_json_response = {"orders": [fake_order_dict]}
+
+    fake_order = Order(
+        account_number="FAKE",
+        order_number="FAKE",
+        item_number="FAKE",
+        serial_number="FAKE",
+        updated_at=fake_date.astimezone(timezone.utc),
+    )
+
+    fake_order_json = {
+        "account_number": fake_order.account_number,
+        "order_number": fake_order.order_number,
+        "shipments": [
+            {
+                "shipping_address": {},
+                "packages": [
+                    {
+                        "shipped_items": [
+                            {
+                                "item_number": fake_order.item_number,
+                                "quantity": fake_order.quantity,
+                                "serial_numbers": [fake_order.serial_number],
+                            }
+                        ]
+                    }
+                ],
+            }
+        ],
+        "modified_at": fake_date_pdt_str,
+    }
+    fake_json_response = {"orders": [fake_order_json]}
     inputs = {"response": MagicMock(json=MagicMock(return_value=fake_json_response))}
-    expected_parsed_object = fake_order_dict
-    assert list(stream.parse_response(**inputs)) == [expected_parsed_object]
+    assert next(stream.parse_response(**inputs)) == fake_order.__dict__
 
 
 def test_has_more_pages(patch_base_class):

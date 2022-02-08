@@ -2,6 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import timezone
+
+from dateutil.parser import parse
 from pytest import fixture
 from source_dcl_logistics.source import DEFAULT_CURSOR, IncrementalDclLogisticsStream
 
@@ -22,8 +25,9 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalDclLogisticsStream()
-    inputs = {"current_stream_state": None, "latest_record": {DEFAULT_CURSOR: "2022-02-01T00:00:00"}}
-    expected_state = {DEFAULT_CURSOR: "2022-02-01T00:00:00"}
+    fake_date = parse("2022-02-01T00:00:00").astimezone(timezone.utc)
+    inputs = {"current_stream_state": None, "latest_record": {DEFAULT_CURSOR: fake_date.isoformat(timespec="seconds")}}
+    expected_state = {DEFAULT_CURSOR: fake_date.replace(tzinfo=None).isoformat(timespec="seconds")}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
