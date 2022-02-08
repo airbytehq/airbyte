@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SnowflakeDatabase {
 
+  private static final String SNOWFLAKE_HOST_POSTFIX = ".aws.snowflakecomputing.com";
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
   private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
@@ -69,9 +70,9 @@ public class SnowflakeDatabase {
 
   private static String getHost(JsonNode config) {
     String host = config.get("host").asText();
-    return host.endsWith(".aws.snowflakecomputing.com")
+    return host.endsWith(SNOWFLAKE_HOST_POSTFIX)
         ? host
-        : host.concat(".aws.snowflakecomputing.com");
+        : host.concat(SNOWFLAKE_HOST_POSTFIX);
   }
 
   private static final class SnowflakeConnectionSupplier implements CloseableConnectionSupplier {

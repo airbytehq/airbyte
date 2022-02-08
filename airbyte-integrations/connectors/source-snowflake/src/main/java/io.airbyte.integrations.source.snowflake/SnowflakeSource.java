@@ -19,6 +19,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
+  public static final String SNOWFLAKE_HOST_POSTFIX = ".aws.snowflakecomputing.com";
 
   public SnowflakeSource() {
     super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(), new SnowflakeSourceOperations());
@@ -63,9 +64,9 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   private String getHost(JsonNode config) {
     String host = config.get("host").asText();
-    return host.endsWith(".aws.snowflakecomputing.com")
+    return host.endsWith(SNOWFLAKE_HOST_POSTFIX)
         ? host
-        : host.concat(".aws.snowflakecomputing.com");
+        : host.concat(SNOWFLAKE_HOST_POSTFIX);
   }
 
   @Override
