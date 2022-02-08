@@ -78,7 +78,7 @@ class TestBaseInsightsStream:
         """
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
-        job.interval = "2010-01-01"
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             start_date=datetime(2010, 1, 1),
@@ -101,7 +101,7 @@ class TestBaseInsightsStream:
         """
         job = mocker.Mock(spec=AsyncJob)
         job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
-        job.interval = "2010-01-01"
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
             start_date=datetime(2010, 1, 1),
@@ -117,8 +117,37 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
-    def test_state(self):
-        """TODO"""
+    @pytest.mark.parametrize(
+        "state",
+        [
+            {
+                AdsInsights.cursor_field: "2010-10-03",
+                "slices": ["2010-01-01", "2010-01-02", ]
+            },
+            {
+                AdsInsights.cursor_field: "2010-10-03",
+            },
+            {
+                "slices": ["2010-01-01", "2010-01-02",]
+            },
+        ]
+    )
+    def test_state(self, api, state):
+        """State setter/getter should work with all combinations"""
+        stream = AdsInsights(
+            api=api,
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+        )
+
+        assert stream.state == {}
+
+        stream.state = state
+        actual_state = stream.state
+        actual_state["slices"] = sorted(actual_state.get("slices", []))
+        state["slices"] = sorted(state.get("slices", []))
+
+        assert actual_state == state
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date):
         """Stream will use start_date when there is not state"""

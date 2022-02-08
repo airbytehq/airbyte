@@ -17,7 +17,7 @@ from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, Facebook
 
 from .common import deep_merge, MAX_BATCH_SIZE
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")

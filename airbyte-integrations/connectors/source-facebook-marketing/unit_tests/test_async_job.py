@@ -8,7 +8,9 @@ from unittest.mock import call
 
 import pendulum
 import pytest
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, chunks
@@ -25,7 +27,7 @@ def adreport_fixture(mocker, api):
 
 @pytest.fixture(name="account")
 def account_fixture(mocker, adreport):
-    account = mocker.Mock()
+    account = mocker.Mock(spec=AdAccount)
     account.get_insights.return_value = adreport
     return account
 
@@ -47,7 +49,7 @@ def job_fixture(api, account):
 
 @pytest.fixture(name="grouped_jobs")
 def grouped_jobs_fixture(mocker):
-    return [mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False) for _ in range(10)]
+    return [mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False, elapsed_time=None) for _ in range(10)]
 
 
 @pytest.fixture(name="parent_job")
@@ -96,7 +98,8 @@ def failed_job_fixture(started_job, adreport):
 def api_fixture(mocker):
     api = mocker.Mock(spec=MyFacebookAdsApi)
     api.call().json.return_value = {}
-    api.new_batch().execute.return_value = None  # short-circuit batch execution of failed jobs, prevent endless loop
+    api.new_batch.return_value = mocker.MagicMock(spec=FacebookAdsApiBatch)
+    api.new_batch.return_value.execute.return_value = None  # short-circuit batch execution of failed jobs, prevent endless loop
 
     return api
 
@@ -251,19 +254,16 @@ class TestInsightAsyncJob:
         with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
             failed_job.get_result()
 
-    def test_split_job(self, job, account, mocker, api):
+    def test_split_job(self, job, account, api):
         account.get_insights.return_value = [{"campaign_id": 1}, {"campaign_id": 2}, {"campaign_id": 3}]
-        parent_job_mock = mocker.patch("source_facebook_marketing.streams.async_job.ParentAsyncJob")
-        campaign_mock = mocker.patch("source_facebook_marketing.streams.async_job.Campaign")
 
-        parent_job = job.split_job()
+        small_jobs = job.split_job()
 
         account.get_insights.assert_called_once()
-        campaign_mock.assert_has_calls([call(1), call(2), call(3)])
-        assert parent_job_mock.called
-        assert parent_job
-        _args, kwargs = parent_job_mock.call_args
-        assert len(kwargs["jobs"]) == 3, "number of jobs should match number of campaigns"
+        assert len(small_jobs) == 3
+        assert all(j.interval == job.interval for j in small_jobs)
+        for i, small_job in enumerate(small_jobs, start=1):
+            assert str(small_job) == f"InsightAsyncJob(id=<None>, {Campaign(i)}, time_range={job.interval}, breakdowns={[]})"
 
 
 class TestParentAsyncJob:
@@ -304,19 +304,12 @@ class TestParentAsyncJob:
 
     def test_update_job(self, parent_job, grouped_jobs, api):
         """Checks jobs status in advance and restart if some failed."""
-        # finish some jobs
-        grouped_jobs[0].completed = True
-        grouped_jobs[5].completed = True
-
         parent_job.update_job()
 
         # assert
         batch_mock = api.new_batch()
-        for i, job in enumerate(grouped_jobs):
-            if i in (0, 5):
-                job.update_job.assert_not_called()
-            else:
-                job.update_job.assert_called_once_with(batch=batch_mock)
+        for job in grouped_jobs:
+            job.update_job.assert_called_once_with(batch=batch_mock)
 
     def test_get_result(self, parent_job, grouped_jobs):
         """Retrieve result of the finished job."""
@@ -330,6 +323,19 @@ class TestParentAsyncJob:
         assert isinstance(generator, Iterator)
         assert list(generator) == list(range(3, 8)) + list(range(4, 11))
 
-    def test_split_job(self, parent_job):
-        with pytest.raises(RuntimeError, match="Splitting of ParentAsyncJob is not allowed."):
-            parent_job.split_job()
+    def test_split_job(self, parent_job, grouped_jobs, mocker):
+        grouped_jobs[0].failed = True
+        grouped_jobs[0].split_job.return_value = [mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob)]
+        grouped_jobs[5].failed = True
+        grouped_jobs[5].split_job.return_value = [
+            mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob)
+        ]
+
+        small_jobs = parent_job.split_job()
+
+        assert len(small_jobs) == len(grouped_jobs) + 5 - 2, "each failed job must be replaced with its split"
+        for i, job in enumerate(grouped_jobs):
+            if i in (0, 5):
+                job.split_job.assert_called_once()
+            else:
+                job.split_job.assert_not_called()

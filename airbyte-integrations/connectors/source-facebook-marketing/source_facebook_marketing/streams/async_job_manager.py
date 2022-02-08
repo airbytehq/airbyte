@@ -10,7 +10,7 @@ from source_facebook_marketing.streams.common import JobException
 
 from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
@@ -39,7 +39,7 @@ class InsightAsyncJobManager:
         :param jobs:
         """
         self._api = api
-        self._jobs = jobs
+        self._jobs = iter(jobs)
         self._running_jobs = []
 
     def _start_jobs(self):
@@ -49,7 +49,7 @@ class InsightAsyncJobManager:
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._running_jobs)
         while self._get_current_throttle_value() < self.THROTTLE_LIMIT and len(self._running_jobs) < self.MAX_JOBS_IN_QUEUE:
-            job = next(iter(self._jobs), None)
+            job = next(self._jobs, None)
             if not job:
                 self._empty = True
                 break
