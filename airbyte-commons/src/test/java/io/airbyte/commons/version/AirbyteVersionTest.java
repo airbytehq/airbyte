@@ -87,6 +87,15 @@ public class AirbyteVersionTest {
   }
 
   @Test
+  public void testSerialize() {
+    final var devVersion = "dev";
+    assertEquals(devVersion, new AirbyteVersion(devVersion).serialize());
+
+    final var nonDevVersion = "0.1.2-alpha";
+    assertEquals(nonDevVersion, new AirbyteVersion(nonDevVersion).serialize());
+  }
+
+  @Test
   public void testCheckVersion() {
     AirbyteVersion.assertIsCompatible(new AirbyteVersion("3.2.1"), new AirbyteVersion("3.2.1"));
     assertThrows(IllegalStateException.class, () -> AirbyteVersion.assertIsCompatible(new AirbyteVersion("1.2.3"), new AirbyteVersion("3.2.1")));

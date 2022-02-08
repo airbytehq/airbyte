@@ -159,12 +159,12 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = jobsDatabaseInstance.getInitialized();
