@@ -37,7 +37,7 @@ class AdCreatives(FBMarketingStream):
     """
 
     entity_prefix = "adcreative"
-    use_batch = True
+    enable_deleted = False
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -69,7 +69,6 @@ class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
     entity_prefix = "ad"
-    enable_deleted = True
 
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ads(params=params, fields=[self.cursor_field])
@@ -79,7 +78,6 @@ class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
     entity_prefix = "adset"
-    enable_deleted = True
 
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ad_sets(params=params)
@@ -89,7 +87,6 @@ class Campaigns(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group"""
 
     entity_prefix = "campaign"
-    enable_deleted = True
 
     def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_campaigns(params=params)
@@ -99,7 +96,6 @@ class Videos(FBMarketingIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
 
     entity_prefix = "video"
-    enable_deleted = True
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
         return self._api.account.get_ad_videos(params=params)
@@ -123,7 +119,9 @@ class AdsInsightsDma(AdsInsights):
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
-    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+    # FB Async Job fails for unknown reason if we set other breakdowns
+    # my guess: it fails because of very large cardinality of result set (Eugene K)
+    action_breakdowns = ["action_type"]
 
 
 class AdsInsightsActionType(AdsInsights):

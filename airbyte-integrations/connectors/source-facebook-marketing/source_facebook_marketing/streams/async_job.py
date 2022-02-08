@@ -26,6 +26,28 @@ def chunks(data: Sequence[Any], n: int) -> Iterator[Any]:
         yield data[i : i + n]
 
 
+def update_in_batch(batch: FacebookAdsApiBatch, jobs: List["AsyncJob"]):
+    """ Update status of each job in the list in a batch, making it most efficient way to update status.
+
+    :param batch:
+    :param jobs:
+    """
+    max_batch_size = 50
+    for job in jobs:
+        # we check it here because job can be already finished
+        if len(batch) == max_batch_size:
+            while batch:
+                # If some of the calls from batch have failed, it returns  a new
+                # FacebookAdsApiBatch object with those calls
+                batch = batch.execute()
+        job.update_job(batch=batch)
+
+    while batch:
+        # If some of the calls from batch have failed, it returns  a new
+        # FacebookAdsApiBatch object with those calls
+        batch = batch.execute()
+
+
 class Status(str, Enum):
     """Async job statuses"""
 
@@ -80,7 +102,7 @@ class AsyncJob(ABC):
 
     @abstractmethod
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
-        """Method to retrieve job's status, separated because of retry handler
+        """Method to retrieve job's status
 
         :param batch: FB batch executor
         """
@@ -127,17 +149,8 @@ class ParentAsyncJob(AsyncJob):
         return any(job.failed for job in self._jobs)
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
-        """Checks jobs status in advance and restart if some failed."""
-        batch = self._api.new_batch()
-        unfinished_jobs = [job for job in self._jobs if not job.completed]
-        for jobs in chunks(unfinished_jobs, 50):
-            for job in jobs:
-                job.update_job(batch=batch)
-
-            while batch:
-                # If some of the calls from batch have failed, it returns  a new
-                # FacebookAdsApiBatch object with those calls
-                batch = batch.execute()
+        """Checks jobs status in advance."""
+        update_in_batch(batch=self._api.new_batch(), jobs=self._jobs)
 
     def get_result(self) -> Iterator[Any]:
         """Retrieve result of the finished job."""
@@ -285,7 +298,7 @@ class InsightAsyncJob(AsyncJob):
         logger.info(f"{self}: Request failed with response: {response.body()}.")
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
-        """Method to retrieve job's status, separated because of retry handler"""
+        """Method to retrieve job's status"""
         if not self._job:
             raise RuntimeError(f"{self}: Incorrect usage of the method - the job is not started")
 

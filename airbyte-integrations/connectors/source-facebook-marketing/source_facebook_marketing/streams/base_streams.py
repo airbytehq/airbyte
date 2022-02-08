@@ -15,7 +15,7 @@ from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
-from .common import deep_merge
+from .common import deep_merge, MAX_BATCH_SIZE
 
 if TYPE_CHECKING:
     from source_facebook_marketing.api import API
@@ -29,13 +29,14 @@ class FBMarketingStream(Stream, ABC):
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
+    # number of records per page when response has pagination
     page_size = 100
-    use_batch = False
-
-    enable_deleted = False
+    # use batch API to retrieve details for each record in a stream
+    use_batch = True
+    # this flag will override `include_deleted` option for streams that does not support it
+    enable_deleted = True
+    # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
-
-    MAX_BATCH_SIZE = 50
 
     def __init__(self, api: "API", include_deleted: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -47,12 +48,13 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    def _execute_batch(self, batch):
+    def _execute_batch(self, batch: FacebookAdsApiBatch) -> FacebookAdsApiBatch:
         """Execute batch, retry in case of failures"""
         while batch:
             batch = batch.execute()
             if batch:
                 logger.info("Retry failed requests in batch")
+        return batch
 
     def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
@@ -62,16 +64,14 @@ class FBMarketingStream(Stream, ABC):
             records.append(response.json())
 
         def failure(response: FacebookResponse):
-            # FIXME: stop sync or retry
-            logger.warning(f"Request failed with response: {response.body()}")
+            raise RuntimeError(f"Batch request failed with response: {response.body()}")
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for request in pending_requests:
             api_batch.add_request(request, success=success, failure=failure)
-            if len(api_batch) == self.MAX_BATCH_SIZE:
-                self._execute_batch(api_batch)
+            if len(api_batch) == MAX_BATCH_SIZE:
+                api_batch = self._execute_batch(api_batch)
                 yield from records
-                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
                 records = []
 
         self._execute_batch(api_batch)
@@ -92,9 +92,9 @@ class FBMarketingStream(Stream, ABC):
 
         for record in loaded_records_iter:
             if isinstance(record, AbstractObject):
-                yield record.export_all_data()
+                yield record.export_all_data()  # convert FB object to dict
             else:
-                yield record
+                yield record  # execute_in_batch will emmit dicts
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
@@ -139,6 +139,8 @@ class FBMarketingStream(Stream, ABC):
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
+    use_batch = False
+    enable_deleted = False
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)

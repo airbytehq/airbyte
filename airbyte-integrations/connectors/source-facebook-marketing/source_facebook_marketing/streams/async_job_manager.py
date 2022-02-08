@@ -4,12 +4,11 @@
 
 import logging
 import time
-from typing import TYPE_CHECKING, Iterator, List, Tuple
+from typing import TYPE_CHECKING, Iterator, List
 
-from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.streams.common import JobException
 
-from .async_job import AsyncJob, ParentAsyncJob
+from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
 
 if TYPE_CHECKING:
     from source_facebook_marketing.api import API
@@ -20,9 +19,8 @@ logger = logging.getLogger("airbyte")
 class InsightAsyncJobManager:
     """
     Class for managing Ads Insights async jobs. Before running next job it
-    checks current insight throttle value and if it greater than THROTTLE_LIMIT
-    variable, no new jobs added.
-    To consume completed jobs use completed_job generator, jobs will be returned in the same order they finished.
+    checks current insight throttle value and if it greater than THROTTLE_LIMIT variable, no new jobs added.
+    To consume completed jobs use completed_job generator, jobs will be returned in the order they finished.
     """
 
     # When current insights throttle hit this value no new jobs added.
@@ -31,10 +29,8 @@ class InsightAsyncJobManager:
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
-    # limit is not reliable indicator of async workload capability we still
-    # have to use this parameter. It is equal to maximum number of request in batch (FB API limit)
+    # limit is not reliable indicator of async workload capability we still have to use this parameter.
     MAX_JOBS_IN_QUEUE = 100
-    MAX_JOBS_TO_CHECK = 50
 
     def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
         """Init
@@ -62,7 +58,7 @@ class InsightAsyncJobManager:
 
         logger.info(
             f"Added: {len(self._running_jobs) - prev_jobs_count} jobs. "
-            f"Current throttle limit is {self._current_throttle()}, "
+            f"Current throttle limit is {self._api.api.ads_insights_throttle}, "
             f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue"
         )
 
@@ -85,21 +81,6 @@ class InsightAsyncJobManager:
             yield from completed_jobs
             self._start_jobs()
 
-    def _check_jobs_status(self):
-        """Check jobs status in advance"""
-        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-        for job in self._running_jobs:
-            # we check it here because job can be an instance of ParentAsyncJob, which uses its own batch object
-            if len(api_batch) >= self.MAX_JOBS_TO_CHECK:
-                logger.info("Reached batch queue limit")
-                break
-            job.update_job(batch=api_batch)
-
-        while api_batch:
-            # If some of the calls from batch have failed, it returns  a new
-            # FacebookAdsApiBatch object with those calls
-            api_batch = api_batch.execute()
-
     def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
         """Checks jobs status in advance and restart if some failed.
 
@@ -109,12 +90,12 @@ class InsightAsyncJobManager:
         running_jobs = []
         failed_num = 0
 
-        self._check_jobs_status()
+        update_in_batch(batch=self._api.api.new_batch(), jobs=self._running_jobs)
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                    raise JobException("%s: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...", job)
+                    raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 elif job.attempt_number == 2:
                     logger.info("%s: failed second time, trying to split job into smaller jobs.", job)
                     smaller_jobs = job.split_job()
@@ -138,15 +119,9 @@ class InsightAsyncJobManager:
 
     def _wait_throttle_limit_down(self):
         while self._get_current_throttle_value() > self.THROTTLE_LIMIT:
-            logger.info(f"Current throttle is {self._current_throttle()}, wait {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
+            logger.info(f"Current throttle is {self._api.api.ads_insights_throttle}, wait {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
             time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
             self._update_api_throttle_limit()
-
-    def _current_throttle(self) -> Tuple[float, float]:
-        """
-        Return tuple of 2 floats representing current ads insights throttle values for app id and account id
-        """
-        return self._api.api.ads_insights_throttle
 
     def _get_current_throttle_value(self) -> float:
         """
@@ -156,7 +131,9 @@ class InsightAsyncJobManager:
         running and it capable serve new requests). Because of this behaviour
         facebook throttle limit is not reliable metric to estimate async workload.
         """
-        return min(self._current_throttle()[0], self._current_throttle()[1])
+        throttle = self._api.api.ads_insights_throttle
+
+        return min(throttle.per_account, throttle.per_application)
 
     def _update_api_throttle_limit(self):
         """
