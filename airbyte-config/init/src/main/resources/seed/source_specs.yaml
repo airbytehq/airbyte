@@ -3648,6 +3648,7 @@
                 - "GSSAPI"
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
+                - "SCRAM-SHA-512"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
