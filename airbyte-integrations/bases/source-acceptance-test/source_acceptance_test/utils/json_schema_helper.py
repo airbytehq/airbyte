@@ -6,13 +6,14 @@
 from functools import reduce
 from typing import Any, List, Mapping, Optional, Set
 
-import dpath.util
 import pendulum
 from jsonref import JsonRef
 
 
 class CatalogField:
-    """Field class to represent cursor/pk fields"""
+    """Field class to represent cursor/pk fields.
+    It eases the read of values from records according to schema definition.
+    """
 
     def __init__(self, schema: Mapping[str, Any], path: List[str]):
         self.schema = schema
@@ -49,16 +50,46 @@ class CatalogField:
 
 
 class JsonSchemaHelper:
+    """Helper class to simplify schema validation and read of records according to their schema."""
+
     def __init__(self, schema):
         self._schema = schema
 
-    def get_ref(self, path: List[str]):
+    def get_ref(self, path: str) -> Any:
+        """Resolve reference
+
+        :param path: reference (#/definitions/SomeClass, etc)
+        :return: part of schema that is definition of the reference
+        :raises KeyError: in case path can't be followed
+        """
         node = self._schema
         for segment in path.split("/")[1:]:
             node = node[segment]
         return node
 
     def get_property(self, path: List[str]) -> Mapping[str, Any]:
+        """Get any part of schema according to provided path, resolves $refs if necessary
+
+        schema = {
+                "properties": {
+                    "field1": {
+                        "properties": {
+                            "nested_field": {
+                                <inner_object>
+                            }
+                        }
+                    },
+                    "field2": ...
+                }
+            }
+
+        helper = JsonSchemaHelper(schema)
+        helper.get_property(["field1", "nested_field"]) == <inner_object>
+
+        :param path: list of fields in the order of navigation
+        :return: discovered part of schema
+        :raises KeyError: in case path can't be followed
+        """
         node = self._schema
         for segment in path:
             if "$ref" in node:
@@ -67,16 +98,40 @@ class JsonSchemaHelper:
         return node
 
     def field(self, path: List[str]) -> CatalogField:
+        """Get schema property and wrap it into CatalogField.
+
+        CatalogField is a helper to ease the read of values from records according to schema definition.
+
+        :param path: list of fields in the order of navigation
+        :return: discovered part of schema wrapped in CatalogField
+        :raises KeyError: in case path can't be followed
+        """
         return CatalogField(schema=self.get_property(path), path=path)
 
-    def find_variant_paths(self) -> List[List[str]]:
+    def get_node(self, path: List[str]) -> Any:
+        """Return part of schema by specified path
+
+        :param path: list of fields in the order of navigation
         """
-        return list of json object paths for oneOf or anyOf attributes
+
+        node = self._schema
+        for segment in path:
+            if "$ref" in node:
+                node = self.get_ref(node["$ref"])
+            node = node[segment]
+        return node
+
+    def find_nodes(self, keys: List[str]) -> List[List[str]]:
+        """Get all nodes of schema that has specifies properties
+
+        :param keys:
+        :return: list of json object paths
         """
         variant_paths = []
 
-        def traverse_schema(_schema, path=[]):
-            if path and path[-1] in ["oneOf", "anyOf"]:
+        def traverse_schema(_schema, path=None):
+            path = path or []
+            if path and path[-1] in keys:
                 variant_paths.append(path)
             for item in _schema:
                 next_obj = _schema[item] if isinstance(_schema, dict) else item
@@ -85,51 +140,6 @@ class JsonSchemaHelper:
 
         traverse_schema(self._schema)
         return variant_paths
-
-    def validate_variant_paths(self, variant_paths: List[List[str]]):
-        """
-        Validate oneOf paths according to reference
-        https://docs.airbyte.io/connector-development/connector-specification-reference
-        """
-
-        def get_top_level_item(variant_path: List[str]):
-            # valid path should contain at least 3 items
-            path_to_schema_obj = variant_path[:-1]
-            return dpath.util.get(self._schema, "/".join(path_to_schema_obj))
-
-        for variant_path in variant_paths:
-            top_level_obj = get_top_level_item(variant_path)
-            if "$ref" in top_level_obj:
-                obj_def = top_level_obj["$ref"].split("/")[-1]
-                top_level_obj = self._schema["definitions"][obj_def]
-            """
-            1. The top-level item containing the oneOf must have type: object
-            """
-            assert (
-                top_level_obj.get("type") == "object"
-            ), f"The top-level definition in a `oneOf` block should have type: object. misconfigured object: {top_level_obj}. See specification reference at https://docs.airbyte.io/connector-development/connector-specification-reference"
-            """
-
-            2. Each item in the oneOf array must be a property with type: object
-            """
-            variants = dpath.util.get(self._schema, "/".join(variant_path))
-            for variant in variants:
-                assert (
-                    "properties" in variant
-                ), "Each item in the oneOf array should be a property with type object. See specification reference at https://docs.airbyte.io/connector-development/connector-specification-reference"
-
-            """
-             3. One string field with the same property name must be
-             consistently present throughout each object inside the oneOf
-             array. It is required to add a const value unique to that oneOf
-             option.
-            """
-            variant_props = [set(list(v["properties"].keys())) for v in variants]
-            common_props = set.intersection(*variant_props)
-            assert common_props, "There should be at least one common property for oneOf subobjects"
-            assert any(
-                [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
-            ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. See specification reference at https://docs.airbyte.io/connector-development/connector-specification-reference"
 
 
 def get_object_structure(obj: dict) -> List[str]:

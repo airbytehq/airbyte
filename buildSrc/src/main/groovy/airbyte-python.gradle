@@ -32,9 +32,17 @@ class Helpers {
         if (project.file(testFilesDirectory).exists()) {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
-                    module = "pytest"
-                    command = "-s ${testFilesDirectory} --cov=./ --cov-config=${project.rootProject.file('tools/python/.coveragerc').absolutePath} --cov-report html --cov-report term"
+                project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
+                    module = "coverage"
+                    command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
+                }
+                // generation of coverage report is optional and we should skip it if tests are empty
+                project.task(taskName, type: Exec){
+                    commandLine = ".venv/bin/python"
+                    args "-m", "coverage", "report", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
+                    dependsOn project.tasks.findByName("_${taskName}Coverage")
+                    setIgnoreExitValue true
+
                 }
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
                 return FileVisitResult.TERMINATE
@@ -68,9 +76,10 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
-            pip 'pytest-cov:2.12.1'
             pip 'pip:21.1.3'
+            pip 'coverage[toml]:6.3.1'
         }
+
 
         project.task('isortFormat', type: PythonTask) {
             module = "isort"

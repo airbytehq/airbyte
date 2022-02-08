@@ -6,18 +6,25 @@ package io.airbyte.integrations.source.db2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +33,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
   private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -51,8 +60,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", jdbcUrl.toString())
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
+        .put(USERNAME, config.get(USERNAME).asText())
+        .put(PASSWORD, config.get(PASSWORD).asText())
         .build());
 
     // assume ssl if not explicitly mentioned.
@@ -62,8 +71,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
           .put("jdbc_url", jdbcUrl.toString())
-          .put("username", config.get("username").asText())
-          .put("password", config.get("password").asText())
+          .put(USERNAME, config.get(USERNAME).asText())
+          .put(PASSWORD, config.get(PASSWORD).asText())
           .put("connection_properties", additionalParams)
           .build());
     }
@@ -76,6 +85,26 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return Set.of(
         "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database
+        .query(getPrivileges(), sourceOperations::rowToJson)
+        .map(this::getPrivilegeDto)
+        .collect(Collectors.toSet());
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
+    return connection -> connection.prepareStatement(
+        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+        .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
+        .tableName(jsonNode.get("OBJECTNAME").asText())
+        .build();
   }
 
   /* Helpers */
