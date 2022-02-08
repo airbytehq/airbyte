@@ -22,7 +22,6 @@ from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_out
 from source_acceptance_test.utils.common import find_key_inside_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
-
 @pytest.fixture(name="connector_spec_dict")
 def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
@@ -137,6 +136,15 @@ class TestSpec(BaseTest):
 
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_acceptance_spec_implements_required_tests(self, connector_spec: ConnectorSpecification):
+        """
+        Ensure that a connector that supports features implements source acceptance tests for them.
+
+        Example: Any connector that supports
+        """
+        set_trace()
+
 
 
 @pytest.mark.default_timeout(30)
