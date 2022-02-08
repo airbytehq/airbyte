@@ -138,11 +138,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var output = process.getOutput();
 
-        if (output.isPresent()) {
-          return Jsons.deserialize(output.get(), outputClass);
-        } else {
-          throw new WorkerException("Running the " + application + " launcher resulted in no readable output!");
-        }
+        return output.map(s -> Jsons.deserialize(s, outputClass)).orElse(null);
       } catch (Exception e) {
         if (cancelled.get()) {
           try {
