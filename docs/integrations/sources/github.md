@@ -92,6 +92,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.17 | 2021-02-?? | [????](https://github.com/airbytehq/airbyte/pull/????) | Add handling secondary rate limits |
 | 0.2.15 | 2021-01-26 | [9802](https://github.com/airbytehq/airbyte/pull/9802) | Add missing fields for auto_merge in pull request stream |
 | 0.2.14 | 2021-01-21 | [9664](https://github.com/airbytehq/airbyte/pull/9664) | Add custom pagination size for large streams |
 | 0.2.13 | 2021-01-20 | [9619](https://github.com/airbytehq/airbyte/pull/9619) | Fix logging for function `should_retry` |
