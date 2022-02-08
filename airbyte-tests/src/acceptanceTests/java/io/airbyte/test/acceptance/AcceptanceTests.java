@@ -721,8 +721,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(14)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
