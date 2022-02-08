@@ -340,7 +340,7 @@ public interface Configs {
   /**
    * Get the duration in second between 2 activity attempts
    */
-  int getDelayBetweenActivityAttemps();
+  int getDelayBetweenActivityAttempts();
 
   /**
    * Get number of attempts of the non long running activities

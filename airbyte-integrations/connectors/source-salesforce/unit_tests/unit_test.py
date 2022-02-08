@@ -15,7 +15,13 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import (
+    CSV_FIELD_SIZE_LIMIT,
+    BulkIncrementalSalesforceStream,
+    BulkSalesforceStream,
+    IncrementalSalesforceStream,
+    SalesforceStream,
+)
 
 
 @pytest.fixture(scope="module")
@@ -566,7 +572,6 @@ def test_csv_reader_dialect_unix():
         assert result == data
 
 
-@pytest.mark.order(1)
 @pytest.mark.parametrize(
     "stream_names,catalog_stream_names,",
     (
@@ -635,3 +640,21 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
     for stream in streams:
         assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
+
+
+def test_csv_field_size_limit():
+    DEFAULT_CSV_FIELD_SIZE_LIMIT = 1024 * 128
+
+    field_size = 1024 * 1024
+    text = '"Id","Name"\n"1","' + field_size * "a" + '"\n'
+
+    csv.field_size_limit(DEFAULT_CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    with pytest.raises(csv.Error):
+        for _ in reader:
+            pass
+
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    for _ in reader:
+        pass

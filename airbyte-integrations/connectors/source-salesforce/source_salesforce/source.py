@@ -76,7 +76,6 @@ class SourceSalesforce(AbstractSource):
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        # stream_objects = {"CategoryNode": stream_objects.pop("CategoryNode")}
         return self.generate_streams(config, stream_objects, sf, state=state)
 
     def read(

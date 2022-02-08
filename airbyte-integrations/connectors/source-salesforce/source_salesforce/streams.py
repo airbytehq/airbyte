@@ -3,6 +3,7 @@
 #
 
 import csv
+import ctypes
 import io
 import math
 import time
@@ -19,6 +20,10 @@ from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
+
+# https://stackoverflow.com/a/54517228
+CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
+csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -311,7 +316,7 @@ class BulkSalesforceStream(SalesforceStream):
                     #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
                     # Thus we can try to switch to GET sync request because its response returns obvious error message
                     standard_instance = self.get_standard_instance()
-                    self.logger.info("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                    self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
                     yield from standard_instance.read_records(
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )
