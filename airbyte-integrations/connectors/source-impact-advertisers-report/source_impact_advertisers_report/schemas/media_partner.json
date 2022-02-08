@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "type": ["null", "string"]
+    },
+    "RelationshipState": {
+      "type": ["null", "string"]
+    },
+    "Website": {
+      "type": ["null", "string"]
+    },
+    "Timezone": {
+      "type": ["null", "string"]
+    },
+    "Currency": {
+      "type": ["null", "string"]
+    },
+    "PhoneNumber": {
+      "type": ["null", "string"]
+    },
+    "PrimaryPromotionalMethod": {
+      "type": ["null", "string"]
+    },
+    "PromotingCountries": {
+      "type": ["null", "string"]
+    },
+    "DateCreated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Campaigns": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "CampaignId": {
+            "type": ["null", "string"]
+          },
+          "CampaignName": {
+            "type": ["null", "string"]
+          },
+          "InsertionOrderId": {
+            "type": ["null", "string"]
+          },
+          "InsertionOrderName": {
+            "type": ["null", "string"]
+          },
+          "JoinDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "Groups": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "GroupId": {
+            "type": ["null", "string"]
+          },
+          "GroupName": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "Contact": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "FirstName": {
+            "type": ["null", "string"]
+          },
+          "LastName": {
+            "type": ["null", "string"]
+          },
+          "EmailAddress": {
+            "type": ["null", "string"]
+          },
+          "PhoneNumber": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "Properties": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PropertyId": {
+            "type": ["null", "string"]
+          },
+          "PropertyName": {
+            "type": ["null", "string"]
+          },
+          "PropertyType": {
+            "type": ["null", "string"]
+          },
+          "PropertyUrl": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
