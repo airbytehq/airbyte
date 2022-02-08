@@ -13,6 +13,7 @@ ENV APPLICATION destination-snowflake
 
 # Needed for JDK17 (in turn, needed on M1 macs) - see https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
 ENV DESTINATION_SNOWFLAKE_OPTS "--add-opens java.base/java.nio=ALL-UNNAMED"
+#ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
