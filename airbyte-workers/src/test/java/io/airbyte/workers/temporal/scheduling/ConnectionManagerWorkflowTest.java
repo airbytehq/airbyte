@@ -40,6 +40,7 @@ import java.util.Queue;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -409,6 +410,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
+    @Disabled
     @Test
     @DisplayName("Test that cancelling a running workflow cancel the sync")
     public void cancelRunning() {
