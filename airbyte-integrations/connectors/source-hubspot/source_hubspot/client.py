@@ -123,3 +123,6 @@ class Client(BaseClient):
             error_msg = repr(error)
 
         return alive, error_msg
+
+    def stream_instances(self):
+        return list(self._apis.values())
