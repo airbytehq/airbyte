@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
@@ -28,6 +29,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -70,10 +72,27 @@ public class SourceDefinitionsHandler {
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
-          .icon(loadIcon(standardSourceDefinition.getIcon()));
+          .icon(loadIcon(standardSourceDefinition.getIcon()))
+          .releaseStage(getReleaseStage(standardSourceDefinition))
+          .releaseDate(getReleaseDate(standardSourceDefinition));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
+  }
+
+  private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
+    if (standardSourceDefinition.getReleaseStage() == null) {
+      return null;
+    }
+    return ReleaseStage.fromValue(standardSourceDefinition.getReleaseStage().value());
+  }
+
+  private static LocalDate getReleaseDate(final StandardSourceDefinition standardSourceDefinition) {
+    if (standardSourceDefinition.getReleaseDate() == null || standardSourceDefinition.getReleaseDate().isBlank()) {
+      return null;
+    }
+
+    return LocalDate.parse(standardSourceDefinition.getReleaseDate());
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
@@ -104,7 +123,7 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
+  public SourceDefinitionRead createCustomSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
@@ -117,7 +136,8 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM);
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -145,7 +165,9 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
-        .withTombstone(currentSourceDefinition.getTombstone());
+        .withTombstone(currentSourceDefinition.getTombstone())
+        .withReleaseStage(currentSourceDefinition.getReleaseStage())
+        .withReleaseDate(currentSourceDefinition.getReleaseDate());
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
