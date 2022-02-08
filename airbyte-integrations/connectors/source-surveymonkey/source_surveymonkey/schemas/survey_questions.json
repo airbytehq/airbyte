@@ -75,9 +75,9 @@
       "type": ["boolean", "null"]
     },
     "headings": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "heading": {
             "type": ["string", "null"]
@@ -89,12 +89,12 @@
       "type": ["string", "null"]
     },
     "answers": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "choices": {
           "type": "array",
           "items": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
               "position": {
                 "type": ["integer", "null"]
@@ -106,7 +106,7 @@
                 "type": ["string", "null"]
               },
               "quiz_options": {
-                "type": "object",
+                "type": ["object", "null"],
                 "properties": {
                   "score": {
                     "type": ["integer", "null"]
