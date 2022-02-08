@@ -89,6 +89,9 @@
     },
     "_links": {
       "$ref": "_links.json"
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

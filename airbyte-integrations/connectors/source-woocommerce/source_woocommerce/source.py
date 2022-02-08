@@ -5,11 +5,12 @@
 
 from abc import ABC
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -29,19 +30,25 @@ class WoocommerceStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "date"
 
-    def __init__(self, shop: str, start_date: str, api_key: str, api_secret: str, **kwargs):
+    def __init__(self, shop: str, start_date: str, api_key: str, api_secret: str, conversion_window_days: int, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.shop = shop
         self.api_key = api_key
         self.api_secret = api_secret
+        self.conversion_window_days = conversion_window_days
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.shop}.com/wp-json/{self.api_version}/"
+        return f"https://{self.shop}/wp-json/{self.api_version}/"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
+        
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -58,11 +65,30 @@ class WoocommerceStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params.update({"orderby": self.order_field, "order": "asc"})
-            params = {"before": datetime.now().isoformat()}
+            params = {"after": pendulum.parse(self.start_date).replace(tzinfo=None), "before": pendulum.now().replace(tzinfo=None)}
+        
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
+        # print('in full refresh')
+        # json_response = response.json()
+        # print(f"json_response: {json_response}")
+        # yield from json_response
+        records = response.json()
+        # print(f"json_response: {records}")
+
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records["shop_url"] = self.shop
+            yield records
+        else:
+            # for other cases
+            for record in records:
+                # add shop_url to the record to make querying easy
+                record["shop_url"] = self.shop
+                yield record
+        
 
 
 class IncrementalWoocommerceStream(WoocommerceStream, ABC):
@@ -75,20 +101,30 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     state_checkpoint_interval = limit
     # Setting the default cursor field for all streams
     cursor_field = "date_modified"
+    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # print(f'cursor_field: {self.cursor_field}')
         if self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, ""):
             return {self.cursor_field: latest_record.get(self.cursor_field, "")}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # params =  {"per_page": self.limit}
+        print(f"stream_state: {stream_state}")
+        print(f"params: {params}")
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
+            # start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
             params["orderby"] = self.order_field
             params["order"] = "asc"
             if stream_state:
-                params["after"] = stream_state.get(self.cursor_field)
+                start_date = stream_state.get(self.cursor_field)
+                start_date = pendulum.parse(start_date).replace(tzinfo=None)
+                start_date = start_date.subtract(days = self.conversion_window_days)
+                
+                params["after"] = start_date
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
@@ -96,12 +132,17 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         # Getting records >= state
+        # print('here')
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    record['shop_url'] = self.shop
                     yield record
         else:
-            yield from records_slice
+            for record in records_slice:
+                record['shop_url'] = self.shop
+                yield record
+            # yield from records_slice
 
 
 class NonFilteredStream(IncrementalWoocommerceStream):
@@ -117,8 +158,8 @@ class NonFilteredStream(IncrementalWoocommerceStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
 
-        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
-        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+        records_slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records_slice)
 
 
 class Coupons(IncrementalWoocommerceStream):
@@ -128,6 +169,7 @@ class Coupons(IncrementalWoocommerceStream):
 class Customers(NonFilteredStream):
     data_field = "customers"
     order_field = "registered_date"
+    cursor_field = "date_created"
 
 
 class Orders(IncrementalWoocommerceStream):
@@ -148,11 +190,14 @@ class SourceWoocommerce(AbstractSource):
         """
         shop = config["shop"]
         headers = {"Accept": "application/json"}
-        url = f"https://{shop}.com/wp-json/wc/v3/"
+        url = f"https://{shop}/wp-json/wc/v3/"
 
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
             headers = dict(Accept="application/json", **auth.get_auth_header())
+            headers['User-Agent']='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+            print(f'headers: {headers}')
+            print(f'url: {url}')
             session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
@@ -170,6 +215,7 @@ class SourceWoocommerce(AbstractSource):
             "start_date": config["start_date"],
             "api_key": config["api_key"],
             "api_secret": config["api_secret"],
+            "conversion_window_days":  config["conversion_window_days"]
         }
 
         return [Customers(**args), Coupons(**args), Orders(**args)]
