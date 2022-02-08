@@ -564,7 +564,7 @@ jobs:
           HOME: /home/runner
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
@@ -717,7 +717,7 @@ jobs:
           CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
