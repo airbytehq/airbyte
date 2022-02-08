@@ -46,7 +46,9 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-linkedin-ads", new LinkedinAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-smartsheets", new SmartsheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-square", new SquareOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
@@ -55,6 +57,9 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-monday", new MondayOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-sunshine", new ZendeskSunshineOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
         .build();
   }
 

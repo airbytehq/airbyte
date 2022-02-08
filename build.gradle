@@ -83,6 +83,7 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template-mysql',
         'dbt-project-template-oracle',
         'dbt-project-template-clickhouse',
+        'dbt-project-template-snowflake',
         'dbt_test_config',
         'normalization_test_output',
         'tools',
@@ -274,10 +275,10 @@ subprojects {
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.16.0'
-        implementation 'org.apache.logging.log4j:log4j-core:2.16.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.16.0'
-        implementation 'org.apache.logging.log4j:log4j-web:2.16.0'
+        implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-web:2.17.1'
 
         // Bridges from other logging implementations to SLF4J
         implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
@@ -285,7 +286,7 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.3.0'
+        implementation 'com.therealvan:appender-log4j2:3.6.0'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
         implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
@@ -339,6 +340,7 @@ subprojects {
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
+                    .exclude("**/airbyte_api_client/**/*.py")
                     .exclude("**/__init__.py")
             strictCheck = true
         }

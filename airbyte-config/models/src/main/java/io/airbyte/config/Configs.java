@@ -228,6 +228,13 @@ public interface Configs {
    */
   String getJobMainContainerMemoryLimit();
 
+  /**
+   * Defines a default map of environment variables to use for any launched job containers. The
+   * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
+   * an empty map.
+   */
+  Map<String, String> getJobDefaultEnvMap();
+
   // Jobs - Kube only
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
@@ -278,6 +285,11 @@ public interface Configs {
   LogConfigs getLogConfigs();
 
   /**
+   * Defines the optional Google application credentials used for logging.
+   */
+  String getGoogleApplicationCredentials();
+
+  /**
    * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here.
    * Please see {@link CloudStorageConfigs} for more info.
    */
@@ -321,9 +333,40 @@ public interface Configs {
 
   // Container Orchestrator
   /**
-   * Define if Airbyte should use Scheduler V2. Internal-use only.
+   * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
   boolean getContainerOrchestratorEnabled();
+
+  /**
+   * Get the name of the container orchestrator secret. Internal-use only.
+   */
+  String getContainerOrchestratorSecretName();
+
+  /**
+   * Get the mount path for a secret that should be loaded onto container orchestrator pods.
+   * Internal-use only.
+   */
+  String getContainerOrchestratorSecretMountPath();
+
+  /**
+   * Define the image to use for the container orchestrator. Defaults to the Airbyte version.
+   */
+  String getContainerOrchestratorImage();
+
+  /**
+   * Get the longest duration of non long running activity
+   */
+  int getMaxActivityTimeoutSecond();
+
+  /**
+   * Get the duration in second between 2 activity attempts
+   */
+  int getDelayBetweenActivityAttempts();
+
+  /**
+   * Get number of attempts of the non long running activities
+   */
+  int getActivityNumberOfAttempt();
 
   enum TrackingStrategy {
     SEGMENT,

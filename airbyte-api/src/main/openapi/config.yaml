@@ -18,6 +18,7 @@ info:
     * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
+    * All `web_backend` APIs are not considered public APIs and are not guaranteeing backwards compatibility.
 
   version: "1.0.0"
   title: Airbyte Configuration API
@@ -53,7 +54,9 @@ tags:
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
-    description: Connection between sources and destinations.
+    description: |
+      Endpoints for the Airbyte web application. Those APIs should not be called outside the web application implementation and are not
+      guaranteeing any backwards compatibility.
   - name: health
     description: Healthchecks
   - name: deployment
@@ -170,6 +173,29 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/WorkspaceUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/update_name:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace name
+      operationId: updateWorkspaceName
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdateName"
         required: true
       responses:
         "200":
@@ -1665,6 +1691,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_debug_info:
+    post:
+      tags:
+        - jobs
+      summary: Gets all information needed to debug this job
+      operationId: getJobDebugInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobDebugInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/health:
     get:
       tags:
@@ -1946,6 +1995,16 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+    WorkspaceUpdateName:
+      type: object
+      required:
+        - workspaceId
+        - name
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
     WorkspaceUpdate:
       type: object
       required:
@@ -2051,6 +2110,12 @@ components:
           format: uri
         icon:
           type: string
+        releaseStage:
+          $ref: "#/components/schemas/ReleaseStage"
+        releaseDate:
+          description: The date when this connector was first released, in yyyy-mm-dd format.
+          type: string
+          format: date
     SourceDefinitionReadList:
       type: object
       required:
@@ -2314,6 +2379,12 @@ components:
           format: uri
         icon:
           type: string
+        releaseStage:
+          $ref: "#/components/schemas/ReleaseStage"
+        releaseDate:
+          description: The date when this connector was first released, in yyyy-mm-dd format.
+          type: string
+          format: date
     DestinationDefinitionReadList:
       type: object
       required:
@@ -2453,6 +2524,14 @@ components:
           type: string
         destinationName:
           type: string
+    # SOURCE / DESTINATION RELEASE STAGE ENUM
+    ReleaseStage:
+      type: string
+      enum:
+        - alpha
+        - beta
+        - generally_available
+        - custom
     # CONNECTION
     ConnectionId:
       type: string
@@ -3068,6 +3147,31 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+    JobDebugRead:
+      type: object
+      required:
+        - id
+        - configType
+        - configId
+        - status
+        - airbyteVersion
+        - sourceDefinition
+        - destinationDefinition
+      properties:
+        id:
+          $ref: "#/components/schemas/JobId"
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          type: string
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        airbyteVersion:
+          type: string
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
     JobWithAttemptsRead:
       type: object
       properties:
@@ -3114,6 +3218,90 @@ components:
         recordsSynced:
           type: integer
           format: int64
+        totalStats:
+          $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
+        failureSummary:
+          $ref: "#/components/schemas/AttemptFailureSummary"
+    AttemptStats:
+      type: object
+      properties:
+        recordsEmitted:
+          type: integer
+          format: int64
+        bytesEmitted:
+          type: integer
+          format: int64
+        stateMessagesEmitted:
+          type: integer
+          format: int64
+        recordsCommitted:
+          type: integer
+          format: int64
+    AttemptStreamStats:
+      type: object
+      required:
+        - streamName
+        - stats
+      properties:
+        streamName:
+          type: string
+        stats:
+          $ref: "#/components/schemas/AttemptStats"
+    AttemptFailureSummary:
+      type: object
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptFailureReason"
+        partialSuccess:
+          description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.
+          type: boolean
+    AttemptFailureReason:
+      type: object
+      required:
+        - timestamp
+      properties:
+        failureOrigin:
+          $ref: "#/components/schemas/AttemptFailureOrigin"
+        failureType:
+          $ref: "#/components/schemas/AttemptFailureType"
+        externalMessage:
+          type: string
+        stacktrace:
+          type: string
+        retryable:
+          description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+          type: boolean
+        timestamp:
+          type: integer
+          format: int64
+    AttemptFailureOrigin:
+      description: Indicates where the error originated. If not set, the origin of error is not well known.
+      type: string
+      enum:
+        - unknown # todo (parker) remove this in favor of leaving the failureOrigin unset
+        - source
+        - destination
+        - replication
+        - replication_worker # todo (parker) remove this in favor of replication
+        - persistence
+        - normalization
+        - dbt
+    AttemptFailureType:
+      description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
+      type: string
+      enum:
+        - unknown # todo (parker) remove this in favor of leaving the failureType unset
+        - config_error
+        - system_error
+        - manual_cancellation
     AttemptStatus:
       type: string
       enum:
@@ -3137,6 +3325,18 @@ components:
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
+    JobDebugInfoRead:
+      type: object
+      required:
+        - job
+        - attempts
+      properties:
+        job:
+          $ref: "#/components/schemas/JobDebugRead"
         attempts:
           type: array
           items:

@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,6 +55,7 @@ import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -69,6 +71,8 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -80,6 +84,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 class WebBackendConnectionsHandlerTest {
 
@@ -93,6 +98,9 @@ class WebBackendConnectionsHandlerTest {
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
+  private FeatureFlags featureFlags;
+  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private ConnectionHelper connectionHelper;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -102,8 +110,11 @@ class WebBackendConnectionsHandlerTest {
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
+    featureFlags = mock(FeatureFlags.class);
+    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    connectionHelper = mock(ConnectionHelper.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler);
+        operationsHandler, featureFlags, temporalWorkerRunFactory, connectionHelper);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -208,7 +219,8 @@ class WebBackendConnectionsHandlerTest {
             .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
-    when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
+    when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
+        .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
 
   @Test
@@ -532,6 +544,48 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
     verify(schedulerHandler, times(1)).syncConnection(connectionId);
+  }
+
+  @Test
+  void testUpdateConnectionWithUpdatedSchemaNewScheduler() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .namespaceDefinition(expected.getNamespaceDefinition())
+        .namespaceFormat(expected.getNamespaceFormat())
+        .prefix(expected.getPrefix())
+        .connectionId(expected.getConnectionId())
+        .schedule(expected.getSchedule())
+        .status(expected.getStatus())
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+        .withRefreshedCatalog(true);
+
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
+        new ConnectionRead().connectionId(expected.getConnectionId()));
+    final ConnectionRead connectionRead = new ConnectionRead()
+        .connectionId(expected.getConnectionId())
+        .sourceId(expected.getSourceId())
+        .destinationId(expected.getDestinationId())
+        .name(expected.getName())
+        .namespaceDefinition(expected.getNamespaceDefinition())
+        .namespaceFormat(expected.getNamespaceFormat())
+        .prefix(expected.getPrefix())
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+        .status(expected.getStatus())
+        .schedule(expected.getSchedule());
+    when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
+    when(connectionHelper.buildConnectionRead(any())).thenReturn(connectionRead);
+    when(featureFlags.usesNewScheduler()).thenReturn(true);
+
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
+
+    assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
+
+    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
+    verify(schedulerHandler, times(0)).resetConnection(connectionId);
+    verify(schedulerHandler, times(0)).syncConnection(connectionId);
+    InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
+    orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test

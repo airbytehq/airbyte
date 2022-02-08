@@ -200,6 +200,7 @@ font-style: italic;
 <li>Adding new HTTP endpoints.</li>
 </ul>
 </li>
+<li>All <code>web_backend</code> APIs are not considered public APIs and are not guaranteeing backwards compatibility.</li>
 </ul>
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
@@ -275,6 +276,7 @@ font-style: italic;
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
   <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
+  <li><a href="#getJobDebugInfo"><code><span class="http-method">post</span> /v1/jobs/get_debug_info</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
@@ -357,6 +359,7 @@ font-style: italic;
   <li><a href="#listWorkspaces"><code><span class="http-method">post</span> /v1/workspaces/list</code></a></li>
   <li><a href="#updateWorkspace"><code><span class="http-method">post</span> /v1/workspaces/update</code></a></li>
   <li><a href="#updateWorkspaceFeedback"><code><span class="http-method">post</span> /v1/workspaces/tag_feedback_status_as_done</code></a></li>
+  <li><a href="#updateWorkspaceName"><code><span class="http-method">post</span> /v1/workspaces/update_name</code></a></li>
   </ul>
 
   <h1><a name="Connection">Connection</a></h1>
@@ -1023,9 +1026,46 @@ font-style: italic;
   },
   "attempts" : [ {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -1035,9 +1075,46 @@ font-style: italic;
     }
   }, {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -1262,9 +1339,46 @@ font-style: italic;
   },
   "attempts" : [ {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -1274,9 +1388,46 @@ font-style: italic;
     }
   }, {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -2363,6 +2514,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -2471,6 +2623,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -2523,6 +2676,7 @@ font-style: italic;
   "destinationDefinitions" : [ {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -2530,6 +2684,7 @@ font-style: italic;
   }, {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -2577,6 +2732,7 @@ font-style: italic;
   "destinationDefinitions" : [ {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -2584,6 +2740,7 @@ font-style: italic;
   }, {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -2642,6 +2799,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -2845,9 +3003,46 @@ font-style: italic;
   },
   "attempts" : [ {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -2857,9 +3052,46 @@ font-style: italic;
     }
   }, {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -2881,6 +3113,185 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getJobDebugInfo"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_debug_info</code></pre></div>
+    <div class="method-summary">Gets all information needed to debug this job (<span class="nickname">getJobDebugInfo</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#JobDebugInfoRead">JobDebugInfoRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job" : {
+    "configId" : "configId",
+    "sourceDefinition" : {
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "airbyteVersion" : "airbyteVersion",
+    "id" : 0,
+    "destinationDefinition" : {
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }
+  },
+  "attempts" : [ {
+    "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
+      "createdAt" : 5,
+      "bytesSynced" : 9,
+      "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
+      "id" : 5,
+      "recordsSynced" : 3,
+      "updatedAt" : 2
+    },
+    "logs" : {
+      "logLines" : [ "logLines", "logLines" ]
+    }
+  }, {
+    "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
+      "createdAt" : 5,
+      "bytesSynced" : 9,
+      "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
+      "id" : 5,
+      "recordsSynced" : 3,
+      "updatedAt" : 2
+    },
+    "logs" : {
+      "logLines" : [ "logLines", "logLines" ]
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#JobDebugInfoRead">JobDebugInfoRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -2933,9 +3344,46 @@ font-style: italic;
   },
   "attempts" : [ {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -2945,9 +3393,46 @@ font-style: italic;
     }
   }, {
     "attempt" : {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -3021,16 +3506,90 @@ font-style: italic;
       "updatedAt" : 1
     },
     "attempts" : [ {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
     }, {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -3043,16 +3602,90 @@ font-style: italic;
       "updatedAt" : 1
     },
     "attempts" : [ {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
     }, {
+      "totalStats" : {
+        "stateMessagesEmitted" : 7,
+        "recordsCommitted" : 1,
+        "bytesEmitted" : 4,
+        "recordsEmitted" : 2
+      },
+      "failureSummary" : {
+        "failures" : [ {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        }, {
+          "retryable" : true,
+          "stacktrace" : "stacktrace",
+          "externalMessage" : "externalMessage",
+          "timestamp" : 1
+        } ],
+        "partialSuccess" : true
+      },
       "createdAt" : 5,
       "bytesSynced" : 9,
       "endedAt" : 7,
+      "streamStats" : [ {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      }, {
+        "stats" : {
+          "stateMessagesEmitted" : 7,
+          "recordsCommitted" : 1,
+          "bytesEmitted" : 4,
+          "recordsEmitted" : 2
+        },
+        "streamName" : "streamName"
+      } ],
       "id" : 5,
       "recordsSynced" : 3,
       "updatedAt" : 2
@@ -4846,6 +5479,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -4954,6 +5588,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -5006,6 +5641,7 @@ font-style: italic;
   "sourceDefinitions" : [ {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -5013,6 +5649,7 @@ font-style: italic;
   }, {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -5060,6 +5697,7 @@ font-style: italic;
   "sourceDefinitions" : [ {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -5067,6 +5705,7 @@ font-style: italic;
   }, {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
@@ -5125,6 +5764,7 @@ font-style: italic;
     <pre class="example"><code>{
   "documentationUrl" : "https://openapi-generator.tech",
   "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
@@ -7020,6 +7660,88 @@ font-style: italic;
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="updateWorkspaceName"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/workspaces/update_name</code></pre></div>
+    <div class="method-summary">Update workspace name (<span class="nickname">updateWorkspaceName</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceUpdateName <a href="#WorkspaceUpdateName">WorkspaceUpdateName</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WorkspaceRead">WorkspaceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "news" : true,
+  "displaySetupWizard" : true,
+  "initialSetupComplete" : true,
+  "anonymousDataCollection" : true,
+  "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "name" : "name",
+  "firstCompletedSync" : true,
+  "feedbackDone" : true,
+  "email" : "email",
+  "slug" : "slug",
+  "securityUpdates" : true,
+  "notifications" : [ {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
+  }, {
+    "slackConfiguration" : {
+      "webhook" : "webhook"
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
+  } ],
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WorkspaceRead">WorkspaceRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
 
   <h2><a name="__Models">Models</a></h2>
   [ Jump to <a href="#__Methods">Methods</a> ]
@@ -7031,9 +7753,15 @@ font-style: italic;
     <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
     <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
     <li><a href="#AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a></li>
+    <li><a href="#AttemptFailureOrigin"><code>AttemptFailureOrigin</code> - </a></li>
+    <li><a href="#AttemptFailureReason"><code>AttemptFailureReason</code> - </a></li>
+    <li><a href="#AttemptFailureSummary"><code>AttemptFailureSummary</code> - </a></li>
+    <li><a href="#AttemptFailureType"><code>AttemptFailureType</code> - </a></li>
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
+    <li><a href="#AttemptStats"><code>AttemptStats</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
+    <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
     <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
@@ -7075,6 +7803,8 @@ font-style: italic;
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
+    <li><a href="#JobDebugInfoRead"><code>JobDebugInfoRead</code> - </a></li>
+    <li><a href="#JobDebugRead"><code>JobDebugRead</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
     <li><a href="#JobListRequestBody"><code>JobListRequestBody</code> - </a></li>
@@ -7104,6 +7834,7 @@ font-style: italic;
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
+    <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
@@ -7140,6 +7871,7 @@ font-style: italic;
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
     <li><a href="#WorkspaceReadList"><code>WorkspaceReadList</code> - </a></li>
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
+    <li><a href="#WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a></li>
   </ol>
 
   <div class="model">
@@ -7195,6 +7927,38 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="AttemptFailureOrigin"><code>AttemptFailureOrigin</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Indicates where the error originated. If not set, the origin of error is not well known.</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptFailureReason"><code>AttemptFailureReason</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">failureOrigin (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureOrigin">AttemptFailureOrigin</a></span>  </div>
+<div class="param">failureType (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureType">AttemptFailureType</a></span>  </div>
+<div class="param">externalMessage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">stacktrace (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">retryable (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known. </div>
+<div class="param">timestamp </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptFailureSummary"><code>AttemptFailureSummary</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">failures </div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureReason">array[AttemptFailureReason]</a></span>  </div>
+<div class="param">partialSuccess (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptFailureType"><code>AttemptFailureType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="AttemptInfoRead"><code>AttemptInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -7213,6 +7977,19 @@ font-style: italic;
 <div class="param">endedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">bytesSynced (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">recordsSynced (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">totalStats (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
+<div class="param">streamStats (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptStreamStats">array[AttemptStreamStats]</a></span>  </div>
+<div class="param">failureSummary (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptFailureSummary">AttemptFailureSummary</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptStats"><code>AttemptStats</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">recordsEmitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">bytesEmitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">stateMessagesEmitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">recordsCommitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7220,6 +7997,14 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptStreamStats"><code>AttemptStreamStats</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">streamName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">stats </div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AuthSpecification"><code>AuthSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -7473,6 +8258,8 @@ font-style: italic;
 <div class="param">dockerImageTag </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">documentationUrl </div><div class="param-desc"><span class="param-type"><a href="#URI">URI</a></span>  format: uri</div>
 <div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
+<div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7617,6 +8404,27 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="JobDebugInfoRead"><code>JobDebugInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">job </div><div class="param-desc"><span class="param-type"><a href="#JobDebugRead">JobDebugRead</a></span>  </div>
+<div class="param">attempts </div><div class="param-desc"><span class="param-type"><a href="#AttemptInfoRead">array[AttemptInfoRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="JobDebugRead"><code>JobDebugRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">configType </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">JobConfigType</a></span>  </div>
+<div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
+<div class="param">airbyteVersion </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionRead">SourceDefinitionRead</a></span>  </div>
+<div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionRead">DestinationDefinitionRead</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="JobIdRequestBody"><code>JobIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -7863,6 +8671,12 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="ReleaseStage"><code>ReleaseStage</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="ResourceRequirements"><code>ResourceRequirements</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>optional resource requirements to run workers (blank for unbounded allocations)</div>
     <div class="field-items">
@@ -7948,6 +8762,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">dockerImageTag </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#URI">URI</a></span>  format: uri</div>
 <div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
+<div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -8237,6 +9053,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>

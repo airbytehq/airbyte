@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -71,12 +72,14 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
-  private static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
+  public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
   public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
   public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   public static final String JOB_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+  public static final String JOB_DEFAULT_ENV_MAP = "JOB_DEFAULT_ENV_MAP";
+  public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
@@ -85,17 +88,24 @@ public class EnvConfigs implements Configs {
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
+  private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
+  private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
+  private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
 
-  private static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
-  private static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
-  private static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
-  private static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
-  private static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
-  private static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
-  private static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
-  private static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
-  private static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
-  private static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
+  public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
+  public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
+  public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
+  public static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
+  public static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
+  public static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
+  public static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
+  public static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
+  public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
+  public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
+
+  public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
+  public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
+  public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -121,15 +131,24 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
+  private final Supplier<Set<String>> getAllEnvKeys;
   private final LogConfigs logConfigs;
   private final CloudStorageConfigs stateStorageCloudConfigs;
 
+  /**
+   * Constructs {@link EnvConfigs} from actual environment variables.
+   */
   public EnvConfigs() {
-    this(System::getenv);
+    this(System.getenv());
   }
 
-  public EnvConfigs(final Function<String, String> getEnv) {
-    this.getEnv = getEnv;
+  /**
+   * Constructs {@link EnvConfigs} from a provided map. This can be used for testing or getting
+   * variables from a non-envvar source.
+   */
+  public EnvConfigs(final Map<String, String> envMap) {
+    this.getEnv = envMap::get;
+    this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
@@ -160,18 +179,18 @@ public class EnvConfigs implements Configs {
     if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""))));
+          getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
     } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
     } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
+          getEnvOrDefault(STATE_STORAGE_S3_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
     } else {
       return Optional.empty();
@@ -482,8 +501,20 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Map<String, String> getJobDefaultEnvMap() {
+    return getAllEnvKeys.get().stream()
+        .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
+        .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
+  }
+
+  @Override
+  public String getGoogleApplicationCredentials() {
+    return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, null);
   }
 
   @Override
@@ -546,6 +577,36 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getContainerOrchestratorEnabled() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
+  }
+
+  @Override
+  public String getContainerOrchestratorSecretName() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SECRET_NAME, null);
+  }
+
+  @Override
+  public String getContainerOrchestratorSecretMountPath() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH, null);
+  }
+
+  @Override
+  public String getContainerOrchestratorImage() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_IMAGE, "airbyte/container-orchestrator:" + getAirbyteVersion().serialize());
+  }
+
+  @Override
+  public int getMaxActivityTimeoutSecond() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "120"));
+  }
+
+  @Override
+  public int getDelayBetweenActivityAttempts() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  }
+
+  @Override
+  public int getActivityNumberOfAttempt() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
   }
 
   // Helpers

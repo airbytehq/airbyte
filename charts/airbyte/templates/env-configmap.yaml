@@ -11,7 +11,7 @@ data:
   AWS_ACCESS_KEY_ID: {{ .Values.logs.accessKey.password }}
   AWS_SECRET_ACCESS_KEY: {{ .Values.logs.secretKey.password }}
   CONFIG_ROOT: /configs
-  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.1.001"
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.17.001"
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
@@ -38,6 +38,8 @@ data:
   S3_PATH_STYLE_ACCESS: {{ include "airbyte.s3PathStyleAccess" . | quote }}
   STATE_STORAGE_MINIO_BUCKET_NAME: airbyte-state-storage
   STATE_STORAGE_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
+  STATE_STORAGE_MINIO_ACCESS_KEY: {{ .Values.minio.accessKey.password | quote }}
+  STATE_STORAGE_MINIO_SECRET_ACCESS_KEY: {{ .Values.minio.secretKey.password | quote }}
   SUBMITTER_NUM_THREADS: "10"
   TEMPORAL_HOST: {{ include "common.names.fullname" . }}-temporal:{{ .Values.temporal.service.port }}
   TEMPORAL_WORKER_PORTS: 9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,9038,9039,9040
