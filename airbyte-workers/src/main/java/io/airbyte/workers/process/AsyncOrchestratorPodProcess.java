@@ -11,8 +11,10 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
+import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -51,15 +53,24 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubePodInfo kubePodInfo;
   private final DocumentStoreClient documentStoreClient;
   private final KubernetesClient kubernetesClient;
+  private final String secretName;
+  private final String secretMountPath;
+  private final String containerOrchestratorImage;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
 
   public AsyncOrchestratorPodProcess(
                                      final KubePodInfo kubePodInfo,
                                      final DocumentStoreClient documentStoreClient,
-                                     final KubernetesClient kubernetesClient) {
+                                     final KubernetesClient kubernetesClient,
+                                     final String secretName,
+                                     final String secretMountPath,
+                                     final String containerOrchestratorImage) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
+    this.secretName = secretName;
+    this.secretMountPath = secretMountPath;
+    this.containerOrchestratorImage = containerOrchestratorImage;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
   }
 
@@ -140,6 +151,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final var wasDestroyed = kubernetesClient.pods()
         .inNamespace(getInfo().namespace())
         .withName(getInfo().name())
+        .withPropagationPolicy(DeletionPropagation.FOREGROUND)
         .delete();
 
     if (wasDestroyed) {
@@ -223,32 +235,49 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   // but does that mean there won't be a docker equivalent?
-  public void create(final String airbyteVersion,
-                     final Map<String, String> allLabels,
+  public void create(final Map<String, String> allLabels,
                      final ResourceRequirements resourceRequirements,
                      final Map<String, String> fileMap,
                      final Map<Integer, Integer> portMap) {
-    final Volume configVolume = new VolumeBuilder()
+    final List<Volume> volumes = new ArrayList<>();
+    final List<VolumeMount> volumeMounts = new ArrayList<>();
+
+    volumes.add(new VolumeBuilder()
         .withName("airbyte-config")
         .withNewEmptyDir()
         .withMedium("Memory")
         .endEmptyDir()
-        .build();
+        .build());
 
-    final VolumeMount configVolumeMount = new VolumeMountBuilder()
+    volumeMounts.add(new VolumeMountBuilder()
         .withName("airbyte-config")
         .withMountPath(KubePodProcess.CONFIG_DIR)
-        .build();
+        .build());
+
+    if (secretName != null && secretMountPath != null) {
+      volumes.add(new VolumeBuilder()
+          .withName("airbyte-secret")
+          .withSecret(new SecretVolumeSourceBuilder()
+              .withSecretName(secretName)
+              .withDefaultMode(420)
+              .build())
+          .build());
+
+      volumeMounts.add(new VolumeMountBuilder()
+          .withName("airbyte-secret")
+          .withMountPath(secretMountPath)
+          .build());
+    }
 
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
 
     final var mainContainer = new ContainerBuilder()
-        .withName("main")
-        .withImage("airbyte/container-orchestrator:" + airbyteVersion)
+        .withName(KubePodProcess.MAIN_CONTAINER_NAME)
+        .withImage(containerOrchestratorImage)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withPorts(containerPorts)
         .withPorts(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null))
-        .withVolumeMounts(configVolumeMount)
+        .withVolumeMounts(volumeMounts)
         .build();
 
     final Pod pod = new PodBuilder()
@@ -262,12 +291,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
-        .withVolumes(configVolume)
+        .withVolumes(volumes)
         .endSpec()
         .build();
 
     // should only create after the kubernetes API creates the pod
-    final var createdPod = kubernetesClient.pods().createOrReplace(pod);
+    final var createdPod = kubernetesClient.pods()
+        .inNamespace(getInfo().namespace())
+        .createOrReplace(pod);
 
     log.info("Waiting for pod to be running...");
     try {

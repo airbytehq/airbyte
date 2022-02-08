@@ -110,6 +110,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+  public static final String MAIN_CONTAINER_NAME = "main";
 
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
@@ -198,7 +199,7 @@ public class KubePodProcess extends Process implements KubePod {
         .collect(Collectors.toList());
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
-        .withName("main")
+        .withName(MAIN_CONTAINER_NAME)
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
@@ -640,7 +641,7 @@ public class KubePodProcess extends Process implements KubePod {
       final ContainerStatus mainContainerStatus = pod.getStatus()
           .getContainerStatuses()
           .stream()
-          .filter(containerStatus -> containerStatus.getName().equals("main"))
+          .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
           .collect(MoreCollectors.onlyElement());
 
       return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
@@ -683,7 +684,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     final ContainerStatus mainContainerStatus = refreshedPod.getStatus().getContainerStatuses()
         .stream()
-        .filter(containerStatus -> containerStatus.getName().equals("main"))
+        .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
         .collect(MoreCollectors.onlyElement());
 
     if (mainContainerStatus.getState() == null || mainContainerStatus.getState().getTerminated() == null) {
