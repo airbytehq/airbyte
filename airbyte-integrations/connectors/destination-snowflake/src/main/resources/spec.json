@@ -81,6 +81,19 @@
         "order": 8,
         "oneOf": [
           {
+            "title": "Select another option",
+            "additionalProperties": false,
+            "description": "Select another option",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Standard"],
+                "default": "Standard"
+              }
+            }
+          },
+          {
             "title": "[Recommended] Internal Staging",
             "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
@@ -90,19 +103,6 @@
                 "type": "string",
                 "enum": ["Internal Staging"],
                 "default": "Internal Staging"
-              }
-            }
-          },
-          {
-            "title": "Please select another option",
-            "additionalProperties": false,
-            "description": "Please select another option",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "enum": ["Standard"],
-                "default": "Standard"
               }
             }
           },
