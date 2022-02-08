@@ -103,7 +103,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.32  | 2021-12-28 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Add AdAccount and Images streams |
+| 0.2.32  | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams |
 | 0.2.31  | 2021-12-28 | [9138](https://github.com/airbytehq/airbyte/pull/9138) | Fix videos stream format field incorrect type |
 | 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Add `asset_feed_spec` field to `ad creatives` stream |
 | 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrieve ad_creatives image as data encoded |
