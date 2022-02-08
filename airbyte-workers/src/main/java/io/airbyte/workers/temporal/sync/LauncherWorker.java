@@ -50,7 +50,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final JobRunConfig jobRunConfig;
   private final Map<String, String> additionalFileMap;
   private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
-  private final String airbyteVersion;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
 
@@ -63,7 +62,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final JobRunConfig jobRunConfig,
                         final Map<String, String> additionalFileMap,
                         final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                        final String airbyteVersion,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass) {
     this.connectionId = connectionId;
@@ -72,7 +70,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.jobRunConfig = jobRunConfig;
     this.additionalFileMap = additionalFileMap;
     this.containerOrchestratorConfig = containerOrchestratorConfig;
-    this.airbyteVersion = airbyteVersion;
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
   }
@@ -113,11 +110,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
-            containerOrchestratorConfig.kubernetesClient());
+            containerOrchestratorConfig.kubernetesClient(),
+            containerOrchestratorConfig.secretName(),
+            containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.containerOrchestratorImage());
 
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           process.create(
-              airbyteVersion,
               allLabels,
               resourceRequirements,
               fileMap,
