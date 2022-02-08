@@ -31,7 +31,6 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
                                    final JobRunConfig jobRunConfig,
-                                   final String airbyteVersion,
                                    final WorkerConfigs workerConfigs) {
     super(
         connectionId,
@@ -42,7 +41,6 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
             INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        airbyteVersion,
         workerConfigs.getResourceRequirements(),
         ReplicationOutput.class);
   }
