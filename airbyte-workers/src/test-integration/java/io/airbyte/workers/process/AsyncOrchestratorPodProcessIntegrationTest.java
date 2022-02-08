@@ -107,7 +107,8 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         documentStoreClient,
         kubernetesClient,
         null,
-        null);
+        null,
+        "airbyte/container-orchestrator:dev");
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
@@ -120,7 +121,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    asyncProcess.create("dev", Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
+    asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
         OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
         OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
 

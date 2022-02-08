@@ -55,6 +55,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubernetesClient kubernetesClient;
   private final String secretName;
   private final String secretMountPath;
+  private final String containerOrchestratorImage;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
 
   public AsyncOrchestratorPodProcess(
@@ -62,12 +63,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final DocumentStoreClient documentStoreClient,
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
-                                     final String secretMountPath) {
+                                     final String secretMountPath,
+                                     final String containerOrchestratorImage) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
+    this.containerOrchestratorImage = containerOrchestratorImage;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
   }
 
@@ -232,8 +235,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   // but does that mean there won't be a docker equivalent?
-  public void create(final String airbyteVersion,
-                     final Map<String, String> allLabels,
+  public void create(final Map<String, String> allLabels,
                      final ResourceRequirements resourceRequirements,
                      final Map<String, String> fileMap,
                      final Map<Integer, Integer> portMap) {
@@ -271,7 +273,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
-        .withImage("airbyte/container-orchestrator:" + airbyteVersion)
+        .withImage(containerOrchestratorImage)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withPorts(containerPorts)
         .withPorts(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null))

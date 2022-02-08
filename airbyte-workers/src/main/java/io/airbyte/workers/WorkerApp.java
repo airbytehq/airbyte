@@ -268,7 +268,8 @@ public class WorkerApp {
                                                    DocumentStoreClient documentStoreClient,
                                                    KubernetesClient kubernetesClient,
                                                    String secretName,
-                                                   String secretMountPath) {}
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -283,7 +284,8 @@ public class WorkerApp {
           documentStoreClient,
           kubernetesClient,
           configs.getContainerOrchestratorSecretName(),
-          configs.getContainerOrchestratorSecretMountPath()));
+          configs.getContainerOrchestratorSecretMountPath(),
+          configs.getContainerOrchestratorImage()));
     } else {
       return Optional.empty();
     }

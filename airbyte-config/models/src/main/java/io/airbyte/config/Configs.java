@@ -344,6 +344,11 @@ public interface Configs {
   String getContainerOrchestratorSecretMountPath();
 
   /**
+   * Define the image to use for the container orchestrator. Defaults to the Airbyte version.
+   */
+  String getContainerOrchestratorImage();
+
+  /**
    * Get the longest duration of non long running activity
    */
   int getMaxActivityTimeoutSecond();
