@@ -555,287 +555,6 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RUNNING && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
     }
-
-    @Nested
-    @DisplayName("Test which with a long running child workflow")
-    class SynchronousWorkflow {
-
-      @BeforeEach
-      public void setup() {
-        testEnv = TestWorkflowEnvironment.newInstance();
-        worker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
-        // Register your workflow implementations
-        worker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SleepingSyncWorkflow.class);
-
-        client = testEnv.getWorkflowClient();
-
-        worker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-            mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
-        testEnv.start();
-
-        workflow = client
-            .newWorkflowStub(
-                ConnectionManagerWorkflow.class,
-                WorkflowOptions.newBuilder()
-                    .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                    .build());
-      }
-
-      @Test
-      @DisplayName("Test workflow which recieved a manual while running does nothing")
-      public void manualRun() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        testEnv.sleep(Duration.ofMinutes(2L));
-        workflow.submitManualSync();
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.SKIPPED_SCHEDULING && changedStateEvent.isValue())
-            .isEmpty();
-
-      }
-
-      @Test
-      @DisplayName("Test that cancelling a running workflow cancel the sync")
-      public void cancelRunning() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        workflow.submitManualSync();
-        testEnv.sleep(Duration.ofSeconds(10L));
-        workflow.cancelJob();
-        testEnv.sleep(Duration.ofMinutes(2L));
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
-            .hasSizeGreaterThanOrEqualTo(1);
-
-        Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
-      }
-
-      @Test
-      @DisplayName("Test that resetting a-non running workflow starts a reset")
-      public void resetStart() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        testEnv.sleep(Duration.ofSeconds(30L));
-        workflow.resetConnection();
-        testEnv.sleep(Duration.ofSeconds(90L));
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
-            .hasSizeGreaterThanOrEqualTo(1);
-
-        Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
-
-      }
-
-      @Test
-      @DisplayName("Test that resetting a running workflow starts cancel the running workflow")
-      public void resetCancelRunningWorkflow() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        workflow.submitManualSync();
-        testEnv.sleep(Duration.ofSeconds(30L));
-        workflow.resetConnection();
-        testEnv.sleep(Duration.ofMinutes(2L));
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
-            .hasSizeGreaterThanOrEqualTo(1);
-
-        Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
-
-      }
-
-      @Test
-      @DisplayName("Test that cancelling a reset don't restart a reset")
-      public void cancelResetDontContinueAsReset() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = Mockito.spy(new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            true));
-
-        WorkflowClient.start(workflow::run, input);
-        testEnv.sleep(Duration.ofSeconds(30L));
-        workflow.cancelJob();
-        testEnv.sleep(Duration.ofMinutes(2L));
-        testEnv.shutdown();
-
-        Assertions.assertThat(testStateListener.events(testId))
-            .filteredOn((event) -> event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
-            .isEmpty();
-
-        Assertions.assertThat(testStateListener.events(testId))
-            .filteredOn((event) -> !event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
-            .hasSizeGreaterThanOrEqualTo(2);
-      }
-
-      @Test
-      @DisplayName("Test workflow which recieved an update signal wait for the current run and report the job status")
-      public void updatedSignalRecievedWhileRunning() {
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            1L,
-            1,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        testEnv.sleep(Duration.ofSeconds(30L));
-        workflow.submitManualSync();
-        testEnv.sleep(Duration.ofSeconds(30L));
-        workflow.connectionUpdated();
-        testEnv.sleep(Duration.ofMinutes(1L));
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RUNNING && changedStateEvent.isValue())
-            .hasSizeGreaterThanOrEqualTo(1);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.UPDATED && changedStateEvent.isValue())
-            .hasSizeGreaterThanOrEqualTo(1);
-
-        Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
-      }
-
-      public static Stream<Arguments> getSetupFailingFailingActivityAfterRun() {
-        Thread.currentThread().run();
-        return Stream.of(
-            Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> System.out.println("do Nothing")),
-                new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                    .when(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any()))),
-            Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.cancelJob()),
-                new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                    .when(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any()))),
-            Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.deleteConnection()),
-                new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                    .when(mConnectionDeletionActivity).deleteConnection(Mockito.any()))),
-            Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
-                new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                    .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))),
-            Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
-                new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                    .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))));
-      }
-
-      @ParameterizedTest
-      @MethodSource("getSetupFailingFailingActivityAfterRun")
-      void testGetStuckAfterRun(Consumer<ConnectionManagerWorkflow> signalSender, Thread mockSetup) {
-        mockSetup.run();
-
-        final UUID testId = UUID.randomUUID();
-        final TestStateListener testStateListener = new TestStateListener();
-        final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-        final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-            UUID.randomUUID(),
-            null,
-            null,
-            false,
-            1,
-            workflowState,
-            false);
-
-        WorkflowClient.start(workflow::run, input);
-        testEnv.sleep(Duration.ofSeconds(10L));
-        workflow.submitManualSync();
-        testEnv.sleep(Duration.ofSeconds(30L));
-        signalSender.accept(workflow);
-        testEnv.sleep(Duration.ofSeconds(50L));
-        testEnv.shutdown();
-
-        final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-        Assertions.assertThat(events)
-            .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
-            .hasSize(1);
-      }
-
-    }
-
   }
 
   @Nested
@@ -873,8 +592,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
+          1L,
+          1,
           false,
           1,
           workflowState,
@@ -893,7 +612,6 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @Disabled
     @Test
     @DisplayName("Test that cancelling a running workflow cancel the sync")
     public void cancelRunning() {
@@ -904,8 +622,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
+          1L,
+          1,
           false,
           1,
           workflowState,
@@ -924,7 +642,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
     }
 
     @Test
@@ -937,8 +655,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
+          1L,
+          1,
           false,
           1,
           workflowState,
@@ -970,8 +688,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
+          1L,
+          1,
           false,
           1,
           workflowState,
@@ -1036,8 +754,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
+          1L,
+          1,
           false,
           1,
           workflowState,
@@ -1062,6 +780,59 @@ public class ConnectionManagerWorkflowTest {
           .hasSizeGreaterThanOrEqualTo(1);
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
+    }
+
+    public static Stream<Arguments> getSetupFailingFailingActivityAfterRun() {
+      Thread.currentThread().run();
+      return Stream.of(
+          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> System.out.println("do Nothing")),
+              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
+                  .when(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any()))),
+          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.cancelJob()),
+              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
+                  .when(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any()))),
+          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.deleteConnection()),
+              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
+                  .when(mConnectionDeletionActivity).deleteConnection(Mockito.any()))),
+          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
+              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
+                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))),
+          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
+              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
+                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getSetupFailingFailingActivityAfterRun")
+    void testGetStuckAfterRun(Consumer<ConnectionManagerWorkflow> signalSender, Thread mockSetup) {
+      mockSetup.run();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          null,
+          null,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(10L));
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(30L));
+      signalSender.accept(workflow);
+      testEnv.sleep(Duration.ofSeconds(50L));
+      testEnv.shutdown();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
+          .hasSize(1);
     }
 
   }
