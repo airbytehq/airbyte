@@ -13,6 +13,7 @@ import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
+import { useConfig } from "config";
 
 type FinalStepProps = {
   connectionId: string;
@@ -35,6 +36,7 @@ const Videos = styled.div`
 `;
 
 const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
+  const config = useConfig();
   const { sendFeedback } = useWorkspace();
   const {
     feedbackPassed,
@@ -81,7 +83,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          videoId="sKDviQrOAbU"
+          link={config.ui.demoLink}
           img="/videoCover.png"
         />
       </Videos>
