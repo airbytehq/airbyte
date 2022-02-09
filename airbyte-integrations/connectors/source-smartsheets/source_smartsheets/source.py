@@ -30,10 +30,7 @@ def get_prop(col_type: str) -> Dict[str, any]:
         "DATE": {"type": "string", "format": "date"},
         "DATETIME": {"type": "string", "format": "date-time"},
     }
-    if col_type in props.keys():
-        return props[col_type]
-    else:  # assume string
-        return props["TEXT_NUMBER"]
+    return props.get(col_type, {"type": "string"})
 
 
 def get_json_schema(sheet: Dict) -> Dict:
@@ -82,6 +79,7 @@ class SourceSmartsheets(Source):
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
 
             stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
+            stream.supported_sync_modes = ["full_refresh"]
             streams.append(stream)
 
         except Exception as e:
@@ -115,7 +113,8 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    values = tuple(i["value"] if "value" in i else "" for i in row["cells"])
+                    # convert all data to string as it is only expected format in schema
+                    values = tuple(str(i["value"]) if "value" in i else "" for i in row["cells"])
                     try:
                         data = dict(zip(columns, values))
 

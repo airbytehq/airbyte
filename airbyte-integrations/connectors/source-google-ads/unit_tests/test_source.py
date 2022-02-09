@@ -3,10 +3,31 @@
 #
 
 import pytest
+from freezegun import freeze_time
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+
+
+# Test chunck date range without end date
+@freeze_time("2022-01-30")
+def test_chunk_date_range_without_end_date():
+    start_date_str = "2022-01-24"
+    conversion_window = 0
+    field = "date"
+    response = chunk_date_range(
+        start_date=start_date_str, conversion_window=conversion_window, field=field, end_date=None, days_of_data_storage=None, range_days=1
+    )
+    expected_response = [
+        {"start_date": "2022-01-25", "end_date": "2022-01-26"},
+        {"start_date": "2022-01-26", "end_date": "2022-01-27"},
+        {"start_date": "2022-01-27", "end_date": "2022-01-28"},
+        {"start_date": "2022-01-28", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-29", "end_date": "2022-01-30"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-31"},
+    ]
+    assert expected_response == response
 
 
 def test_chunk_date_range():
@@ -14,8 +35,17 @@ def test_chunk_date_range():
     end_date = "2021-05-04"
     conversion_window = 14
     field = "date"
-    response = chunk_date_range(start_date, conversion_window, field, end_date)
-    assert [{"date": "2021-02-18"}, {"date": "2021-03-18"}, {"date": "2021-04-18"}] == response
+    response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
+    assert [
+        {"start_date": "2021-02-19", "end_date": "2021-02-28"},
+        {"start_date": "2021-03-01", "end_date": "2021-03-10"},
+        {"start_date": "2021-03-11", "end_date": "2021-03-20"},
+        {"start_date": "2021-03-21", "end_date": "2021-03-30"},
+        {"start_date": "2021-03-31", "end_date": "2021-04-09"},
+        {"start_date": "2021-04-10", "end_date": "2021-04-19"},
+        {"start_date": "2021-04-20", "end_date": "2021-04-29"},
+        {"start_date": "2021-04-30", "end_date": "2021-05-09"},
+    ] == response
 
 
 def test_streams_count(config):
@@ -89,6 +119,24 @@ def get_instance_from_config(config, query):
         start_date=start_date,
         custom_query_config={"query": query, "table_name": "whatever_table"},
         time_zone="local",
+    )
+    return instance
+
+
+# get he instance with a config
+def get_instance_from_config_with_end_date(config, query):
+    start_date = "2021-03-04"
+    end_date = "2021-04-04"
+    conversion_window_days = 14
+    google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+
+    instance = CustomQuery(
+        api=google_api,
+        conversion_window_days=conversion_window_days,
+        start_date=start_date,
+        end_date=end_date,
+        time_zone="local",
+        custom_query_config={"query": query, "table_name": "whatever_table"},
     )
     return instance
 
@@ -230,6 +278,30 @@ def test_get_json_schema_parse_query(config):
     ]
 
     instance = get_instance_from_config(config=config, query=query)
+    final_schema = instance.get_json_schema()
+    schema_keys = final_schema["properties"]
+    assert set(schema_keys) == set(final_fields)  # test 1
+
+
+# Test get json schema when start and end date are provided in the config file
+def test_get_json_schema_parse_query_with_end_date(config):
+    query = """
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date
+        FROM campaign
+        """
+    final_fields = [
+        "campaign.accessible_bidding_strategy",
+        "segments.ad_destination_type",
+        "campaign.start_date",
+        "campaign.end_date",
+        "segments.date",
+    ]
+
+    instance = get_instance_from_config_with_end_date(config=config, query=query)
     final_schema = instance.get_json_schema()
     schema_keys = final_schema["properties"]
     assert set(schema_keys) == set(final_fields)  # test 1

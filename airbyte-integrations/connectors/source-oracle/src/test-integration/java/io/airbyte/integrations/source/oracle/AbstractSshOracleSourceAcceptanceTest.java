@@ -16,7 +16,6 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -136,11 +135,6 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
                 Field.of("ID", JsonSchemaPrimitive.NUMBER),
                 Field.of("NAME", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override
