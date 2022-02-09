@@ -54,6 +54,10 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
           .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
                   .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
                   .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage USER_IN_THE_DB = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Alex").put("id", "1").build()))
+                  .withEmittedAt(NOW.toEpochMilli()));
 
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
           .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
@@ -103,12 +107,15 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
     assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "super"));
 
     final List<JsonNode> usersActual = retrieveRecords(testDestinationEnv, USERS_STREAM_NAME, DATASET_ID, config);
-    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(
+            MESSAGE_USERS1.getRecord().getData(),
+            MESSAGE_USERS2.getRecord().getData(),
+            USER_IN_THE_DB.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
   }
 
-  private void createTmpTableWithVarchar(Database database, String streamName) throws SQLException {
+  private void createTmpTableWithVarchar(final Database database, final String streamName) throws SQLException {
     // As we don't care about the previous data we just simulate the flow when previous table exists.
     database.query(q -> {
       q.fetch(String.format("CREATE SCHEMA IF NOT EXISTS %s", DATASET_ID));
@@ -118,6 +125,12 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
               JavaBaseConstants.COLUMN_NAME_AB_ID,
               JavaBaseConstants.COLUMN_NAME_DATA,
               JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+      // Simulate existing record
+      q.fetch(String.format("""
+      insert into %s.%s (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at) values  
+      ('9', '{\"id\":\"1\",\"name\":\"Alex\"}', '2022-02-09 12:02:13.322000 +00:00')""",
+              DATASET_ID,
+              streamName));
       return null;
     });
   }

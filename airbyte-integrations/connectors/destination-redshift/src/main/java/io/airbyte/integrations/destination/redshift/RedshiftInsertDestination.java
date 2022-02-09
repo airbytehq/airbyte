@@ -20,11 +20,13 @@ import org.slf4j.LoggerFactory;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination  {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
+  private static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  private static final String USERNAME = "username";
+  private static final String PASSWORD = "password";
+  private static final String SCHEMA = "schema";
+  private static final String JDBC_URL = "jdbc_url";
 
-  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
-
-  public RedshiftInsertDestination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+  public RedshiftInsertDestination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
   }
 
@@ -48,24 +50,24 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination  {
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
     addSsl(additionalProperties);
     return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(USERNAME).asText(),
+        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        jdbcConfig.get(JDBC_URL).asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
         String.join(";", additionalProperties));
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", redshiftConfig.get("username").asText())
-        .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
+        .put(USERNAME, redshiftConfig.get(USERNAME).asText())
+        .put(PASSWORD, redshiftConfig.get(PASSWORD).asText())
+        .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
             redshiftConfig.get("database").asText()))
-        .put("schema", schema)
+        .put(SCHEMA, schema)
         .build());
   }
 }

@@ -13,8 +13,12 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,20 +29,39 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
-  public RedshiftSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+  public RedshiftSqlOperations(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
   }
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+    if (updateDataColumnToSuperIfRequired(database, schemaName, tableName)) {
+      // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
+      // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
+      // the COLUMN order. This order is required to INSERT the values in correct way.
+      return String.format("""
+              ALTER TABLE %1$s.%2$s ADD COLUMN %3$s_super super;
+              ALTER TABLE %1$s.%2$s ADD COLUMN %4$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+              UPDATE %1$s.%2$s SET %3$s_super = JSON_PARSE(%3$s);
+              UPDATE %1$s.%2$s SET %4$s_reserve = %4$s;
+              ALTER TABLE %1$s.%2$s DROP COLUMN %3$s;
+              ALTER TABLE %1$s.%2$s DROP COLUMN %4$s;
+              ALTER TABLE %1$s.%2$s RENAME %3$s_super to %3$s;
+              ALTER TABLE %1$s.%2$s RENAME %4$s_reserve to %4$s;
+              """,
+          schemaName,
+          tableName,
+          JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    }
     return redshiftDataTmpTableMode.getTmpTableSqlStatement(schemaName, tableName);
   }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -64,4 +87,32 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
     return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
+
+  /**
+   * @param database   - Database object for interacting with a JDBC connection.
+   * @param schemaName - schema to update.
+   * @param streamName - streamName.
+   * @return true - if _airbyte_raw_users._airbyte_data should be updated to SUPER, else false.
+   */
+  private boolean updateDataColumnToSuperIfRequired(final JdbcDatabase database,
+      final String schemaName,
+      final String streamName) {
+    try {
+      final Optional<ResultSetMetaData> resultSetMetaData = Optional.ofNullable(database.queryMetadata(
+          String.format("select _airbyte_data from %s.%s",
+              schemaName,
+              streamName)));
+      if (resultSetMetaData.isPresent()) {
+        return !resultSetMetaData.get()
+            .getColumnTypeName(1)
+            .trim()
+            .contains("super");
+      } else {
+        return false;
+      }
+    } catch (SQLException e) {
+      LOGGER.warn("Selected TMP table doesn't exists: {}", streamName);
+      return false;
+    }
+  }
 }
