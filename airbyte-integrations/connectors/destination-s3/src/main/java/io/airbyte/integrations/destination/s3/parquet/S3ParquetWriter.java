@@ -5,11 +5,12 @@
 package io.airbyte.integrations.destination.s3.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
+public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ParquetWriter.class);
 
@@ -39,6 +40,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   private final Schema schema;
   private final String outputFilename;
   private final String objectKey;
+  private final String gcsFileLocation;
 
   public S3ParquetWriter(final S3DestinationConfig config,
                          final AmazonS3 s3Client,
@@ -53,6 +55,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
 
     final URI uri = new URI(
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
@@ -121,6 +124,21 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   @Override
   public String getOutputPath() {
     return objectKey;
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.PARQUET;
+  }
+
+  @Override
+  public void write(JsonNode formattedData) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
 
 }

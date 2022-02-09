@@ -1,0 +1,98 @@
+[
+  {
+    "testCase": "single stream",
+    "mockCatalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "my_stream",
+      "stream_schema": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }"
+    },
+    "expectedCatalog": {
+      "streams": [
+        {
+          "name": "my_stream",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "field1": {
+                "type": "string"
+              },
+              "field2": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "testCase": "single stream with malformed schema",
+    "mockCatalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "my_stream",
+      "stream_schema": "[123, 456]"
+    },
+    "expectedCatalog": null
+  },
+  {
+    "testCase": "single stream with invalid schema",
+    "mockCatalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "my_stream",
+      "stream_schema": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"invalid_type\" }, \"field2\": { \"type\": \"number\" } } }"
+    },
+    "expectedCatalog": null
+  },
+  {
+    "testCase": "multi stream",
+    "mockCatalog": {
+      "type": "MULTI_STREAM",
+      "stream_schemas": "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } } }"
+    },
+    "expectedCatalog": {
+      "streams": [
+        {
+          "name": "stream1",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "field1": {
+                "type": "string"
+              },
+              "field2": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "name": "stream2",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "column1": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "testCase": "multi stream with malformed schema",
+    "mockCatalog": {
+      "type": "MULTI_STREAM",
+      "stream_schemas": "{ \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": { \"type\": \"number\" } } }"
+    },
+    "expectedCatalog": null
+  },
+  {
+    "testCase": "multi stream with invalid schema",
+    "mockCatalog": {
+      "type": "MULTI_STREAM",
+      "stream_schemas": "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" }, \"field2\": [\"invalid field spec\"] } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } } }"
+    },
+    "expectedCatalog": null
+  }
+]

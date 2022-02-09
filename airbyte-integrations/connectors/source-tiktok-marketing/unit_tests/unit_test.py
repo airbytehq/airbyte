@@ -59,12 +59,7 @@ def generate_pages(items: List[Mapping[str, Any]], page_size: int, last_empty: b
                 "code": 0,
                 "request_id": "unique_request_id",
                 "data": {
-                    "page_info": {
-                        "total_number": total_number,
-                        "page": page_number,
-                        "page_size": page_size,
-                        "total_page": len(page_items),
-                    },
+                    "page_info": {"total_number": total_number, "page": page_number, "page_size": page_size, "total_page": len(page_items)},
                     "list": page_items,
                 },
             },

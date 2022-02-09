@@ -29,6 +29,16 @@ task test(type: NpmTask) {
     inputs.file 'package-lock.json'
 }
 
+task licenseCheck(type: NpmTask) {
+    dependsOn npmInstall
+
+    args = ['run', 'license-check']
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+}
+
+// Make sure to always run a license check after we installed dependencies
+npmInstall.finalizedBy licenseCheck
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
@@ -49,6 +59,15 @@ task copyDocs(type: Copy) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+// Copy images that are used in .md integration documentation docs
+task copyAssets(type: Copy) {
+    dependsOn copyDocker
+
+    from "${project.rootProject.projectDir}/docs/.gitbook"
+    into "build/docker/bin/docs/.gitbook"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
 task copyNginx(type: Copy) {
     dependsOn copyDocker
 
@@ -59,6 +78,7 @@ task copyNginx(type: Copy) {
 copyBuild.dependsOn npm_run_build
 copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
+copyAssets.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 copyDocker.dependsOn(npm_run_build)
 
@@ -66,4 +86,5 @@ Task dockerBuildTask = getDockerBuildTask("webapp",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyBuild)
 dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)
+dockerBuildTask.dependsOn(copyAssets)
 assemble.dependsOn(dockerBuildTask)

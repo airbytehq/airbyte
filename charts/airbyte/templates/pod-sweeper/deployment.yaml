@@ -26,6 +26,9 @@ spec:
       {{- if .Values.podSweeper.tolerations }}
       tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.tolerations "context" $) | nindent 8 }}
       {{- end }}
+      {{- if .Values.podSweeper.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.affinity "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-pod-sweeper
         image: {{ include "airbyte.podSweeperImage" . }}
