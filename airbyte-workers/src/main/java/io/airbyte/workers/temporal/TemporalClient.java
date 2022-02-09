@@ -335,7 +335,7 @@ public class TemporalClient {
 
     connectionManagerWorkflow.cancelJob();
 
-    do {
+    while (connectionManagerWorkflow.getState().isRunning()) {
       try {
         Thread.sleep(DELAY_BETWEEN_QUERY_MS);
       } catch (final InterruptedException e) {
@@ -343,7 +343,7 @@ public class TemporalClient {
             Optional.of("Didn't manage cancel a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (connectionManagerWorkflow.getState().isRunning());
+    }
 
     log.info("end of manual cancellation");
 
