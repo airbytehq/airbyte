@@ -502,8 +502,9 @@ class IncrementalStream(Stream, ABC):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ):  # TODO
-        cursor = self._field_to_datetime(stream_state[self.updated_at_field])
-        self._update_state(latest_cursor=cursor)  # TODO check
+        if stream_state:
+            cursor = self._field_to_datetime(stream_state[self.updated_at_field])
+            self._update_state(latest_cursor=cursor)  # TODO check
         yield from self.list_records(fields=self.get_fields())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):  # TODO
