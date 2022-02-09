@@ -447,6 +447,10 @@ bootloader:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
     tag: 0.35.26-alpha
+  
+  ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
+  ##
+  podAnnotations: {}
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -468,6 +472,10 @@ temporal:
   service:
     type: ClusterIP
     port: 7233
+
+  ## @param temporal.podAnnotations [object] Add extra annotations to the temporal pod
+  ##
+  podAnnotations: {}
 
   ## @param temporal.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
