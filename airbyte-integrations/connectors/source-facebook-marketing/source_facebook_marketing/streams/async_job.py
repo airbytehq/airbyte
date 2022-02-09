@@ -20,12 +20,6 @@ from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookR
 logger = logging.getLogger("airbyte")
 
 
-def chunks(data: Sequence[Any], n: int) -> Iterator[Any]:
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(data), n):
-        yield data[i : i + n]
-
-
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 

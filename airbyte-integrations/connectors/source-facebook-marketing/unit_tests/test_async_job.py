@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import time
 from typing import Iterator
 
@@ -9,18 +10,19 @@ import pendulum
 import pytest
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, chunks
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 
 
 @pytest.fixture(name="adreport")
 def adreport_fixture(mocker, api):
-    ao = AdReportRun(fbid=123, api=api)
-    ao["report_run_id"] = 123
-    mocker.patch.object(AdReportRun, "api_get", return_value=ao)
-    mocker.patch.object(AdReportRun, "get_result", return_value={})
+    ao = AdReportRun(fbid="123", api=api)
+    ao["report_run_id"] = "123"
+    mocker.patch.object(ao, "api_get", side_effect=ao.api_get)
+    mocker.patch.object(ao, "get_result", side_effect=ao.get_result)
     return ao
 
 
@@ -58,9 +60,10 @@ def parent_job_fixture(api, grouped_jobs):
 
 
 @pytest.fixture(name="started_job")
-def started_job_fixture(job, adreport):
+def started_job_fixture(job, adreport, mocker):
     adreport["async_status"] = Status.RUNNING.value
     adreport["async_percent_completion"] = 0
+    mocker.patch.object(job, "update_job", wraps=job.update_job)
     job.start()
 
     return job
@@ -97,27 +100,63 @@ def failed_job_fixture(started_job, adreport):
 def api_fixture(mocker):
     api = mocker.Mock(spec=MyFacebookAdsApi)
     api.call().json.return_value = {}
-    api.new_batch.return_value = mocker.MagicMock(spec=FacebookAdsApiBatch)
-    api.new_batch.return_value.execute.return_value = None  # short-circuit batch execution of failed jobs, prevent endless loop
+    api.call().error.return_value = False
 
     return api
 
 
-class TestChunks:
-    def test_two_or_more(self):
-        result = chunks([1, 2, 3, 4, 5], 2)
+@pytest.fixture(name="batch")
+def batch_fixture(api, mocker):
+    batch = FacebookAdsApiBatch(api=api)
+    mocker.patch.object(batch, "execute", wraps=batch.execute)
+    api.new_batch.return_value = batch
 
-        assert isinstance(result, Iterator), "should be iterator/generator"
-        assert list(result) == [[1, 2], [3, 4], [5]]
+    return batch
 
-    def test_single(self):
-        result = chunks([1, 2, 3, 4, 5], 6)
 
-        assert isinstance(result, Iterator), "should be iterator/generator"
-        assert list(result) == [[1, 2, 3, 4, 5]]
+class TestUpdateInBatch:
+    """Test update_in_batch"""
+
+    def test_less_jobs(self, api, started_job, batch):
+        """Should update all jobs when number of jobs less than max size of batch"""
+        jobs = [started_job for _ in range(49)]
+
+        update_in_batch(api=api, jobs=jobs)
+
+        assert started_job.update_job.call_count == 49
+        assert len(api.new_batch.return_value) == 49
+        batch.execute.assert_called_once()
+
+    def test_more_jobs(self, api, started_job, batch):
+        """Should update all jobs when number of jobs greater than max size of batch"""
+        second_batch = copy.deepcopy(batch)
+        jobs = [started_job for _ in range(55)]
+        api.new_batch.return_value = None
+        api.new_batch.side_effect = [batch, second_batch]
+
+        update_in_batch(api=api, jobs=jobs)
+
+        assert started_job.update_job.call_count == 55
+        assert len(batch) == 50
+        batch.execute.assert_called_once()
+        assert len(second_batch) == 5
+        second_batch.execute.assert_called_once()
+
+    def test_failed_execution(self, api, started_job, batch):
+        """Should execute batch until there are no failed tasks"""
+        jobs = [started_job for _ in range(49)]
+        batch.execute.side_effect = [batch, batch, None]
+
+        update_in_batch(api=api, jobs=jobs)
+
+        assert started_job.update_job.call_count == 49
+        assert len(api.new_batch.return_value) == 49
+        assert batch.execute.call_count == 3
 
 
 class TestInsightAsyncJob:
+    """Test InsightAsyncJob class"""
+
     def test_start(self, job):
         job.start()
 
@@ -240,13 +279,17 @@ class TestInsightAsyncJob:
 
         assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
 
-    def test_get_result(self, job, adreport):
+    def test_get_result(self, job, adreport, api):
         job.start()
+        api.call().json.return_value = {"data": [{"some_data": 123}, {"some_data": 77}]}
 
         result = job.get_result()
 
         adreport.get_result.assert_called_once()
-        assert result == adreport.get_result.return_value, "should return result from job"
+        assert len(result) == 2
+        assert isinstance(result[0], AdsInsights)
+        assert result[0].export_all_data() == {"some_data": 123}
+        assert result[1].export_all_data() == {"some_data": 77}
 
     def test_get_result_when_job_is_not_started(self, job):
         with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
@@ -304,14 +347,13 @@ class TestParentAsyncJob:
 
         assert parent_job.completed, "completed because all jobs completed"
 
-    def test_update_job(self, parent_job, grouped_jobs, api):
+    def test_update_job(self, parent_job, grouped_jobs, api, batch):
         """Checks jobs status in advance and restart if some failed."""
         parent_job.update_job()
 
         # assert
-        batch_mock = api.new_batch()
         for job in grouped_jobs:
-            job.update_job.assert_called_once_with(batch=batch_mock)
+            job.update_job.assert_called_once_with(batch=batch)
 
     def test_get_result(self, parent_job, grouped_jobs):
         """Retrieve result of the finished job."""
@@ -343,3 +385,6 @@ class TestParentAsyncJob:
                 job.split_job.assert_called_once()
             else:
                 job.split_job.assert_not_called()
+
+    def test_str(self, parent_job, grouped_jobs):
+        assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
