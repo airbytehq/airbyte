@@ -448,6 +448,6 @@
   "errorView.unknown": "Unknown",
 
   "ui.keyValuePair": "{key}: {value}",
-  "ui.keyValuePairV2": "{key}({value})",
+  "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}"
 }
