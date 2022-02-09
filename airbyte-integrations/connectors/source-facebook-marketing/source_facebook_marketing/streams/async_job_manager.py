@@ -90,7 +90,7 @@ class InsightAsyncJobManager:
         running_jobs = []
         failed_num = 0
 
-        update_in_batch(batch=self._api.api.new_batch(), jobs=self._running_jobs)
+        update_in_batch(api=self._api.api, jobs=self._running_jobs)
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:

@@ -26,12 +26,13 @@ def chunks(data: Sequence[Any], n: int) -> Iterator[Any]:
         yield data[i : i + n]
 
 
-def update_in_batch(batch: FacebookAdsApiBatch, jobs: List["AsyncJob"]):
+def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
-    :param batch:
+    :param api:
     :param jobs:
     """
+    batch = api.new_batch()
     max_batch_size = 50
     for job in jobs:
         # we check it here because job can be already finished
@@ -40,6 +41,7 @@ def update_in_batch(batch: FacebookAdsApiBatch, jobs: List["AsyncJob"]):
                 # If some of the calls from batch have failed, it returns  a new
                 # FacebookAdsApiBatch object with those calls
                 batch = batch.execute()
+            batch = api.new_batch()
         job.update_job(batch=batch)
 
     while batch:
@@ -150,7 +152,7 @@ class ParentAsyncJob(AsyncJob):
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
         """Checks jobs status in advance."""
-        update_in_batch(batch=self._api.new_batch(), jobs=self._jobs)
+        update_in_batch(api=self._api, jobs=self._jobs)
 
     def get_result(self) -> Iterator[Any]:
         """Retrieve result of the finished job."""
