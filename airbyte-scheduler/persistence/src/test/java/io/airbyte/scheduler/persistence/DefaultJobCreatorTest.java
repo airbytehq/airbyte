@@ -20,6 +20,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
@@ -55,6 +56,7 @@ public class DefaultJobCreatorTest {
   private JobPersistence jobPersistence;
   private ConfigRepository configRepository;
   private JobCreator jobCreator;
+  private ResourceRequirements workerResourceRequirements;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -114,7 +116,8 @@ public class DefaultJobCreatorTest {
   void setup() {
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    jobCreator = new DefaultJobCreator(jobPersistence, configRepository);
+    workerResourceRequirements = mock(ResourceRequirements.class);
+    jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
   }
 
   @Test
