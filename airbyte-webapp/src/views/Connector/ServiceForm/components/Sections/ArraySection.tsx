@@ -45,7 +45,7 @@ export const ArraySection: React.FC<{
               onStartEdit={(index) =>
                 addUnfinishedFlow(path, {
                   id: index,
-                  startValue: index < items.length ? items[index] : null,
+                  startValue: index < items.length ? items : null,
                 })
               }
               onDone={() => removeUnfinishedFlow(path)}

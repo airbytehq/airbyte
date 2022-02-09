@@ -1,0 +1,33 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/plaid",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["access_token", "api_key", "client_id", "plaid_env"],
+    "additionalProperties": false,
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "title": "Access Token",
+        "description": "Access Token for making authenticated requests."
+      },
+      "api_key": {
+        "title": "API Key",
+        "type": "string",
+        "description": "Plaid API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/plaid\">docs</a> for more information on how to obtain this key.",
+        "airbyte_secret": true
+      },
+      "client_id": {
+        "title": "Client ID",
+        "type": "string",
+        "description": "The Client ID of your Plaid developer application."
+      },
+      "plaid_env": {
+        "title": "Plaid Environment",
+        "type": "string",
+        "enum": ["sandbox", "development", "production"],
+        "description": "Environment specifies where the data will come from. [Examples: "sandbox", "production", "qa", "development"]"
+      }
+    }
+  }
+}

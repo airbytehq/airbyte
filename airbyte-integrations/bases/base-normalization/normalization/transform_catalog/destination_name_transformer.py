@@ -146,16 +146,21 @@ class DestinationNameTransformer:
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
-        result = self.__normalize_naming_conventions(result)
+        result = self.__normalize_naming_conventions(result, is_column=False)
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
+        if result[0].isdigit():
+            if self.destination_type == DestinationType.MSSQL:
+                result = "_" + result
+            elif self.destination_type == DestinationType.ORACLE:
+                result = "ab_" + result
         return result
 
     def __normalize_identifier_name(
         self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
-        result = self.__normalize_naming_conventions(column_name)
+        result = self.__normalize_naming_conventions(column_name, is_column=True)
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
@@ -165,13 +170,7 @@ class DestinationNameTransformer:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
             result = self.__normalize_identifier_case(result, is_quoted=True)
-            if self.destination_type == DestinationType.ORACLE:
-                # Oracle dbt lib doesn't implemented adapter quote yet.
-                result = f"quote('{result}')"
-            elif self.destination_type == DestinationType.CLICKHOUSE:
-                result = f"quote('{result}')"
-            else:
-                result = f"adapter.quote('{result}')"
+            result = self.apply_quote(result)
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -182,14 +181,24 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def __normalize_naming_conventions(self, input_name: str) -> str:
+    def apply_quote(self, input: str) -> str:
+        if self.destination_type == DestinationType.ORACLE:
+            # Oracle dbt lib doesn't implemented adapter quote yet.
+            return f"quote('{input}')"
+        elif self.destination_type == DestinationType.CLICKHOUSE:
+            return f"quote('{input}')"
+        return f"adapter.quote('{input}')"
+
+    def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name
         if self.destination_type.value == DestinationType.ORACLE.value:
             return transform_standard_naming(result)
         elif self.destination_type.value == DestinationType.BIGQUERY.value:
+            # Can start with number: datasetId, table
+            # Can not start with number: column
             result = transform_standard_naming(result)
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
-            if doesnt_start_with_alphaunderscore:
+            if is_column and doesnt_start_with_alphaunderscore:
                 result = f"_{result}"
         return result
 
@@ -212,6 +221,44 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MSSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+            else:
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            pass
+        else:
+            raise KeyError(f"Unknown destination type {self.destination_type}")
+        return result
+
+    def normalize_column_identifier_case_for_lookup(self, input_name: str, is_quoted: bool = False) -> str:
+        """
+        This function adds an additional normalization regarding the column name casing to determine if multiple columns
+        are in collisions. On certain destinations/settings, case sensitivity matters, in others it does not.
+        We separate this from standard identifier normalization "__normalize_identifier_case",
+        so the generated SQL queries are keeping the original casing from the catalog.
+        But we still need to determine if casing matters or not, thus by using this function.
+        """
+        result = input_name
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
+            # Columns are considered identical regardless of casing
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.REDSHIFT.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.POSTGRES.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.upper()
+        elif self.destination_type.value == DestinationType.MYSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
+            # Columns are considered identical regardless of casing (even quoted ones)
+            result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()

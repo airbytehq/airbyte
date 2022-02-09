@@ -1,23 +1,22 @@
 import React, { useState } from "react";
-import { useResource, useSubscription } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 
-import JobResource from "core/resources/Job";
-import AttemptDetails from "./AttemptDetails";
-import DownloadButton from "./DownloadButton";
+import Status from "core/statuses";
+import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
+
 import Logs from "./Logs";
 import Tabs from "./Tabs";
-import CenteredDetails from "./CenteredDetails";
-import Status from "core/statuses";
+import { LogsDetails } from "./LogsDetails";
 
 type IProps = {
   id: number | string;
   jobIsFailed?: boolean;
+  isPartialSuccess?: boolean;
 };
 
-const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
-  const job = useResource(JobResource.detailShape(), { id });
-  useSubscription(JobResource.detailShape(), { id });
+const JobLogs: React.FC<IProps> = ({ id, jobIsFailed, isPartialSuccess }) => {
+  const job = useGetJob(id);
+  const debugInfo = useGetDebugInfoJob(id);
 
   const [attemptNumber, setAttemptNumber] = useState<number>(
     job.attempts.length ? job.attempts.length - 1 : 0
@@ -27,11 +26,17 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     return <Logs />;
   }
 
-  const data = job.attempts.map((item, index) => ({
+  const currentAttempt = job.attempts[attemptNumber].attempt;
+  const logs = job.attempts[attemptNumber]?.logs;
+  const path = ["/tmp/workspace", id, currentAttempt.id, "logs.log"].join("/");
+
+  const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),
+    isPartialSuccess,
     status:
-      item.status === Status.FAILED || item.status === Status.SUCCEEDED
-        ? item.status
+      item.attempt.status === Status.FAILED ||
+      item.attempt.status === Status.SUCCEEDED
+        ? item.attempt.status
         : undefined,
     name: (
       <FormattedMessage
@@ -41,33 +46,22 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     ),
   }));
 
-  const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length;
   return (
     <>
       {job.attempts.length > 1 ? (
         <Tabs
           activeStep={attemptNumber.toString()}
           onSelect={(at) => setAttemptNumber(parseInt(at))}
-          data={data}
+          data={attemptsTabs}
           isFailed={jobIsFailed}
         />
       ) : null}
-      <CenteredDetails>
-        {job.attempts.length > 1 && (
-          <AttemptDetails attempt={job.attempts[attemptNumber]} />
-        )}
-        <div>{`/tmp/workspace/${id}/${job.attempts[attemptNumber].id}/logs.log.`}</div>
-        {hasLogs ? (
-          <DownloadButton
-            logs={job.logsByAttempt[attemptNumber].logLines}
-            fileName={`logs-${id}-${job.attempts[attemptNumber].id}`}
-          />
-        ) : null}
-      </CenteredDetails>
-      <Logs
-        logsArray={
-          hasLogs ? job.logsByAttempt[attemptNumber].logLines : undefined
-        }
+      <LogsDetails
+        id={job.job.id}
+        path={path}
+        currentAttempt={job.attempts.length > 1 ? currentAttempt : null}
+        logs={logs}
+        jobDebugInfo={debugInfo.job}
       />
     </>
   );

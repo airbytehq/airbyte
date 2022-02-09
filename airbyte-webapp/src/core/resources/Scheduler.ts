@@ -3,12 +3,8 @@ import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import Status from "core/statuses";
 import { ConnectionSpecification } from "core/domain/connection";
-import { JobItem, Logs } from "core/resources/Job";
+import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-
-export type JobInfo = JobItem & {
-  logs: Logs;
-};
 
 export interface Scheduler {
   status: string;
