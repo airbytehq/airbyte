@@ -537,6 +537,10 @@ class CRMSearchStream(IncrementalStream, ABC):
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
+    
+    # Search API is limited to 10k results
+    # https://developers.hubspot.com/docs/api/crm/search#limitations
+    max_search_resuls = 10000
 
     @property
     def url(self):
@@ -589,31 +593,39 @@ class CRMSearchStream(IncrementalStream, ABC):
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
-                "limit": 100,
+                "limit": self.limit,
             }
             if self.state
             else {}
         )
 
-        while True:
-            stream_records = {}
-            if self.state:
+        after = 0
+        if self.state:
+            while after != None:
                 response = getter(data=payload)
                 for record in self._transform(self.parse_response(response)):
-                    stream_records[record["id"]] = record
-            else:
-                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
+                    yield record
+                    latest_cursor = self._field_to_datetime(record[self.updated_at_field])
 
-            for _, record in stream_records.items():
-                yield record
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-            if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
-                params["after"] = response["paging"]["next"]["after"]
-                payload["after"] = response["paging"]["next"]["after"]
-            else:
-                break
+                after = response.get("paging", {}).get("next", {}).get("after")
+                if after and after + self.limit > self.max_search_resuls:
+                    payload["after"] = 0
+                    payload["filters"][0]["value"] = int(latest_cursor.timestamp() * 1000)
+                if after:
+                    payload["after"] = after
+        else:
+            while after != None:
+                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
+                for _, record in stream_records.items():
+                    yield record
+                    cursor = self._field_to_datetime(record[self.updated_at_field])
+                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                
+                after = response.get("paging", {}).get("next", {}).get("after")
+                if after:
+                    params["after"] = after 
 
         self._update_state(latest_cursor=latest_cursor)
 
