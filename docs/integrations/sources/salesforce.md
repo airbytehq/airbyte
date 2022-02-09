@@ -21,7 +21,9 @@ Several output streams are available from this source. A list of these streams c
 
 ### Performance considerations
 
-The connector is restricted by normal Salesforce rate limiting. For large transfers we recommend using the BULK API.
+The connector is restricted by daily Salesforce rate limiting.
+The connector uses as much rate limit as it can every day, then ends the sync early with success status and continues the sync from where it left the next time.
+Note that, picking up from where it ends will work only for incremental sync.
 
 ## Getting started
 
@@ -737,6 +739,8 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject                                                                   |
 |:--------|:-----------| :--- |:--------------------------------------------------------------------------|
+| 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012) | Increase CSV field_size_limit |
+| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
 | 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757) | Parse CSV with "unix" dialect |
 | 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
 | 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478) | Add available stream filtering by `queryable` flag |

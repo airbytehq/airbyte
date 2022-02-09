@@ -99,7 +99,9 @@
                 "title": "Advanced Options",
                 "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
                 "default": "{}",
-                "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
+                "examples": [
+                  "{\"column_names\": [\"column1\", \"column2\"]}"
+                ],
                 "type": "string"
               },
               "infer_datatypes": {
@@ -110,7 +112,6 @@
               }
             }
           },
-
           {
             "title": "parquet",
             "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
@@ -131,11 +132,13 @@
                 "title": "Columns",
                 "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                  "type": "string"
+                }
               },
               "batch_size": {
                 "title": "Batch Size",
-                "description": "Maximum number of records per batch. Batches may be smaller if there aren\u2019t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 65536,
                 "type": "integer"
               }
@@ -187,11 +190,21 @@
             "type": "boolean"
           }
         },
-        "required": ["bucket"]
+        "required": [
+          "bucket"
+        ]
       }
     },
-    "required": ["dataset", "path_pattern", "provider"]
+    "required": [
+      "dataset",
+      "path_pattern",
+      "provider"
+    ]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append",
+    "append_dedup"
+  ]
 }

@@ -13,6 +13,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.db.Database;
@@ -83,7 +84,7 @@ public class BootloaderApp {
         final Database configDatabase =
             new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
                 .getAndInitialize();
-        final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+        final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
         LOGGER.info("Loaded seed data..");
       } catch (IOException e) {
@@ -111,9 +112,9 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
       final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence.withValidation(), null, Optional.empty(), Optional.empty());
+          new ConfigRepository(configPersistence, null, Optional.empty(), Optional.empty());
 
       createWorkspaceIfNoneExists(configRepository);
       LOGGER.info("Default workspace created..");
@@ -123,12 +124,6 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
-
-      if (featureFlags.usesNewScheduler()) {
-        LOGGER.info("Start cleaning zombie jobs");
-        cleanupZombies(jobPersistence);
-        LOGGER.info("Cleaning zombie jobs done");
-      }
     }
 
     if (postLoadExecution != null) {

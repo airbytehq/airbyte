@@ -1307,7 +1307,38 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.1.2"
+- dockerImage: "airbyte/source-confluence:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/confluence"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Confluence Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "domain_name"
+      - "email"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "Please follow the Jira confluence for generating an API token:\
+            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+          airbyte_secret: true
+        domain_name:
+          type: "string"
+          description: "Your Confluence domain name"
+          examples:
+          - "example.atlassian.net"
+        email:
+          type: "string"
+          description: "Your Confluence login email"
+          examples:
+          - "abc@example.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-delighted:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1448,7 +1479,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-e2e-test:1.0.0"
+- dockerImage: "airbyte/source-e2e-test:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/e2e-test"
     connectionSpecification:
@@ -1456,143 +1487,96 @@
       title: "E2E Test Source Spec"
       type: "object"
       required:
-      - "type"
-      oneOf:
-      - title: "Continuous Feed"
-        required:
-        - "type"
-        - "max_messages"
-        - "mock_catalog"
-        description: "A mock mode that will emit random messages based on the input\
-          \ schema."
-        additionalProperties: false
-        properties:
-          type:
-            type: "string"
-            const: "CONTINUOUS_FEED"
-            default: "CONTINUOUS_FEED"
-            order: 10
-          max_messages:
-            title: "Max Records"
-            description: "Number of records to emit per stream. Min 1. Max 100 billion."
-            type: "integer"
-            default: 100
-            min: 1
-            max: 100000000000
-            order: 20
-          seed:
-            title: "Random Seed"
-            description: "When the seed is unspecified, the current time millis will\
-              \ be used as the seed. Range: [0, 1000000]."
-            type: "integer"
-            default: 0
-            examples:
-            - 42
-            min: 0
-            max: 1000000
-            order: 30
-          message_interval_ms:
-            title: "Message Interval (ms)"
-            description: "Interval between messages in ms. Min 0 ms. Max 60000 ms\
-              \ (1 minute)."
-            type: "integer"
-            min: 0
-            max: 60000
-            default: 0
-            order: 40
-          mock_catalog:
-            title: "Mock Catalog"
-            type: "object"
-            order: 50
-            oneOf:
-            - title: "Single Stream"
-              description: "A catalog with one stream."
-              required:
-              - "type"
-              - "stream_name"
-              - "stream_schema"
-              properties:
-                type:
-                  type: "string"
-                  const: "SINGLE_STREAM"
-                  default: "SINGLE_STREAM"
-                stream_name:
-                  title: "Stream Name"
-                  description: "Name of the data stream."
-                  type: "string"
-                  default: "data_stream"
-                stream_schema:
-                  title: "Stream Schema"
-                  description: "A Json schema for the stream. The schema should be\
-                    \ compatible with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\"\
-                    >draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\"\
-                    >this doc</a> for examples."
-                  type: "string"
-                  default: "{ \"type\": \"object\", \"properties\": { \"column1\"\
-                    : { \"type\": \"string\" } } }"
-            - title: "Multi-Stream"
-              description: "A catalog with multiple data streams."
-              required:
-              - "type"
-              - "stream_schemas"
-              properties:
-                type:
-                  type: "string"
-                  const: "MULTI_STREAM"
-                  default: "MULTI_STREAM"
-                stream_schemas:
-                  title: "Streams and Schemas"
-                  description: "A Json object specifying multiple data streams and\
-                    \ their schemas. Each key in this object is one stream name. Each\
-                    \ value is the schema for that stream. The schema should be compatible\
-                    \ with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\"\
-                    >draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\"\
-                    >this doc</a> for examples."
-                  type: "string"
-                  default: "{ \"stream1\": { \"type\": \"object\", \"properties\"\
-                    : { \"field1\": { \"type\": \"string\" } } }, \"stream2\": { \"\
-                    type\": \"object\", \"properties\": { \"field1\": { \"type\":\
-                    \ \"boolean\" } } } }"
-      - title: "Legacy Exception After N"
-        required:
-        - "type"
-        - "throw_after_n_records"
-        description: "A legacy mode from v0.1.1 mainly for unit tests. The catalog\
-          \ has one \"data\" stream, which has one string field \"column1\". This\
-          \ mode will throw an exception after N messages."
-        additionalProperties: false
-        properties:
-          type:
-            type: "string"
-            const: "EXCEPTION_AFTER_N"
-            default: "EXCEPTION_AFTER_N"
-          throw_after_n_records:
-            title: "Throw After N Records"
-            description: "Number of records to emit before throwing an exception.\
-              \ Min 1."
-            type: "integer"
-            min: 1
-      - title: "Legacy Infinite Feed"
-        required:
-        - "type"
-        - "max_records"
-        description: "A legacy mode from v0.1.1 mainly for unit tests. The catalog\
-          \ has one \"data\" stream, which has one string field \"column1\". This\
-          \ mode will emit messages infinitely."
-        additionalProperties: true
-        properties:
-          type:
-            type: "string"
-            const: "INFINITE_FEED"
-            default: "INFINITE_FEED"
-          max_records:
-            title: "Max Records"
-            description: "Number of records to emit. If not set, defaults to infinity."
-            type: "integer"
-          message_interval:
-            title: "Message Interval"
-            description: "Interval between messages in ms."
-            type: "integer"
+      - "max_messages"
+      - "mock_catalog"
+      additionalProperties: false
+      properties:
+        type:
+          type: "string"
+          const: "CONTINUOUS_FEED"
+          default: "CONTINUOUS_FEED"
+          order: 10
+        max_messages:
+          title: "Max Records"
+          description: "Number of records to emit per stream. Min 1. Max 100 billion."
+          type: "integer"
+          default: 100
+          min: 1
+          max: 100000000000
+          order: 20
+        seed:
+          title: "Random Seed"
+          description: "When the seed is unspecified, the current time millis will\
+            \ be used as the seed. Range: [0, 1000000]."
+          type: "integer"
+          default: 0
+          examples:
+          - 42
+          min: 0
+          max: 1000000
+          order: 30
+        message_interval_ms:
+          title: "Message Interval (ms)"
+          description: "Interval between messages in ms. Min 0 ms. Max 60000 ms (1\
+            \ minute)."
+          type: "integer"
+          min: 0
+          max: 60000
+          default: 0
+          order: 40
+        mock_catalog:
+          title: "Mock Catalog"
+          type: "object"
+          order: 50
+          oneOf:
+          - title: "Single Stream"
+            description: "A catalog with one stream."
+            required:
+            - "type"
+            - "stream_name"
+            - "stream_schema"
+            properties:
+              type:
+                type: "string"
+                const: "SINGLE_STREAM"
+                default: "SINGLE_STREAM"
+              stream_name:
+                title: "Stream Name"
+                description: "Name of the data stream."
+                type: "string"
+                default: "data_stream"
+              stream_schema:
+                title: "Stream Schema"
+                description: "A Json schema for the stream. The schema should be compatible\
+                  \ with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\"\
+                  >draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\"\
+                  >this doc</a> for examples."
+                type: "string"
+                default: "{ \"type\": \"object\", \"properties\": { \"column1\": {\
+                  \ \"type\": \"string\" } } }"
+          - title: "Multi-Stream"
+            description: "A catalog with multiple data streams."
+            required:
+            - "type"
+            - "stream_schemas"
+            properties:
+              type:
+                type: "string"
+                const: "MULTI_STREAM"
+                default: "MULTI_STREAM"
+              stream_schemas:
+                title: "Streams and Schemas"
+                description: "A Json object specifying multiple data streams and their\
+                  \ schemas. Each key in this object is one stream name. Each value\
+                  \ is the schema for that stream. The schema should be compatible\
+                  \ with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\"\
+                  >draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\"\
+                  >this doc</a> for examples."
+                type: "string"
+                default: "{ \"stream1\": { \"type\": \"object\", \"properties\": {\
+                  \ \"field1\": { \"type\": \"string\" } } }, \"stream2\": { \"type\"\
+                  : \"object\", \"properties\": { \"field1\": { \"type\": \"boolean\"\
+                  \ } } } }"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1634,7 +1618,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.31"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.32"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -1816,7 +1800,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-file:0.2.8"
+- dockerImage: "airbyte/source-file:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2160,7 +2144,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.15"
+- dockerImage: "airbyte/source-github:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -2213,12 +2197,14 @@
         repository:
           type: "string"
           examples:
-          - "airbytehq/airbyte"
+          - "airbytehq/airbyte airbytehq/another-repo"
           - "airbytehq/*"
+          - "airbytehq/airbyte"
           title: "GitHub Repositories"
-          description: "Space-delimited list of GitHub repositories/organizations,\
-            \ e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for\
-            \ get all repositories from organization"
+          description: "Space-delimited list of GitHub organizations/repositories,\
+            \ e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get\
+            \ all repositories from organization and `airbytehq/airbyte airbytehq/another-repo`\
+            \ for multiple repositories."
         start_date:
           type: "string"
           title: "Start Date"
@@ -2233,7 +2219,7 @@
           type: "string"
           title: "Branch"
           examples:
-          - "airbytehq/airbyte/master"
+          - "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
           description: "Space-delimited list of GitHub repository branches to pull\
             \ commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified\
             \ for a repository, the default branch will be pulled."
@@ -2308,7 +2294,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.23"
+- dockerImage: "airbyte/source-google-ads:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3082,7 +3068,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.36"
+- dockerImage: "airbyte/source-hubspot:0.1.38"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3185,7 +3171,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.4"
+- dockerImage: "airbyte/source-db2:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -3380,6 +3366,52 @@
           description: "Iterable API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/iterable\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "farosai/airbyte-jenkins-source:0.1.23"
+  spec:
+    documentationUrl: "https://docs.faros.ai"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Jenkins Spec"
+      type: "object"
+      required:
+      - "server_url"
+      - "user"
+      - "token"
+      additionalProperties: false
+      properties:
+        server_url:
+          type: "string"
+          title: "Jenkins Server URL"
+          examples:
+          - "https://my-jenkins-server.example.com"
+        user:
+          type: "string"
+          description: "Jenkins User"
+        token:
+          type: "string"
+          title: "Jenkins Token"
+          airbyte_secret: true
+        depth:
+          type: "number"
+          title: "Depth"
+          description: "Jenkins JSON API does not support deep scan, it is required\
+            \ to generate a suitable tree for the corresponding depth. Job in some\
+            \ cases have many sub jobs, depth needs to quantify how many sub jobs\
+            \ are showed. If depth is not provided we will try to compute it automatically"
+        pageSize:
+          type: "integer"
+          minimum: 1
+          default: 10
+          title: "Page Size"
+          description: "Quantity of jobs on a single page fetched from Jenkins"
+        last100Builds:
+          type: "boolean"
+          default: false
+          title: "Last 100 Builds Only"
+          description: "Fetch only 100 last builds from Jenkins server"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4003,7 +4035,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-looker:0.2.6"
+- dockerImage: "airbyte/source-looker:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
     connectionSpecification:
@@ -4978,7 +5010,7 @@
           airbyte_secret: true
           order: 4
         jdbc_url_params:
-          description: "Additional properties to pass to the jdbc url string when\
+          description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
             \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
           title: "JDBC URL Params"
@@ -5910,9 +5942,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.3"
+- dockerImage: "airbyte/source-postgres:0.4.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Postgres Source Spec"
@@ -5997,7 +6029,7 @@
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
               \ to detect inserts, updates, and deletes. This needs to be configured\
               \ on the source database itself. Only available on Postgres 10 and above.\
-              \ Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+              \ Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
               >Postgres Source</a> docs for more information."
             required:
             - "method"
@@ -6013,11 +6045,12 @@
                 order: 0
               plugin:
                 type: "string"
+                title: "Plugin"
                 description: "A logical decoding plug-in installed on the PostgreSQL\
                   \ server. `pgoutput` plug-in is used by default.\nIf replication\
                   \ table contains a lot of big jsonb values it is recommended to\
                   \ use `wal2json` plug-in. For more information about `wal2json`\
-                  \ plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\"\
+                  \ plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres\"\
                   >Postgres Source</a> docs."
                 enum:
                 - "pgoutput"
@@ -6026,10 +6059,12 @@
                 order: 1
               replication_slot:
                 type: "string"
+                title: "Replication Slot"
                 description: "A plug-in logical replication slot."
                 order: 2
               publication:
                 type: "string"
+                title: "Publication"
                 description: "A Postgres publication used for consuming changes."
                 order: 3
         tunnel_method:
@@ -6275,9 +6310,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.4"
+- dockerImage: "airbyte/source-recharge:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/recharge"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Recharge Spec"
@@ -6289,16 +6324,19 @@
       properties:
         start_date:
           type: "string"
+          title: "Start Date"
           description: "The date from which you'd like to replicate data for Recharge\
-            \ API, in the format YYYY-MM-DDT00:00:00Z."
+            \ API, in the format YYYY-MM-DDT00:00:00Z. Any data before this date will\
+            \ not be replicated."
           examples:
           - "2021-05-14T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         access_token:
           type: "string"
+          title: "Access Token"
           description: "The value of the Access Token generated. See the <a href=\"\
-            https://docs.airbyte.io/integrations/sources/recharge\">docs</a> for more\
-            \ information"
+            https://docs.airbyte.com/integrations/sources/recharge\">docs</a> for\
+            \ more information."
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -6498,7 +6536,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-s3:0.1.9"
+- dockerImage: "airbyte/source-s3:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -6763,7 +6801,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.20"
+- dockerImage: "airbyte/source-salesforce:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7004,7 +7042,6 @@
       required:
       - "shop"
       - "start_date"
-      - "credentials"
       additionalProperties: true
       properties:
         shop:
@@ -7151,7 +7188,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.13"
+- dockerImage: "airbyte/source-slack:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
@@ -7265,7 +7302,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-smartsheets:0.1.7"
+- dockerImage: "airbyte/source-smartsheets:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
     connectionSpecification:
@@ -7275,7 +7312,7 @@
       required:
       - "access_token"
       - "spreadsheet_id"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         access_token:
           title: "Access Token"
@@ -7290,6 +7327,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key: []
+      predicate_value: ""
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "access_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
@@ -7339,7 +7401,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.5"
+- dockerImage: "airbyte/source-snowflake:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -7405,6 +7467,13 @@
           airbyte_secret: true
           title: "Password"
           order: 6
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 7
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8398,7 +8467,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.1.11"
+- dockerImage: "airbyte/source-zendesk-support:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
