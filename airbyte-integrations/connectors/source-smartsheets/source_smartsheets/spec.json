@@ -5,18 +5,69 @@
     "title": "Smartsheets Source Spec",
     "type": "object",
     "required": ["access_token", "spreadsheet_id"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "access_token": {
         "title": "Access Token",
         "description": "The Access Token for making authenticated requests. Find in the main menu: Account > Apps & Integrations > API Access",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 1
       },
       "spreadsheet_id": {
         "title": "Sheet ID",
-        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
-        "type": "string"
+        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties. 0.2.0-alpha.1",
+        "type": "string",
+        "order": 2
+      },
+      "smartsheets_add_row_id": {
+        "title": "Include internal row id in the source schema",
+        "description": "This will add the smartsheets unique row ID to the source schema. Be sure to update latest source schema in each connection after toggling.",
+        "type": "boolean",
+        "default": false,
+        "order": 3
+      },
+      "smartsheets_add_row_extended_metadata": {
+        "title": "Include extended row metadata in the source schema",
+        "description": "Adds system row created at datetime, modified at datetime, row number, parent row id, and sibling id to the source schema.  Be sure to update latest source schema in each connection after toggling.",
+        "type": "boolean",
+        "default": false,
+        "order": 4
+      },
+      "smartsheets_add_sheet_id": {
+        "title": "Include the sheet id and sheet name in the source schema",
+        "description": "This will add the smartsheets unique sheet ID and sheet name to the source schema.  Be sure to update latest source schema in each connection after toggling.",
+        "type": "boolean",
+        "default": false,
+        "order": 5
+      },
+      "smartsheets_add_sheet_extended_metadata": {
+        "title": "Include extended sheet metadata in the source schema",
+        "description": "Adds sheet version, sheet permalink, sheet created at datetime, and sheet modified at datetime to the source schema.  Be sure to update latest source schema in each connection after toggling.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
+      },
+      "smartsheets_add_workspace_id": {
+        "title": "Include the workspace id and name in the source schema",
+        "description": "This will add the smartsheets workspace ID and workspace name to each record in the output data. Note that if the sheet is not in a workspace, the values will be empty. Be sure to update latest source schema in each connection after toggling.",
+        "type": "boolean",
+        "default": false,
+        "order": 7
+      },
+      "smartsheets_debug_logging": {
+        "title": "Enable Row Data Logging to run log?",
+        "description": "Enables row data debug logging to the airbyte run log in the web UI.  This will add a line for each row to the sync log, containing the retrieved key:value JSON pairs for each row to assist with source debugging.",
+        "type": "boolean",
+        "default": false,
+        "order": 8
+      },
+      "smartsheets_debug_logging_row_limit": {
+        "title": "Maximum number of Row Data entries recorded in the debug logger.",
+        "description": "Limits the number of full data rows that are logged in the run logger, when the Row Data Logging is enabled.  Defaults to 10.",
+        "type": "integer",
+        "default": 10,
+        "order": 9  
       }
     }
   },
