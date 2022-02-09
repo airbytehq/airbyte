@@ -34,7 +34,7 @@ class SourceHubspot(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._get_client(config)
-        return client.stream_instances()
+        return client.get_stream_instances()
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:  # TODO refactor use
         """List of available streams, patch streams to append properties dynamically"""

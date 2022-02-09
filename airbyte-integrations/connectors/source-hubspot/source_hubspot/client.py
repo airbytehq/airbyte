@@ -134,5 +134,5 @@ class Client(BaseClient):
 
         return alive, error_msg
 
-    def stream_instances(self):  # refactor
+    def get_stream_instances(self):  # refactor
         return list(self._apis.values())
