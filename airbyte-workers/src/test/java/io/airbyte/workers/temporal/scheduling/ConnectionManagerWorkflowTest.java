@@ -105,6 +105,7 @@ public class ConnectionManagerWorkflowTest {
 
   @AfterEach
   public void tearDown() {
+    testEnv.shutdown();
     TestStateListener.reset();
   }
 
@@ -455,6 +456,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RETRY_FAILED_ACTIVITY && changedStateEvent.isValue())
           .hasSize(1);
     }
+
   }
 
   @Nested
@@ -616,6 +618,8 @@ public class ConnectionManagerWorkflowTest {
     @Test
     @DisplayName("Test that cancelling a reset don't restart a reset")
     public void cancelResetDontContinueAsReset() {
+
+      Mockito.when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(2));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
@@ -857,18 +861,6 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.REPLICATION)));
 
       testEnv.shutdown();
-    }
-
-  }
-
-  @Nested
-  @DisplayName("Test with failing activity")
-  class FailingActivityWorkflow {
-
-    @Test
-    void testGetStuck() {
-      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
-          .thenThrow(new RuntimeException());
     }
 
   }
