@@ -184,14 +184,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       // The workflow state will be updated to true if a reset happened while a job was running.
       // We need to propagate that to the new run that will be continued as new.
-      if (workflowState.isResetConnection()) {
-        connectionUpdaterInput.setResetConnection(true);
+      // When cancelling a reset, we endure that the next workflow won't be a reset.
+      // We are using a specific workflow state for that, this makes the set of the fact that we are going
+      // to continue as a reset testable.
+      if (workflowState.isResetConnection() && !workflowState.isCancelled()) {
+        workflowState.setContinueAsReset(true);
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);
         connectionUpdaterInput.setFromFailure(false);
         connectionUpdaterInput.setAttemptId(null);
       } else {
-        connectionUpdaterInput.setResetConnection(false);
+        workflowState.setContinueAsReset(false);
       }
 
       if (workflowState.isUpdated() && !workflowState.isRunning()) {
@@ -206,7 +209,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get(),
             maybeAttemptId.get(),
-            failures.isEmpty() ? null : FailureHelper.failureSummary(failures, partialSuccess)));
+            FailureHelper.failureSummaryForCancellation(maybeJobId.get(), maybeAttemptId.get(), failures, partialSuccess)));
         resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
         reportFailure(connectionUpdaterInput);
@@ -321,6 +324,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void continueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
     connectionUpdaterInput.setAttemptId(null);
+    connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
     failures.clear();
     partialSuccess = null;
     final boolean isDeleted = workflowState.isDeleted();

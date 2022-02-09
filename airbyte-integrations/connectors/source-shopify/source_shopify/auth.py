@@ -30,10 +30,10 @@ class ShopifyAuthenticator(TokenAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
 
         auth_header: str = "X-Shopify-Access-Token"
-        credentials: Dict = self.config["credentials"]
+        credentials: Dict = self.config.get("credentials", self.config.get("auth_method"))
         auth_method: str = credentials.get("auth_method")
 
-        if auth_method == "oauth2.0":
+        if auth_method in ["oauth2.0", "access_token"]:
             return {auth_header: credentials.get("access_token")}
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}

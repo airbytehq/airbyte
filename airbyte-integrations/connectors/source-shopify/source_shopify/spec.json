@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": ["shop", "start_date", "credentials"],
+    "required": ["shop", "start_date"],
     "additionalProperties": true,
     "properties": {
       "shop": {
