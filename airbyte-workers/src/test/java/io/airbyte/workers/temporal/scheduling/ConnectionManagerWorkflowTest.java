@@ -509,6 +509,10 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED_FOR_RESET && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
