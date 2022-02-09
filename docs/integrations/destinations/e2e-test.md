@@ -42,17 +42,11 @@ This mode throws an exception after receiving a configurable number of messages.
 
 ## CHANGELOG
 
-### E2E Testing Destination
+The OSS and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version | Date       | Pull Request                                             | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--- |
+| 0.2.2   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 0.2.1   | 2021-12-19 | [\#8824](https://github.com/airbytehq/airbyte/pull/8905) | Fix documentation URL. |
 | 0.2.0   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Add multiple logging modes. |
 | 0.1.0   | 2021-05-25 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Create initial version. |
-
-### E2E Testing (`/dev/null`) Destination
-
-| Version | Date       | Pull Request                                             | Subject |
-| :------ | :--------- | :------------------------------------------------------- | :--- |
-| 0.1.1   | 2021-12-19 | [\#8824](https://github.com/airbytehq/airbyte/pull/8905) | Fix documentation URL. |
-| 0.1.0   | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Create initial version. |

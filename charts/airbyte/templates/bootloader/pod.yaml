@@ -7,6 +7,7 @@ metadata:
     {{- include "airbyte.labels" . | nindent 4 }}
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
 spec:
   restartPolicy: Never
   containers:

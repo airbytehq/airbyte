@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import StepsMenu from "../../StepsMenu";
+import { StepsMenu } from "components/StepsMenu";
 
 type IProps = {
   isFailed?: boolean;
@@ -11,6 +11,7 @@ type IProps = {
     id: string;
     name: string | React.ReactNode;
     status?: string;
+    isPartialSuccess?: boolean;
     onSelect?: () => void;
   }[];
 };
