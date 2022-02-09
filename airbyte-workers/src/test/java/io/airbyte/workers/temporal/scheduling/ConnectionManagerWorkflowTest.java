@@ -131,8 +131,6 @@ public class ConnectionManagerWorkflowTest {
               WorkflowOptions.newBuilder()
                   .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                   .build());
-
-      Mockito.when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(2));
     }
 
     @Test
@@ -494,8 +492,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -514,6 +512,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
+    @Disabled
     @Test
     @DisplayName("Test that cancelling a running workflow cancel the sync")
     public void cancelRunning() {
@@ -524,8 +523,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -544,7 +543,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
     @Test
@@ -557,8 +556,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -590,8 +589,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -624,8 +623,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = Mockito.spy(new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -656,8 +655,8 @@ public class ConnectionManagerWorkflowTest {
 
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
-          1L,
-          1,
+          JOB_ID,
+          ATTEMPT_ID,
           false,
           1,
           workflowState,
