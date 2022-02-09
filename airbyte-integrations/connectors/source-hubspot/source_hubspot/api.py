@@ -221,11 +221,6 @@ class Stream(CoreStream, ABC):
             return self._name
         return super().name
 
-        # stream_name = self.__class__.__name__
-        # if stream_name.endswith("Stream"):
-        #     stream_name = stream_name[: -len("Stream")]
-        # return stream_name
-
     def get_fields(self):  # TODO
         json_schema = super().get_json_schema()
         if self.properties:
