@@ -89,5 +89,6 @@ To setup your new Smartsheets source, Airbyte will need:
 | Version | Date       | Pull Request | Subject             |
 |:--------|:-----------| :--- |:--------------------|
 | 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792) | Added oauth support |
+| 0.1.9   | 2022-02-09 | []() | Fixes [#8099](https://github.com/airbytehq/airbyte/issues/8099)|
 
 
