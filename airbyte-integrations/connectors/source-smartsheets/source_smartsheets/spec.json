@@ -34,7 +34,7 @@
         "default": false,
         "order": 4
       },
-      "smartsheets_add_row_direct_url": {
+      "smartsheets_add_row_permalink": {
         "title": "Include row permalink URL in the source schema",
         "description": "Adds system row _ss_row_permalink to the source schema.  Be sure to update latest source schema in each connection after toggling.",
         "type": "boolean",
