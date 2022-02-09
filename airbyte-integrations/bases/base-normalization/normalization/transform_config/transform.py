@@ -279,7 +279,7 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
-            "password": config["password"],
+            "password": config.get("password", ""),
         }
         if "tcp-port" in config:
             dbt_config["port"] = config["tcp-port"]
