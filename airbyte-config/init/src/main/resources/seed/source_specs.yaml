@@ -7713,7 +7713,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.27"
+- dockerImage: "airbyte/source-stripe:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
