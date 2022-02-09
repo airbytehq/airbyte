@@ -4,7 +4,7 @@ import { getService } from "core/servicesProvider";
 
 import BaseResource from "./BaseResource";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
-import { DestinationDefinition } from "../domain/connector";
+import { DestinationDefinition, releaseStage } from "core/domain/connector";
 
 export default class DestinationDefinitionResource
   extends BaseResource
@@ -16,6 +16,7 @@ export default class DestinationDefinitionResource
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
   readonly icon: string = "";
+  readonly releaseStage?: releaseStage = undefined;
 
   pk(): string {
     return this.destinationDefinitionId?.toString();

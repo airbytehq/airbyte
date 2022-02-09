@@ -3,7 +3,7 @@ import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { getService } from "core/servicesProvider";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
-import { SourceDefinition } from "core/domain/connector";
+import { SourceDefinition, releaseStage } from "core/domain/connector";
 
 export default class SourceDefinitionResource
   extends BaseResource
@@ -15,6 +15,7 @@ export default class SourceDefinitionResource
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
   readonly icon: string = "";
+  readonly releaseStage?: releaseStage = undefined;
 
   pk(): string {
     return this.sourceDefinitionId?.toString();
