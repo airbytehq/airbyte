@@ -1,0 +1,8 @@
+{
+  "destinationDefinitionId": "eebd85cf-60b2-4af6-9ba0-edeca01437b0",
+  "name": "Streamr",
+  "dockerRepository": "ghcr.io/devmate-cloud/streamr-airbyte-connectors:main",
+  "dockerImageTag": "0.0.1",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/streamr",
+  "icon": "streamr.svg"
+}

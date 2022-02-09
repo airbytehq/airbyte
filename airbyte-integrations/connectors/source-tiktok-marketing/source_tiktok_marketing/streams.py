@@ -198,11 +198,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
-        return {
-            "access_token": self._access_token,
-            "secret": self._secret,
-            "app_id": self._app_id,
-        }
+        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
@@ -455,10 +451,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             ReportLevel.ADGROUP: "adgroup_id",
             ReportLevel.AD: "ad_id",
         }
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
+        spec_time_dimensions = {ReportGranularity.DAY: "stat_time_day", ReportGranularity.HOUR: "stat_time_hour"}
         if self.report_level and self.report_level in spec_id_dimensions:
             result.append(spec_id_dimensions[self.report_level])
 
