@@ -110,8 +110,8 @@ public class EnvConfigs implements Configs {
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
-  private static final String DEFAULT_JOB_CPU_REQUIREMENT = "0.2";
-  private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = "500Mi";
+  private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
+  private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
