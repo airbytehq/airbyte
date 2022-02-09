@@ -268,6 +268,7 @@ REDSHIFT = {
 }
 
 # https://www.postgresql.org/docs/current/sql-keywords-appendix.html
+# https://www.postgresql.org/docs/14/ddl-system-columns.html
 POSTGRES = {
     "A",
     "ABORT",
@@ -362,6 +363,8 @@ POSTGRES = {
     "CLOB",
     "CLOSE",
     "CLUSTER",
+    "CMAX",
+    "CMIN",
     "COALESCE",
     "COBOL",
     "COLLATE",
@@ -412,6 +415,7 @@ POSTGRES = {
     "CREATE",
     "CROSS",
     "CSV",
+    "CTID",
     "CUBE",
     "CUME_DIST",
     "CURRENT",
@@ -966,6 +970,7 @@ POSTGRES = {
     "TABLESAMPLE",
     "TABLESPACE",
     "TABLE_NAME",
+    "TABLEOID",
     "TAN",
     "TANH",
     "TEMP",
@@ -1065,6 +1070,8 @@ POSTGRES = {
     "WORK",
     "WRAPPER",
     "WRITE",
+    "XMAX",
+    "XMIN",
     "XML",
     "XMLAGG",
     "XMLATTRIBUTES",
