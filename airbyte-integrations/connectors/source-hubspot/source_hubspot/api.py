@@ -15,6 +15,10 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import Stream as CoreStream
+from airbyte_cdk.sources.streams.http import HttpStream
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -184,7 +188,7 @@ class API:
         return self._parse_and_handle_errors(response)
 
 
-class Stream(ABC):
+class Stream(CoreStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
@@ -199,6 +203,8 @@ class Stream(ABC):
     limit_field = "limit"
     limit = 100
     offset = 0
+    _name: str = None
+    primary_key = None
 
     @property
     @abstractmethod
@@ -210,11 +216,24 @@ class Stream(ABC):
         self._start_date = pendulum.parse(start_date)
 
     @property
-    def name(self) -> str:
-        stream_name = self.__class__.__name__
-        if stream_name.endswith("Stream"):
-            stream_name = stream_name[: -len("Stream")]
-        return stream_name
+    def name(self) -> str:  # TODO refactor
+        if self._name:
+            return self._name
+        return super().name
+
+        # stream_name = self.__class__.__name__
+        # if stream_name.endswith("Stream"):
+        #     stream_name = stream_name[: -len("Stream")]
+        # return stream_name
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ):
+        pass
 
     def list_records(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -522,7 +541,7 @@ class IncrementalStream(Stream, ABC):
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
-        for ts in range(start_ts, now_ts, chunk_size):
+        for ts in range(start_ts, now_ts, chunk_size):  # TODO, can implement slicing
             end_ts = ts + chunk_size
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
@@ -548,6 +567,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         last_modified_field: Optional[str] = None,
         associations: Optional[List[str]] = None,
         include_archived_only: bool = False,
+        name: str = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -556,6 +576,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         self.last_modified_field = last_modified_field
         self.associations = associations
         self._include_archived_only = include_archived_only
+        self._name = name
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(fixed_retry_after=1, max_tries=3)
@@ -662,8 +683,12 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
     limit = 100
     need_chunk = False
 
+    def __init__(self, name: str = None, **kwargs):
+        super().__init__(**kwargs)
+        self._name = name
 
-class CampaignStream(Stream):
+
+class Campaigns(Stream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
@@ -681,7 +706,7 @@ class CampaignStream(Stream):
             yield {**row, **record}
 
 
-class ContactListStream(IncrementalStream):
+class ContactLists(IncrementalStream):
     """Contact lists, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
@@ -695,7 +720,7 @@ class ContactListStream(IncrementalStream):
     need_chunk = False
 
 
-class ContactsListMembershipsStream(Stream):
+class ContactsListMemberships(Stream):
     """Contacts list Memberships, API v1
     The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
     According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
@@ -753,7 +778,7 @@ class DealStageHistoryStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class DealStream(CRMSearchStream):
+class Deals(CRMSearchStream):
     """Deals, API v3"""
 
     def __init__(self, **kwargs):
@@ -771,7 +796,7 @@ class DealStream(CRMSearchStream):
             yield record
 
 
-class DealPipelineStream(Stream):
+class DealPipelines(Stream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
@@ -782,7 +807,7 @@ class DealPipelineStream(Stream):
     created_at_field = "createdAt"
 
 
-class TicketPipelineStream(Stream):
+class TicketPipelines(Stream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
     Docs: https://developers.hubspot.com/docs/api/crm/pipelines
@@ -793,7 +818,7 @@ class TicketPipelineStream(Stream):
     created_at_field = "createdAt"
 
 
-class EmailEventStream(IncrementalStream):
+class EmailEvents(IncrementalStream):
     """Email events, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
     """
@@ -805,7 +830,7 @@ class EmailEventStream(IncrementalStream):
     created_at_field = "created"
 
 
-class EngagementStream(IncrementalStream):
+class Engagements(IncrementalStream):
     """Engagements, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
           https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
@@ -861,7 +886,7 @@ class EngagementStream(IncrementalStream):
                 self._start_date = self._state
 
 
-class FormStream(Stream):
+class Forms(Stream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -873,7 +898,7 @@ class FormStream(Stream):
     created_at_field = "createdAt"
 
 
-class FormSubmissionStream(Stream):
+class FormSubmissions(Stream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -885,7 +910,7 @@ class FormSubmissionStream(Stream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.forms = FormStream(**kwargs)
+        self.forms = Forms(**kwargs)
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
@@ -909,7 +934,7 @@ class FormSubmissionStream(Stream):
                     yield submission
 
 
-class MarketingEmailStream(Stream):
+class MarketingEmails(Stream):
     """Marketing Email, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
     """
@@ -921,7 +946,7 @@ class MarketingEmailStream(Stream):
     created_at_field = "created"
 
 
-class OwnerStream(Stream):
+class Owners(Stream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
@@ -931,7 +956,7 @@ class OwnerStream(Stream):
     created_at_field = "createdAt"
 
 
-class PropertyHistoryStream(IncrementalStream):
+class PropertyHistory(IncrementalStream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
@@ -975,7 +1000,7 @@ class PropertyHistoryStream(IncrementalStream):
                         yield version
 
 
-class SubscriptionChangeStream(IncrementalStream):
+class SubscriptionChanges(IncrementalStream):
     """Subscriptions timeline for a portal, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
     """
@@ -986,7 +1011,7 @@ class SubscriptionChangeStream(IncrementalStream):
     updated_at_field = "timestamp"
 
 
-class WorkflowStream(Stream):
+class Workflows(Stream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
