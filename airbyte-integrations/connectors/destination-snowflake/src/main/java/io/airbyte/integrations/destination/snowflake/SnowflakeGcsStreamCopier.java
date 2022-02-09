@@ -26,15 +26,15 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStreamCopier.class);
 
   public SnowflakeGcsStreamCopier(final String stagingFolder,
-      final DestinationSyncMode destSyncMode,
-      final String schema,
-      final String streamName,
-      final Storage storageClient,
-      final JdbcDatabase db,
-      final GcsConfig gcsConfig,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations,
-      final StagingFilenameGenerator stagingFilenameGenerator) {
+                                  final DestinationSyncMode destSyncMode,
+                                  final String schema,
+                                  final String streamName,
+                                  final Storage storageClient,
+                                  final JdbcDatabase db,
+                                  final GcsConfig gcsConfig,
+                                  final ExtendedNameTransformer nameTransformer,
+                                  final SqlOperations sqlOperations,
+                                  final StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, storageClient, db, gcsConfig, nameTransformer, sqlOperations);
     this.filenameGenerator = stagingFilenameGenerator;
   }
@@ -76,10 +76,10 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
 
   @Override
   public void copyGcsCsvFileIntoTable(final JdbcDatabase database,
-      final String gcsFileLocation,
-      final String schema,
-      final String tableName,
-      final GcsConfig gcsConfig)
+                                      final String gcsFileLocation,
+                                      final String schema,
+                                      final String tableName,
+                                      final GcsConfig gcsConfig)
       throws SQLException {
     throw new RuntimeException("Snowflake Stream Copier should not copy individual files without use of a parallel copy");
 

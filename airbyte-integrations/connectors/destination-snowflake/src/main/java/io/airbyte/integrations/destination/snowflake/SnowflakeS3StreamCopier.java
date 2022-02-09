@@ -34,13 +34,13 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   public static final int MAX_PARTS_PER_FILE = 4;
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
-      final String schema,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3CopyConfig config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations,
-      final ConfiguredAirbyteStream configuredAirbyteStream) {
+                                 final String schema,
+                                 final AmazonS3 client,
+                                 final JdbcDatabase db,
+                                 final S3CopyConfig config,
+                                 final ExtendedNameTransformer nameTransformer,
+                                 final SqlOperations sqlOperations,
+                                 final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
         stagingFolder,
         schema,
@@ -55,14 +55,14 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @VisibleForTesting
   SnowflakeS3StreamCopier(final String stagingFolder,
-      final String schema,
-      final AmazonS3 client,
-      final JdbcDatabase db,
-      final S3CopyConfig config,
-      final ExtendedNameTransformer nameTransformer,
-      final SqlOperations sqlOperations,
-      final Timestamp uploadTime,
-      final ConfiguredAirbyteStream configuredAirbyteStream) {
+                          final String schema,
+                          final AmazonS3 client,
+                          final JdbcDatabase db,
+                          final S3CopyConfig config,
+                          final ExtendedNameTransformer nameTransformer,
+                          final SqlOperations sqlOperations,
+                          final Timestamp uploadTime,
+                          final ConfiguredAirbyteStream configuredAirbyteStream) {
 
     super(stagingFolder,
         schema,
@@ -115,10 +115,10 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @Override
   public void copyS3CsvFileIntoTable(final JdbcDatabase database,
-      final String s3FileLocation,
-      final String schema,
-      final String tableName,
-      final S3DestinationConfig s3Config)
+                                     final String s3FileLocation,
+                                     final String schema,
+                                     final String tableName,
+                                     final S3DestinationConfig s3Config)
       throws SQLException {
     throw new RuntimeException("Snowflake Stream Copier should not copy individual files without use of a parallel copy");
 
