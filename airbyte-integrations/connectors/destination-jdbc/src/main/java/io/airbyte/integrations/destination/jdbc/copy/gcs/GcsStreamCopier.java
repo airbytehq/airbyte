@@ -52,18 +52,18 @@ public abstract class GcsStreamCopier implements StreamCopier {
   public static final int MAX_PARTS_PER_FILE = 1000;
 
   private final Storage storageClient;
-  private final GcsConfig gcsConfig;
-  private final String tmpTableName;
+  protected final GcsConfig gcsConfig;
+  protected final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
-  private final JdbcDatabase db;
+  protected final String schemaName;
+  protected final String streamName;
+  protected final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final Set<String> gcsStagingFiles = new HashSet<>();
+  protected final Set<String> gcsStagingFiles = new HashSet<>();
   private final HashMap<String, WriteChannel> channels = new HashMap<>();
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
-  private final String stagingFolder;
+  protected final String stagingFolder;
   protected StagingFilenameGenerator filenameGenerator;
 
   public GcsStreamCopier(final String stagingFolder,

@@ -79,7 +79,6 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), 10);
-//    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), 10);
     for (int i = 0; i < partition.size(); i++) {
       List<String> strings = partition.get(i);
       LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
