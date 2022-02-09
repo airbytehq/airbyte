@@ -15,7 +15,7 @@
       },
       "spreadsheet_id": {
         "title": "Sheet ID",
-        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
+        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties - Bugfix 1.9.0-alpha.2",
         "type": "string"
       }
     }

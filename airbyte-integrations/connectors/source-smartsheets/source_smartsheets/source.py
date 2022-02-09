@@ -5,7 +5,7 @@
 
 import json
 from datetime import datetime
-from typing import Dict, Generator
+from typing import Any, Dict, Generator
 
 import smartsheet
 from airbyte_cdk import AirbyteLogger
@@ -30,7 +30,10 @@ def get_prop(col_type: str) -> Dict[str, any]:
         "DATE": {"type": "string", "format": "date"},
         "DATETIME": {"type": "string", "format": "date-time"},
     }
-    return props.get(col_type, {"type": "string"})
+    if col_type in props.keys():
+        return props[col_type]
+    else:  # assume string
+        return props["TEXT_NUMBER"]
 
 
 def get_json_schema(sheet: Dict) -> Dict:
@@ -41,6 +44,11 @@ def get_json_schema(sheet: Dict) -> Dict:
         "properties": column_info,
     }
     return json_schema
+
+def catch(d: dict) -> Any:
+    if 'value' in d:
+        return d['value']
+    return ''
 
 
 # main class definition
@@ -79,7 +87,6 @@ class SourceSmartsheets(Source):
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
 
             stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
-            stream.supported_sync_modes = ["full_refresh"]
             streams.append(stream)
 
         except Exception as e:
@@ -113,10 +120,9 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    # convert all data to string as it is only expected format in schema
-                    values = tuple(str(i["value"]) if "value" in i else "" for i in row["cells"])
                     try:
-                        data = dict(zip(columns, values))
+                        id_name_map = {d['id']: d['title'] for d in sheet['columns']}
+                        data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
 
                         yield AirbyteMessage(
                             type=Type.RECORD,
@@ -124,8 +130,10 @@ class SourceSmartsheets(Source):
                         )
                     except Exception as e:
                         logger.error(f"Unable to encode row into an AirbyteMessage with the following error: {e}")
+                        raise
 
             except Exception as e:
                 logger.error(f"Could not read smartsheet: {name}")
                 raise e
         logger.info(f"Finished syncing spreadsheet with ID: {spreadsheet_id}")
+
