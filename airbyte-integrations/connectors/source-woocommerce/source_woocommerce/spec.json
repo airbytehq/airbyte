@@ -8,25 +8,25 @@
     "additionalProperties": false,
     "properties": {
       "shop": {
-	"title": "Shop Name",
+        "title": "Shop Name",
         "type": "string",
         "description": "The name of the store. For https://EXAMPLE.com, the shop name is 'EXAMPLE'."
       },
       "start_date": {
-	"title": "Start Date",
+        "title": "Start Date",
         "type": "string",
         "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "api_key": {
-	"title": "API Key",
+        "title": "API Key",
         "type": "string",
         "description": "WooCommerce API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/woocommerce\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "api_secret": {
-	"title": "Secret Key",
+        "title": "Secret Key",
         "type": "string",
         "description": "WooCommerce Secret Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/woocommerce\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
