@@ -196,7 +196,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.31
+  dockerImageTag: 0.2.32
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -252,7 +252,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -314,7 +314,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.37
+  dockerImageTag: 0.1.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -648,7 +648,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -669,7 +669,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -690,7 +690,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
