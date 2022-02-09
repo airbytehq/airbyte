@@ -1,760 +1,1417 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": [
+    "null",
+    "object"
+  ],
   "properties": {
     "segment": {
-      "type": "object",
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "segment_name": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "segment_value": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "metrics": {
-      "type": "object",
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "video_views_50": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "impressions": {
           "type": "array",
           "items": {
-          "type": ["null", "integer"]
+            "type": [
+              "null",
+              "integer"
+            ]
           }
         },
         "mobile_conversion_spent_credits": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_installs": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_content_views": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_add_to_wishlists": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_checkouts_initiated": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "tweets_send": {
           "type": "array",
           "items": {
-            "type": ["null", "integer"]
-            }
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "conversion_purchases": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "metric": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_reservations": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_tutorials_completed": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "billed_charge_local_micro": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "qualified_impressions": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "video_views_75": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "conversion_sign_ups": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "metric": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "media_engagements": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "follows": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_achievements_unlocked": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "video_3s100pct_views": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "app_clicks": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "mobile_conversion_searches": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_site_visits": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "retweets": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_key_page_views": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "video_cta_clicks": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "unfollows": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "likes": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_add_to_carts": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_payment_info_additions": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_re_engages": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "video_content_starts": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "video_views_25": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "mobile_conversion_shares": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "conversion_site_visits": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "metric": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "engagements": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "conversion_custom": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "metric": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "video_views_100": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "clicks": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_sign_ups": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "media_views": {
           "type": "array",
           "items": {
-            "type": ["null", "integer"]
-            }
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "card_engagements": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "video_6s_views": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "poll_card_vote": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "replies": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "video_15s_views": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "url_clicks": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_purchases": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_rates": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_logins": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "billed_engagements": {
           "type": "array",
-          "items":  {
-            "type": ["null", "integer"]
-            }
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
         },
         "mobile_conversion_updates": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "conversion_downloads": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "order_quantity_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "metric": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_levels_achieved": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "mobile_conversion_downloads": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "video_total_views": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "mobile_conversion_invites": {
-          "type": "object",
+          "type": [
+            "null",
+            "object"
+          ],
           "properties": {
             "post_view": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "order_quantity": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "assisted": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "post_engagement": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "sale_amount": {
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             }
           }
         },
         "carousel_swipes": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         }
       }
     }
