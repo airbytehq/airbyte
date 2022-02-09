@@ -156,7 +156,7 @@ public class KubePodProcess extends Process implements KubePod {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.1; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -269,7 +269,7 @@ public class KubePodProcess extends Process implements KubePod {
         if (tmpFile != null) {
           try {
             tmpFile.toFile().delete();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             LOGGER.info("Caught exception when deleting temp file but continuing to allow process deletion.", e);
           }
         }
@@ -496,7 +496,7 @@ public class KubePodProcess extends Process implements KubePod {
     fabricClient.resource(podDefinition).waitUntilCondition(p -> {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
-    }, 10, TimeUnit.DAYS);
+    }, 20, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
