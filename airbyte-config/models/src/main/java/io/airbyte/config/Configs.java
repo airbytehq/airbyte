@@ -285,6 +285,11 @@ public interface Configs {
   LogConfigs getLogConfigs();
 
   /**
+   * Defines the optional Google application credentials used for logging.
+   */
+  String getGoogleApplicationCredentials();
+
+  /**
    * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here.
    * Please see {@link CloudStorageConfigs} for more info.
    */
