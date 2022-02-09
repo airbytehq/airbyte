@@ -174,11 +174,11 @@ class InsightAsyncJob(AsyncJob):
     job_timeout = pendulum.duration(hours=1)
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet], params: Mapping[str, Any], **kwargs):
+    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
         """Initialize
 
         :param api: FB API
-        :param edge_object: Account, Campaign, AdSet (or Ad in future)
+        :param edge_object: Account, Campaign, AdSet or Ad
         :param params: job params, required to start/restart job
         """
         super().__init__(**kwargs)
@@ -220,7 +220,7 @@ class InsightAsyncJob(AsyncJob):
             pk_name = "ad_id"
             level = "ad"
         else:
-            raise RuntimeError("Unsupported edge_class.")
+            raise RuntimeError("Unsupported edge_class.")  # pragma: no cover
 
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)

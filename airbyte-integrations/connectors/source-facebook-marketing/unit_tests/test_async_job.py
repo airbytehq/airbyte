@@ -8,8 +8,10 @@ from typing import Iterator
 
 import pendulum
 import pytest
+from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch
@@ -202,6 +204,12 @@ class TestInsightAsyncJob:
 
         adreport.api_get.assert_called_once()
 
+    def test_update_job_expired(self, started_job, adreport, mocker):
+        mocker.patch.object(started_job, "job_timeout", new=pendulum.Duration())
+
+        started_job.update_job()
+        assert started_job.failed
+
     def test_update_job_with_batch(self, started_job, adreport, mocker):
         response = mocker.Mock()
 
@@ -299,16 +307,37 @@ class TestInsightAsyncJob:
         with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
             failed_job.get_result()
 
-    def test_split_job(self, job, account, api):
-        account.get_insights.return_value = [{"campaign_id": 1}, {"campaign_id": 2}, {"campaign_id": 3}]
+    @pytest.mark.parametrize(
+        ("edge_class", "next_edge_class", "id_field"),
+        [
+            (AdAccount, Campaign, "campaign_id"),
+            (Campaign, AdSet, "adset_id"),
+            (AdSet, Ad, "ad_id"),
+        ],
+    )
+    def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
+        """Test that split will correctly downsize edge_object"""
+        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
+        params = {"time_increment": 1, "breakdowns": []}
+        job = InsightAsyncJob(api=api, edge_object=edge_class(1), interval=interval, params=params)
+        mocker.patch.object(edge_class, "get_insights", return_value=[{id_field: 1}, {id_field: 2}, {id_field: 3}])
 
         small_jobs = job.split_job()
 
-        account.get_insights.assert_called_once()
+        edge_class.get_insights.assert_called_once()
         assert len(small_jobs) == 3
         assert all(j.interval == job.interval for j in small_jobs)
         for i, small_job in enumerate(small_jobs, start=1):
-            assert str(small_job) == f"InsightAsyncJob(id=<None>, {Campaign(i)}, time_range={job.interval}, breakdowns={[]})"
+            assert str(small_job) == f"InsightAsyncJob(id=<None>, {next_edge_class(i)}, time_range={job.interval}, breakdowns={[]})"
+
+    def test_split_job_smallest(self, mocker, api):
+        """Test that split will correctly downsize edge_object"""
+        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
+        params = {"time_increment": 1, "breakdowns": []}
+        job = InsightAsyncJob(api=api, edge_object=Ad(1), interval=interval, params=params)
+
+        with pytest.raises(RuntimeError, match="The job is already splitted to the smallest size."):
+            job.split_job()
 
 
 class TestParentAsyncJob:
