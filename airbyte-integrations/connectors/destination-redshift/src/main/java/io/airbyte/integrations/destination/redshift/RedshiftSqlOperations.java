@@ -27,7 +27,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s VARCHAR(max),\n"
+            + "%s SUPER,\n"
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -52,7 +52,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    final String recordQueryComponent = "(?, ?, ?),\n";
+    final String recordQueryComponent = "(?, json_parse(?), ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
