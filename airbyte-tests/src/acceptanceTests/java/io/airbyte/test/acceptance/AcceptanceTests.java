@@ -802,7 +802,6 @@ public class AcceptanceTests {
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
     } catch (Exception e) {
-
     }
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
