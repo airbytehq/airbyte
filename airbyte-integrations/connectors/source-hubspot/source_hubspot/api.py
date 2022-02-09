@@ -226,14 +226,20 @@ class Stream(CoreStream, ABC):
         #     stream_name = stream_name[: -len("Stream")]
         # return stream_name
 
+    def get_fields(self):  # TODO
+        json_schema = super().get_json_schema()
+        if self.properties:
+            json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
+        return list(json_schema.get("properties", {}).keys())
+
     def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
-        pass
+    ):  # TODO
+        yield from self.list_records(fields=self.get_fields())
 
     def list_records(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
