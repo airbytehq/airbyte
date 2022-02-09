@@ -129,6 +129,10 @@ public class EnvConfigs implements Configs {
   public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
 
   public static final String DEFAULT_NETWORK = "host";
+  private static final String REPLICATION_ORCHESTRATOR_CPU_REQUEST = "REPLICATION_ORCHESTRATOR_CPU_REQUEST";
+  private static final String REPLICATION_ORCHESTRATOR_CPU_LIMIT = "REPLICATION_ORCHESTRATOR_CPU_LIMIT";
+  private static final String REPLICATION_ORCHESTRATOR_MEMORY_REQUEST = "REPLICATION_ORCHESTRATOR_MEMORY_REQUEST";
+  private static final String REPLICATION_ORCHESTRATOR_MEMORY_LIMIT = "REPLICATION_ORCHESTRATOR_MEMORY_LIMIT";
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -592,6 +596,26 @@ public class EnvConfigs implements Configs {
   @Override
   public String getContainerOrchestratorImage() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_IMAGE, "airbyte/container-orchestrator:" + getAirbyteVersion().serialize());
+  }
+
+  @Override
+  public String getReplicationOrchestratorCpuRequest() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_CPU_REQUEST, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorCpuLimit() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_CPU_LIMIT, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorMemoryRequest() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_MEMORY_REQUEST, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorMemoryLimit() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_MEMORY_LIMIT, null);
   }
 
   @Override
