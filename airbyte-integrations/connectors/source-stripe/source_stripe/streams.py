@@ -397,7 +397,15 @@ class CheckoutSessionsLineItems(StripeStream):
         params["expand[]"] = ["data.discounts", "data.taxes"]
         return params
 
+    @property
+    def raise_on_http_errors(self):
+        return False
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 404:
+            self.logger.warning(response.json())
+            return
+        response.raise_for_status()
 
         response_json = response.json()
         data = response_json.get("data", [])
