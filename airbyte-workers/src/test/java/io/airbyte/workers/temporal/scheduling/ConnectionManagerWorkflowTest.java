@@ -421,40 +421,6 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
     }
 
-    @Disabled
-    @Test
-    @DisplayName("Test that cancelling a running workflow cancel the sync")
-    public void cancelRunning() {
-
-      final UUID testId = UUID.randomUUID();
-      final TestStateListener testStateListener = new TestStateListener();
-      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-          UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
-          false,
-          1,
-          workflowState,
-          false);
-
-      WorkflowClient.start(workflow::run, input);
-      workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(10L));
-      workflow.cancelJob();
-      testEnv.sleep(Duration.ofMinutes(2L));
-      testEnv.shutdown();
-
-      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-      Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
-          .hasSizeGreaterThanOrEqualTo(1);
-
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
-    }
-
     @Test
     void testCanGetUnstuck() {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
@@ -490,70 +456,6 @@ public class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RETRY_FAILED_ACTIVITY && changedStateEvent.isValue())
           .hasSize(1);
-    }
-
-    @Test
-    @DisplayName("Test that cancelling a reset don't restart a reset")
-    public void cancelResetDontContinueAsReset() {
-
-      final UUID testId = UUID.randomUUID();
-      final TestStateListener testStateListener = new TestStateListener();
-      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-      final ConnectionUpdaterInput input = Mockito.spy(new ConnectionUpdaterInput(
-          UUID.randomUUID(),
-          1L,
-          1,
-          false,
-          1,
-          workflowState,
-          true));
-
-      WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(30L));
-      workflow.cancelJob();
-      testEnv.sleep(Duration.ofMinutes(2L));
-      testEnv.shutdown();
-
-      Assertions.assertThat(testStateListener.events(testId))
-          .filteredOn((event) -> event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
-          .isEmpty();
-
-      Assertions.assertThat(testStateListener.events(testId))
-          .filteredOn((event) -> !event.isValue() && event.getField() == StateField.CONTINUE_AS_RESET)
-          .hasSizeGreaterThanOrEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("Test workflow which recieved an update signal wait for the current run and report the job status")
-    public void updatedSignalRecievedWhileRunning() {
-
-      final UUID testId = UUID.randomUUID();
-      final TestStateListener testStateListener = new TestStateListener();
-      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
-          UUID.randomUUID(),
-          JOB_ID,
-          ATTEMPT_ID,
-          false,
-          1,
-          workflowState,
-          false);
-
-      WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(30L));
-      workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(30L));
-      workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofMinutes(1L));
-      testEnv.shutdown();
-
-      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
-
-      Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RUNNING && changedStateEvent.isValue())
-          .hasSizeGreaterThanOrEqualTo(1);
     }
   }
 
