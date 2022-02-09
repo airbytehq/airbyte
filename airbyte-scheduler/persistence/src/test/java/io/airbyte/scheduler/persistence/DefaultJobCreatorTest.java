@@ -116,7 +116,11 @@ public class DefaultJobCreatorTest {
   void setup() {
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    workerResourceRequirements = new ResourceRequirements().withCpuLimit("0.2").withCpuRequest("0.2").withMemoryLimit("200Mi").withMemoryRequest("200Mi");
+    workerResourceRequirements = new ResourceRequirements()
+        .withCpuLimit("0.2")
+        .withCpuRequest("0.2")
+        .withMemoryLimit("200Mi")
+        .withMemoryRequest("200Mi");
     jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
   }
 
