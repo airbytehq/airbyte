@@ -323,6 +323,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         .collect(toSet());
   }
 
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
+  }
+
   /*
    * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
    * override a cursor field.
