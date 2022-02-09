@@ -8,13 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "host": {
-	"title": "Host",
+        "title": "Host",
         "description": "The host name of the Scaffold Java JDBC database.",
         "type": "string",
         "order": 0
       },
       "port": {
-	"title": "Port",
+        "title": "Port",
         "description": "The port of the database.",
         "type": "integer",
         "minimum": 0,
@@ -24,26 +24,26 @@
         "order": 1
       },
       "database": {
-	"title": "Database",
+        "title": "Database",
         "description": "The name of the database.",
         "type": "string",
         "order": 2
       },
       "username": {
-	"title": "Username",
+        "title": "Username",
         "description": "The username which is used to access the database.",
         "type": "string",
         "order": 3
       },
       "password": {
-	"title": "Password",
+        "title": "Password",
         "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 4
       },
       "jdbc_url_params": {
-	"title": "JDBC URL Params",
+        "title": "JDBC URL Params",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)",
         "type": "string",
         "order": 5
