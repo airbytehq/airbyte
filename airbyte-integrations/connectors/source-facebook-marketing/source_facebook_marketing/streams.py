@@ -312,6 +312,7 @@ class AdAccount(FBMarketingStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
+        # FacebookResponse variable _json is link to response in json format
         yield self._api.account.api_get(params=self.request_params(stream_state=stream_state)).__dict__["_json"]
 
 
