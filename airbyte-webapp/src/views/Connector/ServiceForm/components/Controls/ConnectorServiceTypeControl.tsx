@@ -14,10 +14,18 @@ import {
 } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import {
+  Connector,
+  ConnectorDefinition,
+  releaseStage,
+} from "core/domain/connector";
 
 import Instruction from "./Instruction";
-import { IDataItem } from "components/base/DropDown/components/Option";
+import {
+  IDataItem,
+  IProps as OptionProps,
+  OptionView,
+} from "components/base/DropDown/components/Option";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -34,6 +42,32 @@ const Block = styled.div`
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
+`;
+
+const Text = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const Label = styled.div`
+  margin-left: 13px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+`;
+
+const Stage = styled.div<{ isNew?: boolean }>`
+  padding: 2px 6px;
+  height: 14px;
+  background: ${({ theme, isNew }) =>
+    isNew ? theme.successColor : theme.greyColor20};
+  border-radius: 25px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 8px;
+  line-height: 10px;
+  color: ${({ theme, isNew }) => (isNew ? theme.whiteColor : theme.textColor)};
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
@@ -53,6 +87,31 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
     </BottomElement>
   </>
 );
+
+const Option: React.FC<OptionProps> = (props) => {
+  return (
+    <components.Option {...props}>
+      <OptionView
+        data-testid={props.data.label}
+        isSelected={props.isSelected}
+        isDisabled={props.isDisabled}
+      >
+        <Text>
+          {props.data.img || null}
+          <Label>{props.label}</Label>
+        </Text>
+        {props.data.releaseStage ? (
+          <Stage isNew={props.data.releaseStage === releaseStage.NEW_RELEASE}>
+            <FormattedMessage
+              id={`connector.releaseStage.${props.data.releaseStage}`}
+              defaultMessage={props.data.releaseStage}
+            />
+          </Stage>
+        ) : null}
+      </OptionView>
+    </components.Option>
+  );
+};
 
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
@@ -102,6 +161,7 @@ const ConnectorServiceTypeControl: React.FC<{
           label: item.name,
           value: Connector.id(item),
           img: <ImageBlock img={item.icon} />,
+          releaseStage: item.releaseStage,
         }))
         .sort(defaultDataItemSort),
     [availableServices]
@@ -135,6 +195,7 @@ const ConnectorServiceTypeControl: React.FC<{
           {...field}
           components={{
             MenuList: ConnectorList,
+            Option,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}

@@ -431,6 +431,12 @@
   "connector.email.placeholder": "richard@piedpiper.com",
   "connector.source": "Source",
   "connector.destination": "Destination",
+  "connector.releaseStage.alpha": "alpha",
+  "connector.releaseStage.beta": "beta",
+  "connector.releaseStage.custom": "custom",
+  "connector.releaseStage.generally_available": "generally available",
+  "connector.releaseStage.release": "release",
+  "connector.releaseStage.new_release": "new",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
