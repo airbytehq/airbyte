@@ -216,7 +216,7 @@ class Stream(CoreStream, ABC):
         self._start_date = pendulum.parse(start_date)
 
     @property
-    def name(self) -> str:  # TODO refactor
+    def name(self) -> str:
         if self._name:
             return self._name
         return super().name
@@ -483,15 +483,38 @@ class IncrementalStream(Stream, ABC):
     """Stream that supports state and incremental read"""
 
     state_pk = "timestamp"
+    cursor_field = state_pk
     limit = 1000
     # Flag which enable/disable chunked read in read_chunked method
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
+    state_checkpoint_interval = 10  # TODO
 
     @property
     @abstractmethod
     def updated_at_field(self):
         """Name of the field associated with the state"""
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):  # TODO
+        cursor = self._field_to_datetime(stream_state[self.updated_at_field])
+        self._update_state(latest_cursor=cursor)  # TODO check
+        yield from self.list_records(fields=self.get_fields())
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):  # TODO
+        # latest_cursor = self._field_to_datetime(latest_record[self.updated_at_field])
+        # self._update_state(latest_cursor=latest_cursor)
+        return self.state or {self.state_pk: self._start_date}
+
+        # if current_stream_state.get(self.state_pk):
+        #     self.state = {self.state_pk: max(current_stream_state[self.state_pk], latest_cursor)}
+        #
+        # return {self.state_pk: latest_cursor}
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
@@ -715,7 +738,7 @@ class ContactLists(IncrementalStream):
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
-    updated_at_field = "updatedAt"
+    updated_at_field = "updatedAt"  # TODO state_pk
     created_at_field = "createdAt"
     limit_field = "count"
     need_chunk = False
@@ -827,7 +850,7 @@ class EmailEvents(IncrementalStream):
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
-    updated_at_field = "created"
+    updated_at_field = "created"  # TODO state_pk
     created_at_field = "created"
 
 
