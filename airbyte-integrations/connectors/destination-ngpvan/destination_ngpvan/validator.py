@@ -15,7 +15,7 @@ class NGPVANValidator:
     def __init__(self, client: NGPVANClient, jobId: str):
         self.client=client
         self.jobId=jobId
-        self.timeout=200 #seconds Airbyte will spend polling for job status
+        self.timeout=3600 #seconds Airbyte will spend polling for job status
 
     def monitorBulkImportStatus(self):
         """Checks the bulk import job status every 5 minutes and returns the URL to the results file once complete"""
