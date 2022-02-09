@@ -27,6 +27,9 @@ public class WorkflowState {
   private boolean skipScheduling = false;
   private boolean updated = false;
   private boolean cancelled = false;
+  private boolean failed = false;
+  private boolean resetConnection = false;
+  private boolean continueAsReset = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -68,12 +71,39 @@ public class WorkflowState {
     this.cancelled = cancelled;
   }
 
+  public void setFailed(final boolean failed) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.FAILED,
+        failed);
+    stateChangedListener.addEvent(id, event);
+    this.failed = failed;
+  }
+
+  public void setResetConnection(final boolean resetConnection) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.RESET,
+        resetConnection);
+    stateChangedListener.addEvent(id, event);
+    this.resetConnection = resetConnection;
+  }
+
+  public void setContinueAsReset(final boolean continueAsReset) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.CONTINUE_AS_RESET,
+        continueAsReset);
+    stateChangedListener.addEvent(id, event);
+    this.continueAsReset = continueAsReset;
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
     this.setSkipScheduling(false);
     this.setUpdated(false);
     this.setCancelled(false);
+    this.setFailed(false);
+    this.setResetConnection(false);
+    this.setContinueAsReset(false);
   }
 
 }

@@ -38,16 +38,20 @@ public interface CancellationHandler {
     @Override
     public void checkAndHandleCancellation(final Runnable onCancellationCallback) {
       try {
-        /*
+        /**
          * Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
          * context and throw an exception if the sync has been cancelled or timed out. The input to this
          * heartbeat function is available as a field in thrown ActivityCompletionExceptions, which we
          * aren't using for now.
+         *
+         * We should use this only as a check for the ActivityCompletionException. See
+         * {@link TemporalUtils#withBackgroundHeartbeat} for where we actually send heartbeats to ensure
+         * that we don't time out the activity.
          */
         context.heartbeat(null);
       } catch (final ActivityCompletionException e) {
         onCancellationCallback.run();
-        LOGGER.warn("Job either timeout-ed or was cancelled.");
+        LOGGER.warn("Job either timed out or was cancelled.");
       }
     }
 
