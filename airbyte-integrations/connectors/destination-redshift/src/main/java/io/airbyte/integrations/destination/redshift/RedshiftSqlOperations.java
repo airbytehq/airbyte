@@ -35,7 +35,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (updateDataColumnToSuperIfRequired(database, schemaName, tableName)) {
+    if (tableName.contains("raw") && updateDataColumnToSuperIfRequired(database, schemaName, tableName)) {
       // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
       // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
       // the COLUMN order. This order is required to INSERT the values in correct way.
@@ -54,6 +54,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
           JavaBaseConstants.COLUMN_NAME_DATA,
           JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     }
+    LOGGER.info("Creating new table...");
     return redshiftDataTmpTableMode.getTmpTableSqlStatement(schemaName, tableName);
   }
 
@@ -99,7 +100,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       final String streamName) {
     try {
       final Optional<ResultSetMetaData> resultSetMetaData = Optional.ofNullable(database.queryMetadata(
-          String.format("select _airbyte_data from %s.%s",
+          String.format("select top 1 _airbyte_data from %s.%s",
               schemaName,
               streamName)));
       if (resultSetMetaData.isPresent()) {
@@ -111,7 +112,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
         return false;
       }
     } catch (SQLException e) {
-      LOGGER.warn("Selected TMP table doesn't exists: {}", streamName);
+      LOGGER.error("Some error appears during selection of _airbyte_data datatype:", e);
       return false;
     }
   }
