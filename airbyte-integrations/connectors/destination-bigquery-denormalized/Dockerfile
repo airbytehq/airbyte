@@ -14,7 +14,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery-denormalized
 ENV APPLICATION_VERSION 0.2.7
-ENV ENABLE_SENTRY true
+ENV ENABLE_SENTRY false
 
 COPY --from=build /airbyte /airbyte
 
