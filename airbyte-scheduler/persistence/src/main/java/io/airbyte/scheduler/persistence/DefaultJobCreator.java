@@ -27,7 +27,9 @@ public class DefaultJobCreator implements JobCreator {
   private final ConfigRepository configRepository;
   private final ResourceRequirements workerResourceRequirements;
 
-  public DefaultJobCreator(final JobPersistence jobPersistence, final ConfigRepository configRepository, final ResourceRequirements workerResourceRequirements) {
+  public DefaultJobCreator(final JobPersistence jobPersistence,
+                           final ConfigRepository configRepository,
+                           final ResourceRequirements workerResourceRequirements) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workerResourceRequirements = workerResourceRequirements;
@@ -118,4 +120,5 @@ public class DefaultJobCreator implements JobCreator {
 
     return jobResourceRequirements;
   }
+
 }

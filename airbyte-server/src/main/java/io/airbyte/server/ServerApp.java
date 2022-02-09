@@ -185,7 +185,8 @@ public class ServerApp implements ServerRunnable {
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
-        new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
+        new DefaultSchedulerJobClient(jobPersistence,
+            new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
