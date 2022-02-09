@@ -27,9 +27,15 @@ Note that Airbyte will create **permanent** tables. If you prefer to create tran
 
 ## Getting started
 
+### Requirements
+
+1. Active Snowflake warehouse
+2. A staging S3 or GCS bucket with credentials \(for the Cloud Storage Staging strategy\).
+
 We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so it is possible to track costs specifically related to Airbyte \(including the cost of running this warehouse\) and control permissions at a granular level. Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.
 
 We provide the following script to create these resources. Before running, you must change the password to something secure. You may change the names of the other resources if you desire.
+Login into your Snowflake warehouse, copy and paste the following script in a new [worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html). Select the `All Queries` checkbox and then press the `Run` button.
 
 ```text
 -- set variables (these need to be uppercase)
@@ -106,14 +112,14 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **Host**
-* **Role**
-* **Warehouse**
-* **Database**
-* **Schema**
-* **Username**
-* **Password**
-* **JDBC URL Params** (Optional)
+* **Host** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
+* **Role** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
+* **Warehouse** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
+* **Database** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
+* **Schema** : The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. Schema name would be transformed to allowed by Snowflake if it not follow [Snowflake Naming Conventions](https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions).
+* **Username** : The username you created to allow Airbyte to access the database. Example - `AIRBYTE_USER`
+* **Password** : The password associated with the username.
+* **JDBC URL Params** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). More info on how this works can be found [here](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) 
 
 ## Notes about Snowflake Naming Conventions
 
@@ -149,11 +155,11 @@ Therefore, Airbyte Snowflake destination will create tables and schemas using th
 
 ## Cloud Storage Staging
 
-By default, Airbyte uses batches of `INSERT` commands to add data to a temporary table before copying it over to the final table in Snowflake. This is too slow for larger/multi-GB replications. For those larger replications we recommend configuring using cloud storage to allow batch writes and loading.
+By default, Airbyte uses `INTERNAL STAGING`  
 
 ### Internal Staging
 
-Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging
+Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging. This is also the recommended way of using the connector. 
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
 
@@ -214,6 +220,8 @@ DESC STORAGE INTEGRATION gcs_airbyte_integration;
 The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value.
 
 Finally, you need to add read/write permissions to your bucket with that email.
+
+## Changelog
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
