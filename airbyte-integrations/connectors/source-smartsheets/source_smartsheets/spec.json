@@ -16,7 +16,7 @@
       },
       "spreadsheet_id": {
         "title": "Sheet ID",
-        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties. 0.2.0-alpha.1",
+        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties. 0.2.0-alpha.3",
         "type": "string",
         "order": 2
       },
