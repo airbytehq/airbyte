@@ -20,7 +20,9 @@ TODO()
 - test larger files? can we generate larger amounts of synthetic data using Hudson's strats?
 - what user stories are we still missing after all this?ping import Mapping, Any, Iterable
 """
-import time
+
+import os
+from google.cloud import storage
 from typing import Mapping, Any, Iterable
 
 from airbyte_cdk import AirbyteLogger
@@ -35,48 +37,7 @@ class DestinationNGPVAN(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
-        writer = NGPVANWriter(NGPVANClient(**config))
-
-        for message in input_messages:
-            # Adds data rows from RECORD messages in the AirbyteMessage to the writer object
-            if message.type == Type.RECORD:
-                record = message.record
-                data_row = record.data
-                writer.add_data_row(data_row)
-                yield message
-            else:
-                # ignore other message types for now
-                continue
-
-        jobId=str(writer.run_bulk_import_job())
-
-        print(f'Bulk import job created: ID {jobId}')
-
-        validator=NGPVANValidator(client=NGPVANClient(**config),jobId=jobId)
-        validator.monitorBulkImportStatus()
-
-        #start_import_time=time.perf_counter()
-#
-        #status=""
-        #print("Keeping an eye on it...")
-        #while status!="Completed":
-        #    time.sleep(5)
-        #    status_json=writer.client.get_bulk_import_job_status(str(jobId))
-        #    status=status_json["status"]
-        #    time_elapsed=round(time.perf_counter()-start_import_time)
-        #    print(f"Job status: {status} (time elapsed: {time_elapsed} seconds)")
-#
-        #    if status=="Error":
-        #        print("Bulk import failed with error. Here is the full status response:")
-        #        print(status_json)
-        #        break
-#
-        #results_url=status_json["resultFiles"][0]["url"]
-        #print(f"Bulk import complete. Results file located at: {results_url}")
-
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -91,6 +52,26 @@ class DestinationNGPVAN(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
+        writer = NGPVANWriter(NGPVANClient(**config))
+
+        for message in input_messages:
+            # Adds data rows from RECORD messages in the AirbyteMessage to the writer object
+            if message.type == Type.RECORD:
+                record = message.record
+                data_row = record.data
+                writer.add_data_row(data_row)
+                yield message
+            else:
+                # ignore other message types for now
+                continue
+
+        jobId=writer.run_bulk_import_job()
+
+        print(f'Bulk import job created: ID {jobId}')
+
+        validator=NGPVANValidator(client=NGPVANClient(**config),jobId=jobId)
+        validator.monitorBulkImportStatus()
+
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
@@ -104,7 +85,22 @@ class DestinationNGPVAN(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
+
+            writer = NGPVANWriter(NGPVANClient(**config))
+
+            #Validate VAN API key
+            writer.client.get_mappings()
+
+            #Try connecting to GCS
+
+            if writer.local_test:
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
+
+            bucket_name = writer.destination_bucket
+            blob_name = writer.zip_name
+            storage_client = storage.Client()
+            bucket = storage_client.get_bucket(bucket_name)
+            blob = bucket.blob(blob_name)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:

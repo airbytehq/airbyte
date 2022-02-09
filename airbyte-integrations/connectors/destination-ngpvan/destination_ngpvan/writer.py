@@ -122,4 +122,4 @@ class NGPVANWriter:
         else:
             return "The selected bulk import type is not supported"
 
-        return r.json()["jobId"]
+        return str(r.json()["jobId"])
