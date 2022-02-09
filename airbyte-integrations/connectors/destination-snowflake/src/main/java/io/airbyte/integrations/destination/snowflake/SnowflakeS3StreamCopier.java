@@ -78,17 +78,16 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), 10);
+    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), 1000);
     for (int i = 0; i < partition.size(); i++) {
-      List<String> strings = partition.get(i);
       LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
           schemaName, partition.size());
-      executeCopy(strings);
+      executeCopy(partition.get(i));
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
-  private void executeCopy(List<String> files) throws SQLException {
+  private void executeCopy(List<String> files) {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "

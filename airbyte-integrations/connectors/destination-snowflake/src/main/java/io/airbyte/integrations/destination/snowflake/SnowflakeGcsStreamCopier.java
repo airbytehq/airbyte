@@ -41,12 +41,11 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(gcsStagingFiles), 10);
+    List<List<String>> partition = Lists.partition(new ArrayList<>(gcsStagingFiles), 1000);
     for (int i = 0; i < partition.size(); i++) {
-      List<String> strings = partition.get(i);
       LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
           schemaName, partition.size());
-      executeCopy(strings);
+      executeCopy(partition.get(i));
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
@@ -81,7 +80,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
                                       final String tableName,
                                       final GcsConfig gcsConfig)
       throws SQLException {
-    throw new RuntimeException("Snowflake Stream Copier should not copy individual files without use of a parallel copy");
+    throw new RuntimeException("Snowflake GCS Stream Copier should not copy individual files without use of a parallel copy");
 
   }
 
