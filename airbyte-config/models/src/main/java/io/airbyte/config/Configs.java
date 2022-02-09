@@ -10,6 +10,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -245,7 +246,27 @@ public interface Configs {
   /**
    * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
    */
-  Map<String, String> getJobKubeNodeSelectors();
+  Optional<Map<String, String>> getJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Sync job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getSyncJobKubeNodeSelectors();
 
   /**
    * Define the Job pod connector image pull policy.

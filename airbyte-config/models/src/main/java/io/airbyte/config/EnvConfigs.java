@@ -107,6 +107,12 @@ public class EnvConfigs implements Configs {
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
 
+  // job-type-specific overrides
+  public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
+  public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
+  public static final String DISCOVER_JOB_KUBE_NODE_SELECTORS = "DISCOVER_JOB_KUBE_NODE_SELECTORS";
+  public static final String SYNC_JOB_KUBE_NODE_SELECTORS = "SYNC_JOB_KUBE_NODE_SELECTORS";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
@@ -431,22 +437,74 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns a map of node selectors from its own environment variable. The value of the env is a
-   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
+   * Returns a map of node selectors for any job type. Used as a default if a particular job type does
+   * not define its own node selector environment variable.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Spec job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getSpecJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Check job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getCheckJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Discover job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Sync job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getSyncJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(SYNC_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Parse string containing node selectors into a map. Each kv-pair is separated by a `,`
    * <p>
    * For example:- The following represents two node selectors
    * <p>
    * airbyte=server,type=preemptive
    *
-   * @return map containing kv pairs of node selectors
+   * @param envString string that represents one or more node selector labels.
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
-  @Override
-  public Map<String, String> getJobKubeNodeSelectors() {
-    return Splitter.on(",")
-        .splitToStream(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""))
+  private Optional<Map<String, String>> getNodeSelectorsFromEnvString(final String envString) {
+    final Map<String, String> selectors = Splitter.on(",")
+        .splitToStream(envString)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+
+    return selectors.isEmpty() ? Optional.empty() : Optional.of(selectors);
   }
 
   @Override
