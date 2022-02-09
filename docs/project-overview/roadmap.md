@@ -12,17 +12,17 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-**Landing in November or so:**
+**Landing in April or so:**
 
-* Improve stability and performance across the board.
-* Stabilize Airbyte Cloud Architecture.
+* Airbyte Cloud in NA.
 * Improve scheduling performance and migrate completely to Temporal.  
 * Adapt automatically to sources' schema changes.
+* Our declarative interface \(CLI\).
 
 **Coming a bit later:**
 
+* Airbyte Cloud in EU + Asia
 * Support for creating destination connectors with the CDK.
-* Our declarative interface \(CLI\).
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\).
 * Webhook connector.
 

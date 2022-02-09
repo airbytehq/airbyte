@@ -19,6 +19,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -99,6 +100,7 @@ public class DefaultJobPersistence implements JobPersistence {
           + "attempts.log_path AS log_path,\n"
           + "attempts.output AS attempt_output,\n"
           + "attempts.status AS attempt_status,\n"
+          + "attempts.failure_summary AS attempt_failure_summary,\n"
           + "attempts.created_at AS attempt_created_at,\n"
           + "attempts.updated_at AS attempt_updated_at,\n"
           + "attempts.ended_at AS attempt_ended_at\n"
@@ -323,6 +325,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    jobDatabase.transaction(
+        ctx -> ctx.update(ATTEMPTS)
+            .set(ATTEMPTS.FAILURE_SUMMARY, JSONB.valueOf(Jsons.serialize(failureSummary)))
+            .set(ATTEMPTS.UPDATED_AT, now)
+            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+            .execute());
+  }
+
+  @Override
   public Job getJob(final long jobId) throws IOException {
     return jobDatabase.query(ctx -> getJob(ctx, jobId));
   }
@@ -441,6 +455,8 @@ public class DefaultJobPersistence implements JobPersistence {
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("attempt_failure_summary", String.class) == null ? null
+            : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),
         getEpoch(record, "attempt_updated_at"),
         Optional.ofNullable(record.get("attempt_ended_at"))
