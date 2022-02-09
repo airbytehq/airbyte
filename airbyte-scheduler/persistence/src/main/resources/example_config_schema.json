@@ -43,6 +43,25 @@
     },
     "const_null": {
       "const": null
+    },
+    "additionalPropertiesUnset": {
+      "type": "object"
+    },
+    "additionalPropertiesBoolean": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "additionalPropertiesSchema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "additionalPropertiesConst": {
+      "type": "object",
+      "additionalProperties": {
+        "const": 42
+      }
     }
   }
 }

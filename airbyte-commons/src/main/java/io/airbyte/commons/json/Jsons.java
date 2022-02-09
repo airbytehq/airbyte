@@ -222,6 +222,8 @@ public class Jsons {
         value = node.asBoolean();
       } else if (node.isLong()) {
         value = node.asLong();
+      } else if (node.isInt()) {
+        value = node.asInt();
       } else if (node.isDouble()) {
         value = node.asDouble();
       } else if (node.isValueNode() && !node.isNull()) {

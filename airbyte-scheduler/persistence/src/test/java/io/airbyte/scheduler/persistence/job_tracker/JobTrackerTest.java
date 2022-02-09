@@ -299,15 +299,20 @@ class JobTrackerTest {
     final String schemaJson = MoreResources.readResource("example_config_schema.json");
     final JsonNode schema = Jsons.deserialize(schemaJson);
 
-    final Map<String, Object> expected = ImmutableMap.of(
-        JobTracker.CONFIG + ".username", JobTracker.SET,
-        JobTracker.CONFIG + ".has_ssl", false,
-        JobTracker.CONFIG + ".password", JobTracker.SET,
-        JobTracker.CONFIG + ".one_of.type_key", "foo",
-        JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET,
-        JobTracker.CONFIG + ".const_object.sub_key", "bar",
-        JobTracker.CONFIG + ".const_object.sub_array", "[1,2,3]",
-        JobTracker.CONFIG + ".const_object.sub_object.sub_sub_key", "baz");
+    final Map<String, Object> expected = new ImmutableMap.Builder<String, Object>()
+        .put(JobTracker.CONFIG + ".username", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".has_ssl", false)
+        .put(JobTracker.CONFIG + ".password", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".one_of.type_key", "foo")
+        .put(JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".const_object.sub_key", "bar")
+        .put(JobTracker.CONFIG + ".const_object.sub_array", "[1,2,3]")
+        .put(JobTracker.CONFIG + ".const_object.sub_object.sub_sub_key", "baz")
+        .put(JobTracker.CONFIG + ".additionalPropertiesUnset.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesBoolean.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesSchema.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesConst.foo", 42)
+        .build();
 
     final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config, schema);
 

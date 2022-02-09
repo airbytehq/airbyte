@@ -8,6 +8,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -53,6 +54,8 @@ public class JobTracker {
   public static final String CATALOG = "catalog";
   public static final String OPERATION = "operation.";
   public static final String SET = "set";
+
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -228,19 +231,34 @@ public class JobTracker {
     } else if (config.isObject()) {
       // If the schema is not a oneOf, but the config is an object (i.e. the schema has "type": "object")
       // then we need to recursively convert each field of the object to a map.
-      // Note: this doesn't handle additionalProperties, so if a config contains properties that are not
-      // explicitly declared in the schema, they will be ignored.
       final Map<String, Object> output = new HashMap<>();
       final JsonNode maybeProperties = schema.get("properties");
-      if (maybeProperties != null) {
-        for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext();) {
-          final Entry<String, JsonNode> entry = it.next();
-          final String field = entry.getKey();
-          final JsonNode value = entry.getValue();
-          if (maybeProperties.hasNonNull(field)) {
-            Jsons.mergeMaps(output, field, configToMetadata(value, maybeProperties.get(field)));
-          }
+
+      // If additionalProperties is not set, or it's a boolean, then there's no schema for additional properties. Use the accept-all schema.
+      // Otherwise, it's an actual schema.
+      final JsonNode maybeAdditionalProperties = schema.get("additionalProperties");
+      final JsonNode additionalPropertiesSchema;
+      if (maybeAdditionalProperties == null || maybeAdditionalProperties.isBoolean()) {
+        additionalPropertiesSchema = OBJECT_MAPPER.createObjectNode();
+      } else {
+        additionalPropertiesSchema = maybeAdditionalProperties;
+      }
+
+      for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
+        final Entry<String, JsonNode> entry = it.next();
+        final String field = entry.getKey();
+        final JsonNode value = entry.getValue();
+
+        final JsonNode propertySchema;
+        if (maybeProperties != null && maybeProperties.hasNonNull(field)) {
+          // If this property is explicitly declared, then use its schema
+          propertySchema = maybeProperties.get(field);
+        } else {
+          // otherwise, use the additionalProperties schema
+          propertySchema = additionalPropertiesSchema;
         }
+
+        Jsons.mergeMaps(output, field, configToMetadata(value, propertySchema));
       }
       return output;
     } else if (config.isBoolean()) {

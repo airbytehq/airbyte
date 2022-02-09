@@ -6,8 +6,7 @@
   "null_value": null,
   "one_of": {
     "type_key": "foo",
-    "some_key": 100,
-    "some_undeclared_key": "ignored"
+    "some_key": 100
   },
   "const_object": {
     "sub_key": "bar",
@@ -16,5 +15,17 @@
       "sub_sub_key": "baz"
     }
   },
-  "const_null": null
+  "const_null": null,
+  "additionalPropertiesUnset": {
+    "foo": "bar"
+  },
+  "additionalPropertiesBoolean": {
+    "foo": "bar"
+  },
+  "additionalPropertiesSchema": {
+    "foo": 42
+  },
+  "additionalPropertiesConst": {
+    "foo": 42
+  }
 }
