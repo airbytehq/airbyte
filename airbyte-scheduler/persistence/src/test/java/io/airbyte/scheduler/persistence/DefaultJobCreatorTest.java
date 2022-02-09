@@ -116,7 +116,7 @@ public class DefaultJobCreatorTest {
   void setup() {
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    workerResourceRequirements = mock(ResourceRequirements.class);
+    workerResourceRequirements = new ResourceRequirements().withCpuLimit("0.2").withCpuRequest("0.2").withMemoryLimit("200Mi").withMemoryRequest("200Mi");
     jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
   }
 
@@ -131,7 +131,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -161,7 +162,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -195,7 +197,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -228,7 +231,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
