@@ -19,6 +19,7 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:
+      serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
       {{- if .Values.scheduler.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.nodeSelector "context" $) | nindent 8 }}
       {{- end }}

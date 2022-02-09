@@ -12,6 +12,7 @@ metadata:
       {{- include "common.tplvalues.render" (dict "value" .Values.bootloader.podAnnotations "context" $) | nindent 4 }}
     {{- end }}
 spec:
+  serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
   restartPolicy: Never
   containers:
     - name: airbyte-bootloader-container
