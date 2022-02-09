@@ -13,8 +13,10 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -41,15 +43,19 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.val;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -153,12 +159,12 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = jobsDatabaseInstance.getInitialized();
@@ -210,6 +216,17 @@ public class ServerApp implements ServerRunnable {
         httpClient,
         featureFlags,
         temporalWorkerRunFactory);
+  }
+
+  private static void migrateExistingConnection(final ConfigRepository configRepository, final TemporalWorkerRunFactory temporalWorkerRunFactory)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    LOGGER.info("Start migration to the new scheduler...");
+    final Set<UUID> connectionIds =
+        configRepository.listStandardSyncs().stream()
+            .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
+            .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
+    temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
+    LOGGER.info("Done migrating to the new scheduler...");
   }
 
   public static void main(final String[] args) throws Exception {

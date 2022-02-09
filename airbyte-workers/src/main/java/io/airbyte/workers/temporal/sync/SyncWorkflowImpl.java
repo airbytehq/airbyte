@@ -13,8 +13,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
-import io.temporal.activity.ActivityOptions;
-import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -26,17 +24,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 1;
 
-  private static final ActivityOptions persistOptions = ActivityConfiguration.OPTIONS.toBuilder()
-      .setRetryOptions(RetryOptions.newBuilder()
-          .setMaximumAttempts(10)
-          .build())
-      .build();
-
-  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.OPTIONS);
-  private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.OPTIONS);
+  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
+  private final NormalizationActivity normalizationActivity =
+      Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
   private final DbtTransformationActivity dbtTransformationActivity =
-      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.OPTIONS);
-  private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
+      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
+  private final PersistStateActivity persistActivity =
+      Workflow.newActivityStub(PersistStateActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,

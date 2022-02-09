@@ -43,7 +43,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.35.1-alpha
+    tag: 0.35.26-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -84,6 +84,11 @@ webapp:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param webapp.affinity [object] Affinity and anti-affinity for webapp pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
   ## Configure the ingress resource that allows you to access the Airbyte installation.
   ## ref: http://kubernetes.io/docs/user-guide/ingress/
@@ -140,7 +145,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.35.1-alpha
+    tag: 0.35.26-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -175,6 +180,11 @@ scheduler:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param scheduler.affinity [object] Affinity and anti-affinity for scheduler pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
   ## @param scheduler.log.level The log level to log at.
   log:
@@ -233,6 +243,11 @@ podSweeper:
   ##
   tolerations: []
 
+  ## @param podSweeper.affinity [object] Affinity and anti-affinity for podSweeper pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
 ## @section Server parameters
 
 server:
@@ -245,7 +260,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.35.1-alpha
+    tag: 0.35.26-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -333,6 +348,11 @@ server:
   ##
   tolerations: []
 
+  ## @param server.affinity [object] Affinity and anti-affinity for server pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## @param server.log.level The log level to log at
   log:
     level: "INFO"
@@ -357,7 +377,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.35.1-alpha
+    tag: 0.35.26-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -425,6 +445,11 @@ worker:
   ##
   tolerations: []
 
+  ## @param worker.affinity [object] Affinity and anti-affinity for worker pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
   ## @param worker.log.level The log level to log at.
   log:
     level: "INFO"
@@ -446,7 +471,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.34.0-alpha
+    tag: 0.35.26-alpha
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
@@ -469,15 +494,20 @@ temporal:
     type: ClusterIP
     port: 7233
 
-  ## @param temporal.nodeSelector [object] Node labels for pod assignment
+  ## @param temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
   nodeSelector: {}
 
-  ## @param temporal.tolerations [array] Tolerations for pod assignment.
+  ## @param temporal.tolerations [array] Tolerations for temporal pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
 
   ## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
   ## Example:
@@ -505,7 +535,9 @@ postgresql:
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
-
+  commonAnnotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
 ## External PostgreSQL configuration
 ## All of these values are only used when postgresql.enabled is set to false
 ## @param externalDatabase.host Database host
