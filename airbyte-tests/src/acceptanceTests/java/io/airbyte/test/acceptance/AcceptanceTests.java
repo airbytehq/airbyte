@@ -799,7 +799,11 @@ public class AcceptanceTests {
     // wait to get out of running.
     waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
     // now cancel it so that we freeze state!
-    apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+    try {
+      apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+    } catch (Exception e) {
+      
+    }
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
