@@ -50,7 +50,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final JobRunConfig jobRunConfig;
   private final Map<String, String> additionalFileMap;
   private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
-  private final String airbyteVersion;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
 
@@ -63,7 +62,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final JobRunConfig jobRunConfig,
                         final Map<String, String> additionalFileMap,
                         final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                        final String airbyteVersion,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass) {
     this.connectionId = connectionId;
@@ -72,7 +70,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.jobRunConfig = jobRunConfig;
     this.additionalFileMap = additionalFileMap;
     this.containerOrchestratorConfig = containerOrchestratorConfig;
-    this.airbyteVersion = airbyteVersion;
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
   }
@@ -104,20 +101,24 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             Math.toIntExact(jobRunConfig.getAttemptId()),
             Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()));
 
-        killRunningPodsForConnection();
-
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
+
+        killRunningPodsForConnection(podName);
+
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
-            containerOrchestratorConfig.kubernetesClient());
+            containerOrchestratorConfig.kubernetesClient(),
+            containerOrchestratorConfig.secretName(),
+            containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.googleApplicationCredentials());
 
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           process.create(
-              airbyteVersion,
               allLabels,
               resourceRequirements,
               fileMap,
@@ -137,11 +138,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var output = process.getOutput();
 
-        if (output.isPresent()) {
-          return Jsons.deserialize(output.get(), outputClass);
-        } else {
-          throw new WorkerException("Running the " + application + " launcher resulted in no readable output!");
-        }
+        return output.map(s -> Jsons.deserialize(s, outputClass)).orElse(null);
       } catch (Exception e) {
         if (cancelled.get()) {
           try {
@@ -162,8 +159,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
    * It is imperative that we do not run multiple replications, normalizations, syncs, etc. at the
    * same time. Our best bet is to kill everything that is labelled with the connection id and wait
    * until no more pods exist with that connection id.
+   *
+   * @param podNameToKeep a nullable name of a pod we don't want to delete.
    */
-  private void killRunningPodsForConnection() {
+  private void killRunningPodsForConnection(String podNameToKeep) {
     final var client = containerOrchestratorConfig.kubernetesClient();
 
     // delete all pods with the connection id label
@@ -176,6 +175,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
       log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
       runningPods.stream()
           .parallel()
+          .filter(pod -> !pod.getMetadata().getName().equals(podNameToKeep))
           .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
       log.info("Waiting for deletion...");
@@ -215,13 +215,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     }
 
     log.debug("Closing sync runner process");
-    killRunningPodsForConnection();
+    killRunningPodsForConnection(null);
 
     if (process.hasExited()) {
       log.info("Successfully cancelled process.");
     } else {
       // try again
-      killRunningPodsForConnection();
+      killRunningPodsForConnection(null);
 
       if (process.hasExited()) {
         log.info("Successfully cancelled process.");

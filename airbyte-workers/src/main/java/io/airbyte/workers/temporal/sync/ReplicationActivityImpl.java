@@ -219,7 +219,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         sourceLauncherConfig,
         destinationLauncherConfig,
         jobRunConfig,
-        airbyteVersion,
         workerConfigs);
   }
 

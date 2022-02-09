@@ -1,7 +1,8 @@
 import React from "react";
 
-import { Attempt, Logs } from "core/domain/job";
+import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
 import DownloadButton from "./DownloadButton";
+import DebugInfoButton from "./DebugInfoButton";
 import LogsTable from "./Logs";
 import AttemptDetails from "./AttemptDetails";
 import styled from "styled-components";
@@ -20,7 +21,8 @@ const LogsDetails: React.FC<{
   path: string;
   currentAttempt?: Attempt | null;
   logs?: Logs;
-}> = ({ path, logs, id, currentAttempt }) => (
+  jobDebugInfo?: JobDebugInfoMeta;
+}> = ({ path, logs, id, currentAttempt, jobDebugInfo }) => (
   <>
     {currentAttempt && <AttemptDetails attempt={currentAttempt} />}
     <CenteredDetails>
@@ -28,6 +30,7 @@ const LogsDetails: React.FC<{
       {logs?.logLines && (
         <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
       )}
+      {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </CenteredDetails>
     <LogsTable logsArray={logs?.logLines} />
   </>
