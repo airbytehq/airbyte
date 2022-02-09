@@ -18,25 +18,25 @@
         "type": "string"
       },
       "client_id": {
-	"title": "Client ID",
+        "title": "Client ID",
         "description": "The Consumer Key that can be found when viewing your app in Salesforce.",
         "type": "string",
         "airbyte_secret": true
       },
       "client_secret": {
-	"title": "Client Secret",
+        "title": "Client Secret",
         "description": "The Consumer Secret that can be found when viewing your app in Salesforce.",
         "type": "string",
         "airbyte_secret": true
       },
       "refresh_token": {
-	"title": "Refresh Token",
+        "title": "Refresh Token",
         "description": "Salesforce Refresh Token used for Airbyte to access your Salesforce account. See <a href=\"https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b\">guide</a> for more information on how to obtain this token.",
         "type": "string",
         "airbyte_secret": true
       },
       "start_date": {
-	"title": "Start Date",
+        "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. Leave blank to skip this filter.",
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
@@ -44,7 +44,7 @@
         "examples": ["2021-07-25T00:00:00Z"]
       },
       "is_sandbox": {
-	"title": "Is Sandbox",
+        "title": "Is Sandbox",
         "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false.",
         "type": "boolean",
         "default": false
