@@ -39,6 +39,7 @@ def get_prop(col_type: str) -> Dict[str, any]:
 def get_json_schema(sheet: Dict, config: json) -> Dict:
     # Get static metadata config options
     ss_add_row_id = config["smartsheets_add_row_id"]
+    ss_add_row_permalink = config["smartsheets_add_row_permalink"]
     ss_add_row_extended_meta = config["smartsheets_add_row_extended_metadata"]
     ss_add_sheet_id = config["smartsheets_add_sheet_id"]
     ss_add_sheet_extended_meta = config["smartsheets_add_sheet_extended_metadata"]
@@ -49,6 +50,8 @@ def get_json_schema(sheet: Dict, config: json) -> Dict:
     # Add static schema items.
     if bool(ss_add_row_id):
         column_info['_ss_row_id'] = {"type":"integer"} # Add Row ID to returned dynamic schema
+    if bool(ss_add_row_permalink):
+        column_info['_ss_row_permalink'] = {"type":"string"} # Add Row permalink URL to returned dynamic schema
     if bool(ss_add_row_extended_meta):
         column_info['_ss_row_created_at'] = {"type":"string"} # Row created at timestamp
         column_info['_ss_row_modified_at'] = {"type":"string"} # Row Modified at timestamp
@@ -129,6 +132,7 @@ class SourceSmartsheets(Source):
 
         # Get primary config options
         access_token = config["access_token"]
+        sheet_includes = ["rowPermalink"]
         spreadsheet_id = config["spreadsheet_id"]
         smartsheets_debug_logging = config["smartsheets_debug_logging"]
         smartsheets_debug_logging_row_limit = config["smartsheets_debug_logging_row_limit"]
@@ -136,6 +140,7 @@ class SourceSmartsheets(Source):
         # Get static metadata config options
         ss_add_row_id = config["smartsheets_add_row_id"]
         ss_add_row_extended_meta = config["smartsheets_add_row_extended_metadata"]
+        ss_add_row_permalink = config["smartsheets_add_row_permalink"]
         ss_add_sheet_id = config["smartsheets_add_sheet_id"]
         ss_add_sheet_extended_meta = config["smartsheets_add_sheet_extended_metadata"]
         ss_add_workspace_id = config["smartsheets_add_workspace_id"]
@@ -154,7 +159,7 @@ class SourceSmartsheets(Source):
             name = stream.name
 
             try:
-                sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
+                sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id,include=sheet_includes)
                 sheet = json.loads(str(sheet))  # make it subscriptable
                 logger.info(f"Starting syncing spreadsheet {sheet['name']}")
                 if bool(smartsheets_debug_logging):
@@ -169,6 +174,8 @@ class SourceSmartsheets(Source):
                     
                         if bool(ss_add_row_id):
                             data['_ss_row_id'] = row['id']
+                        if bool(ss_add_row_permalink):
+                            data['_ss_row_permalink'] = row['permalink']
                         if bool(ss_add_row_extended_meta):
                             data['_ss_row_created_at'] = row['createdAt']
                             data['_ss_row_modified_at'] = row['modifiedAt']
