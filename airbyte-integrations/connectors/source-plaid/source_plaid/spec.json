@@ -26,7 +26,7 @@
         "title": "Plaid Environment",
         "type": "string",
         "enum": ["sandbox", "development", "production"],
-        "description": "Environment specifies where the data will come from. [Examples: "sandbox", "production", "qa", "development"]"
+        "description": "Environment specifies where the data will come from."
       }
     }
   }
