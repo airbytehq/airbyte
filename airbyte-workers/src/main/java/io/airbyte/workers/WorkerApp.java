@@ -266,7 +266,11 @@ public class WorkerApp {
   public static record ContainerOrchestratorConfig(
                                                    String namespace,
                                                    DocumentStoreClient documentStoreClient,
-                                                   KubernetesClient kubernetesClient) {}
+                                                   KubernetesClient kubernetesClient,
+                                                   String secretName,
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage,
+                                                   String googleApplicationCredentials) {}
 
   static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
@@ -279,7 +283,11 @@ public class WorkerApp {
       return Optional.of(new ContainerOrchestratorConfig(
           configs.getJobKubeNamespace(),
           documentStoreClient,
-          kubernetesClient));
+          kubernetesClient,
+          configs.getContainerOrchestratorSecretName(),
+          configs.getContainerOrchestratorSecretMountPath(),
+          configs.getContainerOrchestratorImage(),
+          configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
     }
@@ -314,7 +322,7 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
