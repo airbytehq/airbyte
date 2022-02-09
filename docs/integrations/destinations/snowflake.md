@@ -153,7 +153,7 @@ When an identifier is double-quoted, it is stored and resolved exactly as entere
 
 Therefore, Airbyte Snowflake destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
-## Cloud Storage Staging
+## Loading Method
 
 By default, Airbyte uses `INTERNAL STAGING`  
 
@@ -163,7 +163,7 @@ Internal named stages are storage location objects within a Snowflake database/s
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
 
-### AWS S3
+### AWS S3 Staging
 
 For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
 
@@ -186,7 +186,7 @@ Optional parameters:
     * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
 
-### Google Cloud Storage \(GCS\)
+### Google Cloud Storage \(GCS\) Staging
 
 First you will need to create a GCS bucket.
 
