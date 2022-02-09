@@ -9,12 +9,12 @@
     "properties": {
       "apikey": {
         "type": "string",
-	"title": "API Key",
+        "title": "API Key",
         "description": "Sendgrid API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/sendgrid\">docs</a> for more information on how to obtain this key."
       },
       "start_time": {
         "type": "integer",
-	"title": "Start Time",
+        "title": "Start Time",
         "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
         "examples": [1558359837]
       }
