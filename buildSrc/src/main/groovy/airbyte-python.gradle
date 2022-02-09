@@ -34,13 +34,14 @@ class Helpers {
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
                 project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
                     module = "coverage"
-                    command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
+                    command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                 }
-                project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
-                    module = "coverage"
-                    // command = "run --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
-                    command = "report --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
+                // generation of coverage report is optional and we should skip it if tests are empty
+                project.task(taskName, type: Exec){
+                    commandLine = ".venv/bin/python"
+                    args "-m", "coverage", "report", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
                     dependsOn project.tasks.findByName("_${taskName}Coverage")
+                    setIgnoreExitValue true
 
                 }
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
@@ -70,36 +71,33 @@ class AirbytePythonPlugin implements Plugin<Project> {
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
             installVirtualenv = true
-            pip 'mccabe:0.6.1'
-            // flake8 doesn't support pyproject.toml files
-            // and thus there is the wrapper "pyproject-flake8" for this
-            pip 'pyproject-flake8:0.0.1a2'
-            pip 'black:22.1.0'
-            pip 'mypy:0.930'
+            pip 'flake8:3.8.4'
+            pip 'black:21.10b0'
+            pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
-            pip 'pip:21.3.1'
-            pip 'coverage[toml]:6.2'
+            pip 'pip:21.1.3'
+            pip 'coverage[toml]:6.3.1'
         }
+
 
         project.task('isortFormat', type: PythonTask) {
             module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} ./"
+            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
         }
 
-        project.task('blackFormat', type: PythonTask, dependsOn: taskDependencies) {
+        project.task('blackFormat', type: PythonTask) {
             module = "black"
             // the line length should match .isort.cfg
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
+            command = ". --line-length 140"
             dependsOn project.rootProject.licenseFormat
             dependsOn project.isortFormat
         }
 
-        project.task('flakeCheck', type: PythonTask, dependsOn: taskDependencies) {
-            module = "pflake8"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-            dependsOn project.blackFormat
-        }Жq
+        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
+            module = "flake8"
+            command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
+        }
 
         // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
 
