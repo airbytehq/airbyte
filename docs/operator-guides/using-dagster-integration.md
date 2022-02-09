@@ -12,13 +12,13 @@ The Airbyte Task documentation on Dagster project can be found [here](https://do
 
 First, make sure you have Docker installed. We'll be using the `docker-compose` command, so your install should contain `docker-compose`.
 
-### **Start Airbyte**
+### Start Airbyte
 
 If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
 
-For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Prefect will be responsible for manually triggering the Airbyte job.
+For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Dagster will be responsible for manually triggering the Airbyte job.
 
-### **Install Dagster**
+### Install Dagster
 
 If you don't have a Dagster installed, we recommend following this [guide](https://docs.dagster.io/getting-started) to set one up.
 
@@ -63,7 +63,7 @@ After running the file, `dagster job execute -f airbyte_dagster.py ` this will t
 
 ## That's it!
 
-Don't be fooled by our simple example of only one Prefect Flow. Airbyte is a powerful data integration platform supporting many sources and destinations. The Airbyte Prefect Task means Airbyte can now be easily used with the Prefect ecosystem - give it a shot!
+Don't be fooled by our simple example of only one Dagster Flow. Airbyte is a powerful data integration platform supporting many sources and destinations. The Airbyte Dagster Integration means Airbyte can now be easily used with the Dagster ecosystem - give it a shot!
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
