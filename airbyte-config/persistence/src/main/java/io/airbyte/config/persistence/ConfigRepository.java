@@ -556,7 +556,7 @@ public class ConfigRepository {
       throw new IllegalStateException(e);
     }
   }
-
+  
   public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
                                                  final String configurationHash,
                                                  final String connectorVersion)
@@ -594,21 +594,47 @@ public class ConfigRepository {
     }
   }
 
+  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
+      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
+        return Optional.of(fetchedCatalog);
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalog> listActorCatalogs()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
+
+    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
+        ActorCatalog.class)) {
+      actorCatalogs.add(event);
+    }
+    return actorCatalogs;
+  }
+
   public void writeCatalog(final AirbyteCatalog catalog,
                            final UUID sourceId,
                            final String configurationHash,
                            final String connectorVersion)
       throws JsonValidationException, IOException {
     final HashFunction hashFunction = Hashing.murmur3_32_fixed();
-    final String configHash = hashFunction.hashBytes(Jsons.serialize(catalog).getBytes(
+    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(catalog).getBytes(
         Charsets.UTF_8)).toString();
-    final ActorCatalog actorCatalog = new ActorCatalog()
+    ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(catalog))
         .withId(UUID.randomUUID())
-        .withCatalogHash(configHash);
-    persistence.writeConfig(ConfigSchema.ACTOR_CATALOG,
-        actorCatalog.getId().toString(),
-        actorCatalog);
+        .withCatalogHash(catalogHash);
+    final Optional<ActorCatalog> existingCatalog = findExistingCatalog(actorCatalog);
+    if (existingCatalog.isPresent()) {
+      actorCatalog = existingCatalog.get();
+    } else {
+      persistence.writeConfig(ConfigSchema.ACTOR_CATALOG,
+          actorCatalog.getId().toString(),
+          actorCatalog);
+    }
     final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
         .withActorCatalogId(actorCatalog.getId())
         .withId(UUID.randomUUID())
