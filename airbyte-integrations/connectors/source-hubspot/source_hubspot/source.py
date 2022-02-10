@@ -3,12 +3,12 @@
 #
 
 import logging
-from typing import Mapping, Any, Tuple, Optional, List
+from typing import Mapping, Any, Tuple, Optional, List, MutableMapping, Iterator
 from requests import HTTPError
 
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import AirbyteCatalog
-
+from airbyte_cdk.models import AirbyteCatalog, ConfiguredAirbyteStream, SyncMode, AirbyteMessage
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources import AbstractSource
 from source_hubspot.api import (
     API,
@@ -138,3 +138,47 @@ class SourceHubspot(AbstractSource):
             streams.append(stream)
 
         return AirbyteCatalog(streams=streams)
+
+    def _read_incremental(
+        self,
+        logger: logging.Logger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
+    ) -> Iterator[AirbyteMessage]:
+        stream_name = configured_stream.stream.name
+        stream_state = connector_state.get(stream_name, {})
+        if stream_state:
+            logger.info(f"Setting state of {stream_name} stream to {stream_state}")
+
+        slices = stream_instance.stream_slices(
+            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
+        )
+        total_records_counter = 0
+        for slice in slices:
+            records = stream_instance.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice=slice,
+                stream_state=stream_state,
+                cursor_field=configured_stream.cursor_field or None,
+            )
+            for record_counter, record_data in enumerate(records, start=1):
+                yield self._as_airbyte_record(stream_name, record_data)
+                stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                checkpoint_interval = stream_instance.state_checkpoint_interval
+                if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                    yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+
+                total_records_counter += 1
+                # This functionality should ideally live outside of this method
+                # but since state is managed inside this method, we keep track
+                # of it here.
+                if self._limit_reached(internal_config, total_records_counter):
+                    # Break from slice loop to save state and exit from _read_incremental function.
+                    break
+            # Get the stream's updated state, because state is updated after reading each chunk (if chunk is enabled), or reading all records.
+            stream_state = stream_instance.get_updated_state(stream_state, latest_record=None)
+            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+            if self._limit_reached(internal_config, total_records_counter):
+                return
