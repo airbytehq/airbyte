@@ -13,12 +13,9 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +25,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+  private static final List<String> tablesWithNotSuperType = new ArrayList<>();
 
   public RedshiftSqlOperations(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
@@ -35,10 +33,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (tableName.contains("raw") && updateDataColumnToSuperIfRequired(database, schemaName, tableName)) {
+    if (tablesWithNotSuperType.isEmpty()) {
+      // we need to get the list of tables which need to be updated only once
+      discoverNotSuperTables(database, schemaName);
+    }
+    if (tablesWithNotSuperType.contains(tableName)) {
       // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
       // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
       // the COLUMN order. This order is required to INSERT the values in correct way.
+      LOGGER.info("Altering table {} column _airbyte_data to SUPER:", tableName);
       return String.format("""
               ALTER TABLE %1$s.%2$s ADD COLUMN %3$s_super super;
               ALTER TABLE %1$s.%2$s ADD COLUMN %4$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
@@ -92,28 +95,29 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   /**
    * @param database   - Database object for interacting with a JDBC connection.
    * @param schemaName - schema to update.
-   * @param streamName - streamName.
-   * @return true - if _airbyte_raw_users._airbyte_data should be updated to SUPER, else false.
    */
-  private boolean updateDataColumnToSuperIfRequired(final JdbcDatabase database,
-      final String schemaName,
-      final String streamName) {
+  private void discoverNotSuperTables(final JdbcDatabase database,
+      final String schemaName) {
     try {
-      final Optional<ResultSetMetaData> resultSetMetaData = Optional.ofNullable(database.queryMetadata(
-          String.format("select top 1 _airbyte_data from %s.%s",
+      database.execute(String.format("set search_path to %s", schemaName));
+      final List<JsonNode> notSuperTables = database.query(
+          String.format("""
+                  select tablename\n
+                  from pg_table_def\n
+                  where\n
+                  schemaname = \'%s\'\n
+                  and \"column\" = \'%s\'\n
+                  and type <> \'super\'\n
+                  and tablename like \'%%raw%%\'""",
               schemaName,
-              streamName)));
-      if (resultSetMetaData.isPresent()) {
-        return !resultSetMetaData.get()
-            .getColumnTypeName(1)
-            .trim()
-            .contains("super");
+              JavaBaseConstants.COLUMN_NAME_DATA)).toList();
+      if (notSuperTables.isEmpty()) {
+        tablesWithNotSuperType.add("Table with SUPER type not exists");
       } else {
-        return false;
+        notSuperTables.forEach(e -> tablesWithNotSuperType.add(e.get("tablename").textValue()));
       }
     } catch (SQLException e) {
-      LOGGER.info("Table {}.{} does not exists and will be created.", schemaName, streamName);
-      return false;
+      LOGGER.error("Error during discoverNotSuperTables() appears: ", e);
     }
   }
 }
