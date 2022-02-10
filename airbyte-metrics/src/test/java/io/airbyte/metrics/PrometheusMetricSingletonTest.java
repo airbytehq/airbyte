@@ -54,7 +54,8 @@ public class PrometheusMetricSingletonTest {
 
     @Test
     public void testNameWithDashFails() {
-      assertThrows(RuntimeException.class, () -> PrometheusMetricSingleton.getInstance().incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
+      assertThrows(RuntimeException.class,
+          () -> PrometheusMetricSingleton.getInstance().incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
     }
 
     @Test
