@@ -23,7 +23,7 @@ dependencies {
 
 application {
     applicationName = "airbyte-scheduler"
-    mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
+    mainClass = 'io.airbyte.metrics.DogstatsdMetricSingleton'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
