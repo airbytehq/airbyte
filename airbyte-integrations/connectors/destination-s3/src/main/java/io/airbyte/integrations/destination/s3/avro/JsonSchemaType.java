@@ -13,7 +13,7 @@ public enum JsonSchemaType {
 
   STRING("string", true, Schema.Type.STRING),
   NUMBER("number", true, Schema.Type.DOUBLE),
-  INTEGER("integer", true, Schema.Type.INT),
+  INTEGER("integer", true, Schema.Type.LONG),
   BOOLEAN("boolean", true, Schema.Type.BOOLEAN),
   NULL("null", true, Schema.Type.NULL),
   OBJECT("object", false, Schema.Type.RECORD),
