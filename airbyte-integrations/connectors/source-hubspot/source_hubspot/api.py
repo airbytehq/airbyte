@@ -483,12 +483,15 @@ class IncrementalStream(Stream, ABC):
     """Stream that supports state and incremental read"""
 
     state_pk = "timestamp"
-    cursor_field = state_pk
     limit = 1000
     # Flag which enable/disable chunked read in read_chunked method
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
     state_checkpoint_interval = 10  # TODO
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self.updated_at_field
 
     @property
     @abstractmethod
