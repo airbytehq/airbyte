@@ -100,6 +100,6 @@ class SourceTaboolaCampaignSummary(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_authenticator(config["client_id"], config["client_secret"])
         return [
-            Campaigns(account_id=config["account_id"], initial_Date=config["initial_date"], authenticator=auth),
-            DailyPerCampaignSite(account_id=config["account_id"], initial_Date=config["initial_date"], authenticator=auth)
+            Campaigns(account_id=config["account_id"], initial_date=config["initial_date"], authenticator=auth),
+            DailyPerCampaignSite(account_id=config["account_id"], initial_date=config["initial_date"], authenticator=auth)
         ]
