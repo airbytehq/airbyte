@@ -161,7 +161,7 @@ public class BigQueryDenormalizedGscDestinationAcceptanceTest extends Destinatio
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
-        case INT64 -> fieldValue.getNumericValue().intValue();
+        case INT64 -> fieldValue.getLongValue();
         case STRING -> fieldValue.getStringValue();
         case BOOL -> fieldValue.getBooleanValue();
         case STRUCT -> fieldValue.getRecordValue().toString();
