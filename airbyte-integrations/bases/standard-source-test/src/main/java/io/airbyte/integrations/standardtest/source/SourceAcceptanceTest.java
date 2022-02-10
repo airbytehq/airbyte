@@ -286,7 +286,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
         .collect(Collectors.toList());
   }
 
-  private ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getSyncMode() == INCREMENTAL
