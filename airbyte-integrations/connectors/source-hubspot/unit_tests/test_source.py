@@ -58,7 +58,7 @@ def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
 
 
-def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
+def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
@@ -66,9 +66,8 @@ def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
     ]
 
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
-    alive, error = client.health_check()
+    source = SourceHubspot()
+    alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
     assert not error
