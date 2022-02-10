@@ -95,6 +95,11 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         .collect(Collectors.toSet());
   }
 
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
+  }
+
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
         "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");

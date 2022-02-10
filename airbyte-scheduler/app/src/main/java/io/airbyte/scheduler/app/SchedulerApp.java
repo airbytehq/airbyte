@@ -37,6 +37,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
@@ -113,6 +114,8 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
+    final Configs configs = new EnvConfigs();
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (!featureFlags.usesNewScheduler()) {
       final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
@@ -126,7 +129,7 @@ public class SchedulerApp {
           featureFlags);
       final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
       final TrackingClient trackingClient = TrackingClientSingleton.get();
-      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient, workerConfigs);
       final JobSubmitter jobSubmitter = new JobSubmitter(
           workerThreadPool,
           jobPersistence,
