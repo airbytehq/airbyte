@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Addon, AttachedItem, Event, Customer, Invoice, Item, ItemPrice, Order, Plan, Subscription
+from .streams import Addon, AttachedItem, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription
 
 
 class SourceChargebee(AbstractSource):
