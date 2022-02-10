@@ -55,6 +55,7 @@ public class DogstatsdMetricSingleton {
 
   /**
    * Increment or decrement a counter.
+   *
    * @param name of counter.
    * @param amt to adjust.
    * @param tags
@@ -68,6 +69,7 @@ public class DogstatsdMetricSingleton {
 
   /**
    * Record the latest value for a gauge.
+   *
    * @param name of gauge.
    * @param val to record.
    * @param tags
@@ -80,7 +82,9 @@ public class DogstatsdMetricSingleton {
   }
 
   /**
-   * Submit a single execution time aggregated locally by the Agent. Use this if approximate stats are sufficient.
+   * Submit a single execution time aggregated locally by the Agent. Use this if approximate stats are
+   * sufficient.
+   *
    * @param name of histogram.
    * @param val of time to record.
    * @param tags
@@ -94,6 +98,7 @@ public class DogstatsdMetricSingleton {
 
   /**
    * Submit a single execution time aggregated globally by Datadog. Use this for precise stats.
+   *
    * @param name of distribution.
    * @param val of time to record.
    * @param tags
@@ -107,6 +112,7 @@ public class DogstatsdMetricSingleton {
 
   /**
    * Wrapper of {@link #recordTimeGlobal(String, double, String...)} with a runnable for convenience.
+   *
    * @param name
    * @param runnable
    * @param tags
