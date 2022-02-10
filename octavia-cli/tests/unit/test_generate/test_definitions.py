@@ -12,7 +12,7 @@ from airbyte_api_client.api import (
 from airbyte_api_client.exceptions import ApiException
 from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
-from octavia_cli.create.definitions import (
+from octavia_cli.generate.definitions import (
     BaseDefinition,
     DefinitionNotFoundError,
     DestinationDefinition,

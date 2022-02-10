@@ -7,7 +7,7 @@ import os
 
 import pytest
 import yaml
-from octavia_cli.create.renderer import ConnectionSpecificationRenderer
+from octavia_cli.generate.renderer import ConnectionSpecificationRenderer
 
 pytestmark = pytest.mark.integration
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
@@ -52,7 +52,7 @@ def test_rendering_all_specs(spec_type, spec_file_path, octavia_project_director
             )
 
 
-EXPECTED_RENDERED_YAML_PATH = "tests/integration/test_create/expected_rendered_yaml"
+EXPECTED_RENDERED_YAML_PATH = "tests/integration/test_generate/expected_rendered_yaml"
 
 
 @pytest.mark.parametrize(

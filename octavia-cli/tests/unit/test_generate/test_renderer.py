@@ -3,7 +3,7 @@
 #
 
 import pytest
-from octavia_cli.create import renderer
+from octavia_cli.generate import renderer
 
 
 class TestFieldToRender:
