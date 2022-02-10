@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -28,6 +31,7 @@ import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +66,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     standardSyncOperation();
     standardSync();
     standardSyncState();
+    standardActorCatalog();
     deletion();
   }
 
@@ -257,6 +262,30 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     assertEquals(MockData.standardWorkspace(), standardWorkspace);
     assertEquals(1, standardWorkspaces.size());
     assertTrue(standardWorkspaces.contains(MockData.standardWorkspace()));
+  }
+
+  public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final SourceConnection source = MockData.sourceConnections().get(0);
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withId(UUID.randomUUID())
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("TESTHASH");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
+        .withId(UUID.randomUUID())
+        .withActorCatalogId(actorCatalog.getId())
+        .withActorId(source.getSourceId())
+        .withConfigHash("CONFIG_HASH")
+        .withConnectorVersion("1.0.0");
+
+    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
+        ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
+    assertEquals(actorCatalog, retrievedActorCatalog);
+
+    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(), actorCatalogFetchEvent);
+    final ActorCatalogFetchEvent retrievedActorCatalogFetchEvent = configPersistence.getConfig(
+        ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(), ActorCatalogFetchEvent.class);
+    assertEquals(actorCatalogFetchEvent, retrievedActorCatalogFetchEvent);
   }
 
 }

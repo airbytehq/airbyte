@@ -5,9 +5,14 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -25,6 +30,7 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -549,6 +555,69 @@ public class ConfigRepository {
     } catch (final JsonValidationException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
+                                                 final String configurationHash,
+                                                 final String connectorVersion)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
+      if (event.getConnectorVersion().equals(connectorVersion)
+          && event.getConfigHash().equals(configurationHash)
+          && event.getActorId().equals(sourceId)) {
+        return getCatalogById(event.getActorCatalogId());
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
+
+    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        ActorCatalogFetchEvent.class)) {
+      actorCatalogFetchEvents.add(event);
+    }
+    return actorCatalogFetchEvents;
+  }
+
+  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
+      throws IOException {
+    try {
+      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
+          ActorCatalog.class));
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public void writeCatalog(final AirbyteCatalog catalog,
+                           final UUID sourceId,
+                           final String configurationHash,
+                           final String connectorVersion)
+      throws JsonValidationException, IOException {
+    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
+    final String configHash = hashFunction.hashBytes(Jsons.serialize(catalog).getBytes(
+        Charsets.UTF_8)).toString();
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withCatalog(Jsons.jsonNode(catalog))
+        .withId(UUID.randomUUID())
+        .withCatalogHash(configHash);
+    persistence.writeConfig(ConfigSchema.ACTOR_CATALOG,
+        actorCatalog.getId().toString(),
+        actorCatalog);
+    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
+        .withActorCatalogId(actorCatalog.getId())
+        .withId(UUID.randomUUID())
+        .withConfigHash(configurationHash)
+        .withConnectorVersion(connectorVersion)
+        .withActorId(sourceId);
+    persistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        actorCatalogFetchEvent.getId().toString(),
+        actorCatalogFetchEvent);
   }
 
   /**
