@@ -8,7 +8,7 @@ from functools import partial
 
 import pytest
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
-from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
+from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties, Workflows, CRMSearchStream, CRMObjectIncrementalStream, Deals
 from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
@@ -30,6 +30,13 @@ def oauth_config_fixture():
             "token_expires": "2021-05-30T06:00:00Z",
         },
     }
+
+
+@pytest.fixture(name="common_params")
+def common_params_fixture(config):
+    source = SourceHubspot()
+    common_params = source.get_common_params(config=config)
+    return common_params
 
 
 @pytest.fixture(name="config")
@@ -87,14 +94,12 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
+def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params):  # TODO
     """
     Error with API Key Permissions to particular stream,
     typically this issue raises along with calling `workflows` stream with API Key
     that doesn't have required permissions to read the stream.
     """
-    # Define stream name
-    stream_name = "workflows"
 
     # Mapping tipical response for mocker
     responses = [
@@ -117,11 +122,13 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
     }
 
     # create base parent instances
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=creds_with_wrong_permissions)
+    # client = Client(start_date="2021-02-01T00:00:00Z", credentials=creds_with_wrong_permissions)
     api = API(creds_with_wrong_permissions)
 
     # Create test_stream instance
-    test_stream = client._apis.get(stream_name)
+    # test_stream = client._apis.get(stream_name)
+
+    test_stream = Workflows(**common_params)
 
     # Mocking Request
     requests_mock.register_uri("GET", test_stream.url, responses)
@@ -148,9 +155,9 @@ class TestSplittingPropertiesFunctionality:
         "archived": False,
     }
 
-    @pytest.fixture
-    def client(self, some_credentials):
-        return Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
+    # @pytest.fixture
+    # def client(self, some_credentials):
+    #     return Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
 
     @pytest.fixture
     def api(self, some_credentials):
@@ -182,18 +189,17 @@ class TestSplittingPropertiesFunctionality:
             slice_length = [len(item) for item in slice_property]
             assert sum(slice_length) <= PROPERTIES_PARAM_MAX_LENGTH
 
-    def test_stream_with_splitting_properties(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
-        # Define stream name
-        stream_name = "companies"
-
+        test_stream = CRMSearchStream(
+            entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"],
+            name="companies", **common_params
+        )
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
-        # Create test_stream instance
-        test_stream = client._apis.get(stream_name)
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
         after_id = None
@@ -226,16 +232,15 @@ class TestSplittingPropertiesFunctionality:
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
-        stream_name = "products"
 
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
-        test_stream = client._apis.get(stream_name)
 
+        test_stream = CRMObjectIncrementalStream(entity="product", name="products", **common_params)
         for property_slice in parsed_properties:
             record_responses = [
                 {
@@ -257,17 +262,15 @@ class TestSplittingPropertiesFunctionality:
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_new_record(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
         """
         Check working stream `workflows` with large list of properties using new functionality with splitting properties
         """
-        stream_name = "deals"
 
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
-        # Create test_stream instance
-        test_stream = client._apis.get(stream_name)
+        test_stream = Deals(associations=["contacts"], **common_params)
 
         ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
         for property_slice in parsed_properties:
@@ -312,7 +315,7 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
+def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):  # TODO fix this issue
     """
     If 'quotes' stream is not in the client, it should skip it.
     """
