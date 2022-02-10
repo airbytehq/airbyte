@@ -511,14 +511,7 @@ class IncrementalStream(Stream, ABC):
         yield from self.list_records(fields=self.get_fields())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):  # TODO
-        # latest_cursor = self._field_to_datetime(latest_record[self.updated_at_field])
-        # self._update_state(latest_cursor=latest_cursor)
         return self.state or {self.state_pk: self._start_date}
-
-        # if current_stream_state.get(self.state_pk):
-        #     self.state = {self.state_pk: max(current_stream_state[self.state_pk], latest_cursor)}
-        #
-        # return {self.state_pk: latest_cursor}
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
