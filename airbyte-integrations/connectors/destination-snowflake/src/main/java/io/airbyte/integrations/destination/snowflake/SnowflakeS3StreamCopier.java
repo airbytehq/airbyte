@@ -102,11 +102,11 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
 
-  private String generateBucketPath() {
+  public String generateBucketPath() {
     return "s3://" + s3Config.getBucketName() + "/" + schemaName + "/" + streamName + "/";
   }
 
-  private String generateFilesList(List<String> files) {
+  public String generateFilesList(List<String> files) {
     StringJoiner joiner = new StringJoiner(",");
     files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
     return joiner.toString();

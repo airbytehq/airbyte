@@ -10,6 +10,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -221,6 +222,16 @@ public abstract class GcsStreamCopier implements StreamCopier {
         .setProjectId(gcsConfig.getProjectId())
         .build()
         .getService();
+  }
+
+  @VisibleForTesting
+  public String getTmpTableName() {
+    return tmpTableName;
+  }
+
+  @VisibleForTesting
+  public Set<String> getGcsStagingFiles() {
+    return gcsStagingFiles;
   }
 
   public abstract void copyGcsCsvFileIntoTable(JdbcDatabase database,

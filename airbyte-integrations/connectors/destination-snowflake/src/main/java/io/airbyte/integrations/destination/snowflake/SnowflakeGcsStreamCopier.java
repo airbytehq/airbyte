@@ -63,11 +63,11 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
 
-  private String generateBucketPath() {
+  public String generateBucketPath() {
     return "gcs://" + gcsConfig.getBucketName() + "/" + stagingFolder + "/" + schemaName + "/";
   }
 
-  private String generateFilesList(List<String> files) {
+  public String generateFilesList(List<String> files) {
     StringJoiner joiner = new StringJoiner(",");
     files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
     return joiner.toString();
