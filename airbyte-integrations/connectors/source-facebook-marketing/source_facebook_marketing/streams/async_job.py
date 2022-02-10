@@ -6,7 +6,7 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Sequence, Type, Union
+from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
 import pendulum
 from facebook_business.adobjects.ad import Ad
