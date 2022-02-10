@@ -29,6 +29,7 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
+import io.airbyte.api.model.SourceDiscoverSchema;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -181,8 +182,8 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
-      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
+      final SourceDiscoverSchema discoverSchemaReadReq = new SourceDiscoverSchema().sourceId(connection.getSourceId());
+      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
       final AirbyteCatalog original = connection.getSyncCatalog();
       final AirbyteCatalog discovered = discoverSchema.getCatalog();
