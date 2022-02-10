@@ -354,6 +354,26 @@ public interface Configs {
   String getContainerOrchestratorImage();
 
   /**
+   * Define the replication orchestrator's minimum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuRequest();
+
+  /**
+   * Define the replication orchestrator's maximum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuLimit();
+
+  /**
+   * Define the replication orchestrator's minimum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryRequest();
+
+  /**
+   * Define the replication orchestrator's maximum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryLimit();
+
+  /**
    * Get the longest duration of non long running activity
    */
   int getMaxActivityTimeoutSecond();
