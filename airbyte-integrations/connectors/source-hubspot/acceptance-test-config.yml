@@ -10,7 +10,7 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
     - config_path: "integration_tests/invalid_config_oauth.json"
-      status: "exception"
+      status: "failed"
     - config_path: "integration_tests/invalid_config_wrong_title.json"
       status: "exception"
   discovery:
