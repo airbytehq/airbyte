@@ -742,7 +742,7 @@ class ContactLists(IncrementalStream):
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
-    updated_at_field = "updatedAt"  # TODO state_pk
+    updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
     need_chunk = False
@@ -854,7 +854,7 @@ class EmailEvents(IncrementalStream):
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
-    updated_at_field = "created"  # TODO state_pk
+    updated_at_field = "created"
     created_at_field = "created"
 
 
