@@ -8,10 +8,14 @@ import queue
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import Stream
+
+
+class StopException(Exception):
+    pass
 
 
 @dataclass(order=True, frozen=True)
@@ -49,78 +53,78 @@ class ConcurrentStreamReader:
         self.configured_stream = configured_stream
 
         self.stop_all = threading.Event()
-        self.producer_to_worker: queue.Queue[QueueMessage] = queue.Queue(maxsize=self.max_workers*100)
-        self.worker_to_consumer: queue.Queue[QueueMessage] = queue.PriorityQueue()
+        self.to_workers: queue.Queue[QueueMessage] = queue.Queue(maxsize=self.max_workers * 100)
+        self.to_consumer: queue.Queue[QueueMessage] = queue.PriorityQueue()
         self.cursor = Cursor(1, 1)
         self.delay: float = self.DELAY
 
     def __enter__(self):
         for _ in range(self.max_workers):
-            threading.Thread(target=self.worker, daemon=True).start()
-        threading.Thread(target=self.producer, daemon=True).start()
+            threading.Thread(target=self._safe_thread, args=(self.worker,), daemon=True).start()
+        threading.Thread(target=self._safe_thread, args=(self.producer,), daemon=True).start()
         return self
 
     def __exit__(self, exc, value, tb):
         self.stop_all.set()
 
-    def producer(self):
+    def _safe_thread(self, t: Callable):
         try:
-            slices = self.stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=self.configured_stream.cursor_field)
-            for slice_number, slice in enumerate(slices, 1):
-                q_message = QueueMessage(slice_number, 0, slice)
-                try:
-                    self.producer_to_worker.put(q_message, timeout=10)
-                except queue.Full:
-                    pass
-                if self.stop_all.is_set():
-                    return
-
-            for _ in range(self.max_workers):
-                try:
-                    self.producer_to_worker.put(messageDone, timeout=10)
-                except queue.Full:
-                    pass
-                if self.stop_all.is_set():
-                    return
+            t()
+        except StopException:
+            pass
         except Exception as e:
             self.logger.exception(e)
-            self.worker_to_consumer.put(messageFail)
+            self.to_consumer.put(messageFail)
+
+    def _q_put(self, Q, message):
+        while True:
+            try:
+                return Q.put(message, timeout=10)
+            except queue.Full:
+                pass
+            finally:
+                if self.stop_all.is_set():
+                    raise StopException()
+
+    def _q_get(self, Q):
+        while True:
+            try:
+                return Q.get(timeout=10)
+            except queue.Empty:
+                pass
+            finally:
+                if self.stop_all.is_set():
+                    raise StopException()
+
+    def producer(self):
+        slices = self.stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=self.configured_stream.cursor_field)
+        for slice_number, slice in enumerate(slices, 1):
+            q_message = QueueMessage(slice_number, 0, slice)
+            self._q_put(self.to_workers, q_message)
+        for _ in range(self.max_workers):
+            self._q_put(self.to_workers, messageDone)
 
     def worker(self):
-        try:
-            while True:
-                if self.stop_all.is_set():
-                    return
+        while True:
+            item = self._q_get(self.to_workers)
+            if item == messageDone:
+                self.to_consumer.put(messageDone)
+                break
 
-                try:
-                    item = self.producer_to_worker.get(timeout=10)
-                except queue.Empty:
-                    continue
-
-                if item == messageDone:
-                    self.worker_to_consumer.put(messageDone)
-                    break
-
-                slice = item.record
-                records = self.stream_instance.read_records(
-                    stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=self.configured_stream.cursor_field
-                )
-                for record_number, record in enumerate(records, 1):
-                    q_message = QueueMessage(item.slice_number, record_number, record)
-                    self.worker_to_consumer.put(q_message)
-                    if self.stop_all.is_set():
-                        return
-                q_message = QueueMessage(item.slice_number, record_number + 1)
-                self.worker_to_consumer.put(q_message)
-
-        except Exception as e:
-            self.logger.exception(e)
-            self.worker_to_consumer.put(messageFail)
+            slice = item.record
+            records = self.stream_instance.read_records(
+                stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=self.configured_stream.cursor_field
+            )
+            for record_number, record in enumerate(records, 1):
+                q_message = QueueMessage(item.slice_number, record_number, record)
+                self._q_put(self.to_consumer, q_message)
+            q_message = QueueMessage(item.slice_number, record_number + 1)
+            self._q_put(self.to_consumer, q_message)
 
     def __iter__(self):
         stopped_workers = 0
         while True:
-            item = self.worker_to_consumer.get(timeout=300)
+            item = self.to_consumer.get(timeout=300)
             if item == messageDone:
                 stopped_workers += 1
                 if stopped_workers >= self.max_workers:
@@ -129,7 +133,7 @@ class ConcurrentStreamReader:
                 return
             else:
                 if not self.is_next(item):
-                    self.worker_to_consumer.put(item)
+                    self.to_consumer.put(item)
                 elif item.record:
                     yield item.record
 
