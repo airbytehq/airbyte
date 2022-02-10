@@ -73,6 +73,10 @@ class IncrementalOrbStream(OrbStream, ABC):
     # *all* records period, because the request can still have a `created_at[gte]` parameter as a filter.
     state_checkpoint_interval = None
 
+    def __init__(self, lookback_window_days: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self.lookback_window_days = lookback_window_days
+
     @property
     def cursor_field(self) -> str:
         """
@@ -109,6 +113,13 @@ class IncrementalOrbStream(OrbStream, ABC):
 
         # State stores the timestamp is ISO format
         start_timestamp = stream_state.get(self.cursor_field)
+
+        if start_timestamp and self.lookback_window_days:
+            self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
+            start_timestamp_dt = pendulum.parse(start_timestamp)
+            # Modify start_timestamp to account for lookback
+            start_timestamp = (start_timestamp_dt - pendulum.duration(days=self.lookback_window_days)).isoformat()
+
         if start_timestamp:
             params["created_at[gte]"] = start_timestamp
         return params
@@ -229,9 +240,10 @@ class SourceOrb(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
+        lookback_window = config.get("lookback_window_days")
         return [
-            Customers(authenticator=authenticator),
-            Subscriptions(authenticator=authenticator),
-            Plans(authenticator=authenticator),
-            CreditsLedgerEntries(authenticator=authenticator),
+            Customers(authenticator=authenticator, lookback_window_days=lookback_window),
+            Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window),
+            Plans(authenticator=authenticator, lookback_window_days=lookback_window),
+            CreditsLedgerEntries(authenticator=authenticator, lookback_window_days=lookback_window),
         ]

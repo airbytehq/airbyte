@@ -13,6 +13,14 @@
         "description": "Orb API Key, issued from the Orb admin console.",
         "airbyte_secret": true,
         "order": 1
+      },
+      "lookback_window_days": {
+        "type": "integer",
+        "title": "Lookback Window (in days)",
+        "default": 0,
+        "minimum": 0,
+        "description": "When set to N, the connector will always refresh resources created within the past N days. By default, updated objects that are not newly created are not incrementally synced.",
+        "order": 2
       }
     }
   }
