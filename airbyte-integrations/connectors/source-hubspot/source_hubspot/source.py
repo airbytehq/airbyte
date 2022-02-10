@@ -65,68 +65,68 @@ class SourceHubspot(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
-        streams = {
-            "campaigns": Campaigns(**common_params),
-            "companies": CRMSearchStream(
+        streams = [
+            Campaigns(**common_params),
+            CRMSearchStream(
                 entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"],
                 name="companies", **common_params
             ),
-            "contact_lists": ContactLists(**common_params),
-            "contacts": CRMSearchStream(
+            ContactLists(**common_params),
+            CRMSearchStream(
                 entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"],
                 name="contacts", **common_params
             ),
-            "contacts_list_memberships": ContactsListMemberships(**common_params),
-            "deal_pipelines": DealPipelines(**common_params),
-            "deals": Deals(associations=["contacts"], **common_params),
-            "email_events": EmailEvents(**common_params),
-            "engagements": Engagements(**common_params),
-            "engagements_calls": CRMSearchStream(
+            ContactsListMemberships(**common_params),
+            DealPipelines(**common_params),
+            Deals(associations=["contacts"], **common_params),
+            EmailEvents(**common_params),
+            Engagements(**common_params),
+            CRMSearchStream(
                 entity="calls", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
                 name="engagements_calls", **common_params
             ),
-            "engagements_emails": CRMSearchStream(
+            CRMSearchStream(
                 entity="emails", last_modified_field="hs_lastmodifieddate",
                 associations=["contacts", "deal", "company"],
                 name="engagements_emails", **common_params
             ),
-            "engagements_meetings": CRMSearchStream(
+            CRMSearchStream(
                 entity="meetings", last_modified_field="hs_lastmodifieddate",
                 associations=["contacts", "deal", "company"],
                 name="engagements_meetings", **common_params
             ),
-            "engagements_notes": CRMSearchStream(
+            CRMSearchStream(
                 entity="notes", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
                 name="engagements_notes", **common_params
             ),
-            "engagements_tasks": CRMSearchStream(
+            CRMSearchStream(
                 entity="tasks", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
                 name="engagements_tasks", **common_params
             ),
-            "feedback_submissions": CRMObjectIncrementalStream(
+            CRMObjectIncrementalStream(
                 entity="feedback_submissions", associations=["contacts"],
                 name="feedback_submissions", **common_params
             ),
-            "forms": Forms(**common_params),
-            "form_submissions": FormSubmissions(**common_params),
-            "line_items": CRMObjectIncrementalStream(entity="line_item", name="line_items", **common_params),
-            "marketing_emails": MarketingEmails(**common_params),
-            "owners": Owners(**common_params),
-            "products": CRMObjectIncrementalStream(entity="product", name="products", **common_params),
-            "property_history": PropertyHistory(**common_params),
-            "subscription_changes": SubscriptionChanges(**common_params),
-            "tickets": CRMObjectIncrementalStream(entity="ticket", name="tickets", **common_params),
-            "ticket_pipelines": TicketPipelines(**common_params),
-            "workflows": Workflows(**common_params),
-        }
+            Forms(**common_params),
+            FormSubmissions(**common_params),
+            CRMObjectIncrementalStream(entity="line_item", name="line_items", **common_params),
+            MarketingEmails(**common_params),
+            Owners(**common_params),
+            CRMObjectIncrementalStream(entity="product", name="products", **common_params),
+            PropertyHistory(**common_params),
+            SubscriptionChanges(**common_params),
+            CRMObjectIncrementalStream(entity="ticket", name="tickets", **common_params),
+            TicketPipelines(**common_params),
+            Workflows(**common_params),
+        ]
 
         credentials_title = credentials.get("credentials_title")
         if credentials_title == "API Key Credentials":
-            streams["quotes"] = CRMObjectIncrementalStream(entity="quote", name="quotes", **common_params)
+            streams.append(CRMObjectIncrementalStream(entity="quote", name="quotes", **common_params))
 
-        return list(streams.values())
+        return streams
 
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:  # TODO refactor use
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """List of available streams, patch streams to append properties dynamically"""
         streams = []
         for stream_instance in self.streams(config=config):
