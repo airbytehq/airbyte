@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
@@ -46,7 +47,9 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_account_info(google_api) -> dict:
-        return next(Accounts(api=google_api).read_records(sync_mode=None), {})
+        accounts_streams = Accounts(api=google_api)
+        for stream_slice in accounts_streams.stream_slices(sync_mode=SyncMode.full_refresh):
+            return next(accounts_streams.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), {})
 
     @staticmethod
     def get_time_zone(account: dict) -> Union[timezone, str]:
@@ -84,7 +87,8 @@ class SourceGoogleAds(AbstractSource):
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
 
                 req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                google_api.send_request(req_q, google_api.customer_ids[0])
+                for customer_id in google_api.customer_ids:
+                    google_api.send_request(req_q, customer_id=customer_id)
             return True, None
         except GoogleAdsException as error:
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"

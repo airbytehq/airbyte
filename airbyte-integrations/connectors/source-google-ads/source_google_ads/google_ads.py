@@ -45,11 +45,8 @@ class GoogleAds:
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
-
-        customer_ids_list = [customer_id] if customer_id else self.customer_ids
-        for customer_id in customer_ids_list:
-            search_request.customer_id = customer_id
-            yield self.ga_service.search(search_request)
+        search_request.customer_id = customer_id
+        yield self.ga_service.search(search_request)
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """

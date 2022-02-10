@@ -94,8 +94,12 @@ class GoogleAdsStream(Stream, ABC):
         for result in response:
             yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for customer_id in self.google_ads_client.customer_ids:
+            self._customer_id = customer_id
+            yield {}
+
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        stream_slice = stream_slice or {}
         account_responses = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=self._customer_id)
         for response in account_responses:
             yield from self.parse_response(response)
