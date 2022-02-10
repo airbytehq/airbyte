@@ -487,7 +487,6 @@ class IncrementalStream(Stream, ABC):
     # Flag which enable/disable chunked read in read_chunked method
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
-    # state_checkpoint_interval = 10  # TODO
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -507,16 +506,12 @@ class IncrementalStream(Stream, ABC):
     ):  # TODO
         if stream_state:
             self.state = stream_state
-            # cursor = self._field_to_datetime(stream_state[self.state_pk])
-            # self._update_state(latest_cursor=cursor)  # TODO check
         yield from self.list_records(fields=self.get_fields())
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):  # TODO
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any] = None):  # TODO
         if self.state:
             return self.state
         return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
-
-        # return self.state  # or {self.state_pk: self._start_date}
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
@@ -525,8 +520,6 @@ class IncrementalStream(Stream, ABC):
             return (
                 {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
             )
-        # elif self._start_date:
-        #     return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
         return None
 
     @state.setter
@@ -541,16 +534,7 @@ class IncrementalStream(Stream, ABC):
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
-        latest_cursor = None
-        # to track state, there is no guarantee that returned records sorted in ascending order. Having exact
-        # boundary we could always ensure we don't miss records between states. In the future, if we would
-        # like to save the state more often we can do this every batch
-        for record in self.read_chunked(getter, params):
-            yield record
-            cursor = self._field_to_datetime(record[self.updated_at_field])
-            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-
-        self._update_state(latest_cursor=latest_cursor)
+        yield from self.read_chunked(getter, params)
 
     def _update_state(self, latest_cursor):
         if latest_cursor:
@@ -569,6 +553,10 @@ class IncrementalStream(Stream, ABC):
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
+        # to track state, there is no guarantee that returned records sorted in ascending order. Having exact
+        # boundary we could always ensure we don't miss records between states. In the future, if we would
+        # like to save the state more often we can do this every batch
+        latest_cursor = None
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
             params["startTimestamp"] = ts
@@ -576,7 +564,11 @@ class IncrementalStream(Stream, ABC):
             logger.info(
                 f"Reading chunk from stream {self.name} between {pendulum.from_timestamp(ts / 1000)} and {pendulum.from_timestamp(end_ts / 1000)}"
             )
-            yield from super().read(getter, params)
+            for record in super().read(getter, params):
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
+            self._update_state(latest_cursor=latest_cursor)
 
 
 class CRMSearchStream(IncrementalStream, ABC):
