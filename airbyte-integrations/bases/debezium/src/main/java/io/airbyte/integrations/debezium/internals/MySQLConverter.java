@@ -58,8 +58,8 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   /**
-   * The debezium driver replaces Zero-value by Null even when this column is mandatory. According to the doc, it should
-   * be done by driver, but it fails.
+   * The debezium driver replaces Zero-value by Null even when this column is mandatory. According to
+   * the doc, it should be done by driver, but it fails.
    */
   private Object convertDefaultValueNullDate(final RelationalColumn field) {
     var defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
