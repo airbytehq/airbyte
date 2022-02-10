@@ -74,7 +74,7 @@ def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
     assert not error
 
 
-def test_check_connection_backoff_on_server_error(requests_mock, config):  # TODO
+def test_check_connection_backoff_on_server_error(requests_mock, config):
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
@@ -82,7 +82,6 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):  # TOD
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     source = SourceHubspot()
-    # client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
     alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
