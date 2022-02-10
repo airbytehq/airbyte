@@ -5,12 +5,13 @@
 import csv
 import io
 import json
+import re
 from unittest.mock import Mock
 
 import pytest
 import requests_mock
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
@@ -99,7 +100,7 @@ def stream_api_v2(stream_config):
 
 
 def _generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, [stream_name], stream_api, state=state)[0]
+    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -217,7 +218,8 @@ def test_bulk_sync_successful_long_response(stream_config, stream_api):
 @pytest.mark.timeout(17)
 def test_bulk_sync_successful_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
+
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         # 2 failed attempts, 3rd one should be successful
@@ -231,7 +233,7 @@ def test_bulk_sync_successful_retry(stream_config, stream_api):
 @pytest.mark.timeout(30)
 def test_bulk_sync_failed_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "InProgress", "id": job_id})
@@ -336,8 +338,8 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
             ]
         }
     )
-    filtered_streams, _ = sf_object.get_validated_streams(config=updated_config)
-    assert sorted(filtered_streams) == sorted(predicted_filtered_streams)
+    filtered_streams = sf_object.get_validated_streams(config=updated_config)
+    assert sorted(filtered_streams.keys()) == sorted(predicted_filtered_streams)
 
 
 def test_check_connection_rate_limit(stream_config):
@@ -498,8 +500,8 @@ def test_discover_only_queryable(stream_config):
             ]
         }
     )
-    filtered_streams, _ = sf_object.get_validated_streams(config=stream_config)
-    assert filtered_streams == ["Account"]
+    filtered_streams = sf_object.get_validated_streams(config=stream_config)
+    assert list(filtered_streams.keys()) == ["Account"]
 
 
 def test_pagination_rest(stream_config, stream_api):
@@ -507,7 +509,7 @@ def test_pagination_rest(stream_config, stream_api):
     state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
 
     stream: SalesforceStream = _generate_stream(stream_name, stream_config, stream_api, state=state)
-    stream._wait_timeout = 0.1  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
         resp_1 = {
@@ -548,14 +550,13 @@ def test_pagination_rest(stream_config, stream_api):
 
 
 def test_csv_reader_dialect_unix():
-    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, wait_timeout=None, sf_api=None, pk=None)
+    stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, sf_api=None, pk=None)
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
         {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name" + 1024 * 1024 * "e"},
-        {"Id": "4", "Name": "first_name last_name"},
+        {"Id": "3", "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:
@@ -569,6 +570,76 @@ def test_csv_reader_dialect_unix():
         m.register_uri("GET", url + "/results", text=text)
         result = [dict(i[1]) for i in stream.download_data(url)]
         assert result == data
+
+
+@pytest.mark.parametrize(
+    "stream_names,catalog_stream_names,",
+    (
+        (
+            ["stream_1", "stream_2"],
+            None,
+        ),
+        (
+            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2"],
+        ),
+        (
+            ["stream_1", "stream_2", "stream_3"],
+            ["stream_1"],
+        ),
+    ),
+)
+def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_names) -> None:
+    sobjects_matcher = re.compile("/sobjects$")
+    token_matcher = re.compile("/token$")
+    describe_matcher = re.compile("/describe$")
+    catalog = None
+    if catalog_stream_names:
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name=catalog_stream_name, json_schema={"type": "object"}),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+                for catalog_stream_name in catalog_stream_names
+            ]
+        )
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", token_matcher, json={"instance_url": "https://fake-url.com", "access_token": "fake-token"})
+        m.register_uri(
+            "GET",
+            describe_matcher,
+            json={
+                "fields": [
+                    {
+                        "name": "field",
+                        "type": "string",
+                    }
+                ]
+            },
+        )
+        m.register_uri(
+            "GET",
+            sobjects_matcher,
+            json={
+                "sobjects": [
+                    {
+                        "name": stream_name,
+                        "flag1": True,
+                        "queryable": True,
+                    }
+                    for stream_name in stream_names
+                ],
+            },
+        )
+        streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
+    expected_names = catalog_stream_names if catalog else stream_names
+    assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
+
+    for stream in streams:
+        assert stream.sobject_options == {"flag1": True, "queryable": True}
+    return
 
 
 def test_csv_field_size_limit():
