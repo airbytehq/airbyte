@@ -14,6 +14,7 @@ from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Invoice as InvoiceModel
+from chargebee.models import Coupon as CouponModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
@@ -276,3 +277,13 @@ class AttachedItem(SemiIncrementalChargebeeStream):
         """
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         return self.api.list(id=stream_slice["item_id"], params=params)
+
+
+class Coupon(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
+    """
+
+    cursor_field = "occurred_at"
+
+    api = CouponModel
