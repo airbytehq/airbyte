@@ -105,6 +105,11 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
         .collect(Collectors.toSet());
   }
 
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
+  }
+
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
     return connection -> {
       final PreparedStatement ps = connection.prepareStatement(

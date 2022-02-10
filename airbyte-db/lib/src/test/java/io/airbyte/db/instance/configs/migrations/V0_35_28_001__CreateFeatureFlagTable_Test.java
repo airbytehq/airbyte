@@ -16,14 +16,14 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
-public class V0_35_16_001__CreateFeatureFlagTable_Test extends AbstractConfigsDatabaseTest {
+public class V0_35_28_001__CreateFeatureFlagTable_Test extends AbstractConfigsDatabaseTest {
 
   @Test
   public void test() throws IOException, SQLException {
     final Database database = getDatabase();
     final DSLContext context = DSL.using(database.getDataSource().getConnection());
     assertFalse(airbyteFeatureFlags(context));
-    V0_35_16_001__CreateFeatureFlagTable migration = new V0_35_16_001__CreateFeatureFlagTable();
+    V0_35_28_001__CreateFeatureFlagTable migration = new V0_35_28_001__CreateFeatureFlagTable();
     migration.createTable(context);
     assertTrue(airbyteFeatureFlags(context));
   }

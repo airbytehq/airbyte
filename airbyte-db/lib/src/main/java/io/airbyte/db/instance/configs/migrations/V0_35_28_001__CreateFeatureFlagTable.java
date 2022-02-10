@@ -19,7 +19,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 @Slf4j
-public class V0_35_16_001__CreateFeatureFlagTable extends BaseJavaMigration {
+public class V0_35_28_001__CreateFeatureFlagTable extends BaseJavaMigration {
 
   @Override
   public void migrate(Context context) throws Exception {

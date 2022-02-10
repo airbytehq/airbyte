@@ -14,7 +14,13 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from source_salesforce.streams import (
+    CSV_FIELD_SIZE_LIMIT,
+    BulkIncrementalSalesforceStream,
+    BulkSalesforceStream,
+    IncrementalSalesforceStream,
+    SalesforceStream,
+)
 
 
 @pytest.fixture(scope="module")
@@ -548,7 +554,8 @@ def test_csv_reader_dialect_unix():
     data = [
         {"Id": "1", "Name": '"first_name" "last_name"'},
         {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name"},
+        {"Id": "3", "Name": "first_name last_name" + 1024 * 1024 * "e"},
+        {"Id": "4", "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:
@@ -562,3 +569,21 @@ def test_csv_reader_dialect_unix():
         m.register_uri("GET", url + "/results", text=text)
         result = [dict(i[1]) for i in stream.download_data(url)]
         assert result == data
+
+
+def test_csv_field_size_limit():
+    DEFAULT_CSV_FIELD_SIZE_LIMIT = 1024 * 128
+
+    field_size = 1024 * 1024
+    text = '"Id","Name"\n"1","' + field_size * "a" + '"\n'
+
+    csv.field_size_limit(DEFAULT_CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    with pytest.raises(csv.Error):
+        for _ in reader:
+            pass
+
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    reader = csv.reader(io.StringIO(text))
+    for _ in reader:
+        pass
