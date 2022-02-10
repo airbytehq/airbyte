@@ -6,21 +6,20 @@
 # Date: February 2022
 # This destination sends data to VAN using the API's bulk import endpoint.
 # Import modes supported: Contacts, Activist Codes
-# The implementation of the VAN API borrows heavily from parsons: https://github.com/move-coop/parsons/tree/master/parsons/ngpvan
 
 """
 TODO()
-- test the Activist Codes import a bit more to make sure it's doing the thing
-- ask airbyte about waiting for job status? what is bp?
-- add a time.sleep(5) and check job status; throw an error if job has failed (return the text from the job status endpoint)
-- need to parse source data (from AirbyteMessage) to conform to format required by VAN API
+- stress test larger imports (querying a 180k row table seems like too much, but 10k is fine; what should we expect partners to need to do?)
+- any sources we should test besides BQ and Sheets? maybe GCS?
+
+Maybe post MVP:
 - ENABLE DBT? is that hard?
-- test different data sources (Sheets, BQ, GCS, any others?) to make sure the connector still works
+- need to parse source data (from AirbyteMessage) to conform to format required by VAN API
 - support additional bulk import operations
-- test larger files? can we generate larger amounts of synthetic data using Hudson's strats?
-- what user stories are we still missing after all this?ping import Mapping, Any, Iterable
+- support import from multiple streams in the same Airbyte sync (this will take some doing)
 """
 
+import logging
 import os
 from google.cloud import storage
 from typing import Mapping, Any, Iterable
@@ -30,7 +29,6 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_ngpvan.client import NGPVANClient
 from destination_ngpvan.writer import NGPVANWriter
-from destination_ngpvan.validator import NGPVANValidator
 
 class DestinationNGPVAN(Destination):
 
@@ -52,25 +50,32 @@ class DestinationNGPVAN(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
+        logging.getLogger().setLevel(logging.INFO)
         writer = NGPVANWriter(NGPVANClient(**config))
 
+
+        logging.info(f"Reading data from source...")
+
         for message in input_messages:
-            # Adds data rows from RECORD messages in the AirbyteMessage to the writer object
             if message.type == Type.RECORD:
                 record = message.record
                 data_row = record.data
                 writer.add_data_row(data_row)
                 yield message
             else:
-                # ignore other message types for now
                 continue
 
-        jobId=writer.run_bulk_import_job()
+        logging.info(f"Data successfully read from source.")
 
-        print(f'Bulk import job created: ID {jobId}')
+        job_id=writer.run_bulk_import_job()
 
-        validator=NGPVANValidator(client=NGPVANClient(**config),jobId=jobId)
-        validator.monitorBulkImportStatus()
+        print(f'Successfully created VAN bulk import job (ID: {job_id})')
+
+        results_file_url=writer.monitor_bulk_import_status(job_id=job_id)
+
+        if results_file_url:
+            results_file_local_path=writer.upload_file_url_to_gcs(results_file_url)
+            writer.summarize_bulk_import(results_file_local_path)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -92,7 +97,6 @@ class DestinationNGPVAN(Destination):
             writer.client.get_mappings()
 
             #Try connecting to GCS
-
             if writer.local_test:
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
 

@@ -3,9 +3,8 @@
 #
 
 from typing import Any, Iterable, List, Mapping, Tuple, Union
-
+import logging
 import requests
-
 
 class NGPVANClient:
     base_uri = "https://api.securevan.com/v4/"
@@ -34,126 +33,65 @@ class NGPVANClient:
 
         return response
 
-    def get_mappings(self) -> requests.Response:
-        """Returns json object containing bulk import mapping types (this might not actually be useful)"""
-        endpoint = "bulkImportMappingTypes"
-        return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
-
-    def get_bulk_import_job_status(self, jobId: str) -> requests.Response:
+    def get_bulk_import_job_status(self, job_id: str) -> requests.Response:
         """Returns status of bulk import job"""
-        endpoint="bulkImportJobs/"+jobId
+        endpoint="bulkImportJobs/"+job_id
 
         return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
-
-
-    """
-    BULK IMPORT METHODS
-    """
 
     def bulk_upsert_contacts(self, fileName: str, columns: list, sourceUrl: str) -> requests.Response:
         """
-        Bulk create or update contact records. Provide a Parsons table of contact data to
-        create or update records.
-
-        .. note::
-            * The first column of the table must be VANID.
-            * The other columns can be a combination of the columns listed below.
-              The valid column names also accept permutations with underscores, spaces
-              and capitalization (e.g. ``phonenumber`` = ``Phone_Number``).
+        Bulk create or update contact records.
 
         **Table Fields**
 
-        .. list-table::
-            :widths: 500 100 10
-            :header-rows: 1
+        Field names must match these values exactly. (TODO() make this more flexible)
+        No fields are strictly required to run the bulk import. If VanID is not provided, VAN will attempt to match with an existing record, and will create a new one if none is found (proceed with caution).
 
-            * - Column
-              - Valid Column Names
-              - Notes
-            * - VANID
-              - ``vanid``
-              -
-            * - Voter VAN ID
-              - ``votervanid``
-              - The contact's MyVoters VANID
-            * - External ID
-              - ``externalid``, ``id``, ``pk``, ``voterbaseid``
-              - An external id to be stored.
-            * - **PII**
-              -
-              -
-            * - First Name
-              - ``fn``, ``firstname``, ``last``
-              -
-            * - Middle Name
-              - ``mn``, ``middlename``, ``middle``
-              -
-            * - Last Name
-              - ``ln``, ``lastname``, ``last``
-              -
-            * - Date of Birth
-              - ``dob``, ``dateofbirth`` ``birthdate``
-              - What type of thing does this need?
-            * - Sex
-              - ``sex``, ``gender``
-              -
-            * - **Physical Address**
-              -
-              -
-            * - Address Line 1
-              - ``addressline1``, ``address1``, ``address``
-              -
-            * - Address Line 2
-              - ``addressline2``, ``address2``
-              -
-            * - Address Line 3
-              - ``addressline3``, ``address3``
-              -
-            * - City
-              - ``city``
-              -
-            * - State Or Province
-              - ``state``, ``st``, ``stateorprovince``
-              -
-            * - Country Code
-              - ``countrycode``, ``country``
-              - A valid two character country code (e.g. ``US``)
-            * - Display As Entered
-              - ``displayasentered``
-              - Required values are ``Y`` and ``N``. Determines if the address is
-                processed through address correction.
-            * - **Phones**
-              -
-              -
-            * - Cell Phone
-              - ``cellphone``, ``cell``
-              -
-            * - Cell Phone Country Code
-              - ``cellcountrycode``, ``cellphonecountrycode``
-              - A valid two digit country code (e.g. ``01``)
-            * - Home Phone
-              - ``homephone``, ``home``, ``phone``
-              -
-            * - Home Phone Country Code
-              - ``homecountrycode``, ``homephonecountrycode``
-              -
-            * - **Email**
-              -
-              -
-            * - Email
-              - ``email``, ``emailaddress``
-              -
+        * DisplayAsEntered
+        * AddressLine1
+        * AddressLine2
+        * AddressLine3
+        * CellPhone
+        * CellPhoneCountryCode
+        * City
+        * ContactModeID
+        * CountryCode
+        * DOB
+        * Email
+        * EmployerName
+        * AdditionalEnvelopeName
+        * FormalEnvelopeName
+        * EnvelopeName
+        * FirstName
+        * Phone
+        * PhoneCountryCode
+        * IsInFileMatchingEnabled
+        * LastName
+        * External_3ID
+        * MiddleName
+        * External_81ID
+        * OccupationName
+        * OrganizationContactCommonName
+        * OrganizationContactOfficialName
+        * OtherEmail
+        * Title
+        * ProfessionalSuffix
+        * AdditionalSalutation
+        * FormalSalutation
+        * Salutation
+        * Sex
+        * StateOrProvince
+        * Suffix
+        * VanID
+        * WorkEmail
+        * WorkPhone
+        * WorkPhoneCountryCode
+        * ZipOrPostal
+        * Action
+        * DoNotUpdateBest
+        * SkipEmailSubscriptionUpdate
 
-        `Args:`
-            table: Parsons table
-              A Parsons table.
-            url_type: str
-              The cloud file storage to use to post the file. Currently only ``S3``.
-            results_fields: list
-              A list of fields to include in the results file.
-            **url_kwargs: kwargs
-                Arguments to configure your cloud storage url type. See
-                :ref:`Cloud Storage <cloud-storage>` for more details.
         `Returns:`
             int
                 The bulk import job id
@@ -177,8 +115,7 @@ class NGPVANClient:
                                 "mappingTypes": [{'name': 'CreateOrUpdateContact'}]}]
                    }
 
-        print('PAYLOAD:')
-        print(payload)
+        logging.info(f"Sending POST request to VAN to bulk upsert contacts")
 
         return self._request(method="POST", endpoint=endpoint, auth=self.auth, json=payload)
 
@@ -188,38 +125,15 @@ class NGPVANClient:
 
         Bulk apply activist codes.
 
-        The table may include the following columns. The first column
-        must be ``vanid``.
+        The table may include the following columns.
+        Required columns: `VanID`, `ActivistCodeID`
 
-        .. list-table::
-            :widths: 25 25 50
-            :header-rows: 1
+        * VanID (REQUIRED)
+        * ActivistCodeID (REQUIRED)
+        * CanvassedBy
+        * DateCanvassed
+        * ContactTypeID
 
-            * - Column Name
-              - Required
-              - Description
-            * - ``vanid``
-              - Yes
-              - A valid VANID primary key
-            * - ``activistcodeid``
-              - Yes
-              - A valid activist code id
-            * - ``datecanvassed``
-              - No
-              - An ISO formatted date
-            * - ``contacttypeid``
-              - No
-              - The method of contact.
-
-        `Args:`
-            table: Parsons table
-                A Parsons table.
-            url_type: str
-                The cloud file storage to use to post the file (``S3`` or ``GCS``).
-                See :ref:`Cloud Storage <cloud-storage>` for more details.
-            **url_kwargs: kwargs
-                Arguments to configure your cloud storage url type. See
-                :ref:`Cloud Storage <cloud-storage>` for more details.
         `Returns:`
             int
                 The bulk import job id
@@ -243,7 +157,6 @@ class NGPVANClient:
                                 "mappingTypes": [{'name': 'ActivistCode'}]}]
                    }
 
-        print('PAYLOAD:')
-        print(payload)
+        logging.info(f"Sending POST request to VAN to bulk upsert contacts")
 
         return self._request(method="POST", endpoint=endpoint, auth=self.auth, json=payload)
