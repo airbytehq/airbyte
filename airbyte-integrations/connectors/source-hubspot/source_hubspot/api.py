@@ -503,7 +503,7 @@ class IncrementalStream(Stream, ABC):
             stream_state: Mapping[str, Any] = None,
     ):  # TODO
         if stream_state:
-            cursor = self._field_to_datetime(stream_state[self.updated_at_field])
+            cursor = self._field_to_datetime(stream_state[self.state_pk])
             self._update_state(latest_cursor=cursor)  # TODO check
         yield from self.list_records(fields=self.get_fields())
 
