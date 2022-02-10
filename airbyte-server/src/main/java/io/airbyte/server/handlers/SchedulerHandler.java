@@ -6,7 +6,10 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.api.model.AdvancedAuth;
 import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
@@ -30,6 +33,8 @@ import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -237,6 +242,16 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
+
+    final HashFunction hashFunction = Hashing.md5();
+    final String configHash = hashFunction.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
+        Charsets.UTF_8)).toString();
+    final String connectorVersion = sourceDef.getDockerImageTag();
+    final Optional<ActorCatalog> currentCatalog =
+        configRepository.getSourceCatalog(sourceIdRequestBody.getSourceId(), configHash, connectorVersion);
+    if (currentCatalog.isEmpty()) {
+      configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), configHash, connectorVersion);
+    }
     return discoverJobToOutput(response);
   }
 
