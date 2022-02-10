@@ -569,7 +569,7 @@ class IncrementalStream(Stream, ABC):
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
-        for ts in range(start_ts, now_ts, chunk_size):  # TODO, can implement slicing
+        for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
