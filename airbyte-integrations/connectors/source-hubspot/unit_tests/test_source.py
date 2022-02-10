@@ -9,12 +9,38 @@ from functools import partial
 import pytest
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
 from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
-from source_hubspot.client import Client
 from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
+
+
+@pytest.fixture(name="oauth_config")
+def oauth_config_fixture():
+    return {
+        "start_date": "2021-10-10T00:00:00Z",
+        "credentials": {
+            "credentials_title": "OAuth Credentials",
+            "redirect_uri": "https://airbyte.io",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+            "access_token": "test_access_token",
+            "token_expires": "2021-05-30T06:00:00Z",
+        },
+    }
+
+
+@pytest.fixture(name="config")
+def config_fixture():
+    return {
+      "start_date": "2021-01-10T00:00:00Z",
+      "credentials": {
+        "credentials_title": "API Key Credentials",
+        "api_key": "test_api_key"
+      }
+    }
 
 
 @pytest.fixture(name="some_credentials")
@@ -48,7 +74,7 @@ def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
     assert not error
 
 
-def test_client_backoff_on_server_error(requests_mock, some_credentials):  # TODO
+def test_check_connection_backoff_on_server_error(requests_mock, config):  # TODO
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
@@ -56,10 +82,8 @@ def test_client_backoff_on_server_error(requests_mock, some_credentials):  # TOD
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     source = SourceHubspot()
-    source.check_connection()
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
-    alive, error = client.health_check()
+    # client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
+    alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
     assert not error
@@ -267,22 +291,6 @@ class TestSplittingPropertiesFunctionality:
         stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
 
         assert len(stream_records) == 6
-
-
-@pytest.fixture(name="oauth_config")
-def oauth_config_fixture():
-    return {
-        "start_date": "2021-10-10T00:00:00Z",
-        "credentials": {
-            "credentials_title": "OAuth Credentials",
-            "redirect_uri": "https://airbyte.io",
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-            "access_token": "test_access_token",
-            "token_expires": "2021-05-30T06:00:00Z",
-        },
-    }
 
 
 @pytest.fixture(name="configured_catalog")
