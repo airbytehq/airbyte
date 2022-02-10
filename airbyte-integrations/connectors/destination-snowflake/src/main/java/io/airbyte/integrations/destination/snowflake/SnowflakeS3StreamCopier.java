@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -103,7 +104,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   }
 
   public String generateBucketPath() {
-    return "s3://" + s3Config.getBucketName() + "/" + schemaName + "/" + streamName + "/";
+    return "s3://" +  s3Config.getBucketName() + "/"+ S3OutputPathHelper.getOutputPrefix(s3Config.getBucketPath(), configuredAirbyteStream.getStream()) + "/";
   }
 
   public String generateFilesList(List<String> files) {

@@ -44,7 +44,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final ConfiguredAirbyteStream configuredAirbyteStream;
+  protected final ConfiguredAirbyteStream configuredAirbyteStream;
   private final Timestamp uploadTime;
   protected final String stagingFolder;
   protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
