@@ -147,6 +147,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         self._start_date = pendulum.instance(start_date)
         self._end_date = pendulum.instance(end_date)
 
+        if self._end_date < self._start_date:
+            logger.error(f"The end_date must be after start_date.")
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)

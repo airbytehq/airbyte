@@ -135,6 +135,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         return self.state
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
+        if self._end_date < self._next_cursor_value:
+            return []
         date_range = self._end_date - self._next_cursor_value
         return date_range.range("days", self.time_increment)
 
@@ -186,10 +188,13 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def _get_start_date(self) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.
-            There are few rules:
+        There are few rules:
             - don't read data older than start_date
             - re-read data within last 28 days
             - don't read data older than retention date
+        Also there are difference between start_date and cursor_value in how the value must be interpreted:
+            - cursor - last value that we synced
+            - start_date - the first value that should be synced
 
         :return: the first date to sync
         """

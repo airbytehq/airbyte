@@ -36,6 +36,13 @@ class TestSourceFacebookMarketing:
         api.assert_called_once_with(account_id="123", access_token="TOKEN")
         logger_mock.info.assert_called_once_with(f"Select account {api.return_value.account}")
 
+    def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
+        config["start_date"] = "2019-10-10T00:00:00"
+        config["end_date"] = "2019-10-09T00:00:00"
+
+        with pytest.raises(ValueError, match="end_date must be equal or after start_date."):
+            SourceFacebookMarketing().check_connection(logger_mock, config=config)
+
     def test_check_connection_invalid_config(self, api, config, logger_mock):
         config.pop("start_date")
 

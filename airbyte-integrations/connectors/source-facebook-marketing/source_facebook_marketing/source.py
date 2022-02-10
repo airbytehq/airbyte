@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Tuple, Type
 
+import pendulum
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -37,6 +38,8 @@ class SourceFacebookMarketing(AbstractSource):
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         config = ConnectorConfig.parse_obj(config)
+        if pendulum.instance(config.end_date) < pendulum.instance(config.start_date):
+            raise ValueError("end_date must be equal or after start_date.")
         api = API(account_id=config.account_id, access_token=config.access_token)
         logger.info(f"Select account {api.account}")
 
