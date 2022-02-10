@@ -27,7 +27,6 @@ public class RedshiftDestinationTest {
     stubConfig.put("s3_bucket_region", "fake-region");
     stubConfig.put("access_key_id", "test");
     stubConfig.put("secret_access_key", "test key");
-    stubConfig.put("use_super_redshift_type", "true");
 
     assertEquals(DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, RedshiftDestination.determineUploadMode(stubConfig));
   }
@@ -36,7 +35,6 @@ public class RedshiftDestinationTest {
   @DisplayName("When not given S3 credentials should use INSERT with SUPER Datatype")
   public void useInsertStrategyTestWithSuperDatatype() {
     final var stubConfig = mapper.createObjectNode();
-    stubConfig.put("use_super_redshift_type", "true");
     assertEquals(DestinationType.INSERT_WITH_SUPER_TMP_TYPE, RedshiftDestination.determineUploadMode(stubConfig));
   }
 }
