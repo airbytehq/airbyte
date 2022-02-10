@@ -450,6 +450,42 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Test
+    @DisplayName("Test that cancelling a running workflow do not cancel the scope more than once")
+    public void cancelRunningMoreThanOnce() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          JOB_ID,
+          ATTEMPT_ID,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(10L));
+      workflow.cancelJob();
+      workflow.cancelJob();
+      testEnv.sleep(Duration.ofMinutes(2L));
+      testEnv.shutdown();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.MULTIPLE_CANCEL && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+    }
+
+    @Test
     @DisplayName("Test that resetting a-non running workflow starts a reset")
     public void resetStart() {
 
@@ -521,6 +557,43 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Test
+    @DisplayName("Test that resetting a running workflow twice, do not cancel it twice")
+    public void resetMoreThanOnce() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          JOB_ID,
+          ATTEMPT_ID,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.resetConnection();
+      workflow.resetConnection();
+      testEnv.sleep(Duration.ofMinutes(2L));
+      testEnv.shutdown();
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.MULTIPLE_RESET && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+    }
+
+    @Test
     @DisplayName("Test that cancelling a reset don't restart a reset")
     public void cancelResetDontContinueAsReset() {
 
@@ -588,6 +661,46 @@ public class ConnectionManagerWorkflowTest {
           .hasSizeGreaterThanOrEqualTo(1);
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
+    }
+
+    @Test
+    @DisplayName("test that the sync is properly delete")
+    public void deleteSync() {
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          JOB_ID,
+          ATTEMPT_ID,
+          false,
+          1,
+          workflowState,
+          false);
+
+      WorkflowClient.start(workflow::run, input);
+      testEnv.sleep(Duration.ofSeconds(10L));
+      workflow.submitManualSync();
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.deleteConnection();
+      workflow.deleteConnection();
+      testEnv.sleep(Duration.ofMinutes(20L));
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DELETED && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.MULTIPLE_DELETE && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Mockito.verify(mConnectionDeletionActivity).deleteConnection(Mockito.any());
+
+      testEnv.shutdown();
     }
 
   }

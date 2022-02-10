@@ -104,6 +104,27 @@ public class WorkflowState {
     this.cancelledForReset = cancelledForReset;
   }
 
+  public void hasMultipleCancels() {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.MULTIPLE_CANCEL,
+        true);
+    stateChangedListener.addEvent(id, event);
+  }
+
+  public void hasMultipleDeletes() {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.MULTIPLE_DELETE,
+        true);
+    stateChangedListener.addEvent(id, event);
+  }
+
+  public void hasMultipleResets() {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.MULTIPLE_RESET,
+        true);
+    stateChangedListener.addEvent(id, event);
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);

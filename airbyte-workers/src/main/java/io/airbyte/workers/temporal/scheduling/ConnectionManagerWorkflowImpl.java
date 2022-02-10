@@ -278,6 +278,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void cancelJob() {
+    if (workflowState.isCancelled()) {
+      workflowState.hasMultipleCancels();
+      log.info("A cancel has already been submitted for connection {}", connectionId);
+      return;
+    }
+
     if (!workflowState.isRunning()) {
       log.info("Can't cancel a non-running sync for connection {}", connectionId);
       return;
@@ -288,6 +294,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void deleteConnection() {
+    if (workflowState.isDeleted()) {
+      workflowState.hasMultipleDeletes();
+      log.info("A deletion has already been submitted for connection {}", connectionId);
+      return;
+    }
     workflowState.setDeleted(true);
     cancelJob();
   }
@@ -299,6 +310,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
+    if (workflowState.isResetConnection()) {
+      workflowState.hasMultipleResets();
+      log.info("A reset has already been submitted for connection {}", connectionId);
+      return;
+    }
     workflowState.setResetConnection(true);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
