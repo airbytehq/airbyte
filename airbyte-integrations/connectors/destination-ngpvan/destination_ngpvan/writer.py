@@ -96,7 +96,7 @@ class NGPVANWriter:
         """
 
         import datetime
-        
+
         if self.local_test:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="secrets/google_credentials_file.json"
 
@@ -216,7 +216,6 @@ class NGPVANWriter:
         with open(results_file_path, 'r') as file:
             my_reader = csv.reader(file, delimiter=',')
             for row in my_reader:
-                print(row)
                 if i > 0:
                     results_list.append(row[-1])
                 i += 1
