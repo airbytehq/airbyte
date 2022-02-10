@@ -487,7 +487,7 @@ class IncrementalStream(Stream, ABC):
     # Flag which enable/disable chunked read in read_chunked method
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
-    state_checkpoint_interval = 10  # TODO
+    # state_checkpoint_interval = 10  # TODO
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -506,12 +506,17 @@ class IncrementalStream(Stream, ABC):
             stream_state: Mapping[str, Any] = None,
     ):  # TODO
         if stream_state:
-            cursor = self._field_to_datetime(stream_state[self.state_pk])
-            self._update_state(latest_cursor=cursor)  # TODO check
+            self.state = stream_state
+            # cursor = self._field_to_datetime(stream_state[self.state_pk])
+            # self._update_state(latest_cursor=cursor)  # TODO check
         yield from self.list_records(fields=self.get_fields())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):  # TODO
-        return self.state or {self.state_pk: self._start_date}
+        if self.state:
+            return self.state
+        return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
+
+        # return self.state  # or {self.state_pk: self._start_date}
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
@@ -520,6 +525,8 @@ class IncrementalStream(Stream, ABC):
             return (
                 {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
             )
+        # elif self._start_date:
+        #     return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
         return None
 
     @state.setter
