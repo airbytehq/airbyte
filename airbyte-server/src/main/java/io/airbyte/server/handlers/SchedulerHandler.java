@@ -27,6 +27,7 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.SourceDiscoverSchema;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
@@ -236,9 +237,9 @@ public class SchedulerHandler {
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
-  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
+  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchema discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
+    final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);

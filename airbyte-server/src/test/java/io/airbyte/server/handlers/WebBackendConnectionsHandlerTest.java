@@ -41,6 +41,7 @@ import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.ResourceRequirements;
+import io.airbyte.api.model.SourceDiscoverSchema;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -196,7 +197,9 @@ class WebBackendConnectionsHandlerTest {
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
 
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody)).thenReturn(
+    final SourceDiscoverSchema sourceDiscoverSchema = new SourceDiscoverSchema();
+    sourceDiscoverSchema.setSourceId(connectionRead.getSourceId());
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchema)).thenReturn(
         new SourceDiscoverSchemaRead()
             .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
