@@ -3,9 +3,8 @@
 
 from zipfile import ZipFile
 import csv
-import datetime
+from datetime import datetime
 import logging
-import pandas as pd
 import ssl
 import time
 import wget
@@ -27,13 +26,14 @@ class NGPVANWriter:
         self.client=client
         self.local_test=client.local_test
         self.destination_bucket=client.gcs_bucket
-        self.timestamp_milliseconds=str(int(round(time.time() * 1000)))
+        #self.timestamp=str(int(round(time.time() * 1000)))
+        self.timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         self.data_csv_name="data_import.csv"
         self.data_zip_name="data_import.zip"
-        self.data_blob_name=self.timestamp_milliseconds+"/"+self.data_zip_name
-        self.results_full_blob_name=self.timestamp_milliseconds+"/results_full.csv"
+        self.data_blob_name=self.timestamp+"/"+self.data_zip_name
+        self.results_full_blob_name=self.timestamp+"/results_full.csv"
         self.results_summary_name="results_summary.csv"
-        self.results_summary_blob_name=self.timestamp_milliseconds+"/results_summary.csv"
+        self.results_summary_blob_name=self.timestamp+"/results_summary.csv"
         self.timeout=3600 #seconds Airbyte will spend polling for job status
 
     def add_data_row(self, record: Mapping):
@@ -59,11 +59,12 @@ class NGPVANWriter:
         zipObj.write(self.data_csv_name)
         zipObj.close()
 
-    def _upload_csv_to_gcs(self):
-        """Uploads the output ZIP to GCS."""
+    def _upload_csv_to_gcs(self, destination_bucket: str, blob_name: str, filename_to_upload: str):
+        """Uploads a file to GCS."""
 
         if self.local_test:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="secrets/google_credentials_file.json"
+
         elif self.client.service_account_key:
             try:
                 keyfile='credentials.json'
@@ -71,15 +72,17 @@ class NGPVANWriter:
                     secret_file.write(self.client.service_account_key)
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=keyfile
             except:
-                print("Failed to write service account keyfile. RIP")
+                logging.error("Failed to write service account keyfile. RIP")
 
         storage_client=storage.Client()
-        bucket=storage_client.get_bucket(self.destination_bucket)
-        blob=bucket.blob(self.data_blob_name)
-        blob.upload_from_filename(self.data_zip_name)
-        print('File {} uploaded to {}.'.format(
-            self.data_zip_name,
-            self.destination_bucket))
+        bucket=storage_client.get_bucket(destination_bucket)
+        blob=bucket.blob(blob_name)
+        blob.upload_from_filename(filename_to_upload)
+
+        logging.info('File {} uploaded to {}{}.'.format(
+            filename_to_upload,
+            destination_bucket,
+            blob_name))
 
     def _generate_download_signed_url_v4(self):
         """Generates a v4 signed URL for downloading a blob.
@@ -92,6 +95,8 @@ class NGPVANWriter:
         Engine or from the Google Cloud SDK.
         """
 
+        import datetime
+        
         if self.local_test:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="secrets/google_credentials_file.json"
 
@@ -115,7 +120,11 @@ class NGPVANWriter:
         "Run the bulk import job specified in the destination config"
 
         self._write_to_local_csv()
-        self._upload_csv_to_gcs()
+        self._upload_csv_to_gcs(
+                           destination_bucket=self.destination_bucket,
+                           blob_name=self.data_blob_name,
+                           filename_to_upload=self.data_zip_name
+                           )
 
         fileName=self.data_csv_name
         columns=self.data_output[0].keys()
@@ -180,10 +189,6 @@ class NGPVANWriter:
         if self.local_test:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="secrets/google_credentials_file.json"
 
-        bucket_name=self.destination_bucket
-        blob_name=self.results_full_blob_name
-        storage_client=storage.Client()
-
         logging.info(f"Sending the bulk import results file to GCS...")
 
         # Download the file to local disk
@@ -191,49 +196,61 @@ class NGPVANWriter:
         ssl._create_default_https_context=ssl._create_unverified_context
         local_results_csv_filename=wget.download(source_file_url)
 
-        # Send the file to GCS
-        bucket=storage_client.get_bucket(bucket_name)
-        blob=bucket.blob(blob_name)
-        blob.upload_from_filename(local_results_csv_filename)
-
-        logging.info(f"Results file successfully uploaded to {bucket_name}/{blob_name}.")
+        # Send the results CSV to GCS
+        self._upload_csv_to_gcs(
+                           destination_bucket=self.destination_bucket,
+                           blob_name=self.results_full_blob_name,
+                           filename_to_upload=local_results_csv_filename
+                           )
 
         return local_results_csv_filename
 
-    def summarize_bulk_import(self, file_path: str):
+    def _write_summary_csv(self, results_file_path: str):
+        """
+        Write a summary of the results of the bulk import job to a CSV in GCS
+        """
+        results_list = []
+        summary_dict = {}
+        i = 0
+
+        with open(results_file_path, 'r') as file:
+            my_reader = csv.reader(file, delimiter=',')
+            for row in my_reader:
+                print(row)
+                if i > 0:
+                    results_list.append(row[-1])
+                i += 1
+
+        # Iterate over distinct result values and save their counts to a dict
+        result_set = set(results_list)
+        for result_type in result_set:
+            key = result_type
+            value = results_list.count(result_type)
+            summary_dict[key] = value
+        sorted_summary_dict = {k: v for k, v in sorted(summary_dict.items(), reverse=True, key=lambda item: item[1])}
+
+        # Write the summary to a csv
+        with open(self.results_summary_name, 'w') as f:
+            f.write("result,number_of_records\n")
+            for key in sorted_summary_dict.keys():
+                f.write("%s,%s\n" % (key, sorted_summary_dict[key]))
+        f.close()
+
+    def summarize_bulk_import(self, results_file_path: str):
         """
         Write a summary of the results of the bulk import job to a CSV in GCS
         """
 
         logging.info("Sending a results summary to GCS...")
 
-        # Create a pandas dataframe with a row count summary for different outcomes
-        df=pd.read_csv(file_path)
-        last_column=df.iloc[:, -1] # The last column says whether each row imported successfully or threw an error
-        counts_df=last_column.value_counts(ascending=False).rename_axis('bulk_import_result').reset_index(name='number_of_records')
+        # Write the CSV
+        self._write_summary_csv(results_file_path=results_file_path)
 
-        logging.info("VAN bulk import job completed with the following results:")
-        for index, row in counts_df.iterrows():
-            nrecords=row['number_of_records']
-            result=row['bulk_import_result']
-            logging.info((f"{result}: {nrecords}")
-
-        # Write the dataframe to a csv
-        summary_filename=self.results_summary_name
-        counts_df.to_csv(summary_filename)
-
-        # Send the CSV to GCS
-        if self.local_test:
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="secrets/google_credentials_file.json"
-
-        bucket_name=self.destination_bucket
-        blob_name=self.results_summary_blob_name
-        storage_client=storage.Client()
-
-        bucket=storage_client.get_bucket(bucket_name)
-        blob=bucket.blob(blob_name)
-        blob.upload_from_filename(summary_filename)
-
-        logging.info(f"Summary written to GCS at {bucket_name}/{blob_name}")
+        # Send the summary CSV to GCS
+        self._upload_csv_to_gcs(
+                           destination_bucket=self.destination_bucket,
+                           blob_name=self.results_summary_blob_name,
+                           filename_to_upload=self.results_summary_name
+                           )
 
         return True

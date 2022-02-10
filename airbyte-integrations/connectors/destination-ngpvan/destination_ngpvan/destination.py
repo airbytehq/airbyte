@@ -5,18 +5,22 @@
 # Author: Emily Cogsdill
 # Date: February 2022
 # This destination sends data to VAN using the API's bulk import endpoint.
-# Import modes supported: Contacts, Activist Codes
 
 """
-TODO()
-- stress test larger imports (querying a 180k row table seems like too much, but 10k is fine; what should we expect partners to need to do?)
-- any sources we should test besides BQ and Sheets? maybe GCS?
+REQUIREMENTS FOR USING THIS CONNECTOR (2/10/22):
+--aka known limitations--
+*This connector supports two types of bulk imports: Contacts and Activist Codes.
+*Result file sizes are capped at 100MB.
+*This connector does not break up large jobs to ensure that the result files will be within the 100MB limit.
+*We assume the columns from the source are already named in the way VAN API requires.
 
-Maybe post MVP:
+TODO()
+- chunk import files into predefined sizes and send them all as distinct jobs within the same POST request
+- write results file and summary to bigquery
+- do some column renaming (eg with fuzzy matching) to make source data schema a little more flexible
 - ENABLE DBT? is that hard?
-- need to parse source data (from AirbyteMessage) to conform to format required by VAN API
-- support additional bulk import operations
-- support import from multiple streams in the same Airbyte sync (this will take some doing)
+- additional bulk import operations (depending on common use cases)
+- support import from multiple streams in the same Airbyte sync
 """
 
 import logging
@@ -53,9 +57,7 @@ class DestinationNGPVAN(Destination):
         logging.getLogger().setLevel(logging.INFO)
         writer = NGPVANWriter(NGPVANClient(**config))
 
-
         logging.info(f"Reading data from source...")
-
         for message in input_messages:
             if message.type == Type.RECORD:
                 record = message.record
@@ -66,13 +68,10 @@ class DestinationNGPVAN(Destination):
                 continue
 
         logging.info(f"Data successfully read from source.")
-
         job_id=writer.run_bulk_import_job()
-
-        print(f'Successfully created VAN bulk import job (ID: {job_id})')
+        logging.info(f'Successfully created VAN bulk import job (ID: {job_id})')
 
         results_file_url=writer.monitor_bulk_import_status(job_id=job_id)
-
         if results_file_url:
             results_file_local_path=writer.upload_file_url_to_gcs(results_file_url)
             writer.summarize_bulk_import(results_file_local_path)
@@ -101,12 +100,13 @@ class DestinationNGPVAN(Destination):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
 
             bucket_name = writer.destination_bucket
-            blob_name = writer.zip_name
+            blob_name = writer.data_zip_name
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(bucket_name)
             blob = bucket.blob(blob_name)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
 

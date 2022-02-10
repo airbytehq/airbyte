@@ -33,6 +33,11 @@ class NGPVANClient:
 
         return response
 
+    def get_mappings(self) -> requests.Response:
+        """Returns json object containing bulk import mapping types (this might not actually be useful)"""
+        endpoint = "bulkImportMappingTypes"
+        return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
+
     def get_bulk_import_job_status(self, job_id: str) -> requests.Response:
         """Returns status of bulk import job"""
         endpoint="bulkImportJobs/"+job_id
@@ -109,7 +114,7 @@ class NGPVANClient:
                        "hasHeader": "True",
                        "hasQuotes": "True",
                        "sourceUrl": sourceUrl},
-                   "actions": [{"resultFileSizeKbLimit": 5000,
+                   "actions": [{"resultFileSizeKbLimit": 100000,
                                 "resourceType": resource_type,
                                 "actionType": "loadMappedFile",
                                 "mappingTypes": [{'name': 'CreateOrUpdateContact'}]}]
@@ -151,7 +156,7 @@ class NGPVANClient:
                        "hasHeader": "True",
                        "hasQuotes": "True",
                        "sourceUrl": sourceUrl},
-                   "actions": [{"resultFileSizeKbLimit": 5000,
+                   "actions": [{"resultFileSizeKbLimit": 100000,
                                 "resourceType": resource_type,
                                 "actionType": "loadMappedFile",
                                 "mappingTypes": [{'name': 'ActivistCode'}]}]
