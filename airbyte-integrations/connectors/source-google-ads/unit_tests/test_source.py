@@ -2,8 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
 import pytest
+from freezegun import freeze_time
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
@@ -11,18 +11,22 @@ from source_google_ads.streams import AdGroupAdReport, chunk_date_range
 
 
 # Test chunck date range without end date
+@freeze_time("2022-01-30")
 def test_chunk_date_range_without_end_date():
-    start_date_str = pendulum.now().subtract(days=5).to_date_string()
+    start_date_str = "2022-01-24"
     conversion_window = 0
     field = "date"
     response = chunk_date_range(
         start_date=start_date_str, conversion_window=conversion_window, field=field, end_date=None, days_of_data_storage=None, range_days=1
     )
-    start_date = pendulum.parse(start_date_str)
-    expected_response = []
-    while start_date < pendulum.now():
-        expected_response.append({field: start_date.to_date_string()})
-        start_date = start_date.add(days=1)
+    expected_response = [
+        {"start_date": "2022-01-25", "end_date": "2022-01-26"},
+        {"start_date": "2022-01-26", "end_date": "2022-01-27"},
+        {"start_date": "2022-01-27", "end_date": "2022-01-28"},
+        {"start_date": "2022-01-28", "end_date": "2022-01-29"},
+        {"start_date": "2022-01-29", "end_date": "2022-01-30"},
+        {"start_date": "2022-01-30", "end_date": "2022-01-31"},
+    ]
     assert expected_response == response
 
 
@@ -33,14 +37,14 @@ def test_chunk_date_range():
     field = "date"
     response = chunk_date_range(start_date, conversion_window, field, end_date, range_days=10)
     assert [
-        {"date": "2021-02-18"},
-        {"date": "2021-02-28"},
-        {"date": "2021-03-10"},
-        {"date": "2021-03-20"},
-        {"date": "2021-03-30"},
-        {"date": "2021-04-09"},
-        {"date": "2021-04-19"},
-        {"date": "2021-04-29"},
+        {"start_date": "2021-02-19", "end_date": "2021-02-28"},
+        {"start_date": "2021-03-01", "end_date": "2021-03-10"},
+        {"start_date": "2021-03-11", "end_date": "2021-03-20"},
+        {"start_date": "2021-03-21", "end_date": "2021-03-30"},
+        {"start_date": "2021-03-31", "end_date": "2021-04-09"},
+        {"start_date": "2021-04-10", "end_date": "2021-04-19"},
+        {"start_date": "2021-04-20", "end_date": "2021-04-29"},
+        {"start_date": "2021-04-30", "end_date": "2021-05-09"},
     ] == response
 
 

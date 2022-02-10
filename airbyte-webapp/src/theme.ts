@@ -12,6 +12,7 @@ export const theme = {
   brightColor: "#F7F6FF",
 
   dangerColor: "#FF5E7B",
+  warningColor: "#FFBF00",
   lightDangerColor: "#FEEDEE",
   dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
   attentionColor: "#FFBD2E",
@@ -38,6 +39,8 @@ export const theme = {
   whiteColor: "#FFFFFF",
   beigeColor: "#FEF9F4",
   darkBeigeColor: "#FFEBD7",
+  borderTableColor: "#D3DCE4",
+  lightTableColor: "#F5F7F9",
   darkGreyColor: "#8B8BA0",
   redColor: "#FF6A4D",
   lightRedColor: "#FF8870",

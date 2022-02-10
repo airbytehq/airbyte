@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
@@ -37,6 +38,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -46,6 +48,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class SourceDefinitionsHandlerTest {
+
+  private static final String TODAY_DATE_STRING = LocalDate.now().toString();
 
   private ConfigRepository configRepository;
   private StandardSourceDefinition sourceDefinition;
@@ -82,7 +86,9 @@ class SourceDefinitionsHandlerTest {
         .withDockerImageTag("12.3")
         .withIcon("http.svg")
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.ALPHA)
+        .withReleaseDate(TODAY_DATE_STRING);
   }
 
   @Test
@@ -98,7 +104,9 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
@@ -106,7 +114,9 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
 
@@ -127,7 +137,9 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
@@ -161,13 +173,15 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
-        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.CUSTOM);
 
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createSourceDefinition(create);
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository).writeStandardSourceDefinition(sourceDefinition);
+    verify(configRepository)
+        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
   }
 
   @Test

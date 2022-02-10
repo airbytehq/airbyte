@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.e2e_test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Since 2.0.0, the cloud version is the same as the OSS version. This connector should be removed.
+ */
 public class CloudTestingSources extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CloudTestingSources.class);
@@ -27,9 +27,7 @@ public class CloudTestingSources extends SpecModifyingSource implements Source {
 
   public static void main(final String[] args) throws Exception {
     final Source source = new CloudTestingSources();
-    LOGGER.info("Starting source: {}", CloudTestingSources.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("Completed source: {}", CloudTestingSources.class);
   }
 
   /**
@@ -38,17 +36,7 @@ public class CloudTestingSources extends SpecModifyingSource implements Source {
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-
     ((ObjectNode) spec.getConnectionSpecification()).put("title", CLOUD_TESTING_SOURCES_TITLE);
-
-    final ArrayNode types = (ArrayNode) spec.getConnectionSpecification().get("oneOf");
-    final Iterator<JsonNode> typesIterator = types.elements();
-    while (typesIterator.hasNext()) {
-      final JsonNode typeNode = typesIterator.next();
-      if (!typeNode.get("properties").get("type").get("const").asText().equalsIgnoreCase("CONTINUOUS_FEED")) {
-        typesIterator.remove();
-      }
-    }
     return spec;
   }
 

@@ -67,9 +67,7 @@ public class TestingSources extends BaseConnector implements Source {
 
   public static void main(final String[] args) throws Exception {
     final Source source = new TestingSources();
-    LOGGER.info("Starting source: {}", TestingSources.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("Completed source: {}", TestingSources.class);
   }
 
 }

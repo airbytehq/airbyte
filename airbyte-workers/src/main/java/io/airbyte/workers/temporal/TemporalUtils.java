@@ -7,6 +7,8 @@ package io.airbyte.workers.temporal;
 import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.Activity;
 import io.temporal.api.common.v1.WorkflowExecution;
@@ -33,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -47,16 +50,23 @@ public class TemporalUtils {
 
   public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
-        // todo move to env.
-        .setTarget(temporalHost)
+        .setTarget(temporalHost) // todo: move to EnvConfigs
         .build();
 
-    final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
-    waitForTemporalServerAndLog(temporalService);
-    return temporalService;
+    return getTemporalClientWhenConnected(
+        Duration.ofSeconds(2),
+        Duration.ofMinutes(2),
+        Duration.ofSeconds(5),
+        () -> WorkflowServiceStubs.newInstance(options));
   }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
+
+  private static final Configs configs = new EnvConfigs();
+  public static final RetryOptions RETRY = RetryOptions.newBuilder()
+      .setMaximumAttempts(configs.getActivityNumberOfAttempt())
+      .setInitialInterval(Duration.ofSeconds(configs.getDelayBetweenActivityAttempts()))
+      .build();
 
   public static final String DEFAULT_NAMESPACE = "default";
 
@@ -149,16 +159,34 @@ public class TemporalUtils {
     return ImmutablePair.of(workflowExecution, resultAsync);
   }
 
-  public static void waitForTemporalServerAndLog(final WorkflowServiceStubs temporalService) {
+  /**
+   * Loops and waits for the Temporal service to become available and returns a client.
+   *
+   * This function uses a supplier as input since the creation of a WorkflowServiceStubs can result in
+   * connection exceptions as well.
+   */
+  public static WorkflowServiceStubs getTemporalClientWhenConnected(
+                                                                    final Duration waitInterval,
+                                                                    final Duration maxTimeToConnect,
+                                                                    final Duration waitAfterConnection,
+                                                                    final Supplier<WorkflowServiceStubs> temporalServiceSupplier) {
     LOGGER.info("Waiting for temporal server...");
 
     boolean temporalStatus = false;
+    WorkflowServiceStubs temporalService = null;
+    long millisWaited = 0;
 
     while (!temporalStatus) {
+      if (millisWaited >= maxTimeToConnect.toMillis()) {
+        throw new RuntimeException("Could not create Temporal client within max timeout!");
+      }
+
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      Exceptions.toRuntime(() -> Thread.sleep(2000));
+      Exceptions.toRuntime(() -> Thread.sleep(waitInterval.toMillis()));
+      millisWaited = millisWaited + waitInterval.toMillis();
 
       try {
+        temporalService = temporalServiceSupplier.get();
         temporalStatus = getNamespaces(temporalService).contains("default");
       } catch (final Exception e) {
         // Ignore the exception because this likely means that the Temporal service is still initializing.
@@ -167,9 +195,11 @@ public class TemporalUtils {
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
-    Exceptions.toRuntime(() -> Thread.sleep(5000));
+    Exceptions.toRuntime(() -> Thread.sleep(waitAfterConnection.toMillis()));
 
     LOGGER.info("Found temporal default namespace!");
+
+    return temporalService;
   }
 
   protected static Set<String> getNamespaces(final WorkflowServiceStubs temporalService) {
