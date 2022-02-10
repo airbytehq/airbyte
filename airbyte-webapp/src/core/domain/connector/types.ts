@@ -4,13 +4,11 @@ import {
 } from "core/domain/connection";
 import { DestinationSyncMode } from "core/domain/catalog";
 
-export enum releaseStage {
+export enum ReleaseStage {
   "ALPHA" = "alpha",
   "BETA" = "beta",
   "GENERALLY_AVAILABLE" = "generally_available",
   "CUSTOM" = "custom",
-  "RELEASE" = "release",
-  "NEW_RELEASE" = "new_release",
 }
 
 export interface DestinationDefinition {
@@ -21,7 +19,7 @@ export interface DestinationDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
-  releaseStage?: releaseStage;
+  releaseStage?: ReleaseStage;
 }
 
 export interface SourceDefinition {
@@ -32,7 +30,7 @@ export interface SourceDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
-  releaseStage?: releaseStage;
+  releaseStage?: ReleaseStage;
 }
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;

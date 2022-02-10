@@ -17,7 +17,7 @@ import { FormBaseItem } from "core/form/types";
 import {
   Connector,
   ConnectorDefinition,
-  releaseStage,
+  ReleaseStage,
 } from "core/domain/connector";
 
 import Instruction from "./Instruction";
@@ -57,17 +57,16 @@ const Label = styled.div`
   line-height: 17px;
 `;
 
-const Stage = styled.div<{ isNew?: boolean }>`
+const Stage = styled.div`
   padding: 2px 6px;
   height: 14px;
-  background: ${({ theme, isNew }) =>
-    isNew ? theme.successColor : theme.greyColor20};
+  background: ${({ theme }) => theme.greyColor20};
   border-radius: 25px;
   text-transform: uppercase;
   font-weight: 500;
   font-size: 8px;
   line-height: 10px;
-  color: ${({ theme, isNew }) => (isNew ? theme.whiteColor : theme.textColor)};
+  color: ${({ theme }) => theme.textColor};
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
@@ -100,8 +99,9 @@ const Option: React.FC<OptionProps> = (props) => {
           {props.data.img || null}
           <Label>{props.label}</Label>
         </Text>
-        {props.data.releaseStage ? (
-          <Stage isNew={props.data.releaseStage === releaseStage.NEW_RELEASE}>
+        {props.data.releaseStage &&
+        props.data.releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+          <Stage>
             <FormattedMessage
               id={`connector.releaseStage.${props.data.releaseStage}`}
               defaultMessage={props.data.releaseStage}
