@@ -30,6 +30,7 @@ public class WorkflowState {
   private boolean failed = false;
   private boolean resetConnection = false;
   private boolean continueAsReset = false;
+  private boolean cancelledForReset = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -95,6 +96,14 @@ public class WorkflowState {
     this.continueAsReset = continueAsReset;
   }
 
+  public void setCancelledForReset(final boolean cancelledForReset) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.CANCELLED_FOR_RESET,
+        cancelledForReset);
+    stateChangedListener.addEvent(id, event);
+    this.cancelledForReset = cancelledForReset;
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
@@ -104,6 +113,7 @@ public class WorkflowState {
     this.setFailed(false);
     this.setResetConnection(false);
     this.setContinueAsReset(false);
+    this.setCancelledForReset(false);
   }
 
 }
