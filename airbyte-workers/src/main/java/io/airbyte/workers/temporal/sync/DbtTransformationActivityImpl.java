@@ -130,8 +130,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
-        containerOrchestratorConfig.get(),
-        airbyteVersion);
+        containerOrchestratorConfig.get());
   }
 
 }

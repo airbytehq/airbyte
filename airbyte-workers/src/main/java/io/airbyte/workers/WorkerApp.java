@@ -183,7 +183,7 @@ public class WorkerApp {
 
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
 
-    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository);
+    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements());
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
@@ -266,9 +266,13 @@ public class WorkerApp {
   public static record ContainerOrchestratorConfig(
                                                    String namespace,
                                                    DocumentStoreClient documentStoreClient,
-                                                   KubernetesClient kubernetesClient) {}
+                                                   KubernetesClient kubernetesClient,
+                                                   String secretName,
+                                                   String secretMountPath,
+                                                   String containerOrchestratorImage,
+                                                   String googleApplicationCredentials) {}
 
-  static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(Configs configs) {
+  static Optional<ContainerOrchestratorConfig> getContainerOrchestratorConfig(final Configs configs) {
     if (configs.getContainerOrchestratorEnabled()) {
       final var kubernetesClient = new DefaultKubernetesClient();
 
@@ -279,7 +283,11 @@ public class WorkerApp {
       return Optional.of(new ContainerOrchestratorConfig(
           configs.getJobKubeNamespace(),
           documentStoreClient,
-          kubernetesClient));
+          kubernetesClient,
+          configs.getContainerOrchestratorSecretName(),
+          configs.getContainerOrchestratorSecretMountPath(),
+          configs.getContainerOrchestratorImage(),
+          configs.getGoogleApplicationCredentials()));
     } else {
       return Optional.empty();
     }
@@ -287,6 +295,7 @@ public class WorkerApp {
 
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
@@ -314,7 +323,7 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
@@ -334,7 +343,7 @@ public class WorkerApp {
         configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
-        new DefaultJobCreator(jobPersistence, configRepository),
+        new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()),
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
@@ -351,8 +360,6 @@ public class WorkerApp {
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(
         configRepository,
         jobPersistence);
-
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
 
     final ConnectionHelper connectionHelper = new ConnectionHelper(
         configRepository,
@@ -393,7 +400,7 @@ public class WorkerApp {
   public static void main(final String[] args) {
     try {
       launchWorkerApp();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
       System.exit(1);
     }

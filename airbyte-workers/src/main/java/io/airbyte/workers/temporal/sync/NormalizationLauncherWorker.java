@@ -23,8 +23,7 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                      final JobRunConfig jobRunConfig,
                                      final WorkerConfigs workerConfigs,
-                                     final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                                     final String airbyteVersion) {
+                                     final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig) {
     super(
         connectionId,
         NORMALIZATION,
@@ -33,7 +32,6 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
         Map.of(
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        airbyteVersion,
         workerConfigs.getResourceRequirements(),
         Void.class);
   }
