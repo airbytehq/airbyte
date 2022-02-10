@@ -47,7 +47,7 @@
         "type": "string",
         "description": "Placement of data to be pulled."
       },
-      "Segmentation": {
+      "SEGMENTATION": {
         "type": "string",
         "description": "Segmentation of data to be pulled."
       }
