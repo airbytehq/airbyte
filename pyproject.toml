@@ -28,15 +28,17 @@ color_output = false
 skip_gitignore = true
 
 [tool.mypy]
-platform = "linux"
+cache_dir = "/dev/null"
 exclude = "build"
+incremental = false
+platform = "linux"
 
 # Strictness
 ignore_missing_imports = true
 allow_redefinition = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
-no_implicit_reexport = true
+implicit_reexport = true
 no_strict_optional = true
 strict_equality = true
 # Output
@@ -45,6 +47,7 @@ show_column_numbers = true
 show_error_codes = true
 show_error_context = true
 # Warnings
+warn_no_return = false
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true

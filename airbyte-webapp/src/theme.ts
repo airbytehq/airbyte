@@ -12,6 +12,7 @@ export const theme = {
   brightColor: "#F7F6FF",
 
   dangerColor: "#FF5E7B",
+  warningColor: "#FFBF00",
   lightDangerColor: "#FEEDEE",
   dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
   attentionColor: "#FFBD2E",
