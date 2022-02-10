@@ -3,11 +3,11 @@
 #
 
 import logging
-from typing import Mapping, Any, Tuple, Optional, List, MutableMapping, Iterator
+from typing import Mapping, Tuple, Optional, List, Iterator
 from requests import HTTPError
 
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import AirbyteCatalog, ConfiguredAirbyteStream, SyncMode, AirbyteMessage
+from airbyte_cdk.models import AirbyteCatalog, SyncMode, AirbyteMessage
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources import AbstractSource
 from source_hubspot.api import (
@@ -30,10 +30,12 @@ from source_hubspot.api import (
     TicketPipelines,
     Workflows,
 )
+from typing import Any, MutableMapping
+
+from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 
 
 class SourceHubspot(AbstractSource):
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
         alive = True
@@ -182,3 +184,19 @@ class SourceHubspot(AbstractSource):
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
             if self._limit_reached(internal_config, total_records_counter):
                 return
+
+
+# class SourceHubspot(BaseSource):
+#     client_class = Client
+#
+#     def _read_stream(
+#         self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
+#     ):
+#         """
+#         This method is overridden to check if the stream exists in the client.
+#         """
+#         stream_name = configured_stream.stream.name
+#         if not client._apis.get(stream_name):
+#             logger.warning(f"Stream {stream_name} does not exist in the client.")
+#             return
+#         yield from super()._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=state)
