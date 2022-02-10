@@ -264,11 +264,6 @@ public interface Configs {
   Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
 
   /**
-   * Define node selectors for Sync job pods specifically. Each kv-pair is separated by a `,`.
-   */
-  Optional<Map<String, String>> getSyncJobKubeNodeSelectors();
-
-  /**
    * Define the Job pod connector image pull policy.
    */
   String getJobKubeMainContainerImagePullPolicy();

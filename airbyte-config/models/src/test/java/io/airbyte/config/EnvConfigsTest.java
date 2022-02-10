@@ -255,24 +255,6 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testSyncKubeNodeSelectors() {
-    envMap.put(EnvConfigs.SYNC_JOB_KUBE_NODE_SELECTORS, null);
-    Assertions.assertFalse(config.getSyncJobKubeNodeSelectors().isPresent());
-
-    envMap.put(EnvConfigs.SYNC_JOB_KUBE_NODE_SELECTORS, ",,,");
-    Assertions.assertFalse(config.getSyncJobKubeNodeSelectors().isPresent());
-
-    envMap.put(EnvConfigs.SYNC_JOB_KUBE_NODE_SELECTORS, "key=k,,;$%&^#");
-    Assertions.assertEquals(config.getSyncJobKubeNodeSelectors().get(), Map.of("key", "k"));
-
-    envMap.put(EnvConfigs.SYNC_JOB_KUBE_NODE_SELECTORS, "one=two");
-    Assertions.assertEquals(config.getSyncJobKubeNodeSelectors().get(), Map.of("one", "two"));
-
-    envMap.put(EnvConfigs.SYNC_JOB_KUBE_NODE_SELECTORS, "airbyte=server,something=nothing");
-    Assertions.assertEquals(config.getSyncJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
-  }
-
-  @Test
   void testEmptyEnvMapRetrieval() {
     Assertions.assertEquals(Map.of(), config.getJobDefaultEnvMap());
   }
