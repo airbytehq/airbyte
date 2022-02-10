@@ -371,6 +371,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } catch (Exception e) {
       log.error("Failed to run an activity for the connection " + connectionId, e);
       workflowState.setStuck(true);
+      workflowState.setRetryFailedActivity(false);
       Workflow.await(() -> workflowState.isRetryFailedActivity());
       log.error("Retrying an activity for the connection " + connectionId, e);
       workflowState.setStuck(false);
@@ -385,6 +386,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } catch (Exception e) {
       log.error("Failed to run an activity for the connection " + connectionId, e);
       workflowState.setStuck(true);
+      workflowState.setRetryFailedActivity(false);
       Workflow.await(() -> workflowState.isRetryFailedActivity());
       log.error("Retrying an activity for the connection " + connectionId, e);
       workflowState.setStuck(false);
