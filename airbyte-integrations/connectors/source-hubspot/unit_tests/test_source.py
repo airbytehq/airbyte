@@ -7,7 +7,7 @@ from functools import partial
 
 import pytest
 from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
-from source_hubspot.client import Client
+from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -43,13 +43,15 @@ def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
     assert not error
 
 
-def test_client_backoff_on_server_error(requests_mock, some_credentials):
+def test_client_backoff_on_server_error(requests_mock, some_credentials):  # TODO
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    source = SourceHubspot()
+    source.check_connection()
     client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
 
     alive, error = client.health_check()
