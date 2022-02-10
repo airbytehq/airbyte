@@ -327,8 +327,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("timestamp")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
-            .addExpectedValues("2004-10-19T10:23:54Z", null)
+            .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
+            .addExpectedValues("2004-10-19T10:23:54.0000Z", "2004-10-19T10:23:54.123456Z", null)
             .build());
 
     addDataTypeTestData(

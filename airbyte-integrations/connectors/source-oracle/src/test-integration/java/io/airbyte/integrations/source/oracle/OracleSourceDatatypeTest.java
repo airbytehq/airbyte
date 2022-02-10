@@ -182,8 +182,9 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')", "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
-            .addExpectedValues("4700-01-01T00:00:00Z", "9999-12-31T23:59:59Z", null)
+            .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')",
+                "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
+            .addExpectedValues("4700-01-01T00:00:00.0000Z", "9999-12-31T23:59:59.0000Z", null)
             // @TODO stream fails when gets Zero date value
             // .addInsertValues("'2021/01/00'", "'2021/00/00'", "'0000/00/00'")
             .build());
@@ -192,8 +193,9 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("to_timestamp('2020-06-10 06:14:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF')")
-            .addExpectedValues("2020-06-10T06:14:01Z")
+            .addInsertValues("to_timestamp('2020-06-10 06:14:00.742', 'YYYY-MM-DD HH24:MI:SS.FF')",
+                "to_timestamp('2020-06-10 06:14:00.742123', 'YYYY-MM-DD HH24:MI:SS.FF')")
+            .addExpectedValues("2020-06-10T06:14:00.7420Z", "2020-06-10T06:14:00.742123Z")
             .build());
 
     addDataTypeTestData(
@@ -202,20 +204,23 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("TIMESTAMP WITH TIME ZONE")
             .addInsertValues("to_timestamp_tz('21-FEB-2009 18:00:00 EST', 'DD-MON-YYYY HH24:MI:SS TZR')",
-                "to_timestamp_tz('21-FEB-2009 18:00:00 -5:00', 'DD-MON-YYYY HH24:MI:SS TZH:TZM')")
-            .addExpectedValues("2009-02-21 18:00:00.0 EST", "2009-02-21 18:00:00.0 -5:00")
+                "to_timestamp_tz('21-FEB-2009 18:00:00.123456 EST', 'DD-MON-YYYY HH24:MI:SS.FF TZR')",
+                "to_timestamp_tz('21-FEB-2009 18:00:00 -5:00', 'DD-MON-YYYY HH24:MI:SS TZH:TZM')",
+                "to_timestamp_tz('21-FEB-2009 18:00:00.123456 -5:00', 'DD-MON-YYYY HH24:MI:SS.FF TZH:TZM')")
+            .addExpectedValues("2009-02-21 18:00:00.0 EST", "2009-02-21 18:00:00.123456 EST",
+                "2009-02-21 18:00:00.0 -5:00", "2009-02-21 18:00:00.123456 -5:00")
             .build());
-
-    final DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+//
+    final DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSSSSS");
     utcFormat.setTimeZone(TimeZone.getTimeZone(Calendar.getInstance().getTimeZone().getID()));
     Date date = null;
     try {
-      date = utcFormat.parse("21-Feb-2009 18:00:00");
+      date = utcFormat.parse("21-Feb-2009 18:00:00.000456");
     } catch (final ParseException e) {
       LOGGER.error("Unparseable date");
-      date = Date.from(Instant.parse("2009-02-21T18:00:00.00Z"));
+      date = Date.from(Instant.parse("2009-02-21T18:00:00.000456Z"));
     }
-    final DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    final DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
     currentTFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     final String utc = currentTFormat.format(date);
     addDataTypeTestData(
@@ -223,8 +228,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("TIMESTAMP WITH LOCAL TIME ZONE")
-            .addInsertValues("to_timestamp_tz('21-FEB-2009 18:00:00', 'DD-MON-YYYY HH24:MI:SS')")
-            .addExpectedValues(utc + ".0 UTC")
+            .addInsertValues("to_timestamp_tz('21-FEB-2009 18:00:00.000456', 'DD-MON-YYYY HH24:MI:SS.FF')")
+            .addExpectedValues(utc + " UTC")
             .build());
 
     addDataTypeTestData(

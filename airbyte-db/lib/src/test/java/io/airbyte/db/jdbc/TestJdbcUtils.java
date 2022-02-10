@@ -144,8 +144,8 @@ public class TestJdbcUtils {
       sourceOperations.setStatementField(ps, 11, JDBCType.CHAR, "a");
       sourceOperations.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
       sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
-      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
+      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00.000Z");
+      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
       sourceOperations.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
 
       ps.execute();

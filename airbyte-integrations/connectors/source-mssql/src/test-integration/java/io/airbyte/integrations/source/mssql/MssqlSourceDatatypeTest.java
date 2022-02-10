@@ -181,10 +181,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
-                "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
-                "1999-01-08T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
+            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
             .build());
 
     addDataTypeTestData(
@@ -192,31 +190,33 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("smalldatetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
+            .addExpectedValues("1900-01-01T00:00:00.0000Z", "2079-06-06T00:00:00.0000Z", null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
-            .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04Z'",
+                    "'9999-12-31T13:00:04.123Z'", "null")
+            .addExpectedValues("1753-01-01T00:00:00.0000Z", "9999-12-31T00:00:00.0000Z", "9999-12-31T13:00:04.0000Z",
+                    "9999-12-31T13:00:04.1230Z", null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime2")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456Z'", "null")
+            .addExpectedValues("0001-01-01T00:00:00.0000Z", "9999-12-31T00:00:00.0000Z", "9999-12-31T13:00:04.123456Z", null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'13:00:01'", "'13:00:04Z'")
-            .addExpectedValues(null, "13:00:01.0000000", "13:00:04.0000000")
+            .addInsertValues("null", "'13:00:01'", "'13:00:04Z'", "'13:00:04.123456Z'")
+            .addExpectedValues(null, "13:00:01.0000000", "13:00:04.0000000", "13:00:04.1234560")
             .build());
 
     addDataTypeTestData(

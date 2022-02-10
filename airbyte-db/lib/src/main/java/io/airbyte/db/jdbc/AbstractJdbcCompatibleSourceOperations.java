@@ -19,15 +19,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
@@ -120,9 +125,9 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-    final Timestamp t = resultSet.getTimestamp(index);
-    final java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
-    node.put(columnName, DataTypeUtils.toISO8601String(d));
+    final Instant instant = resultSet.getTimestamp(index).toInstant();
+    var aa = DataTypeUtils.toISO8601StringWithMicroseconds(instant);
+    node.put(columnName, aa);
   }
 
   protected void putBinary(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {

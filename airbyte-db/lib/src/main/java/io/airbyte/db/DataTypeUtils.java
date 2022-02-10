@@ -14,8 +14,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataTypeUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeUtils.class);
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
@@ -38,6 +42,12 @@ public class DataTypeUtils {
     } catch (final SQLException e) {
       return null;
     }
+  }
+
+  public static String toISO8601StringWithMicroseconds(Instant instant) {
+    var microSeconds = (instant.getNano() / 1000) % 1000;
+    String dateWithMilliseconds = DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(instant));
+    return dateWithMilliseconds.substring(0, 23) + microSeconds + dateWithMilliseconds.substring(23);
   }
 
   public static String toISO8601StringWithMilliseconds(final long epochMillis) {
