@@ -112,7 +112,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
         return false;
       }
     } catch (SQLException e) {
-      LOGGER.error("Some error appears during selection of _airbyte_data datatype:", e);
+      LOGGER.info("Table {}.{} does not exists and will be created.", schemaName, streamName);
       return false;
     }
   }
