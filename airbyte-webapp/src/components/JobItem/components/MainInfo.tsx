@@ -141,7 +141,11 @@ const MainInfo: React.FC<IProps> = ({
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
             <div>
-              {attempts.length > 1 && <Text>Last Attempt:</Text>}
+              {attempts.length > 1 && (
+                <Text>
+                  <FormattedMessage id="sources.lastAttempt" />
+                </Text>
+              )}
               <AttemptDetails
                 attempt={attempts[attempts.length - 1]}
                 configType={job.configType}
