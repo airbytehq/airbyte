@@ -4,7 +4,6 @@
 
 
 from abc import ABC
-from email.utils import parsedate_tz
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
