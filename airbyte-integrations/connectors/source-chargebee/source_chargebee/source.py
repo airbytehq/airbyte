@@ -35,6 +35,7 @@ class SourceChargebee(AbstractSource):
         # Below streams are suitable for both `Product Catalog 1.0` and `Product Catalog 2.0`.
         common_streams = [
             Customer(**kwargs),
+            Event(**kwargs),
             Invoice(**kwargs),
             Order(**kwargs),
             Coupon(**kwargs),
