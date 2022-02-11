@@ -22,17 +22,12 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 public class ConnectionHelper {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionHelper.class);
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
