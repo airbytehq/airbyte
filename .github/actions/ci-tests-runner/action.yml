@@ -109,6 +109,7 @@ runs:
           [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
           [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
         fi
+        cat ${REPORT_FOLDER}/*
         if [ ${{ inputs.module-lang }} == 'java' ]; then
              [ -d "./src/main/java" ] && OPTIONS+=("-Dsonar.sources=./src/main/java")
              [ -d "./src/test/java" ] && OPTIONS+=("-Dsonar.tests=./src/test/java")
@@ -133,6 +134,7 @@ runs:
         MODULE_DIR=$(python -c "print('${{ inputs.module-folder }}'.replace('${ROOT_DIR}', '.'))")
         echo "::set-output name=module_dir::${MODULE_DIR}"
 
+
     - name: SonarQube Scan
 
       uses: sonarsource/sonarqube-scan-action@master
@@ -148,7 +150,7 @@ runs:
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
-            -Dsonar.exclusions=reports/**,*.toml
+            -Dsonar.exclusions=reports/**,*.toml,*_tests/**
             -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
             ${{ steps.sq-options.outputs.options }}
 
