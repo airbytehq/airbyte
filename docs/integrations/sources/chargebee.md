@@ -29,7 +29,7 @@ Some streams may depend on Product Catalog version and be accessible only on sit
    * Customers
    * Invoices
    * Orders
-   * Coupon
+   * Coupons
 2. presented only in `Product Catalog 1.0`:
    * Plans
    * Addons
@@ -82,6 +82,7 @@ Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2021-01-10 | [10239](https://github.com/airbytehq/airbyte/pull/10239) | Added support for Coupon stream |
 | 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.4 | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454) | Fix examples in spec file |
 | 0.1.3 | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items` |
