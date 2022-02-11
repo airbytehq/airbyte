@@ -80,8 +80,10 @@ def fb_account_response_fixture(account_id):
 
 
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
+    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
+        # turn Campaigns into non batch mode to test non batch logic
+        mocker.patch.object(Campaigns, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
         campaign_responses = [
             fb_call_rate_response,
             {

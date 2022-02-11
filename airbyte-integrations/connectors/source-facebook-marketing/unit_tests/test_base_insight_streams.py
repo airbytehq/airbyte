@@ -54,7 +54,7 @@ class TestBaseInsightsStream:
         assert not stream.breakdowns
         assert stream.action_breakdowns == AdsInsights.ALL_ACTION_BREAKDOWNS
         assert stream.name == "ads_insights"
-        assert stream.primary_key == ["date_start", "ad_id"]
+        assert stream.primary_key == ["date_start", "account_id", "ad_id"]
 
     def test_init_override(self, api):
         stream = AdsInsights(
@@ -69,7 +69,7 @@ class TestBaseInsightsStream:
         assert stream.breakdowns == ["test1", "test2"]
         assert stream.action_breakdowns == ["field1", "field2"]
         assert stream.name == "custom_name"
-        assert stream.primary_key == ["date_start", "ad_id", "test1", "test2"]
+        assert stream.primary_key == ["date_start", "account_id", "ad_id", "test1", "test2"]
 
     def test_read_records_all(self, mocker, api):
         """1. yield all from mock
