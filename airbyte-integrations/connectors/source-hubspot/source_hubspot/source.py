@@ -2,13 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import logging
 from typing import Mapping, Tuple, Optional, List, Iterator
 from requests import HTTPError
+from airbyte_cdk.utils.event_timing import create_timer
 
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import AirbyteCatalog, SyncMode, AirbyteMessage
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.models import AirbyteCatalog, SyncMode, AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources import AbstractSource
 from source_hubspot.api import (
     API,
@@ -140,6 +142,48 @@ class SourceHubspot(AbstractSource):
             streams.append(stream)
 
         return AirbyteCatalog(streams=streams)
+
+    def read(
+            self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
+            state: MutableMapping[str, Any] = None
+    ) -> Iterator[AirbyteMessage]:
+        """
+        This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
+        """
+        connector_state = copy.deepcopy(state or {})
+        logger.info(f"Starting syncing {self.name}")
+        config, internal_config = split_config(config)
+        # TODO assert all streams exist in the connector
+        # get the streams once in case the connector needs to make any queries to generate them
+        stream_instances = {s.name: s for s in self.streams(config)}
+        self._stream_to_instance_map = stream_instances
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                stream_instance = stream_instances.get(configured_stream.stream.name)
+                if not stream_instance and configured_stream.stream.name == "quotes":
+                    logger.warning(f"Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
+                    continue
+                if not stream_instance:
+                    raise KeyError(
+                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                    )
+
+                try:
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                        internal_config=internal_config,
+                    )
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
+
+        logger.info(f"Finished syncing {self.name}")
 
     def _read_incremental(
         self,

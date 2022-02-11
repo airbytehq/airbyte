@@ -307,7 +307,7 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):  # TODO fix this issue
+def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
     """
     If 'quotes' stream is not in the client, it should skip it.
     """
