@@ -54,7 +54,7 @@ def main(cmd):
         print(json.dumps({'pid':pid, 'logfile': logfile}))
 
     else:
-        os.chdir('/')
+        #os.chdir('/')
         os.setsid()
         redirect_stdout_stderr(fh)
 
