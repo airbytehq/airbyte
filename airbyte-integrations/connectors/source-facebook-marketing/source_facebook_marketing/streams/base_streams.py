@@ -3,7 +3,7 @@
 #
 
 import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
 
@@ -85,7 +85,7 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        records_iter = self._read_records(params=self.request_params(stream_state=stream_state))
+        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
         loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
         if self.use_batch:
             loaded_records_iter = self.execute_in_batch(loaded_records_iter)
@@ -96,11 +96,13 @@ class FBMarketingStream(Stream, ABC):
             else:
                 yield record  # execute_in_batch will emmit dicts
 
-    def _read_records(self, params: Mapping[str, Any]) -> Iterable:
-        """Wrapper around query to backoff errors.
-        We have default implementation because we still can override read_records so this method is not mandatory.
+    @abstractmethod
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        """List FB objects, these objects will be loaded in read_records later with their details.
+
+        :param params: params to make request
+        :return: list of FB objects to load
         """
-        return []
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Parameters that should be passed to query_records method"""
@@ -138,9 +140,9 @@ class FBMarketingStream(Stream, ABC):
 
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
+    """Base class for incremental streams"""
+
     cursor_field = "updated_time"
-    use_batch = False
-    enable_deleted = False
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)

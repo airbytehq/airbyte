@@ -23,6 +23,8 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
+    use_batch = False
+    enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -86,6 +88,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """Build complex PK based on slices and breakdowns"""
         return ["date_start", "account_id", "ad_id"] + self.breakdowns
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        """Because insights has very different read_records we don't need this method anymore"""
 
     def read_records(
         self,

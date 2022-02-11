@@ -4,7 +4,7 @@
 
 import base64
 import logging
-from typing import Any, Iterable, Iterator, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -61,7 +61,7 @@ class AdCreatives(FBMarketingStream):
                 record["thumbnail_data_url"] = fetch_thumbnail_data_url(record.get("thumbnail_url"))
             yield record
 
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_creatives(params=params)
 
 
@@ -70,8 +70,8 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
 
-    def _read_records(self, params: Mapping[str, Any]):
-        return self._api.account.get_ads(params=params, fields=[self.cursor_field])
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_ads(params=params)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -79,7 +79,7 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
 
-    def _read_records(self, params: Mapping[str, Any]):
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_sets(params=params)
 
 
@@ -88,7 +88,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
 
-    def _read_records(self, params: Mapping[str, Any]):
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_campaigns(params=params)
 
 
@@ -97,7 +97,7 @@ class Videos(FBMarketingIncrementalStream):
 
     entity_prefix = "video"
 
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_videos(params=params)
 
 
