@@ -51,7 +51,8 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
     int: "integer",
 }
 
-CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k,
+                              v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
 def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
@@ -296,7 +297,8 @@ class Stream(ABC):
         elif isinstance(value, str):
             value = pendulum.parse(value)
         else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+            raise ValueError(
+                f"Unsupported type of datetime field {type(value)}")
         return value
 
     def _filter_old_records(self, records: Iterable) -> Iterable:
@@ -537,7 +539,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
-    
+
     # Search API is limited to 10k results
     # https://developers.hubspot.com/docs/api/crm/search#limitations
     max_search_resuls = 10000
@@ -622,10 +624,10 @@ class CRMSearchStream(IncrementalStream, ABC):
                     yield record
                     cursor = self._field_to_datetime(record[self.updated_at_field])
                     latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                
+
                 after = response.get("paging", {}).get("next", {}).get("after")
                 if after:
-                    params["after"] = after 
+                    params["after"] = after
 
         self._update_state(latest_cursor=latest_cursor)
 
