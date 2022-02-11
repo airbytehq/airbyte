@@ -11,7 +11,7 @@
     "jsonFieldSchema": {
       "type": "integer"
     },
-    "avroFieldType": ["null", "int"]
+    "avroFieldType": ["null", "long"]
   },
   {
     "fieldName": "number_field",
@@ -92,7 +92,7 @@
         "fields": [
           {
             "name": "id",
-            "type": ["null", "int"],
+            "type": ["null", "long"],
             "default": null
           },
           {
@@ -148,21 +148,21 @@
     "jsonFieldSchema": {
       "anyOf": [{ "type": "string" }, { "type": "integer" }]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "long"]
   },
   {
     "fieldName": "all_of_field",
     "jsonFieldSchema": {
       "allOf": [{ "type": "string" }, { "type": "integer" }]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "long"]
   },
   {
     "fieldName": "one_of_field",
     "jsonFieldSchema": {
       "oneOf": [{ "type": "string" }, { "type": "integer" }]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "long"]
   },
   {
     "fieldName": "logical_type_date_time",

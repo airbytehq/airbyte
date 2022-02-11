@@ -381,7 +381,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "string", "int", "boolean"]
+              "items": ["null", "string", "long", "boolean"]
             }
           ],
           "default": null
@@ -443,7 +443,7 @@
               "logicalType": "timestamp-micros"
             },
             "string",
-            "int"
+            "long"
           ],
           "default": null
         },
@@ -520,7 +520,7 @@
                       "logicalType": "timestamp-micros"
                     },
                     "string",
-                    "int"
+                    "long"
                   ],
                   "default": null
                 },
@@ -601,7 +601,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "int", "string", "boolean"]
+              "items": ["null", "long", "string", "boolean"]
             }
           ],
           "default": null
@@ -978,7 +978,7 @@
               "fields": [
                 {
                   "name": "id",
-                  "type": ["null", "int"],
+                  "type": ["null", "long"],
                   "default": null
                 },
                 {
@@ -1284,12 +1284,12 @@
                                   "fields": [
                                     {
                                       "name": "id_part_1",
-                                      "type": ["null", "int", "string"],
+                                      "type": ["null", "long", "string"],
                                       "default": null
                                     },
                                     {
                                       "name": "id_part_2",
-                                      "type": ["null", "string", "int"],
+                                      "type": ["null", "string", "long"],
                                       "default": null
                                     },
                                     {
@@ -1560,6 +1560,49 @@
     },
     "avroObject": {
       "array_field": ["1234", "true", "false", "0.001"],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "schema_with_big_integer",
+    "namespace": "namespace21",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "jsonObject": {
+      "field": -2671251624134333867
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "schema_with_big_integer",
+      "namespace": "namespace21",
+      "fields": [
+        {
+          "name": "field",
+          "type": ["null", "long"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "field": -2671251624134333867,
       "_airbyte_additional_properties": null
     }
   }
