@@ -79,21 +79,7 @@ public class ConnectionHelper {
           .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      final io.airbyte.config.ResourceRequirements resourceRequirements = Optional.ofNullable(persistedSync.getResourceRequirements())
-          .orElse(new io.airbyte.config.ResourceRequirements());
-      if (resourceRequirements.getCpuRequest() == null) {
-        resourceRequirements.setCpuRequest(workerConfigs.getResourceRequirements().getCpuRequest());
-      }
-      if (resourceRequirements.getCpuLimit() == null) {
-        resourceRequirements.setCpuLimit(workerConfigs.getResourceRequirements().getCpuLimit());
-      }
-      if (resourceRequirements.getMemoryRequest() == null) {
-        resourceRequirements.setMemoryRequest(workerConfigs.getResourceRequirements().getMemoryRequest());
-      }
-      if (resourceRequirements.getMemoryLimit() == null) {
-        resourceRequirements.setMemoryLimit(workerConfigs.getResourceRequirements().getMemoryLimit());
-      }
-      newConnection.withResourceRequirements(resourceRequirements);
+      newConnection.withResourceRequirements(persistedSync.getResourceRequirements());
     }
 
     // update sync schedule
