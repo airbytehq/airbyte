@@ -17,7 +17,6 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream as BaseStream
-
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -498,11 +497,11 @@ class IncrementalStream(Stream, ABC):
         """Name of the field associated with the state"""
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ):
         if stream_state:
             self.state = stream_state
@@ -511,7 +510,11 @@ class IncrementalStream(Stream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if self.state:
             return self.state
-        return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
+        return (
+            {self.state_pk: int(self._start_date.timestamp() * 1000)}
+            if self.state_pk == "timestamp"
+            else {self.state_pk: str(self._start_date)}
+        )
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:

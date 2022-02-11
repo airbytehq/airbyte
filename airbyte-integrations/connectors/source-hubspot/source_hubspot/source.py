@@ -4,14 +4,15 @@
 
 import copy
 import logging
-from typing import Mapping, Tuple, Optional, List, Iterator
-from requests import HTTPError
-from airbyte_cdk.utils.event_timing import create_timer
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import AirbyteCatalog, SyncMode, AirbyteMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.utils.event_timing import create_timer
+from requests import HTTPError
 from source_hubspot.api import (
     API,
     Campaigns,
@@ -32,9 +33,6 @@ from source_hubspot.api import (
     TicketPipelines,
     Workflows,
 )
-from typing import Any, MutableMapping
-
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 
 
 class SourceHubspot(AbstractSource):
@@ -45,8 +43,7 @@ class SourceHubspot(AbstractSource):
         common_params = self.get_common_params(config=config)
         try:
             contacts = CRMSearchStream(
-                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"],
-                name="contacts", **common_params
+                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], name="contacts", **common_params
             )
             _ = contacts.properties
         except HTTPError as error:
@@ -72,13 +69,11 @@ class SourceHubspot(AbstractSource):
         streams = [
             Campaigns(**common_params),
             CRMSearchStream(
-                entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"],
-                name="companies", **common_params
+                entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], name="companies", **common_params
             ),
             ContactLists(**common_params),
             CRMSearchStream(
-                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"],
-                name="contacts", **common_params
+                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], name="contacts", **common_params
             ),
             ContactsListMemberships(**common_params),
             DealPipelines(**common_params),
@@ -86,30 +81,42 @@ class SourceHubspot(AbstractSource):
             EmailEvents(**common_params),
             Engagements(**common_params),
             CRMSearchStream(
-                entity="calls", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
-                name="engagements_calls", **common_params
-            ),
-            CRMSearchStream(
-                entity="emails", last_modified_field="hs_lastmodifieddate",
+                entity="calls",
+                last_modified_field="hs_lastmodifieddate",
                 associations=["contacts", "deal", "company"],
-                name="engagements_emails", **common_params
+                name="engagements_calls",
+                **common_params,
             ),
             CRMSearchStream(
-                entity="meetings", last_modified_field="hs_lastmodifieddate",
+                entity="emails",
+                last_modified_field="hs_lastmodifieddate",
                 associations=["contacts", "deal", "company"],
-                name="engagements_meetings", **common_params
+                name="engagements_emails",
+                **common_params,
             ),
             CRMSearchStream(
-                entity="notes", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
-                name="engagements_notes", **common_params
+                entity="meetings",
+                last_modified_field="hs_lastmodifieddate",
+                associations=["contacts", "deal", "company"],
+                name="engagements_meetings",
+                **common_params,
             ),
             CRMSearchStream(
-                entity="tasks", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"],
-                name="engagements_tasks", **common_params
+                entity="notes",
+                last_modified_field="hs_lastmodifieddate",
+                associations=["contacts", "deal", "company"],
+                name="engagements_notes",
+                **common_params,
+            ),
+            CRMSearchStream(
+                entity="tasks",
+                last_modified_field="hs_lastmodifieddate",
+                associations=["contacts", "deal", "company"],
+                name="engagements_tasks",
+                **common_params,
             ),
             CRMObjectIncrementalStream(
-                entity="feedback_submissions", associations=["contacts"],
-                name="feedback_submissions", **common_params
+                entity="feedback_submissions", associations=["contacts"], name="feedback_submissions", **common_params
             ),
             Forms(**common_params),
             FormSubmissions(**common_params),
@@ -144,8 +151,7 @@ class SourceHubspot(AbstractSource):
         return AirbyteCatalog(streams=streams)
 
     def read(
-            self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
@@ -161,7 +167,7 @@ class SourceHubspot(AbstractSource):
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance and configured_stream.stream.name == "quotes":
-                    logger.warning(f"Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
+                    logger.warning("Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
                     continue
                 if not stream_instance:
                     raise KeyError(
@@ -198,9 +204,13 @@ class SourceHubspot(AbstractSource):
         because stream state is refreshed after reading each batch of records (if need_chunk is True),
         or reading all records in the stream.
         """
-        yield from super()._read_incremental(logger=logger, stream_instance=stream_instance,
-                                             configured_stream=configured_stream, connector_state=connector_state,
-                                             internal_config=internal_config)
+        yield from super()._read_incremental(
+            logger=logger,
+            stream_instance=stream_instance,
+            configured_stream=configured_stream,
+            connector_state=connector_state,
+            internal_config=internal_config,
+        )
         stream_name = configured_stream.stream.name
         stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
         yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)

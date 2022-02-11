@@ -8,7 +8,15 @@ from functools import partial
 
 import pytest
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
-from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties, Workflows, CRMSearchStream, CRMObjectIncrementalStream, Deals
+from source_hubspot.api import (
+    API,
+    PROPERTIES_PARAM_MAX_LENGTH,
+    CRMObjectIncrementalStream,
+    CRMSearchStream,
+    Deals,
+    Workflows,
+    split_properties,
+)
 from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
@@ -41,13 +49,7 @@ def common_params_fixture(config):
 
 @pytest.fixture(name="config")
 def config_fixture():
-    return {
-      "start_date": "2021-01-10T00:00:00Z",
-      "credentials": {
-        "credentials_title": "API Key Credentials",
-        "api_key": "test_api_key"
-      }
-    }
+    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"}}
 
 
 @pytest.fixture(name="some_credentials")
@@ -186,8 +188,7 @@ class TestSplittingPropertiesFunctionality:
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
         test_stream = CRMSearchStream(
-            entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"],
-            name="companies", **common_params
+            entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], name="companies", **common_params
         )
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
