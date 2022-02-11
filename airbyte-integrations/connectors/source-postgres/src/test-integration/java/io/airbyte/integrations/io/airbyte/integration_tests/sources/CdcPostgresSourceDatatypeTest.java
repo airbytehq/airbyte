@@ -13,12 +13,14 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
+  private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
@@ -47,6 +49,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", List.of(SCHEMA_NAME))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
@@ -83,7 +86,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected String getNameSpace() {
-    return "test";
+    return SCHEMA_NAME;
   }
 
   @Override
@@ -222,7 +225,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'January 7, 1999'", "'1999-01-08'", "'1/9/1999'", "'January 10, 99 BC'", "'January 11, 99 AD'", "null")
-            .addExpectedValues("1999-01-07", "1999-01-08", "1999-01-09", "0099-01-10", "1999-01-11", null)
+            .addExpectedValues("1999-01-07T00:00:00Z", "1999-01-08T00:00:00Z", "1999-01-09T00:00:00Z", "0099-01-10T00:00:00Z", "1999-01-11T00:00:00Z",
+                null)
             .build());
 
     addDataTypeTestData(

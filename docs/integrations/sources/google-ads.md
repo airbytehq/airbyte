@@ -102,6 +102,11 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.25` | 2022-02-04 | [9812](https://github.com/airbytehq/airbyte/pull/9812) | Handle `EXPIRED_PAGE_TOKEN` exception and retry with updated state. |
+| `0.1.24` | 2022-02-04 | [9996](https://github.com/airbytehq/airbyte/pull/9996) | Use Google Ads API version V9. |
+| `0.1.23` | 2022-01-25 | [8669](https://github.com/airbytehq/airbyte/pull/8669) | Add end date parameter in spec. |
+| `0.1.22` | 2022-01-24 | [9608](https://github.com/airbytehq/airbyte/pull/9608) | Reduce stream slice date range. |
+| `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description |
 | `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum |
 | `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword |
 | `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account. |

@@ -29,7 +29,7 @@ Check out common troubleshooting issues for the Streamr destination connector
 
 All json data is output at Streamr
 
-#### Data schema
+## Data schema
 
 Any json data schema will work
 

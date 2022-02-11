@@ -22,7 +22,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   private static final String DB_NAME = "comprehensive";
   private static final String SCHEMA_NAME = "dbo";
 
-  private static final String CREATE_TABLE_SQL = "USE " + DB_NAME + "\nCREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
+  private static final String CREATE_TABLE_SQL =
+      "USE " + DB_NAME + "\nCREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
 
   @Override
   protected JsonNode getConfig() {
@@ -41,7 +42,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
+        .acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
@@ -150,8 +152,10 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("real")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18", "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4), String.valueOf(Math.pow(10, -38) * -1.18),
+            .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18",
+                "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4),
+                String.valueOf(Math.pow(10, -38) * -1.18),
                 String.valueOf(Math.pow(10, -38) * 1.18), String.valueOf(Math.pow(10, 38) * 3.4))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
@@ -161,8 +165,10 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("float(24)")
-            .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18", "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4), String.valueOf(Math.pow(10, -38) * -1.18),
+            .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18",
+                "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4),
+                String.valueOf(Math.pow(10, -38) * -1.18),
                 String.valueOf(Math.pow(10, -38) * 1.18), String.valueOf(Math.pow(10, 38) * 3.4))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
@@ -174,7 +180,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("float(53)")
             .addInsertValues("null", "power(1e1, 308)*-1.79", "power(1e1, -308)*-2.23",
                 "power(1e1, -308)*2.23", "power(1e1, 308)*1.79")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308) * -1.79), String.valueOf(Math.pow(10, -308) * -2.23),
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308) * -1.79),
+                String.valueOf(Math.pow(10, -308) * -2.23),
                 String.valueOf(Math.pow(10, -308) * 2.23), String.valueOf(Math.pow(10, 308) * 1.79))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
@@ -323,14 +330,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
-                "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
-            // since the epoch)
-            // still useable but requires transformation if true date/datetime type required in destination
-            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-            // .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
-            // "1999-01-08T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
+            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -339,11 +340,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("smalldatetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
-            // since the epoch)
-            // still useable but requires transformation if true date/datetime type required in destination
-            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-            // .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
+            .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -352,11 +349,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
-            // since the epoch)
-            // still useable but requires transformation if true date/datetime type required in destination
-            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-            // .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -365,11 +358,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime2")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
-            // since the epoch)
-            // still useable but requires transformation if true date/datetime type required in destination
-            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-            // .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -377,12 +366,9 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
-            // since the epoch)
-            // still useable but requires transformation if true date/datetime type required in destination
-            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-            .addNullExpectedValue()
+            .addInsertValues("'00:00:00.0000000'", "'23:59:59.9999999'", "'00:00:00'", "'23:58'",
+                "null")
+            .addExpectedValues("00:00:00", "23:59:59.9999999", "00:00:00", "23:58:00", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -391,9 +377,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetimeoffset")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
-            // TODO: BUG - seem to be getting back 0001-01-08T00:00:00+01:00 ... this is clearly wrong
-            // .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
-            // "9999-01-10 00:00:00.0000000 +01:00", null)
+            .addExpectedValues("0001-01-10 00:00:00 +01:00", "9999-01-10 00:00:00 +01:00", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

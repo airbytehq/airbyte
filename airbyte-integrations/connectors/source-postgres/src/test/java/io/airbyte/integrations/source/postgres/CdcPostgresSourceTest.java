@@ -98,6 +98,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", dbName)
+        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)

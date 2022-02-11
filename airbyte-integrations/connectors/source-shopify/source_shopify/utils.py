@@ -9,9 +9,21 @@ from typing import Dict
 
 import requests
 
+SCOPES_MAPPING = {
+    "read_customers": ["Customers"],
+    "read_orders": ["Orders", "AbandonedCheckouts", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
+    "read_draft_orders": ["DraftOrders"],
+    "read_products": ["Products", "CustomCollections", "Collects"],
+    "read_content": ["Pages"],
+    "read_price_rules": ["PriceRules"],
+    "read_discounts": ["DiscountCodes"],
+    "read_locations": ["Locations"],
+    "read_inventory": ["InventoryItems", "InventoryLevels"],
+    "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
+}
+
 
 class ShopifyRateLimiter:
-
     """
     Define timings for RateLimits. Adjust timings if needed.
 
@@ -92,7 +104,6 @@ class ShopifyRateLimiter:
 
 
 class EagerlyCachedStreamState:
-
     """
     This is the placeholder for the tmp stream state for each incremental stream,
     It's empty, once the sync has started and is being updated while sync operation takes place,

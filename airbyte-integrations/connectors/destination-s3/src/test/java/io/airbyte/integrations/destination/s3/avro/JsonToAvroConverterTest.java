@@ -77,7 +77,7 @@ class JsonToAvroConverterTest {
   public void testFieldTypeConversion(final String fieldName, final JsonNode jsonFieldSchema, final JsonNode avroFieldType) {
     assertEquals(
         avroFieldType,
-        Jsons.deserialize(SCHEMA_CONVERTER.getNullableFieldTypes(fieldName, jsonFieldSchema, true, true).toString()),
+        Jsons.deserialize(SCHEMA_CONVERTER.parseJsonField(fieldName, null, jsonFieldSchema, true, true).toString()),
         String.format("Test for %s failed", fieldName));
   }
 
@@ -111,7 +111,7 @@ class JsonToAvroConverterTest {
                                      final JsonNode avroSchema,
                                      final JsonNode avroObject)
       throws Exception {
-    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields, true);
+    final Schema actualAvroSchema = SCHEMA_CONVERTER.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields, true, true, true);
     assertEquals(
         avroSchema,
         Jsons.deserialize(actualAvroSchema.toString()),

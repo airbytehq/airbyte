@@ -19,6 +19,7 @@ jobs:
             test
             test-performance
             publish
+            publish-external
             publish-cdk
             gke-kube-test
             run-specific-test

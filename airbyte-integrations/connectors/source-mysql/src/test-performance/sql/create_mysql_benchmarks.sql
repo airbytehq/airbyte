@@ -78,7 +78,7 @@ END while;
 
 COMMIT;
 SET
-@insertTable = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+@insertTable = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longtextfield, timestampfield) values (');
 
 while @counter < @vmaxoneinsert do
 SET
@@ -141,7 +141,7 @@ END while;
 
 COMMIT;
 SET
-@insertTableLasted = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longblobfield, timestampfield) values (');
+@insertTableLasted = concat('insert into test (varchar1, varchar2, varchar3, varchar4, varchar5, longtextfield, timestampfield) values (');
 
 while @lastinsertcounter < @lastinsert do
 SET
@@ -206,7 +206,7 @@ delimiter # CREATE
                 varchar3 VARCHAR(255),
                 varchar4 VARCHAR(255),
                 varchar5 VARCHAR(255),
-                longblobfield longblob,
+                longtextfield longtext,
                 timestampfield TIMESTAMP
             ) engine = innodb;
 SET

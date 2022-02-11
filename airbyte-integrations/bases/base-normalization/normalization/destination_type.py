@@ -8,13 +8,13 @@ from enum import Enum
 
 class DestinationType(Enum):
     BIGQUERY = "bigquery"
+    CLICKHOUSE = "clickhouse"
     MSSQL = "mssql"
     MYSQL = "mysql"
     ORACLE = "oracle"
     POSTGRES = "postgres"
     REDSHIFT = "redshift"
     SNOWFLAKE = "snowflake"
-    CLICKHOUSE = "clickhouse"
 
     @classmethod
     def from_string(cls, string_value: str) -> "DestinationType":

@@ -4,7 +4,8 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.ConfigSchema.*;
+import static io.airbyte.config.ConfigSchema.STANDARD_DESTINATION_DEFINITION;
+import static io.airbyte.config.ConfigSchema.STANDARD_SOURCE_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,6 +23,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
@@ -29,6 +31,7 @@ import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest},
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
+ * See {@link DatabaseConfigPersistenceLoadDataTest} and
  * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
@@ -84,6 +86,21 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertThat(configPersistence
         .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3));
+  }
+
+  @Test
+  public void testGetConfigWithMetadata() throws Exception {
+    final Instant now = Instant.now().minus(Duration.ofSeconds(1));
+    writeDestination(configPersistence, DESTINATION_S3);
+    final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata = configPersistence.getConfigWithMetadata(
+        STANDARD_DESTINATION_DEFINITION,
+        DESTINATION_S3.getDestinationDefinitionId().toString(),
+        StandardDestinationDefinition.class);
+    assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.getConfigType());
+    assertTrue(configWithMetadata.getCreatedAt().isAfter(now));
+    assertTrue(configWithMetadata.getUpdatedAt().isAfter(now));
+    assertEquals(DESTINATION_S3.getDestinationDefinitionId().toString(), configWithMetadata.getConfigId());
+    assertEquals(DESTINATION_S3, configWithMetadata.getConfig());
   }
 
   @Test
@@ -187,7 +204,10 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2")
-        .withName("random-name");
+        .withName("random-name")
+        .withTombstone(false)
+        .withReleaseDate(LocalDate.now().toString())
+        .withReleaseStage(ReleaseStage.ALPHA);
     writeSource(configPersistence, source1);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
@@ -199,7 +219,10 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.5")
-        .withName("random-name-2");
+        .withName("random-name-2")
+        .withTombstone(false)
+        .withReleaseDate(LocalDate.now().minusDays(1).toString())
+        .withReleaseStage(ReleaseStage.BETA);
     writeSource(configPersistence, source2);
     assertRecordCount(2, ACTOR_DEFINITION);
     assertHasSource(source2);
@@ -231,6 +254,21 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
     final JsonNode currentWithNewFields = Jsons.deserialize("{ \"field1\": 1, \"field2\": 2, \"field3\": 3 }");
     assertEquals(currentWithNewFields, DatabaseConfigPersistence.getDefinitionWithNewFields(current, latest, newFields));
+  }
+
+  @Test
+  public void testActorDefinitionReleaseDate() throws Exception {
+    final UUID definitionId = UUID.randomUUID();
+    final String connectorRepository = "airbyte/test-connector";
+
+    // when the record does not exist, it is inserted
+    final StandardSourceDefinition source1 = new StandardSourceDefinition()
+        .withSourceDefinitionId(definitionId)
+        .withDockerRepository(connectorRepository)
+        .withDockerImageTag("0.1.2")
+        .withName("random-name")
+        .withTombstone(false);
+    writeSource(configPersistence, source1);
   }
 
 }

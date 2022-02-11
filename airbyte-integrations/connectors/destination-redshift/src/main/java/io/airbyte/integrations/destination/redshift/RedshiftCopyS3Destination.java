@@ -43,7 +43,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config), getS3DestinationConfig(config)),
+        S3CopyConfig.getS3CopyConfig(config),
         catalog,
         new RedshiftStreamCopierFactory(),
         getConfiguredSchema(config));

@@ -77,7 +77,7 @@ test $run_status == "0" || {
 show_skipped_failed_info
 
 # Build successed
-coverage_report=`sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out`
+coverage_report=`sed -n '/.*Name.*Stmts.*Miss.*Cover/,/TOTAL   /p' build.out`
 
 if ! test -z "$coverage_report"
 then

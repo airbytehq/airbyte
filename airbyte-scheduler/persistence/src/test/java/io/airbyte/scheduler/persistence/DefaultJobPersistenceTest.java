@@ -21,6 +21,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
@@ -114,6 +117,7 @@ class DefaultJobPersistenceTest {
         logPath,
         null,
         status,
+        null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         NOW.getEpochSecond());
@@ -126,6 +130,7 @@ class DefaultJobPersistenceTest {
         logPath,
         null,
         status,
+        null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         null);
@@ -232,6 +237,23 @@ class DefaultJobPersistenceTest {
 
     final Job updated = jobPersistence.getJob(jobId);
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
+    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+  }
+
+  @Test
+  @DisplayName("Should be able to read attemptFailureSummary that was written")
+  void testWriteAttemptFailureSummary() throws IOException {
+    final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    final Job created = jobPersistence.getJob(jobId);
+    final AttemptFailureSummary failureSummary = new AttemptFailureSummary().withFailures(
+        Collections.singletonList(new FailureReason().withFailureOrigin(FailureOrigin.SOURCE)));
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber, failureSummary);
+
+    final Job updated = jobPersistence.getJob(jobId);
+    assertEquals(Optional.of(failureSummary), updated.getAttempts().get(0).getFailureSummary());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
   }
 

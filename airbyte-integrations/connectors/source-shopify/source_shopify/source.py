@@ -15,12 +15,12 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
+from .utils import SCOPES_MAPPING
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
 
 class ShopifyStream(HttpStream, ABC):
-
     # Latest Stable Release
     api_version = "2021-07"
     # Page size
@@ -65,10 +65,14 @@ class ShopifyStream(HttpStream, ABC):
         # this solution designed to convert string into number, but in future can be modified for general purpose
         if isinstance(records, dict):
             # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records["shop_url"] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
             # for other cases
             for record in records:
+                # add shop_url to the record to make querying easy
+                record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
     @property
@@ -136,7 +140,6 @@ class Orders(IncrementalShopifyStream):
 
 
 class ChildSubstream(IncrementalShopifyStream):
-
     """
     ChildSubstream - provides slicing functionality for streams using parts of data from parent stream.
     For example:
@@ -247,7 +250,6 @@ class CustomCollections(IncrementalShopifyStream):
 
 
 class Collects(IncrementalShopifyStream):
-
     """
     Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/docs/admin-api/rest/reference/products/collect
@@ -280,7 +282,6 @@ class Collects(IncrementalShopifyStream):
 
 
 class OrderRefunds(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -295,7 +296,6 @@ class OrderRefunds(ChildSubstream):
 
 
 class OrderRisks(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -311,7 +311,6 @@ class OrderRisks(ChildSubstream):
 
 
 class Transactions(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -338,7 +337,6 @@ class PriceRules(IncrementalShopifyStream):
 
 
 class DiscountCodes(ChildSubstream):
-
     parent_stream_class: object = PriceRules
     slice_key = "price_rule_id"
 
@@ -350,7 +348,6 @@ class DiscountCodes(ChildSubstream):
 
 
 class Locations(ShopifyStream):
-
     """
     The location API does not support any form of filtering.
     https://shopify.dev/api/admin-rest/2021-07/resources/location
@@ -386,7 +383,6 @@ class InventoryLevels(ChildSubstream):
 
 
 class InventoryItems(ChildSubstream):
-
     parent_stream_class: object = Products
     slice_key = "id"
     nested_record = "variants"
@@ -394,13 +390,11 @@ class InventoryItems(ChildSubstream):
     data_field = "inventory_items"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-
         ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
         return f"inventory_items.json?ids={ids}"
 
 
 class FulfillmentOrders(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -417,7 +411,6 @@ class FulfillmentOrders(ChildSubstream):
 
 
 class Fulfillments(ChildSubstream):
-
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -437,29 +430,39 @@ class Shop(ShopifyStream):
 
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-
         """
         Testing connection availability for the connector.
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            responce = list(Shop(config).read_records(sync_mode=None))
-            # check for the shop_id is present in the responce
-            shop_id = responce[0].get("id")
+            response = list(Shop(config).read_records(sync_mode=None))
+            # check for the shop_id is present in the response
+            shop_id = response[0].get("id")
             if shop_id is not None:
                 return True, None
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, IndexError) as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
         config["authenticator"] = ShopifyAuthenticator(config)
 
-        return [
+        user_scopes = self.get_user_scopes(config)
+
+        always_permitted_streams = ["Metafields", "Shop"]
+
+        permitted_streams = [
+            stream
+            for user_scope in user_scopes
+            if user_scope["handle"] in SCOPES_MAPPING
+            for stream in SCOPES_MAPPING.get(user_scope["handle"])
+        ] + always_permitted_streams
+
+        # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
+        stream_instances = [
             Customers(config),
             Orders(config),
             DraftOrders(config),
@@ -481,3 +484,16 @@ class SourceShopify(AbstractSource):
             Fulfillments(config),
             Shop(config),
         ]
+
+        return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
+
+    @staticmethod
+    def get_user_scopes(config):
+        session = requests.Session()
+        headers = config["authenticator"].get_auth_header()
+        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
+        return response["access_scopes"]
+
+    @staticmethod
+    def format_name(name):
+        return "".join(x.capitalize() for x in name.split("_"))

@@ -28,10 +28,7 @@ class AirbyteRecordMessage(BaseModel):
 
     stream: str = Field(..., description="the name of this record's stream")
     data: Dict[str, Any] = Field(..., description="the record data")
-    emitted_at: int = Field(
-        ...,
-        description="when the data was emitted from the source. epoch in millisecond.",
-    )
+    emitted_at: int = Field(..., description="when the data was emitted from the source. epoch in millisecond.")
     namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
 
 
@@ -108,8 +105,7 @@ class AuthType(Enum):
 class AuthSpecification(BaseModel):
     auth_type: Optional[AuthType] = None
     oauth2Specification: Optional[OAuth2Specification] = Field(
-        None,
-        description="If the connector supports OAuth, this field should be non-null.",
+        None, description="If the connector supports OAuth, this field should be non-null."
     )
 
 
@@ -182,13 +178,9 @@ class ConfiguredAirbyteStream(BaseModel):
 class AdvancedAuth(BaseModel):
     auth_flow_type: Optional[AuthFlowType] = None
     predicate_key: Optional[List[str]] = Field(
-        None,
-        description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+        None, description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable."
     )
-    predicate_value: Optional[str] = Field(
-        None,
-        description="Value of the predicate_key fields for the advanced auth to be applicable.",
-    )
+    predicate_value: Optional[str] = Field(None, description="Value of the predicate_key fields for the advanced auth to be applicable.")
     oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
 
@@ -198,10 +190,7 @@ class ConnectorSpecification(BaseModel):
 
     documentationUrl: Optional[AnyUrl] = None
     changelogUrl: Optional[AnyUrl] = None
-    connectionSpecification: Dict[str, Any] = Field(
-        ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
-    )
+    connectionSpecification: Dict[str, Any] = Field(..., description="ConnectorDefinition specific blob. Must be a valid JSON string.")
     supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
@@ -234,20 +223,13 @@ class AirbyteMessage(BaseModel):
         extra = Extra.allow
 
     type: Type = Field(..., description="Message type")
-    log: Optional[AirbyteLogMessage] = Field(
-        None,
-        description="log message: any kind of logging you want the platform to know about.",
-    )
+    log: Optional[AirbyteLogMessage] = Field(None, description="log message: any kind of logging you want the platform to know about.")
     spec: Optional[ConnectorSpecification] = None
     connectionStatus: Optional[AirbyteConnectionStatus] = None
-    catalog: Optional[AirbyteCatalog] = Field(
-        None,
-        description="log message: any kind of logging you want the platform to know about.",
-    )
+    catalog: Optional[AirbyteCatalog] = Field(None, description="catalog message: the calalog")
     record: Optional[AirbyteRecordMessage] = Field(None, description="record message: the record")
     state: Optional[AirbyteStateMessage] = Field(
-        None,
-        description="schema message: the state. Must be the last message produced. The platform uses this information",
+        None, description="schema message: the state. Must be the last message produced. The platform uses this information"
     )
 
 

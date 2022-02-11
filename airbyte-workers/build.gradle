@@ -21,6 +21,7 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')

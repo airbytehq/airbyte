@@ -79,6 +79,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
+  private static final String NORMALIZATION_VERSION = "dev";
+
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
@@ -308,7 +310,7 @@ public abstract class DestinationAcceptanceTest {
 
     setup(testEnv);
 
-    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host", false);
+    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
   }
 
   @AfterEach
@@ -462,7 +464,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(workerConfigs, getImageName(), processFactory);
+        NormalizationRunnerFactory.create(workerConfigs, getImageName(), processFactory, NORMALIZATION_VERSION);
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -735,13 +737,14 @@ public abstract class DestinationAcceptanceTest {
     final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
         workerConfigs,
         getImageName(),
-        processFactory));
+        processFactory,
+        NORMALIZATION_VERSION));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft());
+        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft() + ":" + NORMALIZATION_VERSION);
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -802,12 +805,13 @@ public abstract class DestinationAcceptanceTest {
     final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
         workerConfigs,
         getImageName(),
-        processFactory));
+        processFactory,
+        NORMALIZATION_VERSION));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
-        .withGitRepoBranch("master")
+        .withGitRepoBranch("main")
         .withDockerImage("fishtownanalytics/dbt:0.19.1")
         .withDbtArguments("debug");
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
@@ -926,7 +930,7 @@ public abstract class DestinationAcceptanceTest {
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
+  protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
@@ -993,7 +997,8 @@ public abstract class DestinationAcceptanceTest {
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         workerConfigs,
         getImageName(),
-        processFactory);
+        processFactory,
+        NORMALIZATION_VERSION);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),

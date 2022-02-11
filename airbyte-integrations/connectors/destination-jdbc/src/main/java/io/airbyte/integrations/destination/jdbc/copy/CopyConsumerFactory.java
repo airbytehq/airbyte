@@ -148,6 +148,7 @@ public class CopyConsumerFactory {
       for (final var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
+      db.close();
     }
     if (firstException != null) {
       throw firstException;
