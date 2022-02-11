@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
  * Since Prometheus publishes metrics at a specific port, we can test our wrapper by querying the
  * port and validating the response.
  */
-public class MetricSingletonTest {
+public class PrometheusMetricSingletonTest {
 
   private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
       .version(HttpClient.Version.HTTP_1_1)
@@ -41,12 +41,12 @@ public class MetricSingletonTest {
       availPort = socket.getLocalPort();
     }
 
-    MetricSingleton.initializeMonitoringServiceDaemon(String.valueOf(availPort), Map.of(), true);
+    PrometheusMetricSingleton.initializeMonitoringServiceDaemon(String.valueOf(availPort), Map.of(), true);
   }
 
   @AfterAll
   public static void tearDown() {
-    MetricSingleton.getInstance().closeMonitoringServiceDaemon();
+    PrometheusMetricSingleton.getInstance().closeMonitoringServiceDaemon();
   }
 
   @Nested
@@ -54,12 +54,13 @@ public class MetricSingletonTest {
 
     @Test
     public void testNameWithDashFails() {
-      assertThrows(RuntimeException.class, () -> MetricSingleton.getInstance().incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
+      assertThrows(RuntimeException.class,
+          () -> PrometheusMetricSingleton.getInstance().incrementCounter("bad-name", 0.0, "name with dashes are not allowed"));
     }
 
     @Test
     public void testNoDescriptionFails() {
-      assertThrows(RuntimeException.class, () -> MetricSingleton.getInstance().incrementCounter("good_name", 0.0, null));
+      assertThrows(RuntimeException.class, () -> PrometheusMetricSingleton.getInstance().incrementCounter("good_name", 0.0, null));
     }
 
   }
@@ -69,7 +70,7 @@ public class MetricSingletonTest {
     final var metricName = "test_counter";
     final var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing counter");
+      PrometheusMetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing counter");
       Thread.sleep(500);
     }
 
@@ -82,7 +83,7 @@ public class MetricSingletonTest {
     final var metricName = "test_gauge";
     final var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing gauge");
+      PrometheusMetricSingleton.getInstance().incrementCounter(metricName, rand.nextDouble() * 2, "testing gauge");
       Thread.sleep(500);
     }
 
@@ -95,7 +96,7 @@ public class MetricSingletonTest {
     final var metricName = "test_timer";
     final var rand = new Random();
     for (int i = 0; i < 5; i++) {
-      MetricSingleton.getInstance().recordTime(metricName, rand.nextDouble() * 2, "testing time");
+      PrometheusMetricSingleton.getInstance().recordTime(metricName, rand.nextDouble() * 2, "testing time");
       Thread.sleep(500);
     }
 
