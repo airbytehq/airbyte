@@ -96,7 +96,7 @@ class TwitterAdsStream(HttpStream, ABC):
 
     
         next_page_token = response.json()['next_cursor']
-        next_page_token
+        return next_page_token
     
 
     def request_params(
@@ -124,14 +124,11 @@ class TwitterAdsStream(HttpStream, ABC):
 
                 json_str = json_bytes.decode('utf-8') 
                 result = dict(json.loads(json_str))
-
+                #ToDo: We Need Request Params Information for to get all needed variables, Result data on its own is not to useful.. In particular we need the start/end time + placement information to make sense of the time series data
                 results.append(result.get("data"))
 
 
             results =[ item for sublist in results for item in sublist]
-            
-            
-
             return results
         else:
             response_json = response.json()
@@ -224,13 +221,13 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         """
         
         auth = self.auth
-        # we need to specifiy a start/end time different from the one in the config as maximum time span is 7day for this endpoint
+        #ToDo: we need to specifiy a start/end time different from the one in the config as maximum time span is 45days for this endpoint, think about what we want/need here + make it as part of config?
         start_time = str((datetime.date.today() - datetime.timedelta(days=45)).strftime("%Y-%m-%d"))
         end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
         metric_groups =  self.metric_groups
         account_id = self.account_id
-        placement = self.placement
+        placements = self.placement
         segmentation = self.segmentation
         entity = "PROMOTED_TWEET"
         
@@ -265,41 +262,43 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         job_success_urls = [] 
         job_statuses = []
 
-        for each in promoted_tweet_ids_str:
-            post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
-            params_post =  urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation})
-            params_post =  urllib.parse.unquote(params_post)
-            post_url = post_base_url + params_post
+        # we need to do seperate requests for different placements. We might want to do this in seperate streams instead of Looping
+        for placement in placements:
 
-            post_response = requests.post(post_url,  auth=auth)
-            post_response = post_response.json()
+            for each in promoted_tweet_ids_str:
+                post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
+                params_post =  urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation})
+                params_post =  urllib.parse.unquote(params_post)
+                post_url = post_base_url + params_post
+                post_response = requests.post(post_url,  auth=auth)
+                post_response = post_response.json()
 
-    
-            job_id = post_response['data']['id_str']
-
-            job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
-            job_success_params = urllib.parse.urlencode({"job_id": job_id})
-            job_success_params = urllib.parse.unquote(job_success_params)
-            job_success_url = job_success_url + job_success_params
         
-            job_success_response = requests.get(job_success_url, auth=auth)
-            job_success_response = job_success_response.json()
-            job_status = job_success_response['data'][0]['status']
-            job_url = job_success_response['data'][0]['url']
-            
-            job_urls.append(job_url)
-            job_success_urls.append(job_success_url)
-            job_statuses.append(job_status)
+                job_id = post_response['data']['id_str']
 
-        for job_success_url,job_status in zip(job_success_urls, job_statuses):
-            while job_status != "SUCCESS":
-                time.sleep(30)
+                job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
+                job_success_params = urllib.parse.urlencode({"job_id": job_id})
+                job_success_params = urllib.parse.unquote(job_success_params)
+                job_success_url = job_success_url + job_success_params
+            
                 job_success_response = requests.get(job_success_url, auth=auth)
                 job_success_response = job_success_response.json()
                 job_status = job_success_response['data'][0]['status']
                 job_url = job_success_response['data'][0]['url']
-            
+                
                 job_urls.append(job_url)
+                job_success_urls.append(job_success_url)
+                job_statuses.append(job_status)
+
+            for job_success_url,job_status in zip(job_success_urls, job_statuses):
+                while job_status != "SUCCESS":
+                    time.sleep(30)
+                    job_success_response = requests.get(job_success_url, auth=auth)
+                    job_success_response = job_success_response.json()
+                    job_status = job_success_response['data'][0]['status']
+                    job_url = job_success_response['data'][0]['url']
+                
+                    job_urls.append(job_url)
 
 
             
@@ -308,6 +307,8 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         self.job_urls = job_urls
 
         request_url =  job_success_url
+
+        #ToDo: we could think about returning placement + start/end time information here to add to the results later in  the parse_response function
         return request_url
 
 # Basic incremental stream
