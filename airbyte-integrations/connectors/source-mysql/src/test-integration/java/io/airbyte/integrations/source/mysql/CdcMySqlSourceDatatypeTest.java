@@ -244,8 +244,8 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'2005-10-10 23:22:21'", "'2005-10-10 23:22:21.123456'")
-            .addExpectedValues(null, "2005-10-10T23:22:21.0000Z", "2005-10-10T23:22:21.123456Z")
+            .addInsertValues("null", "'2005-10-10 23:22:21'")
+            .addExpectedValues(null, "2005-10-10T23:22:21.0000Z")
             .build());
 
     addDataTypeTestData(
