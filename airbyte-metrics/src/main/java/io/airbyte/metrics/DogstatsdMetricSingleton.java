@@ -6,9 +6,7 @@ package io.airbyte.metrics;
 
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 
 /**
  * Light wrapper around the DogsStatsD client to make using the client slightly more ergonomic.
