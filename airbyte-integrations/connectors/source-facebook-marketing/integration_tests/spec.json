@@ -108,7 +108,7 @@
     "required": ["account_id", "access_token", "start_date"],
     "definitions": {
       "InsightConfig": {
-        "title": "Insight Configuration",
+        "title": "InsightConfig",
         "type": "object",
         "properties": {
           "name": {
@@ -118,7 +118,7 @@
           },
           "fields": {
             "title": "Fields",
-            "description": "The list of chosen Fields.",
+            "description": "A list of chosen Fields.",
             "default": [],
             "type": "array",
             "items": {
@@ -127,7 +127,7 @@
           },
           "breakdowns": {
             "title": "Breakdowns",
-            "description": "The list of chosen Breakdowns.",
+            "description": "A list of chosen Breakdowns.",
             "default": [],
             "type": "array",
             "items": {
@@ -136,7 +136,7 @@
           },
           "action_breakdowns": {
             "title": "Action Breakdowns",
-            "description": "The list of chosen Action Breakdowns.",
+            "description": "A list of chosen Action Breakdowns.",
             "default": [],
             "type": "array",
             "items": {

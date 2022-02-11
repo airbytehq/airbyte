@@ -45,34 +45,36 @@ logger = logging.getLogger("airbyte")
 
 class InsightConfig(BaseModel):
 
-    name: str = Field(description="The name value of insight")
+    name: str = Field(description="The name of Insight.")
 
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
+    fields: Optional[List[str]] = Field(description="A list of chosen Fields.", default=[])
 
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
+    breakdowns: Optional[List[str]] = Field(description="A list of chosen Breakdowns.", default=[])
 
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
+    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen Action Breakdowns.", default=[])
 
 
 class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
+    account_id: str = Field(
+        title="Account ID", description="The Facebook Ad Account ID. Required for all requests in pair with Personal Access Token."
+    )
 
     access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
+        description="Access Token for making authenticated requests.",
         airbyte_secret=True,
     )
 
     start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
 
     end_date: Optional[datetime] = Field(
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. All data generated between Start Date and this date will be replicated. Any data after this date will not be replicated. Not setting this option will result in always syncing the latest data.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
@@ -82,23 +84,23 @@ class ConnectorConfig(BaseModel):
         default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
     )
 
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets")
+    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads and adsets.")
 
     insights_lookback_window: int = Field(
         default=28,
-        description="The attribution window for the actions",
+        description="The attribution window for actions. That is, the maximum number of days allowed between when a user views or clicks an ad, and takes an action, to attribute their action to the ad.",
         minimum=0,
         maximum=28,
     )
 
     insights_days_per_job: int = Field(
         default=7,
-        description="Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
+        description="The number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
         minimum=1,
         maximum=30,
     )
     custom_insights: Optional[List[InsightConfig]] = Field(
-        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+        description="A list which contains insights entries, each entry must have the Name and can contains Fields, Breakdowns or Action Breakdowns."
     )
 
 
