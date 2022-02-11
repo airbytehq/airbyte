@@ -16,7 +16,7 @@ type IProps = {
 };
 
 const isPartialSuccess = (attempt: Attempt) => {
-  return attempt.failureSummary?.partialSuccess ? true : false;
+  return !!attempt.failureSummary?.partialSuccess;
 };
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
