@@ -182,7 +182,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| 0.5.3   | 2022-01-11 | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |
+| 0.5.4   | 2022-01-11 | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |
 | 0.5.2   | 2021-12-14 | [6425](https://github.com/airbytehq/airbyte/issues/6425)   | MySQL CDC sync fails because starting binlog position not found in DB                                            |
 | 0.5.1   | 2021-12-13 | [8582](https://github.com/airbytehq/airbyte/pull/8582)     | Update connector fields title/description                                                                        |
 | 0.5.0   | 2021-12-11 | [7970](https://github.com/airbytehq/airbyte/pull/7970)     | Support all MySQL types                                                                                          |
