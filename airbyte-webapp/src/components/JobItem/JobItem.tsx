@@ -95,11 +95,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
           >
             {isOpen ? (
               isJobEntity(props) ? (
-                <JobLogs
-                  id={jobMeta.id}
-                  jobIsFailed={isFailed}
-                  isPartialSuccess={isPartialSuccess}
-                />
+                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
               ) : (
                 <JobCurrentLogs
                   id={jobMeta.id}

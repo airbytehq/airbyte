@@ -4,6 +4,8 @@ import { FormattedMessage } from "react-intl";
 import Status from "core/statuses";
 import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
 
+import { Attempt } from "core/domain/job/Job";
+
 import Logs from "./Logs";
 import Tabs from "./Tabs";
 import { LogsDetails } from "./LogsDetails";
@@ -11,10 +13,13 @@ import { LogsDetails } from "./LogsDetails";
 type IProps = {
   id: number | string;
   jobIsFailed?: boolean;
-  isPartialSuccess?: boolean;
 };
 
-const JobLogs: React.FC<IProps> = ({ id, jobIsFailed, isPartialSuccess }) => {
+const isPartialSuccess = (attempt: Attempt) => {
+  return !!attempt.failureSummary?.partialSuccess;
+};
+
+const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const job = useGetJob(id);
   const debugInfo = useGetDebugInfoJob(id);
 
@@ -32,7 +37,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed, isPartialSuccess }) => {
 
   const attemptsTabs = job.attempts.map((item, index) => ({
     id: index.toString(),
-    isPartialSuccess,
+    isPartialSuccess: isPartialSuccess(item.attempt),
     status:
       item.attempt.status === Status.FAILED ||
       item.attempt.status === Status.SUCCEEDED

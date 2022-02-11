@@ -2294,7 +2294,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.25"
+- dockerImage: "airbyte/source-google-ads:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2352,13 +2352,16 @@
                 >docs</a>"
               airbyte_secret: true
         customer_id:
-          title: "Customer ID"
+          title: "Customer ID(s)"
           type: "string"
-          description: "Customer ID must be specified as a 10-digit number without\
-            \ dashes. More instruction on how to find this value in our <a href=\"\
-            https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
+          description: "Comma separated list of (client) customer IDs. Each customer\
+            \ ID must be specified as a 10-digit number without dashes. More instruction\
+            \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
             >docs</a>. Metrics streams like AdGroupAdReport cannot be requested for\
             \ a manager account."
+          pattern: "^[0-9]{10}(,[0-9]{10})*$"
+          examples:
+          - "6783948572,5839201945"
           order: 1
         start_date:
           type: "string"
@@ -2407,6 +2410,9 @@
             \ the manager account (10-digit number without dashes). More information\
             \ about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\"\
             >here</a>"
+          pattern: "^([0-9]{10})?$"
+          examples:
+          - "7349206847"
           order: 4
         conversion_window_days:
           title: "Conversion Window (Optional)"
@@ -4963,7 +4969,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.2"
+- dockerImage: "airbyte/source-mysql:0.5.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
