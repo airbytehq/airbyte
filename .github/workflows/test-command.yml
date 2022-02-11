@@ -88,7 +88,7 @@ jobs:
 
       - name: test ${{ github.event.inputs.connector }}
         run: |
-          ./tools/bin/bg_wrapper.py ./tools/bin/output_buffer_github_test.py ${{ github.event.inputs.connector }} | jq .logfile --raw-output >LOGFILE
+          ./tools/bin/bg_wrapper.py ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} | jq .logfile --raw-output >LOGFILE
           tail -f `cat LOGFILE`
         id: test
         env:
