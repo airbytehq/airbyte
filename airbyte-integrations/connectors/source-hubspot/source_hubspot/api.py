@@ -225,7 +225,7 @@ class Stream(BaseStream, ABC):
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
-    def get_fields(self):
+    def get_fields(self) -> List[str]:
         json_schema = self.get_json_schema()
         return list(json_schema.get("properties", {}).keys())
 

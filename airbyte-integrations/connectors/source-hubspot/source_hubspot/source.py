@@ -53,11 +53,11 @@ class SourceHubspot(AbstractSource):
         return alive, error_msg
 
     @staticmethod
-    def get_api(config: Mapping[str, Any]):
+    def get_api(config: Mapping[str, Any]) -> API:
         credentials = config.get("credentials", {})
         return API(credentials=credentials)
 
-    def get_common_params(self, config):
+    def get_common_params(self, config) -> Mapping[str, Any]:
         start_date = config.get("start_date")
         api = self.get_api(config=config)
         common_params = dict(api=api, start_date=start_date)
