@@ -210,7 +210,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("2009-02-21 18:00:00.0 EST", "2009-02-21 18:00:00.123456 EST",
                 "2009-02-21 18:00:00.0 -5:00", "2009-02-21 18:00:00.123456 -5:00")
             .build());
-//
+
     final DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSSSSS");
     utcFormat.setTimeZone(TimeZone.getTimeZone(Calendar.getInstance().getTimeZone().getID()));
     Date date = null;

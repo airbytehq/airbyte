@@ -198,9 +198,9 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04Z'",
-                    "'9999-12-31T13:00:04.123Z'", "null")
+                "'9999-12-31T13:00:04.123Z'", "null")
             .addExpectedValues("1753-01-01T00:00:00.0000Z", "9999-12-31T00:00:00.0000Z", "9999-12-31T13:00:04.0000Z",
-                    "9999-12-31T13:00:04.1230Z", null)
+                "9999-12-31T13:00:04.1230Z", null)
             .build());
 
     addDataTypeTestData(
