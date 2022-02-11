@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StreamCopier.MAX_CHUNK_SIZE;
+
 import com.google.cloud.storage.Storage;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.lang.Exceptions;
@@ -41,7 +43,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(gcsStagingFiles), 1000);
+    List<List<String>> partition = Lists.partition(new ArrayList<>(gcsStagingFiles), MAX_CHUNK_SIZE);
     for (int i = 0; i < partition.size(); i++) {
       LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
           schemaName, partition.size());

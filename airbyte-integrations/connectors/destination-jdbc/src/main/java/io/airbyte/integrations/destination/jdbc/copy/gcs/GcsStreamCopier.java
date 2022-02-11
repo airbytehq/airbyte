@@ -51,21 +51,20 @@ public abstract class GcsStreamCopier implements StreamCopier {
   // QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
   public static final int MAX_PARTS_PER_FILE = 1000;
-
-  private final Storage storageClient;
   protected final GcsConfig gcsConfig;
   protected final String tmpTableName;
-  private final DestinationSyncMode destSyncMode;
   protected final String schemaName;
   protected final String streamName;
   protected final JdbcDatabase db;
-  private final ExtendedNameTransformer nameTransformer;
-  private final SqlOperations sqlOperations;
   protected final Set<String> gcsStagingFiles = new HashSet<>();
-  private final HashMap<String, WriteChannel> channels = new HashMap<>();
-  private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
   protected final String stagingFolder;
   protected StagingFilenameGenerator filenameGenerator;
+  private final Storage storageClient;
+  private final DestinationSyncMode destSyncMode;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
+  private final HashMap<String, WriteChannel> channels = new HashMap<>();
+  private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
 
   public GcsStreamCopier(final String stagingFolder,
                          final DestinationSyncMode destSyncMode,

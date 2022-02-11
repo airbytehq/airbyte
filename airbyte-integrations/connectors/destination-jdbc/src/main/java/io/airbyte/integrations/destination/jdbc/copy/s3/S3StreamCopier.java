@@ -38,16 +38,16 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final AmazonS3 s3Client;
   protected final S3DestinationConfig s3Config;
   protected final String tmpTableName;
-  private final DestinationSyncMode destSyncMode;
   protected final String schemaName;
   protected final String streamName;
   protected final JdbcDatabase db;
-  private final ExtendedNameTransformer nameTransformer;
-  private final SqlOperations sqlOperations;
   protected final ConfiguredAirbyteStream configuredAirbyteStream;
-  private final Timestamp uploadTime;
   protected final String stagingFolder;
   protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
+  private final DestinationSyncMode destSyncMode;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
+  private final Timestamp uploadTime;
   private final boolean purgeStagingData;
 
   // The number of batches of records that will be inserted into each file.
