@@ -13,6 +13,7 @@ from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Customer as CustomerModel
+from chargebee.models import Event as EventModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
@@ -276,3 +277,13 @@ class AttachedItem(SemiIncrementalChargebeeStream):
         """
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         return self.api.list(id=stream_slice["item_id"], params=params)
+
+
+class Event(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.eu.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
+    """
+
+    cursor_field = "occurred_at"
+
+    api = EventModel
