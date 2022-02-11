@@ -723,7 +723,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // when initial and final cursor fields are the same.
-  private void incrementalCursorCheck(
+  protected void incrementalCursorCheck(
                                       final String cursorField,
                                       final String initialCursorValue,
                                       final String endCursorValue,
