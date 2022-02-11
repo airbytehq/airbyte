@@ -62,7 +62,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.7 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
+| 0.1.7 | 2022-02-14 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.1.6 | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table |
 | 0.1.5 | 2022-02-01 | [9875](https://github.com/airbytehq/airbyte/pull/9875) | Discover only permitted for user tables |
 | 0.1.4 | 2021-12-30 | [9187](https://github.com/airbytehq/airbyte/pull/9187) [8749](https://github.com/airbytehq/airbyte/pull/8749) | Add support of JdbcType.ARRAY to JdbcSourceOperations. |
@@ -70,4 +70,3 @@ You can also enter your own password for the keystore, but if you don't, the pas
 | 0.1.2 | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355) | Added ssl support |
 | 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.1.0 | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197) | New Source: IBM DB2 |
-

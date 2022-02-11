@@ -51,8 +51,7 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.3 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
+| 0.1.3 | 2022-02-14 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.1 | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367) | Migrated to CI Sandbox, refactorred code structure for future support |
 | 0.1.0 | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358) | New source |
-

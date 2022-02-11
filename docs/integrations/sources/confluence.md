@@ -49,6 +49,6 @@ Follow [this article](https://support.atlassian.com/atlassian-account/docs/manag
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.2 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
+| 0.1.2 | 2022-02-14 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.1.1 | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831) | Fix: Spec was not pushed to cache |
 | 0.1.0 | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241) | 🎉 New Source: Confluence |

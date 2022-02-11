@@ -46,7 +46,7 @@ If you have `free` subscription plan \(you may check it [here](https://manage.ex
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.6 | 2021-12-08 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
+| 0.2.6 | 2022-02-14 | [8494](https://github.com/airbytehq/airbyte/pull/8494) | Update fields in source-connectors specifications |
 | 0.2.5 | 2021-11-12 | [7936](https://github.com/airbytehq/airbyte/pull/7936) | Add ignore_weekends boolean option |
 | 0.2.3 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.2.2 | 2021-05-28 | [3677](https://github.com/airbytehq/airbyte/pull/3677) | Adding clearer error message when a currency isn't supported. access_key field in spec.json was marked as sensitive |
