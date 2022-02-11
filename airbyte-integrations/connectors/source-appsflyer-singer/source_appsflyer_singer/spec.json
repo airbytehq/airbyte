@@ -9,12 +9,12 @@
     "properties": {
       "app_id": {
         "type": "string",
-	"title": "App ID",
+        "title": "App ID",
         "description": "<a href=\"https://support.appsflyer.com/hc/en-us/articles/207034346-Using-Pull-API-aggregate-data#principles-of-implementation\">app_id</a> is an app identifier found in AppsFlyer."
       },
       "api_token": {
         "type": "string",
-	"title": "API Token"
+        "title": "API Token",
         "description": "<a href=\"https://support.appsflyer.com/hc/en-us/articles/207034346-Using-Pull-API-aggregate-data#principles-of-implementation\">api_token</a> is the Pull API token for authentication."
       }
     }

@@ -9,12 +9,12 @@
     "properties": {
       "subdomain": {
         "type": "string",
-    	"title": "Subdomain",
+        "title": "Subdomain",
         "description": "Your company subdomain name used to access BambooHR."
       },
       "api_key": {
         "type": "string",
-    	"title": "API Key",
+        "title": "API Key",
         "description": "Bamboo HR API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/bamboo-hr\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       }

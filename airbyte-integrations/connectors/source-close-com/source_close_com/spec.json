@@ -9,13 +9,13 @@
     "properties": {
       "api_key": {
         "type": "string",
-	"title": "API Key",
+        "title": "API Key",
         "description": "Close.com API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/close-com\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-	"title": "Start Date",
+        "title": "Start Date",
         "description": "The start date to sync data. Leave blank for full sync. Format: YYYY-MM-DD.",
         "examples": ["2021-01-01"],
         "default": "2021-01-01",

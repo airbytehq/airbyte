@@ -40,10 +40,10 @@
         "type": "string"
       },
       "region": {
-        "description": "Region to pull data from: Sandbox Environment, North America (NA), Europe (EU), Far East (FE)",
+        "title": "AmazonAdsRegion",
+        "description": "An enumeration.",
         "default": "NA",
         "name": "Region",
-        "title": "Region",
         "enum": ["NA", "EU", "FE", "SANDBOX"],
         "type": "string"
       },

@@ -58,7 +58,7 @@ Please follow these [steps](https://developers.asana.com/docs/personal-access-to
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.4 | 2021-12-09 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
+| 0.1.4 | 2022-02-14 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
 | 0.1.3 | 2021-10-06 |  | Add oauth init flow parameters support |
 | 0.1.2 | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402) | Fix SAT tests: update schemas and invalid\_config.json file |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add entrypoint and bump version for connector |

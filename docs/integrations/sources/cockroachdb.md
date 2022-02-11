@@ -95,7 +95,6 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.7 | 2021-12-09 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
 | 0.1.6 | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table |
 | 0.1.5 | 2021-12-24 | [9004](https://github.com/airbytehq/airbyte/pull/9004) | User can see only permmited tables during discovery |
 | 0.1.4 | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |

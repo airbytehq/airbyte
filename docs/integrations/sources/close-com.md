@@ -90,6 +90,6 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.1 | 2021-12-09 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
+| 0.1.1 | 2022-02-14 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
 | 0.1.0 | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close.com connector for Airbyte |
 
