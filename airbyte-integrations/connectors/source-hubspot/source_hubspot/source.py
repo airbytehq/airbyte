@@ -142,9 +142,8 @@ class SourceHubspot(AbstractSource):
         streams = []
         for stream_instance in self.streams(config=config):
             stream = stream_instance.as_airbyte_stream()
-            properties = stream_instance.properties
-            if properties:
-                stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
+            if stream_instance.properties:
+                stream.json_schema["properties"]["properties"] = {"type": "object", "properties": stream_instance.properties}
                 stream.default_cursor_field = [stream_instance.updated_at_field]
             streams.append(stream)
 
