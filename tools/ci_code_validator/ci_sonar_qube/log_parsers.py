@@ -131,8 +131,8 @@ class LogParser(SonarQubeApi):
         def checked_path(self):
             if self.path.startswith(str(HERE) + "/"):
                 # remove a parent part of path
-                return self.path[len(str(HERE) + "/"):]
-            return self.path
+                return self.path[len(str(HERE) + "/"):].strip()
+            return self.path.strip()
 
     def __init__(self, output_file: str, host: str, token: str):
         super().__init__(host=host, token=token, pr_name="0")
