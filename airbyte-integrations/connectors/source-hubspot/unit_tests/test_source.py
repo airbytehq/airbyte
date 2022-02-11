@@ -94,7 +94,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params):  # TODO
+def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params):
     """
     Error with API Key Permissions to particular stream,
     typically this issue raises along with calling `workflows` stream with API Key
@@ -121,13 +121,9 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
         },
     }
 
-    # create base parent instances
-    # client = Client(start_date="2021-02-01T00:00:00Z", credentials=creds_with_wrong_permissions)
     api = API(creds_with_wrong_permissions)
 
     # Create test_stream instance
-    # test_stream = client._apis.get(stream_name)
-
     test_stream = Workflows(**common_params)
 
     # Mocking Request
@@ -154,10 +150,6 @@ class TestSplittingPropertiesFunctionality:
         "updatedAt": "2021-07-31T08:18:58.954Z",
         "archived": False,
     }
-
-    # @pytest.fixture
-    # def client(self, some_credentials):
-    #     return Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
 
     @pytest.fixture
     def api(self, some_credentials):
