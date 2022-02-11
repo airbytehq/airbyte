@@ -16,8 +16,7 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import Stream as CoreStream
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import Stream as BaseStream
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
@@ -188,7 +187,7 @@ class API:
         return self._parse_and_handle_errors(response)
 
 
-class Stream(CoreStream, ABC):
+class Stream(BaseStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
@@ -221,7 +220,7 @@ class Stream(CoreStream, ABC):
             return self._name
         return super().name
 
-    def get_fields(self):  # TODO
+    def get_fields(self):
         json_schema = super().get_json_schema()
         if self.properties:
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
@@ -233,7 +232,7 @@ class Stream(CoreStream, ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):  # TODO
+    ):
         yield from self.list_records(fields=self.get_fields())
 
     def list_records(self, fields) -> Iterable:
@@ -487,6 +486,7 @@ class IncrementalStream(Stream, ABC):
     # Flag which enable/disable chunked read in read_chunked method
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
+    state_checkpoint_interval = 500
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -503,12 +503,12 @@ class IncrementalStream(Stream, ABC):
             cursor_field: List[str] = None,
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
-    ):  # TODO
+    ):
         if stream_state:
             self.state = stream_state
         yield from self.list_records(fields=self.get_fields())
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any] = None):  # TODO
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if self.state:
             return self.state
         return {self.state_pk: int(self._start_date.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._start_date)}
