@@ -219,10 +219,14 @@ class Stream(BaseStream, ABC):
             return self._name
         return super().name
 
-    def get_fields(self):
+    def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
+        return json_schema
+
+    def get_fields(self):
+        json_schema = self.get_json_schema()
         return list(json_schema.get("properties", {}).keys())
 
     def read_records(

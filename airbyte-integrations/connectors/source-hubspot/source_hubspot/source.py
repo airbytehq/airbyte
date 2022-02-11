@@ -137,18 +137,6 @@ class SourceHubspot(AbstractSource):
 
         return streams
 
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """List of available streams, patch streams to append properties dynamically"""
-        streams = []
-        for stream_instance in self.streams(config=config):
-            stream = stream_instance.as_airbyte_stream()
-            if stream_instance.properties:
-                stream.json_schema["properties"]["properties"] = {"type": "object", "properties": stream_instance.properties}
-                stream.default_cursor_field = [stream_instance.updated_at_field]
-            streams.append(stream)
-
-        return AirbyteCatalog(streams=streams)
-
     def read(
         self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
