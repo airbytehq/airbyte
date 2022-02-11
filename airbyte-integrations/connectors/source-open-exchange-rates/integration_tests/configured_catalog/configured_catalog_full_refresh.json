@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "historical_exchange_rates",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "timestamp": {
+              "type": "number"
+            },
+            "base": {
+              "type": "string"
+            },
+            "rates": {
+              "type": "object"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{"type": "RECORD", "record": {"stream": "historical_exchange_rates", "data": {"timestamp": 1644364799, "base": "EUR", "rates": {"AUD": 1.598403, "GBP": 0.843028, "USD": 1.14205}}, "emitted_at": 1644578384880}}
+{"type": "STATE", "state": {"data": {"historical_exchange_rates": {"timestamp": 1644364799}}}}
+{"type": "RECORD", "record": {"stream": "historical_exchange_rates", "data": {"timestamp": 1644451198, "base": "EUR", "rates": {"AUD": 1.591625, "GBP": 0.844005, "USD": 1.14215}}, "emitted_at": 1644578384997}}
+{"type": "STATE", "state": {"data": {"historical_exchange_rates": {"timestamp": 1644451198}}}}

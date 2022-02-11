@@ -1,0 +1,29 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-open-exchange-rates:dev
+tests:
+  spec:
+    - spec_path: "source_open_exchange_rates/spec.json"
+  connection:
+    - config_path: "secrets/valid_config_acceptance_test.json"
+      status: "succeed"
+    - config_path: "integration_tests/config/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/valid_config_acceptance_test.json"
+  basic_read:
+    - config_path: "secrets/valid_config_acceptance_test.json"
+      configured_catalog_path: "integration_tests/configured_catalog/configured_catalog_full_refresh.json"
+      empty_streams: []
+      expect_records:
+        path: "integration_tests/expected_results/expected_records_acceptance_test.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: no
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog/configured_catalog_incremental.json"
+      future_state_path: "integration_tests/state/abnormal_state.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog/configured_catalog_full_refresh.json"

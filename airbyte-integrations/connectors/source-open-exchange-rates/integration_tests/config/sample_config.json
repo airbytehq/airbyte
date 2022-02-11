@@ -1,0 +1,7 @@
+{
+  "app_id": "your_app_id",
+  "start_date": "your_start_date YYYY-MM-DD",
+  "base": "EUR",
+  "symbols": "AUD,GBP,USD",
+  "ignore_current_day": true
+}

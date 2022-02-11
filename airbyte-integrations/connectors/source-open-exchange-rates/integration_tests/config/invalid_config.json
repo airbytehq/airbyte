@@ -1,0 +1,7 @@
+{
+  "app_id": "wrong_id",
+  "start_date": "2022-02-08",
+  "base": "EUR",
+  "symbols": "AUD,GBP,USD",
+  "ignore_current_day": true
+}

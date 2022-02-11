@@ -1,0 +1,7 @@
+{
+  "app_id": "app_id will be replaced automatically",
+  "start_date": "2022-02-07",
+  "base": "EUR",
+  "symbols": "AUD,GBP,USD",
+  "max_records_per_sync": 2
+}

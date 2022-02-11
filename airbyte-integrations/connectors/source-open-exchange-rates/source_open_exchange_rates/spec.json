@@ -1,0 +1,77 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Open Exchange Rates Spec",
+    "type": "object",
+    "required": ["start_date", "app_id"],
+    "additionalProperties": false,
+    "properties": {
+      "app_id": {
+        "type": "string",
+        "title": "App ID",
+        "description": "Your unique App ID. See <a href=\"https://docs.openexchangerates.org/docs/authentication\">here</a>.",
+        "airbyte_secret": true,
+        "order": 0
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start date",
+        "description": "Start getting data from that date.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["YYYY-MM-DD"],
+        "order": 1
+      },
+      "base": {
+        "type": "string",
+        "title": "Base currency",
+        "description": "ISO reference currency. See <a href=\"https://docs.openexchangerates.org/docs/supported-currencies\">here</a>.",
+        "examples": ["EUR", "USD"],
+        "order": 2
+      },
+      "symbols": {
+        "type": "string",
+        "title": "Returned currencies",
+        "description": "Limit results to specific currencies (comma-separated list of 3-letter codes). See <a href=\"https://docs.openexchangerates.org/docs/supported-currencies\">here</a>.",
+        "examples": ["AUD,USD", "GBP,FJD,FKP"],
+        "order": 3
+      },
+      "show_alternative": {
+        "type": "boolean",
+        "title": "Show currency alternatives?",
+        "description": "Extend returned values with alternative, black market and digital currency rates. See <a href=\"https://docs.openexchangerates.org/docs/supported-currencies#alternative-black-market-and-digital-currencies\">here</a>.",
+        "default": false,
+        "order": 4
+      },
+      "prettyprint": {
+        "type": "boolean",
+        "title": "Pretty print?",
+        "description": "Human-readable response for debugging (response size will be much larger).",
+        "default": false,
+        "order": 5
+      },
+      "ignore_current_day": {
+        "type": "boolean",
+        "title": "Ignore current day?",
+        "description": "As exchange rates on the current day are the latest available, you may want to exclude this one.",
+        "default": true,
+        "order": 6
+      },
+      "ignore_weekends": {
+        "type": "boolean",
+        "title": "Ignore weekends?",
+        "description": "As exchanges don't run on weekends, you may want to exclude these ones.",
+        "default": false,
+        "order": 7
+      },
+      "max_records_per_sync": {
+        "type": "number",
+        "title": "Maximum number of records per sync",
+        "description": "Use it as a security of for development purpose to avoid sending too many api requests if the start_date is very old.",
+        "pattern": "^[0-9]*$",
+        "examples": [1, 5, 25],
+        "order": 8
+      }
+    }
+  }
+}
