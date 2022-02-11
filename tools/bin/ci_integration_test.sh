@@ -11,7 +11,7 @@ all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationT
 run() {
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
-  ./gradlew --no-daemon --scan integrationTest
+  ./gradlew --no-daemon --scan integrationTest --no-parallel --max-workers=1
 else
   if [[ "$connector" == *"base-normalization"* ]]; then
     selected_integration_test="base-normalization"
@@ -19,7 +19,7 @@ else
     export SUB_BUILD="CONNECTORS_BASE"
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
-    ./gradlew --no-daemon --scan airbyteDocker
+    ./gradlew --no-daemon --scan airbyteDocker --no-parallel --max-workers=1
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector_name$" || echo "")
@@ -35,7 +35,7 @@ else
   fi
   if [ -n "$selected_integration_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
-    ./gradlew --no-daemon --scan "$integrationTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand" --no-parallel --max-workers=1
   else
     echo "Connector '$connector' not found..."
     return 1
