@@ -193,6 +193,11 @@ class SourceHubspot(AbstractSource):
         connector_state: MutableMapping[str, Any],
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
+        """
+        This method is overridden to checkpoint the latest actual state,
+        because stream state is refreshed after reading each batch of records (if need_chunk is True),
+        or reading all records in the stream.
+        """
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
         if stream_state:
@@ -223,8 +228,9 @@ class SourceHubspot(AbstractSource):
                 if self._limit_reached(internal_config, total_records_counter):
                     # Break from slice loop to save state and exit from _read_incremental function.
                     break
-            # Get the stream's updated state, because state is updated after reading each chunk (if chunk is enabled), or reading all records.
-            stream_state = stream_instance.get_updated_state(stream_state, latest_record=None)
+            # Get the stream's actual state, because state is refreshed after reading each batch (if chunk is enabled),
+            # or reading all records in stream.
+            stream_state = stream_instance.get_updated_state(stream_state, latest_record={})
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
             if self._limit_reached(internal_config, total_records_counter):
                 return
