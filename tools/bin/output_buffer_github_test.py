@@ -4,5 +4,5 @@ import time
 import datetime
 
 while True:
-    print(datetime.datetime.now(), flush=True)
+    print(datetime.datetime.now(), flush=False)
     time.sleep(1)
