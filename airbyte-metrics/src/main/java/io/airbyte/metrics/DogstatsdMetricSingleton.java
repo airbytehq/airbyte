@@ -35,17 +35,16 @@ public class DogstatsdMetricSingleton {
 
   public static synchronized DogstatsdMetricSingleton getInstance() {
     if (instance == null) {
-      throw new RuntimeException("You must initialize configuration with the initializeMonitoringServiceDaemon() method before getting an instance.");
+      throw new RuntimeException("You must initialize configuration with the initialize() method before getting an instance.");
     }
     return instance;
   }
 
-  public synchronized static void initialize(final String appName, final Map<String, String> mdc, final boolean publish) {
+  public synchronized static void initialize(final String appName, final boolean publish) {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
     if (publish) {
-      MDC.setContextMap(mdc);
       log.info("Starting DogStatsD client..");
       // The second constructor argument ('true') makes this server start as a separate daemon thread.
       // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
