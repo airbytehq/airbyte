@@ -6,6 +6,7 @@ import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import VideoItem from "./VideoItem";
 import { BigButton } from "components/CenteredPageComponents";
+import { useConfig } from "config";
 
 type WelcomeStepProps = {
   onSubmit: () => void;
@@ -23,6 +24,8 @@ const Videos = styled.div`
 `;
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
+  const config = useConfig();
+
   return (
     <>
       <TitlesBlock
@@ -59,8 +62,8 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
         <FormattedMessage id="onboarding.or" />
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          videoId="sKDviQrOAbU"
           img="/videoCover.png"
+          link={config.ui.demoLink}
         />
       </Videos>
       <BigButton onClick={onSubmit} shadow>

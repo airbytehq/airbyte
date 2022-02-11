@@ -5,12 +5,12 @@
 package io.airbyte.integrations.destination.azure_blob_storage.csv;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import com.azure.storage.blob.specialized.BlobOutputStream;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.BaseAzureBlobStorageWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -28,12 +28,11 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
 
   private final CsvSheetGenerator csvSheetGenerator;
   private final CSVPrinter csvPrinter;
-  private final BlobOutputStream blobOutputStream;
+  private final BufferedOutputStream blobOutputStream;
 
   public AzureBlobStorageCsvWriter(final AzureBlobStorageDestinationConfig config,
                                    final AppendBlobClient appendBlobClient,
-                                   final ConfiguredAirbyteStream configuredStream,
-                                   final boolean isNewlyCreatedBlob)
+                                   final ConfiguredAirbyteStream configuredStream)
       throws IOException {
     super(config, appendBlobClient, configuredStream);
 
@@ -44,19 +43,11 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
         .create(configuredStream.getStream().getJsonSchema(),
             formatConfig);
 
-    this.blobOutputStream = appendBlobClient.getBlobOutputStream();
+    this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
 
-    if (isNewlyCreatedBlob) {
-      this.csvPrinter = new CSVPrinter(
-          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
-          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-              .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
-    } else {
-      // no header required for append
-      this.csvPrinter = new CSVPrinter(
-          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
-          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL));
-    }
+    final PrintWriter printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
+    this.csvPrinter = new CSVPrinter(printWriter, CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+        .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
   @Override

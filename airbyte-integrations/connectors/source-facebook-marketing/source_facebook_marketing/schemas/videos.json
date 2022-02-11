@@ -47,11 +47,14 @@
     "format": {
       "type": ["null", "array"],
       "items": {
-        "filter": "string",
-        "embed_html": "string",
-        "width": "integer",
-        "height": "integer",
-        "picture": "string"
+        "type": "object",
+        "properties": {
+          "filter": { "type": "string" },
+          "embed_html": { "type": "string" },
+          "width": { "type": "integer" },
+          "height": { "type": "integer" },
+          "picture": { "type": "string" }
+        }
       }
     },
     "icon": {

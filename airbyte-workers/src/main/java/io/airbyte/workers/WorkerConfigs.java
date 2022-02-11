@@ -13,7 +13,13 @@ import java.util.Map;
 public class WorkerConfigs {
 
   private final Configs.WorkerEnvironment workerEnvironment;
+
+  // for running source, destination, normalization, dbt, normalization orchestrator, and dbt
+  // orchestrator pods
   private final ResourceRequirements resourceRequirements;
+  // for running replication orchestrator pods
+  private final ResourceRequirements replicationOrchestratorResourceRequirements;
+
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
   private final String jobImagePullSecret;
@@ -21,6 +27,7 @@ public class WorkerConfigs {
   private final String jobSocatImage;
   private final String jobBusyboxImage;
   private final String jobCurlImage;
+  private final Map<String, String> envMap;
 
   public WorkerConfigs(final Configs configs) {
     this.workerEnvironment = configs.getWorkerEnvironment();
@@ -29,6 +36,11 @@ public class WorkerConfigs {
         .withCpuLimit(configs.getJobMainContainerCpuLimit())
         .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
         .withMemoryLimit(configs.getJobMainContainerMemoryLimit());
+    this.replicationOrchestratorResourceRequirements = new ResourceRequirements()
+        .withCpuRequest(configs.getReplicationOrchestratorCpuRequest())
+        .withCpuLimit(configs.getReplicationOrchestratorCpuLimit())
+        .withMemoryRequest(configs.getReplicationOrchestratorMemoryRequest())
+        .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit());
     this.workerKubeTolerations = configs.getJobKubeTolerations();
     this.workerKubeNodeSelectors = configs.getJobKubeNodeSelectors();
     this.jobImagePullSecret = configs.getJobKubeMainContainerImagePullSecret();
@@ -36,6 +48,7 @@ public class WorkerConfigs {
     this.jobSocatImage = configs.getJobKubeSocatImage();
     this.jobBusyboxImage = configs.getJobKubeBusyboxImage();
     this.jobCurlImage = configs.getJobKubeCurlImage();
+    this.envMap = configs.getJobDefaultEnvMap();
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
@@ -72,6 +85,14 @@ public class WorkerConfigs {
 
   public String getJobCurlImage() {
     return jobCurlImage;
+  }
+
+  public Map<String, String> getEnvMap() {
+    return envMap;
+  }
+
+  public ResourceRequirements getReplicationOrchestratorResourceRequirements() {
+    return replicationOrchestratorResourceRequirements;
   }
 
 }

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "InventoryAlso": {
+      "type": "boolean"
+    },
+    "Upc": {
+      "type": "string"
+    },
+    "UnitIdentifier": {
+      "$ref": "../../generic/models/unit_of_measure_identifier.json"
+    },
+    "InventoryUnitsPerUnit": {
+      "type": "number"
+    }
+  }
+}

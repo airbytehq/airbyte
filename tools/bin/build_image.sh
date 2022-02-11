@@ -8,6 +8,8 @@ DOCKERFILE="$3"
 TAGGED_IMAGE="$4"
 ID_FILE="$5"
 FOLLOW_SYMLINKS="$6"
+# https://docs.docker.com/develop/develop-images/build_enhancements/
+export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh

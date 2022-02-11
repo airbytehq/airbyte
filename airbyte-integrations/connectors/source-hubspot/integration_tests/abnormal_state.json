@@ -14,6 +14,27 @@
   "email_events": {
     "timestamp": "2221-10-12T13:37:56.412000+00:00"
   },
+  "engagements_calls": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_emails": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_meetings": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_notes": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_tasks": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "feedback_submissions": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements": {
+    "lastUpdated": 7945393076412
+  },
   "line_items": {
     "updatedAt": "2221-10-12T13:37:56.412000+00:00"
   },

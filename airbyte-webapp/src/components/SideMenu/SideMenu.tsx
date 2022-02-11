@@ -8,7 +8,7 @@ export type SideMenuItem = {
   name: string | React.ReactNode;
   indicatorCount?: number;
   component: React.ComponentType<any>;
-  testId?: string;
+  id?: string;
 };
 
 export type CategoryItem = {
@@ -49,7 +49,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
           )}
           {categoryItem.routes.map((route) => (
             <MenuItem
-              testId={route.testId}
+              id={route.id}
               key={route.path}
               name={route.name}
               isActive={activeItem?.endsWith(route.path)}

@@ -5,10 +5,13 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
+    - config_path: "secrets/config_oauth.json"
+      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -25,9 +28,11 @@ tests:
         issue_milestones: ["airbytehq/integration-test", "updated_at"]
         issues: ["airbytehq/integration-test", "updated_at"]
         projects: ["airbytehq/integration-test", "updated_at"]
+        pull_request_stats: ["airbytehq/integration-test", "updated_at"]
         pull_requests: ["airbytehq/integration-test", "updated_at"]
         releases: ["airbytehq/integration-test", "created_at"]
         review_comments: ["airbytehq/integration-test", "updated_at"]
+        reviews: ["airbytehq/integration-test", "submitted_at"]
         stargazers: ["airbytehq/integration-test", "starred_at"]
   full_refresh:
     - config_path: "secrets/config.json"

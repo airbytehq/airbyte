@@ -3,13 +3,14 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useFetcher, useResource, useSubscription } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
+
+import { useListJobs } from "services/job/JobService";
 
 import ContentCard from "components/ContentCard";
 import { Button, LoadingButton } from "components";
 import StatusMainInfo from "./StatusMainInfo";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import JobResource from "core/resources/Job";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
@@ -61,11 +62,7 @@ const StatusView: React.FC<IProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const analyticsService = useAnalyticsService();
-  const { jobs } = useResource(JobResource.listShape(), {
-    configId: connection.connectionId,
-    configTypes: ["sync", "reset_connection"],
-  });
-  useSubscription(JobResource.listShape(), {
+  const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });

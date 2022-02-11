@@ -315,8 +315,8 @@ public class BufferedStreamConsumerTest {
     List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
-      JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAscii(7), "name", "human " + String.format("%5d", i)));
-      long sizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(payload));
+      JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
+      long sizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(payload));
       bytesCounter += sizeInBytes;
       AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)

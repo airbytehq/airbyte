@@ -55,3 +55,9 @@ Cypress.Commands.add("deleteEntity", () => {
   cy.get("button[data-id='open-delete-modal']").click();
   cy.get("button[data-id='delete']").click();
 })
+
+Cypress.Commands.add("clearApp", () => {
+  indexedDB.deleteDatabase("firebaseLocalStorageDb");
+  cy.clearLocalStorage();
+  cy.clearCookies();
+});

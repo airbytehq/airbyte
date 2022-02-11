@@ -347,6 +347,18 @@ public class SchedulerHandler {
     return jobConverter.getJobInfoRead(job);
   }
 
+  public JobInfoRead resetConnection(final UUID connectionId) throws IOException {
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.resetConnection(connectionId);
+
+    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
+    }
+
+    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
+
+    return jobConverter.getJobInfoRead(job);
+  }
+
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
@@ -456,13 +468,14 @@ public class SchedulerHandler {
   public JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
     final Job job = jobPersistence.getJob(id);
 
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.startNewCancelation(UUID.fromString(job.getScope()));
+    final ManualSyncSubmissionResult cancellationSubmissionResult = temporalWorkerRunFactory.startNewCancelation(UUID.fromString(job.getScope()));
 
-    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
+    if (cancellationSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
     }
 
-    return jobConverter.getJobInfoRead(job);
+    final Job cancelledJob = jobPersistence.getJob(id);
+    return jobConverter.getJobInfoRead(cancelledJob);
   }
 
 }

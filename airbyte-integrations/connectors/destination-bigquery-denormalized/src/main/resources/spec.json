@@ -13,7 +13,7 @@
     "properties": {
       "big_query_client_buffer_size_mb": {
         "title": "Google BigQuery client chunk size",
-        "description": "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX = 15) for each table. It defaults to 15MiB. Smaller chunk size means less memory consumption, and is recommended for big data sets. For more details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>",
+        "description": "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. It defaults to 15MiB. Smaller chunk size means less memory consumption, and is recommended for big data sets. For more details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>",
         "type": "integer",
         "minimum": 1,
         "maximum": 15,

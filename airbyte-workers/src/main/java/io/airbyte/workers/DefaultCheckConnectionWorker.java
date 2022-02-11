@@ -77,7 +77,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.debug("Check connection job received output: {}", output);
         return output;
       } else {
-        throw new WorkerException("Error while getting checking connection.");
+        throw new WorkerException(String.format("Error checking connection, status: %s, exit code: %d", status, exitCode));
       }
 
     } catch (final Exception e) {

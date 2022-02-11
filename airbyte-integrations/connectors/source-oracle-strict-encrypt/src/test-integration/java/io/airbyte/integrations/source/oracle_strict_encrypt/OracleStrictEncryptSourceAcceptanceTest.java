@@ -21,7 +21,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -119,11 +118,6 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
                 Field.of("ID", JsonSchemaPrimitive.NUMBER),
                 Field.of("NAME", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

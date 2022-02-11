@@ -7,6 +7,8 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -55,6 +57,9 @@ public class KubePodProcessIntegrationTest {
   private static KubernetesClient fabricClient;
   private static KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
+  private static final String ENV_KEY = "ENV_VAR_1";
+  private static final String ENV_VALUE = "ENV_VALUE_1";
+  private static final Map<String, String> ENV_MAP = ImmutableMap.of(ENV_KEY, ENV_VALUE);
 
   private WorkerHeartbeatServer server;
 
@@ -69,8 +74,18 @@ public class KubePodProcessIntegrationTest {
     fabricClient = new DefaultKubernetesClient();
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
     processFactory =
-        new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", fabricClient, heartbeatUrl, getHost(), false,
+        new KubeProcessFactory(
+            workerConfigs,
+            "default",
+            fabricClient,
+            heartbeatUrl,
+            getHost(),
+            false,
             Duration.ofSeconds(1));
   }
 
@@ -190,6 +205,19 @@ public class KubePodProcessIntegrationTest {
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testEnvMapSet() throws Exception {
+    // start a finite process
+    final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
+    final var output = new String(process.getInputStream().readAllBytes());
+    assertEquals("ENV_VAR_1=ENV_VALUE_1\n", output);
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
     assertEquals(0, process.exitValue());
   }
 

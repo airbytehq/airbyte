@@ -23,6 +23,7 @@ public interface GenerateInputActivity {
 
     private int attemptId;
     private long jobId;
+    private boolean reset;
 
   }
 

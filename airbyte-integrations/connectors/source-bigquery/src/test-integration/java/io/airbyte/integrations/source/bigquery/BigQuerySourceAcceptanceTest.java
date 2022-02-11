@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -93,11 +91,6 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(CONFIG_DATASET_ID).asText(),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

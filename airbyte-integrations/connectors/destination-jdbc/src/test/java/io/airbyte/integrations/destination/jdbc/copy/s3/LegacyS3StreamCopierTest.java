@@ -59,6 +59,7 @@ public class LegacyS3StreamCopierTest {
 
   private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final int EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER = 4;
 
   private AmazonS3Client s3Client;
   private JdbcDatabase db;
@@ -158,7 +159,7 @@ public class LegacyS3StreamCopierTest {
   public void createSequentialStagingFiles_when_multipleFilesRequested() {
     // When we call prepareStagingFile() the first time, it should create exactly one upload manager.
     // The next (MAX_PARTS_PER_FILE - 1) invocations should reuse that same upload manager.
-    for (var i = 0; i < LegacyS3StreamCopier.MAX_PARTS_PER_FILE; i++) {
+    for (var i = 0; i < EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER; i++) {
       final String file = copier.prepareStagingFile();
       assertEquals("fake-staging-folder/fake-schema/fake-stream_00000", file, "preparing file number " + i);
       final List<StreamTransferManager> firstManagers = streamTransferManagerMockedConstruction.constructed();
@@ -211,7 +212,7 @@ public class LegacyS3StreamCopierTest {
   @Test
   public void writesContentsCorrectly() throws Exception {
     final String file1 = copier.prepareStagingFile();
-    for (int i = 0; i < LegacyS3StreamCopier.MAX_PARTS_PER_FILE - 1; i++) {
+    for (int i = 0; i < EXPECTED_ITERATIONS_WITH_STANDARD_BYTE_BUFFER; i++) {
       copier.prepareStagingFile();
     }
     copier.write(
@@ -257,7 +258,7 @@ public class LegacyS3StreamCopierTest {
   @Test
   public void copiesCorrectFilesToTable() throws Exception {
     // Generate two files
-    for (int i = 0; i < LegacyS3StreamCopier.MAX_PARTS_PER_FILE + 1; i++) {
+    for (int i = 0; i < 5; i++) {
       copier.prepareStagingFile();
     }
 

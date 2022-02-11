@@ -29,13 +29,13 @@
     },
     "properties": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "patternProperties": {
         ".*": {
           "anyOf": [
             {
               "type": "object",
-              "additionalProperties": false,
+              "additionalProperties": true,
               "patternProperties": {
                 "^id$": { "type": "string" },
                 "^type$": { "enum": ["title", "rich_text"] },
@@ -70,6 +70,14 @@
                   "type": ["null", "array"],
                   "items": { "$ref": "options.json" }
                 }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "type": { "enum": ["date"] },
+                "date": { "$ref": "date.json" }
               }
             },
             {

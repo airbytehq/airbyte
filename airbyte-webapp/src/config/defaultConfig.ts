@@ -18,7 +18,7 @@ const features: Feature[] = [
 const defaultConfig: Config = {
   ui: uiConfig,
   segment: { enabled: true, token: "" },
-  healthCheckInterval: 10000,
+  healthCheckInterval: 20000,
   version: "dev",
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
   integrationUrl: "/docs",

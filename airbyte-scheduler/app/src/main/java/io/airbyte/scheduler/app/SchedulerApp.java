@@ -37,6 +37,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
@@ -113,6 +114,8 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
+    final Configs configs = new EnvConfigs();
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (!featureFlags.usesNewScheduler()) {
       final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
@@ -126,7 +129,7 @@ public class SchedulerApp {
           featureFlags);
       final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
       final TrackingClient trackingClient = TrackingClientSingleton.get();
-      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient, workerConfigs);
       final JobSubmitter jobSubmitter = new JobSubmitter(
           workerThreadPool,
           jobPersistence,
@@ -140,7 +143,7 @@ public class SchedulerApp {
       // anymore.
       cleanupZombies(jobPersistence, jobNotifier);
 
-      LOGGER.error("Start running the old scheduler");
+      LOGGER.info("Start running the old scheduler");
       scheduleJobsPool.scheduleWithFixedDelay(
           () -> {
             MDC.setContextMap(mdc);
@@ -205,7 +208,7 @@ public class SchedulerApp {
     while (!isHealthy) {
       try {
         final HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
-        isHealthy = healthCheck.getDb();
+        isHealthy = healthCheck.getAvailable();
       } catch (final ApiException e) {
         LOGGER.info("Waiting for server to become available...");
         Thread.sleep(2000);
@@ -241,7 +244,7 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);

@@ -22,7 +22,7 @@ public class SleepingSyncWorkflow implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    Workflow.sleep(Duration.ofSeconds(2));
+    Workflow.sleep(Duration.ofMinutes(1));
 
     return new StandardSyncOutput();
   }

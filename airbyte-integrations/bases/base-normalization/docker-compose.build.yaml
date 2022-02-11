@@ -36,3 +36,10 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-snowflake:
+    image: airbyte/normalization-snowflake:${VERSION}
+    build:
+      dockerfile: snowflake.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

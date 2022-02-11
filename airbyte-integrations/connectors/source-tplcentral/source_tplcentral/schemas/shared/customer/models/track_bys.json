@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "TrackLotNumber": {
+      "$ref": "../../common/enum/usage_level.json"
+    },
+    "TrackSerialNumber": {
+      "$ref": "../../common/enum/serial_number_usage_level.json"
+    },
+    "TrackExpirationDate": {
+      "$ref": "../../common/enum/usage_level.json"
+    },
+    "TrackCost": {
+      "$ref": "../../common/enum/usage_level.json"
+    },
+    "OutboundMobileSerialization": {
+      "$ref": "../../common/enum/outbound_mobile_serialization_behavior.json"
+    },
+    "AutoHoldExpirationDaysThreshold": {
+      "type": ["null", "integer"]
+    },
+    "IsPickLotNumberRequired": {
+      "type": "boolean"
+    },
+    "IsPickSerialNumberRequired": {
+      "type": "boolean"
+    },
+    "IsPickExpirationDateRequired": {
+      "type": "boolean"
+    }
+  }
+}
