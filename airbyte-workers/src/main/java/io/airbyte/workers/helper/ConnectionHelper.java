@@ -22,12 +22,16 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 public class ConnectionHelper {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionHelper.class);
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
@@ -74,7 +78,21 @@ public class ConnectionHelper {
           .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      newConnection.withResourceRequirements(workerConfigs.getResourceRequirements());
+      final io.airbyte.config.ResourceRequirements resourceRequirements = Optional.ofNullable(persistedSync.getResourceRequirements())
+          .orElse(new io.airbyte.config.ResourceRequirements());
+      if (resourceRequirements.getCpuRequest() == null) {
+        resourceRequirements.setCpuRequest(workerConfigs.getResourceRequirements().getCpuRequest());
+      }
+      if (resourceRequirements.getCpuLimit() == null) {
+        resourceRequirements.setCpuLimit(workerConfigs.getResourceRequirements().getCpuLimit());
+      }
+      if (resourceRequirements.getMemoryRequest() == null) {
+        resourceRequirements.setMemoryRequest(workerConfigs.getResourceRequirements().getMemoryRequest());
+      }
+      if (resourceRequirements.getMemoryLimit() == null) {
+        resourceRequirements.setMemoryLimit(workerConfigs.getResourceRequirements().getMemoryLimit());
+      }
+      newConnection.withResourceRequirements(resourceRequirements);
     }
 
     // update sync schedule
