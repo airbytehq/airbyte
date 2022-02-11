@@ -198,39 +198,9 @@ class SourceHubspot(AbstractSource):
         because stream state is refreshed after reading each batch of records (if need_chunk is True),
         or reading all records in the stream.
         """
+        yield from super()._read_incremental(logger=logger, stream_instance=stream_instance,
+                                             configured_stream=configured_stream, connector_state=connector_state,
+                                             internal_config=internal_config)
         stream_name = configured_stream.stream.name
-        stream_state = connector_state.get(stream_name, {})
-        if stream_state:
-            logger.info(f"Setting state of {stream_name} stream to {stream_state}")
-
-        slices = stream_instance.stream_slices(
-            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
-        )
-        total_records_counter = 0
-        for slice in slices:
-            records = stream_instance.read_records(
-                sync_mode=SyncMode.incremental,
-                stream_slice=slice,
-                stream_state=stream_state,
-                cursor_field=configured_stream.cursor_field or None,
-            )
-            for record_counter, record_data in enumerate(records, start=1):
-                yield self._as_airbyte_record(stream_name, record_data)
-                stream_state = stream_instance.get_updated_state(stream_state, record_data)
-                checkpoint_interval = stream_instance.state_checkpoint_interval
-                if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-
-                total_records_counter += 1
-                # This functionality should ideally live outside of this method
-                # but since state is managed inside this method, we keep track
-                # of it here.
-                if self._limit_reached(internal_config, total_records_counter):
-                    # Break from slice loop to save state and exit from _read_incremental function.
-                    break
-            # Get the stream's actual state, because state is refreshed after reading each batch (if chunk is enabled),
-            # or reading all records in stream.
-            stream_state = stream_instance.get_updated_state(stream_state, latest_record={})
-            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-            if self._limit_reached(internal_config, total_records_counter):
-                return
+        stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
+        yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
