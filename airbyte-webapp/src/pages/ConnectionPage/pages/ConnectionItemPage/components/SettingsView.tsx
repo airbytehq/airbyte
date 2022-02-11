@@ -15,13 +15,12 @@ import ConnectionForm from "views/Connection/ConnectionForm";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import { equal } from "utils/objects";
 import EnabledControl from "./EnabledControl";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { useAsyncFn } from "react-use";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onAfterSaveSchema: () => void;

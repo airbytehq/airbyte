@@ -6,7 +6,8 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.meilisearch.MeiliSearchDestination'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    // Needed for JDK17
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0','--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
 
 dependencies {
@@ -14,7 +15,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
 
-    implementation 'com.meilisearch.sdk:meilisearch-java:0.2.0'
+    implementation 'com.meilisearch.sdk:meilisearch-java:0.6.0'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-meilisearch')

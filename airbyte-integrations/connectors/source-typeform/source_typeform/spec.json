@@ -9,13 +9,15 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "description": "The date you would like to replicate data. Format: YYYY-MM-DDTHH:mm:ss[Z].",
+        "description": "UTC date and time in the format: YYYY-MM-DDTHH:mm:ss[Z]. Any data before this date will not be replicated.",
+        "title": "Start Date",
         "examples": ["2020-01-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
       "token": {
         "type": "string",
         "description": "The API Token for a Typeform account.",
+        "title": "API Token",
         "airbyte_secret": true
       },
       "form_ids": {

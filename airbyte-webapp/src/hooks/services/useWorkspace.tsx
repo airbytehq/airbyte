@@ -1,27 +1,14 @@
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
 
-import WorkspaceResource, { Workspace } from "core/resources/Workspace";
+import WorkspaceResource from "core/resources/Workspace";
 import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
-import { useGetService } from "core/servicesProvider";
-import { useAnalyticsService } from "./Analytics";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 
-export const usePickFirstWorkspace = (): Workspace => {
-  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
-
-  return workspaces[0];
-};
-
-const useCurrentWorkspace = (): Workspace => {
-  const workspaceProviderService = useGetService<() => Workspace>(
-    "currentWorkspaceProvider"
-  );
-
-  return workspaceProviderService();
-};
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { Destination, Source } from "core/domain/connector";
+import { Workspace } from "core/domain/workspace/Workspace";
 
 export type WebhookPayload = {
   webhook: string;
@@ -105,8 +92,8 @@ const useWorkspace = (): {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) =>
-    await updateWorkspace(
+  }) => {
+    const result = await updateWorkspace(
       {},
       {
         workspaceId: workspace.workspaceId,
@@ -115,6 +102,16 @@ const useWorkspace = (): {
         ...data,
       }
     );
+
+    analyticsService.track("Specified Preferences", {
+      email: data.email,
+      anonymized: data.anonymousDataCollection,
+      subscribed_newsletter: data.news,
+      subscribed_security: data.securityUpdates,
+    });
+
+    return result;
+  };
 
   const updatePreferences = async (data: {
     email?: string;

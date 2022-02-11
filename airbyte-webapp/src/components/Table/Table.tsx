@@ -25,13 +25,17 @@ type IThProps = {
   highlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  light?: boolean;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
-const TableView = styled(Card).attrs({ as: "table" })`
+const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   border-spacing: 0;
   width: 100%;
   max-width: 100%;
   border-radius: 10px;
+  box-shadow: ${({ light, theme }) =>
+    light ? "none" : `0 2px 4px ${theme.cardShadowColor}`};
+};
 `;
 
 const Tr = styled.tr<{
@@ -70,21 +74,22 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 `;
 
 const Th = styled.th<IThProps>`
-  background: ${({ theme }) => theme.textColor};
+  background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
   padding: 9px 13px 10px;
   text-align: left;
-  font-size: 10px;
+  font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
   color: ${({ theme, highlighted }) =>
     highlighted ? theme.whiteColor : theme.lightTextColor};
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundColor};
+  border-bottom: ${({ theme, light }) =>
+    light ? "none" : ` 1px solid ${theme.backgroundColor}`};
   width: ${({ collapse, customWidth }) =>
     customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: ${({ light }) => (light ? 400 : 600)};
+  text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
 
   &:first-child {
-    padding-left: 45px;
+    padding-left: ${({ light }) => (light ? 13 : 45)}px;
     border-radius: 10px 0 0;
   }
 
@@ -95,6 +100,7 @@ const Th = styled.th<IThProps>`
 `;
 
 type IProps = {
+  light?: boolean;
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,6 +117,7 @@ const Table: React.FC<IProps> = ({
   onClickRow,
   erroredRows,
   sortBy,
+  light,
 }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
@@ -138,7 +145,7 @@ const Table: React.FC<IProps> = ({
   );
 
   return (
-    <TableView {...getTableProps()}>
+    <TableView {...getTableProps()} light={light}>
       <thead>
         {headerGroups.map((headerGroup, key) => (
           <tr
@@ -152,6 +159,7 @@ const Table: React.FC<IProps> = ({
                 collapse={column.collapse}
                 customWidth={column.customWidth}
                 key={`table-column-${key}-${columnKey}`}
+                light={light}
               >
                 {column.render("Header")}
               </Th>

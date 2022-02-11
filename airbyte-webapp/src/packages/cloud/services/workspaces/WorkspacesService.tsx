@@ -1,67 +1,65 @@
-import React, { useContext, useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useLocalStorage } from "react-use";
-import { useResetter } from "rest-hooks";
+import {
+  QueryObserverResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
+
+import type {
+  CloudWorkspace,
+  CloudWorkspaceUsage,
+} from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useConfig } from "packages/cloud/services/config";
+import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
+import { useInitService } from "packages/cloud/services/useInitService";
+import { QueryObserverSuccessResult } from "react-query/types/core/types";
 
-type Context = {
-  currentWorkspaceId?: string | null;
-  selectWorkspace: (workspaceId: string | null) => void;
-  createWorkspace: (name: string) => Promise<CloudWorkspace>;
-  updateWorkspace: {
-    mutateAsync: (payload: {
-      workspaceId: string;
-      name: string;
-    }) => Promise<CloudWorkspace>;
-    isLoading: boolean;
-  };
-  removeWorkspace: {
-    mutateAsync: (workspaceId: string) => Promise<void>;
-    isLoading: boolean;
-  };
+export const workspaceKeys = {
+  all: ["cloud_workspaces"] as const,
+  lists: () => [...workspaceKeys.all, "list"] as const,
+  list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
+  details: () => [...workspaceKeys.all, "detail"] as const,
+  detail: (id: number | string) => [...workspaceKeys.details(), id] as const,
+  usage: (id: number | string) =>
+    [...workspaceKeys.details(), id, "usage"] as const,
 };
 
-export const WorkspaceServiceContext = React.createContext<Context | null>(
-  null
-);
-
-function useGetWorkspaceService() {
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+function useGetWorkspaceService(): CloudWorkspacesService {
   const { cloudApiUrl } = useConfig();
 
-  return useMemo(
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  return useInitService(
     () => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware),
-    [requestAuthMiddleware, cloudApiUrl]
+    [cloudApiUrl, requestAuthMiddleware]
   );
 }
 
-export function useListWorkspaces() {
+export function useListCloudWorkspaces(): CloudWorkspace[] {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return useQuery("workspaces", () => service.listByUser(user.userId), {
-    suspense: true,
-  });
+  return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
+    service.listByUser(user.userId)
+  ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
 }
 
 export function useCreateWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();
+  const user = useCurrentUser();
 
   return useMutation(
-    async (payload: { name: string; userId: string }) =>
-      service.create(payload),
+    async (name: string) => service.create({ name, userId: user.userId }),
     {
       onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => [
-          ...(old ?? []),
-          result,
-        ]);
+        queryClient.setQueryData<CloudWorkspace[]>(
+          workspaceKeys.lists(),
+          (old) => [...(old ?? []), result]
+        );
       },
     }
   ).mutateAsync;
@@ -76,25 +74,28 @@ export function useUpdateWorkspace() {
       service.update(payload.workspaceId, { name: payload.name }),
     {
       onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => {
-          const list = old ?? [];
-          if (list.length === 0) {
-            return [result];
+        queryClient.setQueryData<CloudWorkspace[]>(
+          workspaceKeys.lists(),
+          (old) => {
+            const list = old ?? [];
+            if (list.length === 0) {
+              return [result];
+            }
+
+            const index = list.findIndex(
+              (item) => item.workspaceId === result.workspaceId
+            );
+
+            if (index === -1) {
+              return list;
+            }
+
+            return [...list.slice(0, index), result, ...list.slice(index + 1)];
           }
-
-          const index = list.findIndex(
-            (item) => item.workspaceId === result.workspaceId
-          );
-
-          if (index === -1) {
-            return list;
-          }
-
-          return [...list.slice(0, index), result, ...list.slice(index + 1)];
-        });
+        );
 
         queryClient.setQueryData<CloudWorkspace>(
-          ["workspace", result.workspaceId],
+          [workspaceKeys.detail(result.workspaceId)],
           (old) => {
             return {
               ...old,
@@ -116,7 +117,7 @@ export function useRemoveWorkspace() {
     {
       onSuccess: (_, workspaceId) => {
         queryClient.setQueryData<CloudWorkspace[] | undefined>(
-          "workspaces",
+          workspaceKeys.lists(),
           (old) =>
             old?.filter((workspace) => workspace.workspaceId !== workspaceId)
         );
@@ -125,88 +126,22 @@ export function useRemoveWorkspace() {
   );
 }
 
-export function useGetWorkspace(workspaceId: string) {
+export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return useQuery<CloudWorkspace>(
-    ["workspace", workspaceId],
-    () => service.get(workspaceId),
-    {
-      suspense: true,
-      initialData: {
-        workspaceId: "",
-        name: "",
-        billingUserId: "",
-        remainingCredits: 0,
-      },
-    }
-  ) as any;
+  return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
+    service.get(workspaceId)
+  ) as QueryObserverSuccessResult<CloudWorkspace>).data;
 }
 
-export function useGetUsage(workspaceId: string) {
+export function useGetUsage(
+  workspaceId: string
+): QueryObserverResult<CloudWorkspaceUsage> {
   const service = useGetWorkspaceService();
 
-  return useQuery(
-    ["cloud_workspace", workspaceId, "usage"],
-    () => service.getUsage(workspaceId),
-    {
-      suspense: true,
-    }
+  return useQuery<CloudWorkspaceUsage>([workspaceKeys.usage(workspaceId)], () =>
+    service.getUsage(workspaceId)
   );
 }
 
-export const WorkspaceServiceProvider: React.FC = ({ children }) => {
-  const user = useCurrentUser();
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
-    string | null
-  >(`${user.userId}/workspaceId`, null);
-
-  const createWorkspace = useCreateWorkspace();
-  const removeWorkspace = useRemoveWorkspace();
-  const updateWorkspace = useUpdateWorkspace();
-
-  const queryClient = useQueryClient();
-  const resetCache = useResetter();
-
-  const ctx = useMemo<Context>(
-    () => ({
-      currentWorkspaceId,
-      createWorkspace: async (name: string) =>
-        await createWorkspace({
-          name,
-          userId: user.userId,
-        }),
-      removeWorkspace,
-      updateWorkspace,
-      selectWorkspace: async (workspaceId) => {
-        setCurrentWorkspaceId(workspaceId);
-        await queryClient.resetQueries();
-        resetCache();
-      },
-    }),
-    [
-      currentWorkspaceId,
-      user,
-      createWorkspace,
-      removeWorkspace,
-      updateWorkspace,
-    ]
-  );
-
-  return (
-    <WorkspaceServiceContext.Provider value={ctx}>
-      {children}
-    </WorkspaceServiceContext.Provider>
-  );
-};
-
-export const useWorkspaceService = (): Context => {
-  const workspaceService = useContext(WorkspaceServiceContext);
-  if (!workspaceService) {
-    throw new Error(
-      "useWorkspaceService must be used within a WorkspaceServiceProvider."
-    );
-  }
-
-  return workspaceService;
-};
+export { useWorkspaceService } from "services/workspaces/WorkspacesService";

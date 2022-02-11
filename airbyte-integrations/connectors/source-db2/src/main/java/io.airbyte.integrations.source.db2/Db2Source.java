@@ -6,25 +6,35 @@ package io.airbyte.integrations.source.db2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Db2Source extends AbstractJdbcSource implements Source {
+public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
   private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -50,19 +60,19 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", jdbcUrl.toString())
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
+        .put(USERNAME, config.get(USERNAME).asText())
+        .put(PASSWORD, config.get(PASSWORD).asText())
         .build());
 
     // assume ssl if not explicitly mentioned.
-    var additionalParams = obtainConnectionOptions(config.get("encryption"));
+    final var additionalParams = obtainConnectionOptions(config.get("encryption"));
     if (!additionalParams.isEmpty()) {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
           .put("jdbc_url", jdbcUrl.toString())
-          .put("username", config.get("username").asText())
-          .put("password", config.get("password").asText())
+          .put(USERNAME, config.get(USERNAME).asText())
+          .put(PASSWORD, config.get(PASSWORD).asText())
           .put("connection_properties", additionalParams)
           .build());
     }
@@ -77,17 +87,42 @@ public class Db2Source extends AbstractJdbcSource implements Source {
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
   }
 
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database
+        .query(getPrivileges(), sourceOperations::rowToJson)
+        .map(this::getPrivilegeDto)
+        .collect(Collectors.toSet());
+  }
+
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
+    return connection -> connection.prepareStatement(
+        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+        .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
+        .tableName(jsonNode.get("OBJECTNAME").asText())
+        .build();
+  }
+
   /* Helpers */
 
-  private List<String> obtainConnectionOptions(JsonNode encryption) {
-    List<String> additionalParameters = new ArrayList<>();
+  private List<String> obtainConnectionOptions(final JsonNode encryption) {
+    final List<String> additionalParameters = new ArrayList<>();
     if (!encryption.isNull()) {
-      String encryptionMethod = encryption.get("encryption_method").asText();
+      final String encryptionMethod = encryption.get("encryption_method").asText();
       if ("encrypted_verify_certificate".equals(encryptionMethod)) {
-        var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
+        final var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
         try {
           convertAndImportCertificate(encryption.get("ssl_certificate").asText(), keyStorePassword);
-        } catch (IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException e) {
           throw new RuntimeException("Failed to import certificate into Java Keystore");
         }
         additionalParameters.add("sslConnection=true");
@@ -98,7 +133,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     return additionalParameters;
   }
 
-  private static String getKeyStorePassword(JsonNode encryptionKeyStorePassword) {
+  private static String getKeyStorePassword(final JsonNode encryptionKeyStorePassword) {
     var keyStorePassword = KEY_STORE_PASS;
     if (!encryptionKeyStorePassword.isNull() || !encryptionKeyStorePassword.isEmpty()) {
       keyStorePassword = encryptionKeyStorePassword.asText();
@@ -106,10 +141,10 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     return keyStorePassword;
   }
 
-  private static void convertAndImportCertificate(String certificate, String keyStorePassword)
+  private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -118,8 +153,8 @@ public class Db2Source extends AbstractJdbcSource implements Source {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

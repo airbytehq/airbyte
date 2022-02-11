@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,9 +13,11 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +35,15 @@ import org.junit.jupiter.api.Test;
 public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistenceTest {
 
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
-  private static final OffsetDateTime TIMESTAMP = OffsetDateTime.now();
 
   @BeforeAll
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = new DatabaseConfigPersistence(database);
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
   @AfterAll
@@ -47,7 +53,8 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @BeforeEach
   public void resetDatabase() throws SQLException {
-    database.transaction(ctx -> ctx.truncateTable("airbyte_configs").execute());
+    database.query(ctx -> ctx
+        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }
 
   @Test
@@ -150,7 +157,6 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
       try {
         configPersistence.updateConnectorDefinitions(
             ctx,
-            TIMESTAMP,
             ConfigSchema.STANDARD_SOURCE_DEFINITION,
             latestSources,
             sourceRepositoriesInUse,
@@ -161,7 +167,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
       return null;
     });
 
-    assertRecordCount(expectedUpdatedSources.size());
+    assertRecordCount(expectedUpdatedSources.size(), ACTOR_DEFINITION);
     for (final StandardSourceDefinition source : expectedUpdatedSources) {
       assertHasSource(source);
     }

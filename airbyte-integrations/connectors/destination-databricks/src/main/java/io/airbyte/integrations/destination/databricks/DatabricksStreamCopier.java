@@ -10,6 +10,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -23,9 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
+ * This implementation is similar to {@link LegacyS3StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
  * <p>
  * </p>
  * It does the following operations:

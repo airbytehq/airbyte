@@ -21,6 +21,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
@@ -31,6 +34,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -113,6 +117,7 @@ class DefaultJobPersistenceTest {
         logPath,
         null,
         status,
+        null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         NOW.getEpochSecond());
@@ -125,6 +130,7 @@ class DefaultJobPersistenceTest {
         logPath,
         null,
         status,
+        null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         null);
@@ -235,6 +241,23 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
+  @DisplayName("Should be able to read attemptFailureSummary that was written")
+  void testWriteAttemptFailureSummary() throws IOException {
+    final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    final Job created = jobPersistence.getJob(jobId);
+    final AttemptFailureSummary failureSummary = new AttemptFailureSummary().withFailures(
+        Collections.singletonList(new FailureReason().withFailureOrigin(FailureOrigin.SOURCE)));
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber, failureSummary);
+
+    final Job updated = jobPersistence.getJob(jobId);
+    assertEquals(Optional.of(failureSummary), updated.getAttempts().get(0).getFailureSummary());
+    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+  }
+
+  @Test
   @DisplayName("When getting the last replication job should return the most recently created job")
   void testGetLastSyncJobWithMultipleAttempts() throws IOException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
@@ -309,28 +332,11 @@ class DefaultJobPersistenceTest {
   @Test
   @DisplayName("Should return correct set of jobs when querying on end timestamp")
   void testListJobsWithTimestamp() throws IOException {
-    final Supplier<Instant> timeSupplier = mock(Supplier.class);
     // TODO : Once we fix the problem of precision loss in DefaultJobPersistence, change the test value
     // to contain milliseconds as well
     final Instant now = Instant.parse("2021-01-01T00:00:00Z");
-    when(timeSupplier.get()).thenReturn(
-        now,
-        now.plusSeconds(1),
-        now.plusSeconds(2),
-        now.plusSeconds(3),
-        now.plusSeconds(4),
-        now.plusSeconds(5),
-        now.plusSeconds(6),
-        now.plusSeconds(7),
-        now.plusSeconds(8),
-        now.plusSeconds(9),
-        now.plusSeconds(10),
-        now.plusSeconds(11),
-        now.plusSeconds(12),
-        now.plusSeconds(13),
-        now.plusSeconds(14),
-        now.plusSeconds(15),
-        now.plusSeconds(16));
+    final Supplier<Instant> timeSupplier = incrementingSecondSupplier(now);
+
     jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
@@ -389,6 +395,74 @@ class DefaultJobPersistenceTest {
     }
 
     assertEquals(0, jobPersistence.listJobs(ConfigType.SYNC, Instant.ofEpochSecond(maxEndedAtTimestampAfterSecondQuery)).size());
+  }
+
+  @Test
+  @DisplayName("Should return correct list of AttemptWithJobInfo when querying on end timestamp, sorted by attempt end time")
+  void testListAttemptsWithJobInfo() throws IOException {
+    final Instant now = Instant.parse("2021-01-01T00:00:00Z");
+    final Supplier<Instant> timeSupplier = incrementingSecondSupplier(now);
+    jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
+
+    final long job1 = jobPersistence.enqueueJob(SCOPE + "-1", SYNC_JOB_CONFIG).orElseThrow();
+    final long job2 = jobPersistence.enqueueJob(SCOPE + "-2", SYNC_JOB_CONFIG).orElseThrow();
+
+    final int job1Attempt1 = jobPersistence.createAttempt(job1, LOG_PATH.resolve("1"));
+    final int job2Attempt1 = jobPersistence.createAttempt(job2, LOG_PATH.resolve("2"));
+    jobPersistence.failAttempt(job1, job1Attempt1);
+    jobPersistence.failAttempt(job2, job2Attempt1);
+
+    final int job1Attempt2 = jobPersistence.createAttempt(job1, LOG_PATH.resolve("3"));
+    final int job2Attempt2 = jobPersistence.createAttempt(job2, LOG_PATH.resolve("4"));
+    jobPersistence.failAttempt(job2, job2Attempt2); // job 2 attempt 2 fails before job 1 attempt 2 fails
+    jobPersistence.failAttempt(job1, job1Attempt2);
+
+    final int job1Attempt3 = jobPersistence.createAttempt(job1, LOG_PATH.resolve("5"));
+    final int job2Attempt3 = jobPersistence.createAttempt(job2, LOG_PATH.resolve("6"));
+    jobPersistence.succeedAttempt(job1, job1Attempt3);
+    jobPersistence.succeedAttempt(job2, job2Attempt3);
+
+    final List<AttemptWithJobInfo> allAttempts = jobPersistence.listAttemptsWithJobInfo(ConfigType.SYNC, Instant.ofEpochSecond(0));
+    assertEquals(6, allAttempts.size());
+
+    assertEquals(job1, allAttempts.get(0).getJobInfo().getId());
+    assertEquals(job1Attempt1, allAttempts.get(0).getAttempt().getId());
+
+    assertEquals(job2, allAttempts.get(1).getJobInfo().getId());
+    assertEquals(job2Attempt1, allAttempts.get(1).getAttempt().getId());
+
+    assertEquals(job2, allAttempts.get(2).getJobInfo().getId());
+    assertEquals(job2Attempt2, allAttempts.get(2).getAttempt().getId());
+
+    assertEquals(job1, allAttempts.get(3).getJobInfo().getId());
+    assertEquals(job1Attempt2, allAttempts.get(3).getAttempt().getId());
+
+    assertEquals(job1, allAttempts.get(4).getJobInfo().getId());
+    assertEquals(job1Attempt3, allAttempts.get(4).getAttempt().getId());
+
+    assertEquals(job2, allAttempts.get(5).getJobInfo().getId());
+    assertEquals(job2Attempt3, allAttempts.get(5).getAttempt().getId());
+
+    final List<AttemptWithJobInfo> attemptsAfterTimestamp = jobPersistence.listAttemptsWithJobInfo(ConfigType.SYNC,
+        Instant.ofEpochSecond(allAttempts.get(2).getAttempt().getEndedAtInSecond().orElseThrow()));
+    assertEquals(3, attemptsAfterTimestamp.size());
+
+    assertEquals(job1, attemptsAfterTimestamp.get(0).getJobInfo().getId());
+    assertEquals(job1Attempt2, attemptsAfterTimestamp.get(0).getAttempt().getId());
+
+    assertEquals(job1, attemptsAfterTimestamp.get(1).getJobInfo().getId());
+    assertEquals(job1Attempt3, attemptsAfterTimestamp.get(1).getAttempt().getId());
+
+    assertEquals(job2, attemptsAfterTimestamp.get(2).getJobInfo().getId());
+    assertEquals(job2Attempt3, attemptsAfterTimestamp.get(2).getAttempt().getId());
+  }
+
+  private static Supplier<Instant> incrementingSecondSupplier(final Instant startTime) {
+    // needs to be an array to work with lambda
+    final int[] intArray = {0};
+
+    final Supplier<Instant> timeSupplier = () -> startTime.plusSeconds(intArray[0]++);
+    return timeSupplier;
   }
 
   @Test

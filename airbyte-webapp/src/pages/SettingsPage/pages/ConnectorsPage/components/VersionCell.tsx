@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Input, LoadingButton } from "components";
 import { FormContent } from "./PageComponents";
-import { Constants } from "constants/constants";
+import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
 type IProps = {
   version: string;
@@ -87,7 +87,7 @@ const VersionCell: React.FC<IProps> = ({
   };
 
   const isConnectorUpdateable =
-    currentVersion !== version || currentVersion === Constants.DEV_IMAGE_TAG;
+    currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>

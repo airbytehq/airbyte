@@ -10,12 +10,17 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
@@ -73,10 +78,31 @@ public class IntegrationRunner {
   }
 
   public void run(final String[] args) throws Exception {
-    LOGGER.info("Running integration: {}", integration.getClass().getName());
+    initSentry();
 
     final IntegrationConfig parsed = cliParser.parse(args);
+    final ITransaction transaction = Sentry.startTransaction(
+        integration.getClass().getSimpleName(),
+        parsed.getCommand().toString(),
+        true);
+    try {
+      runInternal(transaction, parsed);
+      transaction.finish(SpanStatus.OK);
+    } catch (final Exception e) {
+      transaction.setThrowable(e);
+      transaction.finish(SpanStatus.INTERNAL_ERROR);
+      throw e;
+    } finally {
+      /*
+       * This finally block may not run, probably because the container can be terminated by the worker.
+       * So the transaction should always be finished in the try and catch blocks.
+       */
+      transaction.finish();
+    }
+  }
 
+  public void runInternal(final ITransaction transaction, final IntegrationConfig parsed) throws Exception {
+    LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
@@ -89,14 +115,8 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
         } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector
-              .accept(
-                  new AirbyteMessage()
-                      .withType(Type.CONNECTION_STATUS)
-                      .withConnectionStatus(
-                          new AirbyteConnectionStatus()
-                              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                              .withMessage(e.getMessage())));
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
@@ -116,7 +136,7 @@ public class IntegrationRunner {
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
-          messageIterator.forEachRemaining(outputRecordCollector::accept);
+          AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
         }
       }
       // destination only
@@ -125,7 +145,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
-        consumeWriteStream(consumer);
+        AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
@@ -167,6 +187,23 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
+  }
+
+  private static void initSentry() {
+    final Map<String, String> env = System.getenv();
+    final String connector = env.getOrDefault("APPLICATION", "unknown");
+    final String version = env.getOrDefault("APPLICATION_VERSION", "unknown");
+    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
+
+    // https://docs.sentry.io/platforms/java/configuration/
+    Sentry.init(options -> {
+      options.setDsn(enableSentry ? env.getOrDefault("SENTRY_DSN", "") : "");
+      options.setEnableExternalConfiguration(true);
+      options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
+      options.setRelease(String.format("%s@%s", connector, version));
+      options.setTag("connector", connector);
+      options.setTag("connector_version", version);
+    });
   }
 
 }

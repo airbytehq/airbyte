@@ -43,23 +43,22 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
       this.numMessagesAfterWhichToFail = numMessagesAfterWhichToFail;
       this.outputRecordCollector = outputRecordCollector;
       this.numMessagesSoFar = 0;
+      LOGGER.info("Will fail after {} messages", numMessagesAfterWhichToFail);
     }
 
     @Override
     public void start() {}
 
     @Override
-    public void accept(final AirbyteMessage message) throws Exception {
-      LOGGER.info("received record: {}", message);
+    public void accept(final AirbyteMessage message) {
       numMessagesSoFar += 1;
-      LOGGER.info("received {} messages so far", numMessagesSoFar);
 
       if (numMessagesSoFar > numMessagesAfterWhichToFail) {
         throw new IllegalStateException("Forcing a fail after processing " + numMessagesAfterWhichToFail + " messages.");
       }
 
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }

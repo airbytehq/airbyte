@@ -9,6 +9,7 @@ import json
 import pkgutil
 import sys
 import time
+from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Union
 
 import backoff
@@ -50,11 +51,22 @@ class Client:
             "team_device_usage_report": self.get_team_device_usage_report,
         }
         self.configs = config
+        self.credentials = config.get("credentials")
+        if not self.credentials:
+            self.credentials = {
+                "tenant_id": config["tenant_id"],
+                "client_id": config["client_id"],
+                "client_secret": config["client_secret"],
+            }
         self._group_ids = None
-        self.msal_app = msal.ConfidentialClientApplication(
-            self.configs["client_id"],
-            authority=f"https://login.microsoftonline.com/" f"{self.configs['tenant_id']}",
-            client_credential=self.configs["client_secret"],
+
+    @property
+    @lru_cache(maxsize=None)
+    def msal_app(self):
+        return msal.ConfidentialClientApplication(
+            self.credentials["client_id"],
+            authority=f"https://login.microsoftonline.com/" f"{self.credentials['tenant_id']}",
+            client_credential=self.credentials["client_secret"],
         )
 
     def _get_api_url(self, endpoint: str) -> str:
@@ -63,10 +75,10 @@ class Client:
 
     def _get_access_token(self) -> str:
         scope = ["https://graph.microsoft.com/.default"]
-        # First, the code looks up a token from the cache.
-        result = self.msal_app.acquire_token_silent(scope, account=None)
-        # If no suitable token exists in cache. Let's get a new one from AAD.
-        if not result:
+        refresh_token = self.credentials.get("refresh_token")
+        if refresh_token:
+            result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
+        else:
             result = self.msal_app.acquire_token_for_client(scopes=scope)
         if "access_token" in result:
             return result["access_token"]
@@ -124,6 +136,8 @@ class Client:
             return True, None
         except MsalServiceError as err:
             return False, err.args[0]
+        except Exception as e:
+            return False, str(e)
 
     def get_streams(self):
         streams = []

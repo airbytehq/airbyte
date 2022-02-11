@@ -69,10 +69,20 @@ task airbyteDockerOracle(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('oracle')
     dependsOn assemble
 }
+task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('clickhouse')
+    dependsOn assemble
+}
+task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('snowflake')
+    dependsOn assemble
+}
 
 airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
+airbyteDocker.dependsOn(airbyteDockerClickhouse)
+airbyteDocker.dependsOn(airbyteDockerSnowflake)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
@@ -86,6 +96,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")

@@ -65,8 +65,12 @@ public abstract class OAuthFlowIntegrationTest {
     server.start();
     serverHandler = new ServerHandler("code");
     // Same endpoint as we use for airbyte instance
-    server.createContext("/auth_flow", serverHandler);
+    server.createContext(getCallBackServerPath(), serverHandler);
 
+  }
+
+  protected String getCallBackServerPath() {
+    return "/auth_flow";
   }
 
   protected int getServerListeningPort() {

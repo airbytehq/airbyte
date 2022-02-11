@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "object": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "max_redemptions": {
       "type": ["null", "number"]
@@ -24,13 +24,13 @@
       "type": ["null", "number"]
     },
     "unique_coupon_codes_count": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "unique_code_template": {
       "type": ["null", "string"]
     },
     "duration": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "temporal_amount": {
       "type": ["null", "number"]
@@ -39,22 +39,22 @@
       "type": ["null", "string"]
     },
     "free_trial_unit": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "free_trial_amount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "applies_to_all_plans": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "applies_to_all_items": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "applies_to_non_plan_charges": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "plans_names": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "plans": {
       "type": ["null", "array"]
@@ -63,35 +63,35 @@
       "type": ["null", "array"]
     },
     "redemption_resource": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "discount": {
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "percent": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "currencies": {
-          "type": "array"
+          "type": ["null", "array"]
         },
         "trial": {
           "type": "object",
           "properties": {
             "unit": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "length": {
-              "type": "number"
+              "type": ["null", "number"]
             }
           }
         }
       }
     },
     "coupon_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "hosted_page_description": {
       "type": ["null", "string"]
@@ -103,19 +103,19 @@
       "type": ["null", "string"]
     },
     "bulk_coupon_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bulk_coupon_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "redeemed_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "expired_at": {
       "type": ["null", "string"]

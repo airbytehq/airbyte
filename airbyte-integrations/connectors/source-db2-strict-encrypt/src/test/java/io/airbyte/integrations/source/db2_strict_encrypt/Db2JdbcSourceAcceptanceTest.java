@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +48,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     certificate = getCertificate();
     try {
       convertAndImportCertificate(certificate);
-    } catch (IOException | InterruptedException e) {
+    } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
 
@@ -145,7 +146,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
   }
 
@@ -175,6 +176,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");
@@ -182,9 +184,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
-  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -194,8 +196,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

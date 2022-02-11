@@ -110,7 +110,7 @@
                 "description": "Location tag"
               },
               "BinRack": {
-                "type": "string",
+                "type": ["null", "string"],
                 "description": "Bin rack"
               },
               "IsWarehouseManaged": {
@@ -156,7 +156,7 @@
             "description": "if( Quantity == 0 ) dbo.StockItem.PurchasePrice Else CurrentStockValue / Quantity"
           },
           "SKU": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Product SKU"
           },
           "AutoAdjust": {
@@ -380,7 +380,7 @@
             "description": "Url to full size image"
           },
           "CheckSumValue": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Image check sum"
           },
           "pkRowId": {
@@ -396,11 +396,11 @@
             "description": "Sort order for the image"
           },
           "ChecksumValue": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Internal checksum value"
           },
           "RawChecksum": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Raw file checksum (Used for UI to determine if the image file is the same before submitting for upload)"
           },
           "StockItemId": {
@@ -467,7 +467,7 @@
       "description": "Default package group id"
     },
     "PackageGroupName": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Default package group name"
     },
     "Height": {

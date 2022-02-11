@@ -40,7 +40,7 @@
         "type": "string"
       },
       "region": {
-        "description": "Region to pull data from: Sandbox Environment, North America (NA), Europe (EU), 	Far East (FE)",
+        "description": "Region to pull data from: Sandbox Environment, North America (NA), Europe (EU), Far East (FE)",
         "default": "NA",
         "name": "Region",
         "title": "Region",

@@ -21,6 +21,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -30,6 +31,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -84,6 +86,7 @@ class DefaultAirbyteSourceTest {
     }
   }
 
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -92,6 +95,7 @@ class DefaultAirbyteSourceTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
@@ -132,7 +136,7 @@ class DefaultAirbyteSourceTest {
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -167,7 +171,7 @@ class DefaultAirbyteSourceTest {
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory,
         heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
@@ -187,18 +191,32 @@ class DefaultAirbyteSourceTest {
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
         .forEach(line -> {
           org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.BLUE.getCode() + "source" + RESET);
+              .startsWith(Color.BLUE_BACKGROUND.getCode() + "source" + RESET);
         });
   }
 
   @Test
   public void testNonzeroExitCodeThrows() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource tap = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
 
     Assertions.assertThrows(WorkerException.class, tap::close);
+  }
+
+  @Test
+  public void testGetExitValue() throws Exception {
+    final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(2);
+
+    assertEquals(2, source.getExitValue());
+    // call a second time to verify that exit value is cached
+    assertEquals(2, source.getExitValue());
+    verify(process, times(1)).exitValue();
   }
 
 }

@@ -125,7 +125,7 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @BeforeAll
   protected static void init() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04").acceptLicense();
     db.start();
   }
 

@@ -2,7 +2,7 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 14`](https://jdk.java.net/archive/)
+1. [`Java 17`](https://jdk.java.net/archive/)
 2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
@@ -36,12 +36,6 @@ SUB_BUILD=PLATFORM ./gradlew build
 {% hint style="info" %}
 If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
 some additional environment variables:
-
-Build temporal (This is required until official images are available Refer: https://github.com/temporalio/temporal/issues/1305)
-```bash
-cd airbyte-temporal/scripts
-./build-temporal.sh
-```
 
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
@@ -142,7 +136,10 @@ npm start
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
+The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options: 
+
+1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache. 
+2. Restart the server by running the following commands:
 
 ```bash
 VERSION=dev docker-compose down -v

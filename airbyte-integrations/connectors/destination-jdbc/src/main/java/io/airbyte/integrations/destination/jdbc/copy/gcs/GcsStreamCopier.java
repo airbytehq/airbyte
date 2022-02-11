@@ -15,6 +15,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
+import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -63,7 +64,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final HashMap<String, WriteChannel> channels = new HashMap<>();
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
   private final String stagingFolder;
-  private final StagingFilenameGenerator filenameGenerator;
+  protected StagingFilenameGenerator filenameGenerator;
 
   public GcsStreamCopier(final String stagingFolder,
                          final DestinationSyncMode destSyncMode,
@@ -84,7 +85,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.storageClient = storageClient;
     this.gcsConfig = gcsConfig;
-    this.filenameGenerator = new StagingFilenameGenerator(streamName, MAX_PARTS_PER_FILE);
+    this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
   private String prepareGcsStagingFile() {

@@ -5,6 +5,7 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -16,6 +17,8 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -36,10 +39,13 @@ public interface ServerFactory {
                         TrackingClient trackingClient,
                         WorkerEnvironment workerEnvironment,
                         LogConfigs logConfigs,
+                        WorkerConfigs workerConfigs,
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
-                        HttpClient httpClient);
+                        HttpClient httpClient,
+                        FeatureFlags featureFlags,
+                        TemporalWorkerRunFactory temporalWorkerRunFactory);
 
   class Api implements ServerFactory {
 
@@ -55,10 +61,13 @@ public interface ServerFactory {
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
+                                 final WorkerConfigs workerConfigs,
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
-                                 final HttpClient httpClient) {
+                                 final HttpClient httpClient,
+                                 final FeatureFlags featureFlags,
+                                 final TemporalWorkerRunFactory temporalWorkerRunFactory) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -74,10 +83,13 @@ public interface ServerFactory {
           trackingClient,
           workerEnvironment,
           logConfigs,
+          workerConfigs,
           webappUrl,
           airbyteVersion,
           workspaceRoot,
-          httpClient);
+          httpClient,
+          featureFlags,
+          temporalWorkerRunFactory);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

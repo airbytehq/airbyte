@@ -172,7 +172,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     # Response: SearchProcessedOrdersResponse https://apps.linnworks.net/Api/Class/API_Linnworks-Controllers-ProcessedOrders-Responses-SearchProcessedOrdersResponse
     # Allows 150 calls per minute
     primary_key = "nOrderId"
-    cursor_field = "dReceivedDate"
+    cursor_field = "dProcessedOn"
     page_size = 500
     use_cache = True
 
@@ -207,12 +207,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         request = {
-            "DateField": "received",
+            "DateField": "processed",
             "FromDate": stream_slice["FromDate"],
             "ToDate": stream_slice["ToDate"],
             "PageNumber": 1 if not next_page_token else next_page_token["PageNumber"],
             "ResultsPerPage": self.page_size,
-            "SearchSorting": {"SortField": "dReceivedDate", "SortDirection": "ASC"},
+            "SearchSorting": {"SortField": "dProcessedOn", "SortDirection": "ASC"},
         }
 
         return {
@@ -240,11 +240,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         )
 
 
-class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
+class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
     # https://apps.linnworks.net/Api/Method/Orders-GetOrdersById
     # Response: List<OrderDetails> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-OrderManagement-ClassBase-OrderDetails
     # Allows 250 calls per minute
     primary_key = "NumOrderId"
+    cursor_field = "ProcessedDateTime"
     page_size = 100
 
     def __init__(self, **kwargs):
@@ -253,9 +254,13 @@ class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
     def path(self, **kwargs) -> str:
         return "/api/Orders/GetOrdersById"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        parent_stream_state = None
+        if stream_state:
+            parent_stream_state = {"dProcessedOn": stream_state["ProcessedDateTime"]}
+
         buffer = []
-        for slice in HttpSubStream.stream_slices(self, **kwargs):
+        for slice in HttpSubStream.stream_slices(self, stream_state=parent_stream_state, **kwargs):
             buffer.append(slice["parent"]["pkOrderID"])
             if len(buffer) == self.page_size:
                 yield buffer

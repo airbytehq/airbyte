@@ -54,10 +54,9 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
           .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
     }
 
-    try {
+    try (final JdbcDatabase database = getDatabase(config)) {
       final var nameTransformer = getNameTransformer();
       final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
-      final JdbcDatabase database = getDatabase(config);
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

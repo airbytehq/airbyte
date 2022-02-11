@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "address1": {
       "type": ["null", "string"]
@@ -166,6 +166,9 @@
       "type": ["null", "string"]
     },
     "zip": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     }
   }

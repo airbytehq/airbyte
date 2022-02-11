@@ -6,7 +6,7 @@
 import json
 import os
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -18,9 +18,9 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # Basic full refresh stream
 class MondayStream(HttpStream, ABC):
-    url_base = "https://api.monday.com/v2"
-    primary_key = "id"
-    page = 1
+    url_base: str = "https://api.monday.com/v2"
+    primary_key: str = "id"
+    page: int = 1
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -123,24 +123,46 @@ class Users(MondayStream):
     """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
+        # Stream Users doesn't support pagination
+        return
 
 
-# Source
+class MondayAuthentication:
+    """Provides the authentication capabilities for both old and new methods."""
+
+    def __init__(self, config: Dict):
+        self.config = config
+
+    def get_token(self):
+        # the old config supports for backward capability
+        token = self.config.get("api_token")
+        if not token:
+            auth_type = self.config["credentials"]["auth_type"]
+            if auth_type == "oauth2.0":
+                token = self.config["credentials"]["access_token"]
+            if auth_type == "api_token":
+                token = self.config["credentials"]["api_token"]
+        return token
+
+    def get_auth(self) -> TokenAuthenticator:
+        """Return the TokenAuthenticator object with access or api token."""
+        return TokenAuthenticator(token=self.get_token())
+
+
 class SourceMonday(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         url = "https://api.monday.com/v2"
-        params = {"query": "{boards(limit:1){id name}}"}
-        auth = TokenAuthenticator(config["api_token"]).get_auth_header()
+        params = {"query": "query { me { is_guest created_at name id}}"}
+        auth_header = MondayAuthentication(config).get_auth().get_auth_header()
         try:
-            response = requests.post(url, params=params, headers=auth)
+            response = requests.post(url, params=params, headers=auth_header)
             response.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["api_token"])
+        auth = MondayAuthentication(config).get_auth()
         return [
             Items(authenticator=auth),
             Boards(authenticator=auth),

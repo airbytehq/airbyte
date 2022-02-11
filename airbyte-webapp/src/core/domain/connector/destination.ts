@@ -1,5 +1,4 @@
-import { ConnectorDefinition } from "./types";
-import { DestinationDefinition } from "../../resources/DestinationDefinition";
+import { ConnectorDefinition, DestinationDefinition } from "./types";
 
 export function isDestinationDefinition(
   connector: ConnectorDefinition

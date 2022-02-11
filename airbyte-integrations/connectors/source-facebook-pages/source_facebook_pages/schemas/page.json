@@ -1554,39 +1554,6 @@
         }
       }
     },
-    "live_encoders": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "liveencoder.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "live_videos": {
       "type": ["object", "null"],
       "properties": {

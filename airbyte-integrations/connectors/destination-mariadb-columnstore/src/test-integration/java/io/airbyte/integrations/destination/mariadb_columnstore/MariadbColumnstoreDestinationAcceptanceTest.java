@@ -110,7 +110,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    DockerImageName mcsImage = DockerImageName.parse("mariadb/columnstore").asCompatibleSubstituteFor("mariadb");
+    DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer(mcsImage);
     db.start();
 

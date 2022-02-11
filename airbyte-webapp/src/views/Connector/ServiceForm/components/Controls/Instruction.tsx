@@ -2,12 +2,15 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
+import urls from "rehype-urls";
+import type { PluggableList } from "react-markdown/lib/react-markdown";
 
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import useDocumentation from "hooks/services/useDocumentation";
+import { LoadingPage } from "components";
 import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { useConfig } from "config";
 
 type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;
@@ -47,7 +50,17 @@ const Instruction: React.FC<IProps> = ({
   documentationUrl,
 }) => {
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
-  const { data: docs } = useDocumentation(documentationUrl);
+  const config = useConfig();
+  const { data: docs, isLoading } = useDocumentation(documentationUrl);
+
+  const removeBaseUrl = (url: { path: string }) => {
+    if (url.path.startsWith("../../")) {
+      return url.path.replace("../../", `${config.integrationUrl}/`);
+    }
+    return url.path;
+  };
+
+  const urlReplacerPlugin: PluggableList = [[urls, removeBaseUrl]];
 
   return (
     <>
@@ -67,7 +80,13 @@ const Instruction: React.FC<IProps> = ({
             </HeaderLink>
           }
         >
-          <Markdown content={docs} />
+          {isLoading ? (
+            <LoadingPage />
+          ) : docs ? (
+            <Markdown content={docs} rehypePlugins={urlReplacerPlugin} />
+          ) : (
+            <FormattedMessage id="docs.notFoundError" />
+          )}
         </SideView>
       )}
       <LinkToInstruction onClick={() => setIsSideViewOpen(true)}>

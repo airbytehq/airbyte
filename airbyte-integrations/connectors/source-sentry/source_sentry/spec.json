@@ -9,7 +9,7 @@
     "properties": {
       "auth_token": {
         "type": "string",
-        "title": "Authentication tokens",
+        "title": "Authentication Tokens",
         "description": "Log into Sentry and then <a href=\"https://sentry.io/settings/account/api/auth-tokens/\">create authentication tokens</a>.For self-hosted, you can find or create authentication tokens by visiting \"{instance_url_prefix}/settings/account/api/auth-tokens/\"",
         "airbyte_secret": true
       },
@@ -27,7 +27,7 @@
       "project": {
         "type": "string",
         "title": "Project",
-        "description": "The slug of the project the groups belong to."
+        "description": "The name (slug) of the Project you want to sync."
       }
     }
   }

@@ -19,6 +19,9 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
+  // Public so classes consuming the getInitialized method have a sense of the time taken.
+  public static final long DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseInstance.class);
 
   protected final String username;
@@ -26,7 +29,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   protected final String connectionString;
   protected final String initialSchema;
   protected final String databaseName;
-  protected final Set<String> tableNames;
+  protected final Set<String> initialExpectedTables;
   protected final Function<Database, Boolean> isDatabaseReady;
 
   /**
@@ -43,25 +46,26 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
                                  final String connectionString,
                                  final String initialSchema,
                                  final String databaseName,
-                                 final Set<String> tableNames,
+                                 final Set<String> initialExpectedTables,
                                  final Function<Database, Boolean> isDatabaseReady) {
     this.username = username;
     this.password = password;
     this.connectionString = connectionString;
     this.initialSchema = initialSchema;
     this.databaseName = databaseName;
-    this.tableNames = tableNames;
+    this.initialExpectedTables = initialExpectedTables;
     this.isDatabaseReady = isDatabaseReady;
   }
 
   @Override
   public boolean isInitialized() throws IOException {
-    final Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database database = Databases.createPostgresDatabaseWithRetryTimeout(
         username,
         password,
         connectionString,
-        isDatabaseConnected(databaseName));
-    return new ExceptionWrappingDatabase(database).transaction(ctx -> tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName)));
+        isDatabaseConnected(databaseName),
+        DEFAULT_CONNECTION_TIMEOUT_MS);
+    return new ExceptionWrappingDatabase(database).transaction(ctx -> initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName)));
   }
 
   @Override
@@ -87,7 +91,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
         isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
-      final boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
+      final boolean hasTables = initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName));
       if (hasTables) {
         LOGGER.info("The {} database has been initialized", databaseName);
         return null;
