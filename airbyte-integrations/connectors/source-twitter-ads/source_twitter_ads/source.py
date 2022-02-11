@@ -270,7 +270,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
             post_response = requests.post(post_base_url, params_post,  auth=auth)
             post_response = post_response.json()
 
-            job_id = post_response["data"]["id_str"]
+            job_id = post_response['data']['id_str']
 
             job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
             job_success_params = urllib.parse.urlencode({"job_id": job_id})
