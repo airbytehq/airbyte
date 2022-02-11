@@ -51,8 +51,7 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
     int: "integer",
 }
 
-CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k,
-                              v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
 def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
@@ -297,8 +296,7 @@ class Stream(ABC):
         elif isinstance(value, str):
             value = pendulum.parse(value)
         else:
-            raise ValueError(
-                f"Unsupported type of datetime field {type(value)}")
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
         return value
 
     def _filter_old_records(self, records: Iterable) -> Iterable:
