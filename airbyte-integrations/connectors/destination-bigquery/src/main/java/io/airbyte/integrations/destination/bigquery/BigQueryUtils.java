@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
-import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -172,9 +171,9 @@ public class BigQueryUtils {
       String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
       if (!(projectId.equals(projectIdPart))) {
         throw new IllegalArgumentException(String.format(
-          "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
-          projectId,
-          projectIdPart));
+            "Project ID included in Dataset ID must match Project ID field's value: Project ID is `%s`, but you specified `%s` in Dataset ID",
+            projectId,
+            projectIdPart));
       }
     }
     // if colonIndex is -1, then this returns the entire string

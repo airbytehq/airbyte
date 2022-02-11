@@ -25,9 +25,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.testcontainers.containers.Db2Container;
 
@@ -89,20 +87,15 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     db = new Db2Container("ibmcom/db2:11.5.5.0").withCommand().acceptLicense()
         .withExposedPorts(50000);
     db.start();
 
-    var certificate = getCertificate();
+    final var certificate = getCertificate();
     try {
       convertAndImportCertificate(certificate);
-    } catch (IOException | InterruptedException e) {
+    } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
 
@@ -119,7 +112,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
             .build()))
         .build());
 
-    String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
+    final String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
         config.get("host").asText(),
         db.getMappedPort(50000),
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
@@ -153,7 +146,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     new File("certificate.pem").delete();
     new File("certificate.der").delete();
     new File(KEY_STORE_FILE_PATH).delete();
@@ -180,9 +173,9 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
-  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -192,8 +185,8 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

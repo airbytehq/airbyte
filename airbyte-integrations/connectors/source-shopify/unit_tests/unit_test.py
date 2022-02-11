@@ -3,7 +3,7 @@
 #
 
 import requests
-from source_shopify.source import ShopifyStream
+from source_shopify.source import ShopifyStream, SourceShopify
 
 
 def test_get_next_page_token(requests_mock):
@@ -25,3 +25,12 @@ def test_get_next_page_token(requests_mock):
 
     test = ShopifyStream.next_page_token(response)
     assert test == expected_output_token
+
+
+def test_privileges_validation(requests_mock, basic_config):
+    requests_mock.get("https://test_shop.myshopify.com/admin/oauth/access_scopes.json", json={"access_scopes": [{"handle": "read_orders"}]})
+    source = SourceShopify()
+
+    expected = ["orders", "abandoned_checkouts", "metafields", "order_refunds", "order_risks", "transactions", "fulfillments", "shop"]
+
+    assert [stream.name for stream in source.streams(basic_config)] == expected

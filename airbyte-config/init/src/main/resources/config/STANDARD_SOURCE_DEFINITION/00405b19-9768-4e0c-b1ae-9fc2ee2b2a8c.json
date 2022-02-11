@@ -2,7 +2,7 @@
   "sourceDefinitionId": "00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c",
   "name": "Looker",
   "dockerRepository": "airbyte/source-looker",
-  "dockerImageTag": "0.2.6",
+  "dockerImageTag": "0.2.7",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/looker",
   "icon": "looker.svg"
 }

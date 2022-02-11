@@ -38,7 +38,6 @@ public class DockerProcessFactory implements ProcessFactory {
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
-  private final boolean isOrchestrator;
   private final Path imageExistsScriptPath;
 
   /**
@@ -48,20 +47,17 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param workspaceMountSource workspace volume
    * @param localMountSource local volume
    * @param networkName docker network
-   * @param isOrchestrator if the process needs to be able to launch containers
    */
   public DockerProcessFactory(final WorkerConfigs workerConfigs,
                               final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
-                              final String networkName,
-                              final boolean isOrchestrator) {
+                              final String networkName) {
     this.workerConfigs = workerConfigs;
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
-    this.isOrchestrator = isOrchestrator;
     this.imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -105,46 +101,30 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      List<String> cmd;
+      final List<String> cmd = Lists.newArrayList(
+          "docker",
+          "run",
+          "--rm",
+          "--init",
+          "-i",
+          "-w",
+          rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
+          "--log-driver",
+          "none");
 
-      // todo: add --expose 80 to each
+      if (networkName != null) {
+        cmd.add("--network");
+        cmd.add(networkName);
+      }
 
-      if (isOrchestrator) {
-        cmd = Lists.newArrayList(
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-i",
-            "-v",
-            String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
-            "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-            "-v",
-            "/var/run/docker.sock:/var/run/docker.sock", // needs to be able to run docker in docker
-            "-w",
-            jobRoot.toString(), // real jobroot, not rebased version
-            "--network",
-            networkName,
-            "--log-driver",
-            "none");
-      } else {
-        cmd = Lists.newArrayList(
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-i",
-            "-v",
-            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
-            "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-            "-w",
-            rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
-            "--network",
-            networkName,
-            "--log-driver",
-            "none");
+      if (workspaceMountSource != null) {
+        cmd.add("-v");
+        cmd.add(String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION));
+      }
+
+      if (localMountSource != null) {
+        cmd.add("-v");
+        cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
       for (final var envEntry : workerConfigs.getEnvMap().entrySet()) {

@@ -30,7 +30,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         return self.custom_query_config["table_name"]
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
         return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing

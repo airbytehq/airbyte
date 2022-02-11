@@ -216,12 +216,10 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false);
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
-
-    log.info("Scheduler temporal wf started");
   }
 
   public void deleteConnection(final UUID connectionId) {
@@ -300,6 +298,7 @@ public class TemporalClient {
     final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
 
     if (!isWorflowRunning) {
+      log.error("Can't cancel a non running workflow");
       return new ManualSyncSubmissionResult(
           Optional.of("No scheduler workflow is running for: " + connectionId),
           Optional.empty());
@@ -320,7 +319,81 @@ public class TemporalClient {
       }
     } while (connectionManagerWorkflow.getState().isRunning());
 
-    log.info("end of manual schedule");
+    log.info("end of manual cancellation");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
+    log.info("reset sync request");
+
+    final boolean isWorflowRunning = isWorkflowRunning(getConnectionManagerName(connectionId));
+
+    if (!isWorflowRunning) {
+      log.error("Can't reset a non running workflow");
+      return new ManualSyncSubmissionResult(
+          Optional.of("No scheduler workflow is running for: " + connectionId),
+          Optional.empty());
+    }
+
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    connectionManagerWorkflow.resetConnection();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("end of reset submission");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  /**
+   * This is launching a reset and wait for the reset to be performed.
+   *
+   * The way to do so is to wait for the jobId to change, either to a new job id or the default id
+   * that signal that a workflow is waiting to be submitted
+   */
+  public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
+    ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
+    if (resetResult.getFailingReason().isPresent()) {
+      return resetResult;
+    }
+
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("End of reset");
 
     final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
 
@@ -405,7 +478,7 @@ public class TemporalClient {
   }
 
   @VisibleForTesting
-  static String getConnectionManagerName(final UUID connectionId) {
+  public static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 

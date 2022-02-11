@@ -52,12 +52,15 @@
           }
         ]
       },
-
       "repository": {
         "type": "string",
-        "examples": ["airbytehq/airbyte", "airbytehq/*"],
+        "examples": [
+          "airbytehq/airbyte airbytehq/another-repo",
+          "airbytehq/*",
+          "airbytehq/airbyte"
+        ],
         "title": "GitHub Repositories",
-        "description": "Space-delimited list of GitHub repositories/organizations, e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for get all repositories from organization"
+        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories."
       },
       "start_date": {
         "type": "string",
@@ -69,8 +72,16 @@
       "branch": {
         "type": "string",
         "title": "Branch",
-        "examples": ["airbytehq/airbyte/master"],
+        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
         "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled."
+      },
+      "page_size_for_large_streams": {
+        "type": "integer",
+        "title": "Page size for large streams",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10,
+        "description": "The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30."
       }
     }
   },

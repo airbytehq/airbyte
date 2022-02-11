@@ -2,6 +2,7 @@
 exclude =
     .venv,
     models # generated protocol models
+    airbyte-cdk/python/airbyte_cdk/models/__init__.py
     .eggs # python libraries"
     .tox
     build

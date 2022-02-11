@@ -118,8 +118,7 @@ public abstract class AbstractSourceConnectorTest {
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
-        "host",
-        false);
+        "host");
   }
 
   @AfterEach

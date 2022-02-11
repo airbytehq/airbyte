@@ -90,7 +90,6 @@ const ConnectorServiceTypeControl: React.FC<{
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
         ]
       : [];
   const sortedDropDownData = useMemo(

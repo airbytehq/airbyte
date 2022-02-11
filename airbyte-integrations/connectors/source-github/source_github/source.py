@@ -44,6 +44,7 @@ from .streams import (
 )
 
 TOKEN_SEPARATOR = ","
+DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
 # To scan all the repos within orgnaization, organization name could be
 # specified by using asteriks i.e. "airbytehq/*"
 ORGANIZATION_PATTERN = re.compile("^.*/\\*$")
@@ -140,6 +141,7 @@ class SourceGithub(AbstractSource):
             repository_stats_stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=repositories,
+                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
             for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
                 next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
@@ -153,9 +155,10 @@ class SourceGithub(AbstractSource):
         repositories = repos + organization_repos
 
         organizations = list({org.split("/")[0] for org in repositories})
+        page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
-        repository_args = {"authenticator": authenticator, "repositories": repositories}
+        repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)

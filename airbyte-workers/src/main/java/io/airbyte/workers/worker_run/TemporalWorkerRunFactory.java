@@ -59,6 +59,14 @@ public class TemporalWorkerRunFactory {
     return temporalClient.startNewCancelation(connectionId);
   }
 
+  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
+    return temporalClient.resetConnection(connectionId);
+  }
+
+  public ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId) {
+    return temporalClient.synchronousResetConnection(connectionId);
+  }
+
   public void deleteConnection(final UUID connectionId) {
     temporalClient.deleteConnection(connectionId);
   }
@@ -72,12 +80,6 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-
-        if (featureFlags.usesNewScheduler()) {
-          temporalClient.submitConnectionUpdaterAsync(connectionId);
-
-          return toOutputAndStatusConnector();
-        }
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);
@@ -96,7 +98,6 @@ public class TemporalWorkerRunFactory {
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements());
 
-        // TODO: Signal method?
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config, connectionId);
         return toOutputAndStatus(output);
       };

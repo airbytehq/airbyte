@@ -117,7 +117,9 @@ public class AirbyteMessageTracker implements MessageTracker {
         stateDeltaTracker.addState(stateHash, streamToRunningCount);
       }
     } catch (final StateDeltaTrackerException e) {
-      log.error(e.getMessage(), e);
+      log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
+      log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
+      log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
     }
     streamToRunningCount.clear();
@@ -134,7 +136,9 @@ public class AirbyteMessageTracker implements MessageTracker {
         stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
       }
     } catch (final StateDeltaTrackerException e) {
-      log.error(e.getMessage(), e);
+      log.warn("The message tracker encountered an issue that prevents committed record counts from being reliably computed.");
+      log.warn("This only impacts metadata and does not indicate a problem with actual sync data.");
+      log.warn(e.getMessage(), e);
       unreliableCommittedCounts = true;
     }
   }

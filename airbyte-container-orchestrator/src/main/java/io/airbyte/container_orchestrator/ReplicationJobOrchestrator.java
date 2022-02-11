@@ -17,6 +17,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
@@ -26,6 +27,7 @@ import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,15 +54,17 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   }
 
   @Override
-  public void runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
+  public Optional<String> runJob() throws Exception {
+    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final StandardSyncInput syncInput = readInput();
 
     final IntegrationLauncherConfig sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     log.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
@@ -97,10 +101,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
-    log.info("Sending output...");
-    // this uses stdout directly because it shouldn't have the logging related prefix
-    // the replication output is read from the container that launched the runner
-    System.out.println(Jsons.serialize(replicationOutput));
+    log.info("Returning output...");
+    return Optional.of(Jsons.serialize(replicationOutput));
   }
 
 }

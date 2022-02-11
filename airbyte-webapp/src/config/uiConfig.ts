@@ -15,6 +15,7 @@ type UiConfig = {
   technicalSupport: string;
   statusLink: string;
   recipesLink: string;
+  demoLink: string;
 };
 
 const uiConfig: UiConfig = {
@@ -32,6 +33,7 @@ const uiConfig: UiConfig = {
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
   recipesLink: "https://airbyte.io/recipes",
+  demoLink: "https://demo.airbyte.io",
 };
 
 export type { UiConfig };

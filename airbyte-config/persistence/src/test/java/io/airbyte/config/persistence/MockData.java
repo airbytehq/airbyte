@@ -103,7 +103,8 @@ public class MockData {
         .withDockerRepository("repository-1")
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withSourceType(SourceType.DATABASE)
@@ -111,7 +112,8 @@ public class MockData {
         .withDockerImageTag("tag-2")
         .withDockerRepository("repository-2")
         .withDocumentationUrl("documentation-url-2")
-        .withIcon("icon-2");
+        .withIcon("icon-2")
+        .withTombstone(false);
     return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2);
   }
 
@@ -137,7 +139,8 @@ public class MockData {
         .withDockerRepository("repository-3")
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withName("random-destination-2")
@@ -145,7 +148,8 @@ public class MockData {
         .withDockerRepository("repository-4")
         .withDocumentationUrl("documentation-url-4")
         .withIcon("icon-4")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2);
   }
 

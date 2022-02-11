@@ -7,14 +7,11 @@ This is the repository for the Null destination connector in Java. For informati
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:destination-:build
+./gradlew :airbyte-integrations:connectors:destination-e2e-test:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
-Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
-
-**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
+No credential is needed for this connector.
 
 ### Locally running the connector docker image
 
@@ -35,8 +32,8 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-e2e-test:dev disc
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-e2e-test:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-#### Dev Null Destination
-The Dev Null Destination depends on this connector. It only allows the "silent" mode. When this mode is changed, please make sure that the Dev Null Destination is updated and published accordingly as well.
+#### Cloud variant
+The cloud variant of this connector is Dev Null Destination. It only allows the "silent" mode. When this mode is changed, please make sure that the Dev Null Destination is updated and published accordingly as well.
 
 ## Testing
 We use `JUnit` for Java tests.

@@ -52,6 +52,9 @@ public interface ConnectionManagerWorkflow {
   @SignalMethod
   void connectionUpdated();
 
+  @SignalMethod
+  void resetConnection();
+
   /**
    * Return the current state of the workflow.
    */

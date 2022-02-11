@@ -225,7 +225,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return {
             "reportType": self.name,
             "marketplaceIds": [self.marketplace_id],
-            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
     def _create_report(
@@ -602,6 +602,15 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
             raise ValueError("Original and normalized header field count does not match")
 
         return reader
+
+
+class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """
+
+    name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+    cursor_field = "last-updated-date"
 
 
 class Orders(IncrementalAmazonSPStream):

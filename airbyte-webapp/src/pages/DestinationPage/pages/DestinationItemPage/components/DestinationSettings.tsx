@@ -8,14 +8,13 @@ import useDestination, {
   useDestinationDefinitionSpecificationLoadAsync,
 } from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { Destination } from "core/domain/connector";
+import { Connector, Destination } from "core/domain/connector";
 
 const Content = styled.div`
   width: 100%;
@@ -33,10 +32,9 @@ const DestinationsSettings: React.FC<IProps> = ({
   connectionsWithDestination,
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    statusMessage: string | React.ReactNode;
-    response: JobInfo;
-  } | null>(null);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(
+    null
+  );
 
   const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
     currentDestination.destinationDefinitionId
@@ -69,9 +67,7 @@ const DestinationsSettings: React.FC<IProps> = ({
 
       setSaved(true);
     } catch (e) {
-      const errorStatusMessage = createFormErrorMessage(e);
-
-      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+      setErrorStatusRequest(e);
     }
   };
 
@@ -88,18 +84,15 @@ const DestinationsSettings: React.FC<IProps> = ({
       });
       setSaved(true);
     } catch (e) {
-      const errorStatusMessage = createFormErrorMessage(e);
-
-      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+      setErrorStatusRequest(e);
     }
   };
 
-  const onDelete = async () => {
-    await deleteDestination({
+  const onDelete = () =>
+    deleteDestination({
       connectionsWithDestination,
       destination: currentDestination,
     });
-  };
 
   return (
     <Content>
@@ -111,11 +104,13 @@ const DestinationsSettings: React.FC<IProps> = ({
         availableServices={[destinationDefinition]}
         formValues={{
           ...currentDestination,
-          serviceType: currentDestination.destinationDefinitionId,
+          serviceType: Connector.id(destinationDefinition),
         }}
         selectedConnector={destinationSpecification}
         successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-        errorMessage={errorStatusRequest?.statusMessage}
+        errorMessage={
+          errorStatusRequest && createFormErrorMessage(errorStatusRequest)
+        }
         title={<FormattedMessage id="destination.destinationSettings" />}
         jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
       />

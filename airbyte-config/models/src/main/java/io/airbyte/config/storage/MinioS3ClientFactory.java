@@ -9,6 +9,7 @@ import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -40,6 +41,7 @@ public class MinioS3ClientFactory implements Supplier<S3Client> {
     final var minioEndpoint = minioConfig.getMinioEndpoint();
     try {
       final var minioUri = new URI(minioEndpoint);
+      builder.credentialsProvider(() -> AwsBasicCredentials.create(minioConfig.getAwsAccessKey(), minioConfig.getAwsSecretAccessKey()));
       builder.endpointOverride(minioUri);
       builder.region(Region.US_EAST_1); // Although this is not used, the S3 client will error out if this is not set. Set a stub value.
     } catch (final URISyntaxException e) {

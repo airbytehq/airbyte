@@ -331,7 +331,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
-            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
+            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

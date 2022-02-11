@@ -29,7 +29,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   protected final String connectionString;
   protected final String initialSchema;
   protected final String databaseName;
-  protected final Set<String> tableNames;
+  protected final Set<String> initialExpectedTables;
   protected final Function<Database, Boolean> isDatabaseReady;
 
   /**
@@ -46,14 +46,14 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
                                  final String connectionString,
                                  final String initialSchema,
                                  final String databaseName,
-                                 final Set<String> tableNames,
+                                 final Set<String> initialExpectedTables,
                                  final Function<Database, Boolean> isDatabaseReady) {
     this.username = username;
     this.password = password;
     this.connectionString = connectionString;
     this.initialSchema = initialSchema;
     this.databaseName = databaseName;
-    this.tableNames = tableNames;
+    this.initialExpectedTables = initialExpectedTables;
     this.isDatabaseReady = isDatabaseReady;
   }
 
@@ -65,7 +65,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
         connectionString,
         isDatabaseConnected(databaseName),
         DEFAULT_CONNECTION_TIMEOUT_MS);
-    return new ExceptionWrappingDatabase(database).transaction(ctx -> tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName)));
+    return new ExceptionWrappingDatabase(database).transaction(ctx -> initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName)));
   }
 
   @Override
@@ -91,7 +91,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
         isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
-      final boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
+      final boolean hasTables = initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName));
       if (hasTables) {
         LOGGER.info("The {} database has been initialized", databaseName);
         return null;
