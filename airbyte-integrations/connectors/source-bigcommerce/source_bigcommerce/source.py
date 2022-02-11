@@ -167,19 +167,6 @@ class Orders(IncrementalBigcommerceStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json() if len(response.content) > 0 else []
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        max_date = ""
-        if not current_stream_state.get(self.cursor_field):
-            max_date = latest_record.get(self.cursor_field, "")
-        elif latest_record.get(self.cursor_field) and current_stream_state.get(self.cursor_field):
-            latest_state_date_time = parsedate_tz(latest_record.get(self.cursor_field))
-            current_state_date_time = parsedate_tz(current_stream_state.get(self.cursor_field))
-            max_date = current_stream_state.get(self.cursor_field)
-            if current_state_date_time < latest_state_date_time:
-                max_date = latest_record.get(self.cursor_field)
-
-        return {self.cursor_field: max_date}
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
