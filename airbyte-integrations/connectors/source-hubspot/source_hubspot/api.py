@@ -612,10 +612,10 @@ class CRMSearchStream(IncrementalStream, ABC):
                     latest_cursor = self._field_to_datetime(record[self.updated_at_field])
 
                 after = response.get("paging", {}).get("next", {}).get("after")
-                if after and after + self.limit > self.max_search_resuls:
+                if after and after + self.limit >= self.max_search_resuls:
                     payload["after"] = 0
                     payload["filters"][0]["value"] = int(latest_cursor.timestamp() * 1000)
-                if after:
+                elif after:
                     payload["after"] = after
         else:
             while after != None:

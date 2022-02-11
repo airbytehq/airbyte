@@ -195,12 +195,34 @@ class TestSplittingPropertiesFunctionality:
             after_id = id_list[-1]
 
         # Read preudo-output from generator object read(), based on real scenario
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        stream_records = list(test_stream.list_records(None))
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
+
+        # check if stream has a state and simulate incremental run
+        assert test_stream.state is not None
+        
+        response = { "json": { "results": [], "paging": {"next": {"after": 10}}}, "status_code": 200}
+        response2 = { "json": { "results": [{"updatedAt": "2022-01-27T13:33:10.007Z"}, {"updatedAt": "2022-01-28T13:33:10.007Z"}], "paging": {"next": {"after": 10000}}}, "status_code": 200}
+        response3 = { "json": { "results": [{"updatedAt": "2022-01-29T13:33:10.007Z"}]}, "status_code": 200}
+        adapter = requests_mock.register_uri("POST", f"{test_stream.url}", [response, response2, response3] )
+
+        stream_records = list(test_stream.list_records(None))
+
+        # check if request bodies were constructed correctly.
+        assert adapter.request_history[0].json().get("filters") == [{'value': 1627719538954, 'propertyName': 'hs_lastmodifieddate', 'operator': 'GTE'}]
+        assert adapter.request_history[0].json().get("after") == None
+
+        assert adapter.request_history[1].json().get("filters") == [{'value': 1627719538954, 'propertyName': 'hs_lastmodifieddate', 'operator': 'GTE'}]
+        assert adapter.request_history[1].json().get("after") == 10
+
+        assert adapter.request_history[2].json().get("filters") == [{'value': 1643376790007, 'propertyName': 'hs_lastmodifieddate', 'operator': 'GTE'}]
+        assert adapter.request_history[2].json().get("after") == 0
+
+        assert len(stream_records) == 3
 
     def test_stream_with_splitting_properties_with_pagination(self, requests_mock, client, api, fake_properties_list):
         """
