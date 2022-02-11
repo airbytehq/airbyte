@@ -91,12 +91,16 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
     print("three " * 2000)
+    print("four " * 2000)
     if destination_type.value == DestinationType.ORACLE.value:
+        print("five " * 2000)
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
     else:
+        print("six  " * 2000)
         dbt_test_utils.set_target_schema("test_ephemeral")
-    print("four " * 2000)
+    print("seven " * 2000)
+    print("eight " * 2000)
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
