@@ -13,4 +13,8 @@ while True:
     total_size += len(s)
     s = tpl.format(now, n, total_size)
     print(s, flush=False)
-    time.sleep(1)
+
+    if n < 140:
+        time.sleep(1)
+    else:
+        time.sleep(10)
