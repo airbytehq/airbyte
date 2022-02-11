@@ -46,7 +46,7 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1000])
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.REDSHIFT)
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
     if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
