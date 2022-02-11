@@ -110,22 +110,20 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         records_count = self.get_api_records_count(stream_slice=stream_slice, stream_state=stream_state)
 
         page_count = ceil(records_count / self.page_size)
-        next_page_token = None
         for page_number in range(1, page_count + 1):
-            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
             params["page"] = page_number
-            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice)
 
             request = self._create_prepared_request(
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice),
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=params,
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
+                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice),
             )
 
-            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            # self.future_requests.append(self._send_request(request, request_kwargs))
+            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
             self.future_requests.append(
                 {
                     "future": self._send_request(request, request_kwargs),
@@ -187,12 +185,12 @@ class SourceZendeskSupportStream(HttpStream, ABC):
 
             if self.should_retry(response):
                 backoff_time = self.backoff_time(response)
-                if not self.future_requests:
-                    time.sleep(backoff_time)
-
                 if item["retries"] == self.max_retries:
                     raise DefaultBackoffException(request=item["request"], response=response)
                 else:
+                    if response.elapsed.total_seconds() < backoff_time:
+                        time.sleep(backoff_time - response.elapsed.total_seconds())
+
                     self.future_requests.append(
                         {
                             "future": self._send_request(item["request"], item["request_kwargs"]),
@@ -202,8 +200,8 @@ class SourceZendeskSupportStream(HttpStream, ABC):
                             "backoff_time": backoff_time,
                         }
                     )
-
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+            else:
+                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
     @property
     def url_base(self) -> str:
