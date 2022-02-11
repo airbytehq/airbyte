@@ -51,8 +51,6 @@ class DbtIntegrationTest(object):
             self.setup_mysql_db()
         if DestinationType.MSSQL.value in destinations_to_test:
             self.setup_mssql_db()
-        if DestinationType.CLICKHOUSE.value in destinations_to_test:
-            self.setup_clickhouse_db()
 
     def setup_postgres_db(self):
         start_db = True
