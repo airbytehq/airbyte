@@ -19,6 +19,7 @@ import datetime
 import gzip
 from io import BytesIO
 import time
+import logging
 
 
 """
@@ -269,7 +270,8 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
             params_post = {"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation}
             post_response = requests.post(post_base_url, params_post,  auth=auth)
             post_response = post_response.json()
-
+            logging.error("***")
+            logging.error(post_response)
             job_id = post_response['data']['id_str']
 
             job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
@@ -285,7 +287,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
             job_urls.append(job_url)
             job_success_urls.append(job_success_url)
             job_statuses.append(job_status)
-
+        exit()
         for job_success_url,job_status in zip(job_success_urls, job_statuses):
             while job_status != "SUCCESS":
                 time.sleep(30)
