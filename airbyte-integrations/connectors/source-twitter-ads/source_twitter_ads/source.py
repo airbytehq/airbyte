@@ -267,11 +267,16 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
 
         for each in promoted_tweet_ids_str:
             post_base_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + '?'
-            params_post = {"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation}
-            post_response = requests.post(post_base_url, params_post,  auth=auth)
+            params_post =  urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity, "entity_ids": each, "granularity": "DAY", "placement": placement, "metric_groups": metric_groups, "segmentation_type": segmentation})
+            params_post =  urllib.parse.unquote(params_post)
+            post_url = post_base_url + params_post
+
+            post_response = requests.post(post_url,  auth=auth)
             post_response = post_response.json()
             logging.error("***")
+            logging.error(post_url)
             logging.error(post_response)
+    
             job_id = post_response['data']['id_str']
 
             job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
