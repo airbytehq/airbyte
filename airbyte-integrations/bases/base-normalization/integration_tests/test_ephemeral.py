@@ -48,6 +48,7 @@ def setup_test_path(request):
 @pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize("destination_type", [DestinationType.REDSHIFT])
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
+    print("one " * 2000)
     if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
@@ -57,6 +58,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
         column_count = 993
     if destination_type.value == DestinationType.MSSQL.value:
         column_count = 999
+    print("two " * 2000)
     run_test(destination_type, column_count)
 
 
@@ -88,12 +90,13 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    print("three " * 2000)
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
-    print("Testing ephemeral")
+    print("four " * 2000)
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
