@@ -150,7 +150,7 @@ runs:
             -Dsonar.language=${{ inputs.module-lang }}
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
-            -Dsonar.exclusions=reports/**,*.toml,*_tests/**
+            -Dsonar.exclusions=reports/**,*.toml,*_tests/**,setup.py
             -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
             ${{ steps.sq-options.outputs.options }}
 

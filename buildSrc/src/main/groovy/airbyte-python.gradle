@@ -100,7 +100,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('isortReport', type: PythonTask) {
             module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff ./"
+            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
+            outputPrefix = ''
         }
 
         project.task('blackFormat', type: PythonTask) {
@@ -113,7 +114,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('blackReport', type: PythonTask) {
             module = "black"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} --diff ./"
+            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
+            outputPrefix = ''
         }
 
         project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
@@ -124,6 +126,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.task('flakeReport', type: PythonTask) {
             module = "pflake8"
             command = "--exit-zero --config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
+            outputPrefix = ''
         }
 
         project.task("mypyReport", type: Exec){

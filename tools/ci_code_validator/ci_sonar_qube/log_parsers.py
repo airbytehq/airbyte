@@ -149,7 +149,7 @@ class LogParser(SonarQubeApi):
                 data = self._issues2dict(issues)
                 with open(self.output_file, "w") as output_file:
                     output_file.write(json.dumps(data))
-                self.logger.info(f"the file {self.output_file} was updated")
+                self.logger.info(f"the file {self.output_file} was updated with {len(issues)} issues")
                 return 0
             return 1
 
