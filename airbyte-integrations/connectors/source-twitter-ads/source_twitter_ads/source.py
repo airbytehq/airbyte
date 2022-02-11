@@ -273,9 +273,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
 
             post_response = requests.post(post_url,  auth=auth)
             post_response = post_response.json()
-            logging.error("***")
-            logging.error(post_url)
-            logging.error(post_response)
+
     
             job_id = post_response['data']['id_str']
 
@@ -292,7 +290,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
             job_urls.append(job_url)
             job_success_urls.append(job_success_url)
             job_statuses.append(job_status)
-        exit()
+
         for job_success_url,job_status in zip(job_success_urls, job_statuses):
             while job_status != "SUCCESS":
                 time.sleep(30)
