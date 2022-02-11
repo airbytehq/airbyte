@@ -27,10 +27,11 @@ import org.slf4j.MDC;
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
  */
-public class MetricSingleton {
+@Deprecated
+public class PrometheusMetricSingleton {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MetricSingleton.class);
-  private static MetricSingleton instance;
+  private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusMetricSingleton.class);
+  private static PrometheusMetricSingleton instance;
 
   private final Map<String, Gauge> nameToGauge = new HashMap<>();
   private final Map<String, Counter> nameToCounter = new HashMap<>();
@@ -38,9 +39,9 @@ public class MetricSingleton {
 
   private HTTPServer monitoringDaemon;
 
-  private MetricSingleton() {}
+  private PrometheusMetricSingleton() {}
 
-  public static synchronized MetricSingleton getInstance() {
+  public static synchronized PrometheusMetricSingleton getInstance() {
     if (instance == null) {
       throw new RuntimeException("You must initialize configuration with the initializeMonitoringServiceDaemon() method before getting an instance.");
     }
@@ -193,7 +194,7 @@ public class MetricSingleton {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
-    instance = new MetricSingleton();
+    instance = new PrometheusMetricSingleton();
     if (publish) {
       try {
         MDC.setContextMap(mdc);
