@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 public class ConnectionHelper {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionHelper.class);
 
   private final ConfigRepository configRepository;
