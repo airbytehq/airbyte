@@ -115,6 +115,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
     print("point3 " * 2000)
+    print("point4 " * 2000)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
     dbt_test_utils.dbt_check(destination_type, test_root_dir)
@@ -166,9 +167,12 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
     """
     This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
     """
+    print("setup_input_raw_data1 " * 400)
     config_file = os.path.join(test_root_dir, "destination_config.json")
+    print("setup_input_raw_data2 " * 400)
     with open(config_file, "w") as f:
         f.write(json.dumps(destination_config))
+    print("setup_input_raw_data3 " * 400)
     commands = [
         "docker",
         "run",
@@ -186,16 +190,23 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
         "--catalog",
         "/data/catalog.json",
     ]
+    print("setup_input_raw_data4 " * 400)
     # Force a reset in destination raw tables
-    return dbt_test_utils.run_destination_process("", test_root_dir, commands)
+    res = dbt_test_utils.run_destination_process("", test_root_dir, commands)
+    print("setup_input_raw_data5 " * 400)
+    print("setup_input_raw_data6 " * 400)
+    return res
 
 
 def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, column_count: int):
     """
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
+    print("generate_dbt_models1 " * 500)
     output_directory = os.path.join(test_root_dir, "models", "generated")
+    print("generate_dbt_models2 " * 500)
     shutil.rmtree(output_directory, ignore_errors=True)
+    print("generate_dbt_models3 " * 500)
     catalog_config = {
         "streams": [
             {
@@ -220,11 +231,15 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     else:
         for column in [dbt_test_utils.random_string(5) for _ in range(column_count)]:
             catalog_config["streams"][0]["stream"]["json_schema"]["properties"][column] = {"type": "string"}
+    print("generate_dbt_models4 " * 500)
     catalog = os.path.join(test_root_dir, "catalog.json")
+    print("generate_dbt_models5 " * 500)
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
 
+    print("generate_dbt_models6 " * 500)
     transform_catalog = TransformCatalog()
+    print("generate_dbt_models7 " * 500)
     transform_catalog.config = {
         "integration_type": destination_type.value,
         "schema": dbt_test_utils.target_schema,
@@ -233,4 +248,6 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
         "json_column": "_airbyte_data",
         "profile_config_dir": test_root_dir,
     }
+    print("generate_dbt_models8 " * 500)
     transform_catalog.process_catalog()
+    print("generate_dbt_models9 " * 500)
