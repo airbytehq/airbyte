@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingStream, FBMarketingReversedIncrementalStream
@@ -109,16 +110,14 @@ class AdAccount(FBMarketingStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
-        return [self._api.account]
+        return [FBAdAccount(self._api.account.get_id())]
 
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
-    """read_records if not self.include_deleted and status != deleted yield record"""
-
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_images(params=params)
+        return self._api.account.get_ad_images(params=params, fields=self.fields)
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
