@@ -126,8 +126,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
-        containerOrchestratorConfig.get(),
-        airbyteVersion);
+        containerOrchestratorConfig.get());
   }
 
 }
