@@ -5,7 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adimage import AdImage
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import MAX_BATCH_SIZE, deep_merge
@@ -191,3 +192,76 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
                 },
             ],
         }
+
+
+class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
+    """ The base class for streams that don't support filtering and return records sorted desc by cursor_value
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._cursor_value = None
+        self._max_cursor_value = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
+        if self._cursor_value:
+            return {
+                self.cursor_field: self._cursor_value,
+                "include_deleted": self._include_deleted,
+            }
+
+        return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        """State setter, ignore state if current settings mismatch saved state"""
+        if self._include_deleted and not value.get("include_deleted"):
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            return
+
+        self._cursor_value = pendulum.parse(value[self.cursor_field])
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override it to set initial state"""
+        if stream_state:
+            self.state = stream_state
+
+        yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """Override it to return current state and update max_cursor_value everytime we get new record"""
+        record_cursor_value = pendulum.parse(latest_record[self.cursor_field])
+        self._max_cursor_value = self._max_cursor_value or record_cursor_value
+        self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
+
+        return self.state
+
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Works differently for images, so remove it"""
+        return {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK
+            - save initial state
+            - save maximum value (it is the first one)
+            - update state only when we reach the end
+            - stop reading when we reached the end
+        """
+        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
+        for record in records_iter:
+            if self._cursor_value and pendulum.parse(record[self.cursor_field]) < self._cursor_value:
+                break
+            if not self._include_deleted and record[AdImage.Field.status] == AdImage.Status.deleted:
+                continue
+            yield record.export_all_data()
+
+        self._cursor_value = self._max_cursor_value

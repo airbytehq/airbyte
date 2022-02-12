@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 
 from .base_insight_streams import AdsInsights
-from .base_streams import FBMarketingIncrementalStream, FBMarketingStream
+from .base_streams import FBMarketingIncrementalStream, FBMarketingStream, FBMarketingReversedIncrementalStream
 
 logger = logging.getLogger("airbyte")
 
@@ -99,6 +99,26 @@ class Videos(FBMarketingIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_videos(params=params)
+
+
+class AdAccount(FBMarketingStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
+
+    use_batch = False
+    enable_deleted = False
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        """noop in case of AdAccount"""
+        return [self._api.account]
+
+
+class Images(FBMarketingReversedIncrementalStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
+
+    """read_records if not self.include_deleted and status != deleted yield record"""
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_ad_images(params=params)
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
