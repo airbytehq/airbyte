@@ -3,6 +3,7 @@
 #
 
 
+import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
@@ -46,23 +47,44 @@ def test_get_updated_state(patch_incremental_base_class, mocker, current_stream_
 
 
 @pytest.mark.parametrize(
-    ("current_stream_state", "next_page_token"),
+    ("config", "current_stream_state", "next_page_token", "expected_params"),
     [
-        (dict(created_at="2022-01-25T12:00:00+00:00"), {"cursor": "f96594d0-8220-11ec-a8a3-0242ac120002"}),
-        (dict(created_at="2022-01-25T12:00:00+00:00"), None),
-        ({}, None),
+        (
+            {},
+            dict(created_at="2022-01-25T12:00:00+00:00"),
+            {"cursor": "f96594d0-8220-11ec-a8a3-0242ac120002"},
+            {"created_at[gte]": "2022-01-25T12:00:00+00:00", "cursor": "f96594d0-8220-11ec-a8a3-0242ac120002"},
+        ),
+        ({}, dict(created_at="2022-01-25T12:00:00+00:00"), None, {"created_at[gte]": "2022-01-25T12:00:00+00:00"}),
+        # Honors lookback_window_days
+        (
+            dict(lookback_window_days=3),
+            dict(created_at="2022-01-25T12:00:00+00:00"),
+            None,
+            {"created_at[gte]": "2022-01-22T12:00:00+00:00"},
+        ),
+        ({}, {}, None, None),
+        (dict(start_date=pendulum.parse("2022-01-25T12:00:00+00:00")), {}, None, {"created_at[gte]": "2022-01-25T12:00:00+00:00"}),
+        (
+            dict(start_date=pendulum.parse("2022-01-25T12:00:00+00:00")),
+            dict(created_at="2022-01-26T12:00:00+00:00"),
+            None,
+            {"created_at[gte]": "2022-01-26T12:00:00+00:00"},
+        ),
+        # Honors lookback_window_days
+        (
+            dict(start_date=pendulum.parse("2022-01-25T12:00:00+00:00"), lookback_window_days=2),
+            dict(created_at="2022-01-26T12:00:00+00:00"),
+            None,
+            {"created_at[gte]": "2022-01-24T12:00:00+00:00"},
+        ),
     ],
 )
-def test_request_params(patch_incremental_base_class, mocker, current_stream_state, next_page_token):
-    stream = IncrementalOrbStream()
+def test_request_params(patch_incremental_base_class, mocker, config, current_stream_state, next_page_token, expected_params):
+    stream = IncrementalOrbStream(**config)
     inputs = {"stream_state": current_stream_state, "next_page_token": next_page_token}
-
-    expected_params = dict(limit=OrbStream.page_size)
-    if current_stream_state.get("created_at"):
-        expected_params["created_at[gte]"] = current_stream_state["created_at"]
-    if next_page_token is not None:
-        expected_params["cursor"] = next_page_token["cursor"]
-
+    expected_params = expected_params or {}
+    expected_params["limit"] = OrbStream.page_size
     assert stream.request_params(**inputs) == expected_params
 
 

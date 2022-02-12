@@ -27,6 +27,10 @@ class OrbStream(HttpStream, ABC):
     page_size = 50
     url_base = ORB_API_BASE_URL
 
+    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Constructs the parameter in order to fetch the next page of results from the current response.
@@ -45,6 +49,12 @@ class OrbStream(HttpStream, ABC):
         params = {
             "limit": self.page_size,
         }
+
+        # Note that this doesn't take into account `stream_state` when constructing
+        # this start date -- that happens in `IncrementalOrbStream`, so this may be
+        # overriden by a value there.
+        if self.start_date:
+            params["created_at[gte]"] = self.start_date.isoformat()
 
         # Add the cursor if required.
         if next_page_token:
@@ -112,16 +122,18 @@ class IncrementalOrbStream(OrbStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         # State stores the timestamp is ISO format
-        start_timestamp = stream_state.get(self.cursor_field)
+        state_based_start_timestamp = stream_state.get(self.cursor_field)
 
-        if start_timestamp and self.lookback_window_days:
+        if state_based_start_timestamp and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
-            start_timestamp_dt = pendulum.parse(start_timestamp)
-            # Modify start_timestamp to account for lookback
-            start_timestamp = (start_timestamp_dt - pendulum.duration(days=self.lookback_window_days)).isoformat()
+            state_based_start_timestamp_dt = pendulum.parse(state_based_start_timestamp)
+            # Modify state_based_start_timestamp to account for lookback
+            state_based_start_timestamp = (state_based_start_timestamp_dt - pendulum.duration(days=self.lookback_window_days)).isoformat()
 
-        if start_timestamp:
-            params["created_at[gte]"] = start_timestamp
+        if state_based_start_timestamp:
+            # This may (reasonably) override the existing `created_at[gte]` set based on the start_date
+            # of the stream, as configured.
+            params["created_at[gte]"] = state_based_start_timestamp
         return params
 
 
@@ -241,9 +253,11 @@ class SourceOrb(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
         lookback_window = config.get("lookback_window_days")
+        start_date_str = config.get("start_date")
+        start_date = pendulum.parse(start_date_str) if start_date_str else None
         return [
-            Customers(authenticator=authenticator, lookback_window_days=lookback_window),
-            Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window),
-            Plans(authenticator=authenticator, lookback_window_days=lookback_window),
-            CreditsLedgerEntries(authenticator=authenticator, lookback_window_days=lookback_window),
+            Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            CreditsLedgerEntries(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
         ]

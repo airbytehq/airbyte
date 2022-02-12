@@ -31,6 +31,8 @@ def test_check_connection_fail(mocker):
 def test_streams(mocker):
     source = SourceOrb()
     config_mock = MagicMock()
+    sample_config = {"api_key": "test-token"}
+    config_mock.get.side_effect = sample_config.get
     streams = source.streams(config_mock)
     expected_streams_number = 4
     assert len(streams) == expected_streams_number
