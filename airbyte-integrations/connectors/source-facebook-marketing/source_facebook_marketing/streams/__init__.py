@@ -3,6 +3,7 @@
 #
 
 from .streams import (
+    AdAccount,
     AdCreatives,
     Ads,
     AdSets,
@@ -14,10 +15,12 @@ from .streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    Images,
     Videos,
 )
 
 __all__ = [
+    "AdAccount",
     "AdCreatives",
     "Ads",
     "AdSets",
@@ -29,5 +32,6 @@ __all__ = [
     "AdsInsightsPlatformAndDevice",
     "AdsInsightsRegion",
     "Campaigns",
+    "Images",
     "Videos",
 ]
