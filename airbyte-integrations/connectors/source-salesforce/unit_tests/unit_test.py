@@ -696,9 +696,6 @@ def test_schema_with_user_excluded_fields(exclude_fields, predicted_fields, stre
     json_schema = sf_object.generate_schema(stream_name=test_stream_name, exclude_fields=test_exclude_fields)
     returned_properties = json_schema.get("properties", {})
     schema_fields = returned_properties.keys()
-    print(f"schema_fields={schema_fields}")
-    print(f"exclude_fields={test_exclude_fields}")
-    print(f"predicted_fields={predicted_fields}")
     assert len(schema_fields) == len(predicted_fields)
 
 
@@ -736,7 +733,4 @@ def test_schema_with_user_excluded_types(exclude_types, predicted_fields, stream
     json_schema = sf_object.generate_schema(stream_name=test_stream_name, exclude_types=test_exclude_types)
     returned_properties = json_schema.get("properties", {})
     schema_fields = returned_properties.keys()
-    print(f"schema_fields={schema_fields}")
-    print(f"exclude_types={test_exclude_types}")
-    print(f"predicted_fields={predicted_fields}")
     assert len(schema_fields) == len(predicted_fields)
