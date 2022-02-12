@@ -35,6 +35,23 @@ class SourceSalesforce(AbstractSource):
                 logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
                 return False, "API Call limit is exceeded"
 
+    @staticmethod
+    def get_user_excluded_fields(config: Mapping[str, Any], stream_name: str) -> List[str]:
+        excluded_fields = []
+        if config.get("exclude_fields") and stream_name is not None:
+            for f in config["exclude_fields"]:
+                if "." in f:
+                    if f.split(".")[0] == stream_name:
+                        excluded_fields.append(f.split(".")[1])
+        return excluded_fields
+
+    @staticmethod
+    def get_user_excluded_types(config: Mapping[str, Any]) -> List[str]:
+        excluded_types = []
+        if config.get("exclude_types"):
+            excluded_types = config["exclude_types"]
+        return excluded_types
+
     @classmethod
     def generate_streams(
         cls,
@@ -42,6 +59,7 @@ class SourceSalesforce(AbstractSource):
         stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
         state: Mapping[str, Any] = None,
+        logger: AirbyteLogger = AirbyteLogger(),
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
@@ -50,7 +68,16 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema(stream_name, sobject_options).get("properties", {})
+            user_excluded_fields = cls.get_user_excluded_fields(config=config, stream_name=stream_name)
+            user_excluded_types = cls.get_user_excluded_types(config=config)
+
+            json_schema = sf_object.generate_schema(
+                stream_name=stream_name,
+                stream_options=sobject_options,
+                exclude_fields=user_excluded_fields,
+                exclude_types=user_excluded_types,
+            )
+            selected_properties = json_schema.get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
@@ -58,12 +85,18 @@ class SourceSalesforce(AbstractSource):
 
             if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk:
                 # Use REST API
+                if properties_not_supported_by_bulk:
+                    logger.info(f"These stream properties are not supported by BULK API: {properties_not_supported_by_bulk}")
+                if stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS:
+                    logger.info(f"{stream_name} does not support BULK API")
                 full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
+                logger.info("Sync will use REST API")
             else:
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
+                streams_kwargs["wait_timeout"] = config.get("wait_timeout")
+                logger.info("Sync will use BULK API")
 
-            json_schema = sf_object.generate_schema(stream_name, stream_objects)
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -73,10 +106,16 @@ class SourceSalesforce(AbstractSource):
 
         return streams
 
-    def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
+    def streams(
+        self,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog = None,
+        state: Mapping[str, Any] = None,
+        logger: AirbyteLogger = AirbyteLogger(),
+    ) -> List[Stream]:
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_objects, sf, state=state)
+        return self.generate_streams(config=config, stream_objects=stream_objects, sf_object=sf, state=state, logger=logger)
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
@@ -89,7 +128,7 @@ class SourceSalesforce(AbstractSource):
         config, internal_config = split_config(config)
         # get the streams once in case the connector needs to make any queries to generate them
         logger.info("Starting generating streams")
-        stream_instances = {s.name: s for s in self.streams(config, catalog=catalog, state=state)}
+        stream_instances = {s.name: s for s in self.streams(logger=logger, config=config, catalog=catalog, state=state)}
         logger.info(f"Starting syncing {self.name}")
         self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:

@@ -215,11 +215,15 @@ class Salesforce:
         3) selection by catalog settings
         """
         stream_objects = {}
-        for stream_object in self.describe()["sobjects"]:
+        ignored_objects = []
+        salesforce_objects = self.describe()["sobjects"]
+        for stream_object in salesforce_objects:
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                ignored_objects.append(stream_object["name"])
+        if len(ignored_objects) > 0:
+            self.logger.warn(f"These streams are not queryable and will be ignored: {ignored_objects}")
 
         if catalog:
             return {
@@ -282,11 +286,18 @@ class Salesforce:
             self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
         return resp.json()
 
-    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def generate_schema(
+        self, stream_name: str = None, stream_options: Mapping[str, Any] = None, exclude_fields: List = [], exclude_types: List = []
+    ) -> Mapping[str, Any]:
+        self.logger.info(f"Getting schema for {stream_name}")
         response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
-            schema["properties"][field["name"]] = self.field_to_property_schema(field)
+            if field["name"] not in exclude_fields and field["type"] not in exclude_types:
+                schema["properties"][field["name"]] = self.field_to_property_schema(field)
+            else:
+                self.logger.info(f"\tSkipping {stream_name}.{field['name']} per user exclusions")
+        self.logger.info(f"Found {len(schema['properties'])} fields to sync for {stream_name}")
         return schema
 
     @staticmethod

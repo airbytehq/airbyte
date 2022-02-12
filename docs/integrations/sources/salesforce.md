@@ -48,6 +48,20 @@ Suggested edits:
 
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then the value is false. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then the value should be true. If this is Greek to you, then this value should probably be false.
 
+### Available Optional Parameters
+
+#### Streams filter criteria
+
+This parameter allows you to select which streams will be included in this source.
+
+#### Fields to Exclude
+
+This parameter allows you to specify any fields that you need to be excluded from a particular stream. Because the fields are stream-specific, they must be specified using dot notation, e.g. `Contact.SSN` `Payment.CardNumber`.
+
+#### Data Types to Exclude
+
+This parameter allows you to specify any Salesforce data types that you desire to exclude from all streams on this source, e.g. `encryptedstring` `base64`. 
+
 ## Streams
 
 **Note**: The connector supports reading not only standard streams \(listed below\), but also reading `Custom Objects`.

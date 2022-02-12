@@ -89,6 +89,7 @@ class SalesforceStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
+            self.logger.warn("self.schema not present. Calling source.generate_schema directly from streams will ignore user exclusions")
             self.schema = self.sf_api.generate_schema([self.name])
         return self.schema
 
