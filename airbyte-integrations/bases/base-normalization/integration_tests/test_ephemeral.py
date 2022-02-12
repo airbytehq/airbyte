@@ -108,6 +108,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     print("eleven " * 2000)
+    print("twelve " * 2000)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
@@ -141,7 +142,10 @@ def setup_test_dir(integration_type: str) -> str:
     temporary_folders.add(test_root_dir)
     shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
+    print("setup_test_dir2 " * 600)
     copy_tree("../dbt-project-template", test_root_dir)
+    print("setup_test_dir3 " * 600)
+    print("setup_test_dir4 " * 600)
     if integration_type == DestinationType.MSSQL.value:
         copy_tree("../dbt-project-template-mssql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:
@@ -150,6 +154,8 @@ def setup_test_dir(integration_type: str) -> str:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
     elif integration_type == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
+    print("setup_test_dir5 " * 600)
+    print("setup_test_dir6 " * 600)
     return test_root_dir
 
 
