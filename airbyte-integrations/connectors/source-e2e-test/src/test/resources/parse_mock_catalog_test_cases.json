@@ -12,8 +12,6 @@
           "name": "my_stream",
           "json_schema": {
             "type": "object",
-            "additionalProperties": false,
-            "required": ["field1", "field2"],
             "properties": {
               "field1": {
                 "type": "string"
@@ -64,9 +62,7 @@
               "field2": {
                 "type": "number"
               }
-            },
-            "additionalProperties": false,
-            "required": ["field1", "field2"]
+            }
           }
         },
         {
@@ -77,9 +73,7 @@
               "column1": {
                 "type": "string"
               }
-            },
-            "additionalProperties": false,
-            "required": ["column1"]
+            }
           }
         }
       ]

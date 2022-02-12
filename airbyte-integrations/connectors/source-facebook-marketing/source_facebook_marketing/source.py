@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
+    AdAccount,
     AdCreatives,
     Ads,
     AdSets,
@@ -23,6 +24,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    Images,
     Videos,
 )
 
@@ -62,6 +64,7 @@ class SourceFacebookMarketing(AbstractSource):
 
         streams = [
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            AdAccount(api=api),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdCreatives(api=api, fetch_thumbnail_images=config.fetch_thumbnail_images),
@@ -73,6 +76,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsPlatformAndDevice(**insights_args),
             AdsInsightsActionType(**insights_args),
             Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)

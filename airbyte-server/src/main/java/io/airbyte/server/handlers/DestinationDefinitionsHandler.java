@@ -13,6 +13,7 @@ import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -28,6 +29,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -73,10 +75,27 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
-          .icon(loadIcon(standardDestinationDefinition.getIcon()));
+          .icon(loadIcon(standardDestinationDefinition.getIcon()))
+          .releaseStage(getReleaseStage(standardDestinationDefinition))
+          .releaseDate(getReleaseDate(standardDestinationDefinition));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
+  }
+
+  private static ReleaseStage getReleaseStage(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseStage() == null) {
+      return null;
+    }
+    return ReleaseStage.fromValue(standardDestinationDefinition.getReleaseStage().value());
+  }
+
+  private static LocalDate getReleaseDate(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseDate() == null || standardDestinationDefinition.getReleaseDate().isBlank()) {
+      return null;
+    }
+
+    return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
@@ -108,7 +127,7 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefinitionCreate.getDockerRepository(),
@@ -123,7 +142,8 @@ public class DestinationDefinitionsHandler {
         .withName(destinationDefinitionCreate.getName())
         .withIcon(destinationDefinitionCreate.getIcon())
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM);
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -151,7 +171,9 @@ public class DestinationDefinitionsHandler {
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
         .withSpec(spec)
-        .withTombstone(currentDestination.getTombstone());
+        .withTombstone(currentDestination.getTombstone())
+        .withReleaseStage(currentDestination.getReleaseStage())
+        .withReleaseDate(currentDestination.getReleaseDate());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);

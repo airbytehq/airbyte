@@ -52,6 +52,21 @@ class Client(BaseClient):
             "deals": DealStream(associations=["contacts"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
+            "engagements_calls": CRMSearchStream(
+                entity="calls", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"], **common_params
+            ),
+            "engagements_emails": CRMSearchStream(
+                entity="emails", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"], **common_params
+            ),
+            "engagements_meetings": CRMSearchStream(
+                entity="meetings", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"], **common_params
+            ),
+            "engagements_notes": CRMSearchStream(
+                entity="notes", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"], **common_params
+            ),
+            "engagements_tasks": CRMSearchStream(
+                entity="tasks", last_modified_field="hs_lastmodifieddate", associations=["contacts", "deal", "company"], **common_params
+            ),
             "feedback_submissions": CRMObjectIncrementalStream(entity="feedback_submissions", associations=["contacts"], **common_params),
             "forms": FormStream(**common_params),
             "form_submissions": FormSubmissionStream(**common_params),
