@@ -97,7 +97,6 @@ class SourceSalesforce(AbstractSource):
             else:
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
-                streams_kwargs["wait_timeout"] = config.get("wait_timeout")
                 logger.info("Sync will use BULK API")
 
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
