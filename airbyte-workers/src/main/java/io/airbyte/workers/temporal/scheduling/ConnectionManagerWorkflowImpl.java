@@ -37,6 +37,7 @@ import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.CanceledFailure;
 import io.temporal.failure.ChildWorkflowFailure;
+import io.temporal.failure.TimeoutFailure;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
@@ -126,12 +127,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
             workflowState.setRunning(true);
 
             final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
-                ChildWorkflowOptions.newBuilder()
-                    .setWorkflowId("sync_" + maybeJobId.get())
-                    .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                    // This will cancel the child workflow when the parent is terminated
-                    .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
-                    .build());
+                    ChildWorkflowOptions.newBuilder()
+                            .setWorkflowId("sync_" + maybeJobId.get())
+                            .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
+                            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
+                            .build());
 
             final UUID connectionId = connectionUpdaterInput.getConnectionId();
 

@@ -104,8 +104,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
 
-        killRunningPodsForConnection(podName);
-
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
         process = new AsyncOrchestratorPodProcess(
@@ -117,7 +115,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.containerOrchestratorImage(),
             containerOrchestratorConfig.googleApplicationCredentials());
 
+        // only kill running pods and create process for the first run for an attempt
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
+          killRunningPodsForConnection(podName);
+
           process.create(
               allLabels,
               resourceRequirements,
