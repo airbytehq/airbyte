@@ -19,15 +19,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class JdbcSqlOperations implements SqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";
 
@@ -137,7 +135,8 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       throws Exception {
     AirbyteSentry.executeWithTracing("InsertRecords",
         () -> {
-          records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
+          final Optional<DataAdapter> dataAdapter = getDataAdapter();
+          dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
           insertRecordsInternal(database, records, schemaName, tableName);
         },
         Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName, "recordCount", records.size()));
@@ -149,8 +148,8 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                                 String tableName)
       throws Exception;
 
-  protected DataAdapter getDataAdapter() {
-    return new DataAdapter(j -> false, c -> c);
+  protected Optional<DataAdapter> getDataAdapter() {
+    return Optional.empty();
   }
 
 }

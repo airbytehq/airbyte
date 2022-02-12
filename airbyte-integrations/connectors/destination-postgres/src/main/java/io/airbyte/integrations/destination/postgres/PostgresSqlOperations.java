@@ -15,14 +15,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PostgresSqlOperations extends JdbcSqlOperations {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
@@ -59,8 +56,8 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  protected DataAdapter getDataAdapter() {
-    return new PostgresDataAdapter();
+  protected Optional<DataAdapter> getDataAdapter() {
+    return Optional.of(new PostgresDataAdapter());
   }
 
 }
