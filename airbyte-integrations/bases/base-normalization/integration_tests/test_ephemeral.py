@@ -109,9 +109,12 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     test_root_dir = setup_test_dir(integration_type)
     print("eleven " * 2000)
     print("twelve " * 2000)
+    print("point1 " * 2000)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    print("point2 " * 2000)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
+    print("point3 " * 2000)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
     dbt_test_utils.dbt_check(destination_type, test_root_dir)
