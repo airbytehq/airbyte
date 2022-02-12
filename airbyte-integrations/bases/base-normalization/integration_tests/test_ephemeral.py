@@ -173,6 +173,7 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
     with open(config_file, "w") as f:
         f.write(json.dumps(destination_config))
     print("setup_input_raw_data3 " * 400)
+    print("setup_input_raw_data3-2 " * 400)
     commands = [
         "docker",
         "run",
@@ -191,6 +192,7 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
         "/data/catalog.json",
     ]
     print("setup_input_raw_data4 " * 400)
+    print("setup_input_raw_data4-2 " * 400)
     # Force a reset in destination raw tables
     res = dbt_test_utils.run_destination_process("", test_root_dir, commands)
     print("setup_input_raw_data5 " * 400)
