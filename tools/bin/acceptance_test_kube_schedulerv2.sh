@@ -20,10 +20,11 @@ if [ -n "$CI" ]; then
   wait
 fi
 
+
 echo "Starting app..."
 
 echo "Applying dev-integration-test manifests to kubernetes..."
-kubectl apply -k kube/overlays/dev-integration-test
+kubectl apply -k kube/overlays/dev-integration-test-schedulerv2
 
 echo "Waiting for server and scheduler to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
@@ -61,9 +62,6 @@ fi
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
-echo "Running worker integration tests..."
-SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
-
 echo "Printing system disk usage..."
 df -h
 
@@ -82,4 +80,4 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true NEW_SCHEDULER=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
