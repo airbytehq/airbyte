@@ -61,20 +61,13 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
-    PrintWriter writer = null;
-    try {
-      writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
-      final var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
-
+    try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
+        final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
       for (final AirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
         final var jsonData = Jsons.serialize(formatData(record.getData()));
         final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
-      }
-    } finally {
-      if (writer != null) {
-        writer.close();
       }
     }
   }
