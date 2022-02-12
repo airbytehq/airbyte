@@ -12,7 +12,7 @@ from cached_property import cached_property
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 
 from .base_insight_streams import AdsInsights
-from .base_streams import FBMarketingIncrementalStream, FBMarketingStream, FBMarketingReversedIncrementalStream
+from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
 
 logger = logging.getLogger("airbyte")
 

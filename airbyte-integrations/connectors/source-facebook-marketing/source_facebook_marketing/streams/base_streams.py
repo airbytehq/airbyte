@@ -195,8 +195,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
 
 class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
-    """ The base class for streams that don't support filtering and return records sorted desc by cursor_value
-    """
+    """The base class for streams that don't support filtering and return records sorted desc by cursor_value"""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._cursor_value = None
@@ -251,10 +251,10 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK
-            - save initial state
-            - save maximum value (it is the first one)
-            - update state only when we reach the end
-            - stop reading when we reached the end
+        - save initial state
+        - save maximum value (it is the first one)
+        - update state only when we reach the end
+        - stop reading when we reached the end
         """
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
         for record in records_iter:
