@@ -101,9 +101,13 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
         dbt_test_utils.set_target_schema("test_ephemeral")
     print("seven " * 2000)
     print("eight " * 2000)
+    print("nine " * 2000)
     integration_type = destination_type.value
+    print("ten  " * 2000)
+    print("ten2  " * 2000)
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
+    print("eleven " * 2000)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
@@ -130,6 +134,7 @@ def setup_test_dir(integration_type: str) -> str:
     """
     We prepare a clean folder to run the tests from.
     """
+    print("setup_test_dir " * 1000)
     test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
