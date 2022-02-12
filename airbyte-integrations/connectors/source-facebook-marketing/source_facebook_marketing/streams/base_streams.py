@@ -197,6 +197,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     """The base class for streams that don't support filtering and return records sorted desc by cursor_value"""
 
+    enable_deleted = False  # API don't have any filtering, so implement include_deleted in code
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._cursor_value = None
@@ -240,7 +242,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         return self.state
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Works differently for images, so remove it"""
+        """Don't have classic cursor filtering"""
         return {}
 
     def read_records(
