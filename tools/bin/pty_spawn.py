@@ -3,6 +3,7 @@
 import os
 import sys
 import pty
+from select import select
 
 
 def waitstatus_to_exitcode(status):
@@ -24,6 +25,64 @@ def waitstatus_to_exitcode(status):
         raise ValueError("invalid wait status: %i" % status)
 
 
-status = pty.spawn(sys.argv[1:])
+def _writen(fd, data):
+    """Write all the data to a descriptor."""
+    while data:
+        n = os.write(fd, data)
+        data = data[n:]
+
+
+def _read(fd):
+    """Default read function."""
+    return os.read(fd, 1024)
+
+
+def _copy(master_fd, master_read=_read, stdin_read=_read):
+    """Parent copy loop.
+    Copies
+            pty master -> standard output   (master_read)
+            standard input -> pty master    (stdin_read)"""
+    fds = [master_fd, pty.STDIN_FILENO]
+    while True:
+        rfds, wfds, xfds = select(fds, [], [], 120)
+        if master_fd in rfds:
+            data = master_read(master_fd)
+            if not data:  # Reached EOF.
+                fds.remove(master_fd)
+            else:
+                os.write(pty.STDOUT_FILENO, data)
+        if pty.STDIN_FILENO in rfds:
+            data = stdin_read(pty.STDIN_FILENO)
+            if not data:
+                fds.remove(pty.STDIN_FILENO)
+            else:
+                _writen(master_fd, data)
+        if not rfds:
+            os.write(pty.STDOUT_FILENO, b"timeout" + b"." * 2000 + b"\r\n")
+
+def spawn(argv, master_read=_read, stdin_read=_read):
+    """Create a spawned process."""
+    if type(argv) == type(''):
+        argv = (argv,)
+    pid, master_fd = pty.fork()
+    if pid == pty.CHILD:
+        os.execlp(argv[0], *argv)
+    try:
+        mode = pty.tty.tcgetattr(pty.STDIN_FILENO)
+        pty.tty.setraw(pty.STDIN_FILENO)
+        restore = 1
+    except pty.tty.error:    # This is the same as termios.error
+        restore = 0
+    try:
+        _copy(master_fd, master_read, stdin_read)
+    except OSError:
+        if restore:
+            pty.tty.tcsetattr(pty.STDIN_FILENO, pty.tty.TCSAFLUSH, mode)
+
+    os.close(master_fd)
+    return os.waitpid(pid, 0)[1]
+
+
+status = spawn(sys.argv[1:])
 exitcode = waitstatus_to_exitcode(status)
 sys.exit(exitcode)
