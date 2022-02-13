@@ -11,24 +11,28 @@ import requests
 class NGPVANClient:
     base_uri = "https://api.securevan.com/v4/"
 
-    def __init__(self,
-                 local_test: bool = True,
-                 bulk_import_type: str = None,
-                 van_api_key: str = None,
-                 gcs_bucket: str = None,
-                 service_account_key: str = None
-                 ):
+    def __init__(
+        self,
+        local_test: bool = True,
+        bulk_import_type: str = None,
+        van_api_key: str = None,
+        gcs_bucket: str = None,
+        service_account_key: str = None,
+    ):
 
         self.local_test = local_test
         self.bulk_import_type = bulk_import_type
         self.van_api_key = van_api_key
         self.gcs_bucket = gcs_bucket
         self.service_account_key = service_account_key
-        self.auth = ('default',
-                     van_api_key + '|1')  # adding '|1' authorizes for MyCampaign; we can parameterize this when we need to interact with MyVoters
+        self.auth = (
+            "default",
+            van_api_key + "|1",
+        )  # adding '|1' authorizes for MyCampaign; we can parameterize this when we need to interact with MyVoters
 
-    def _request(self, auth: tuple, method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None
-                 ) -> requests.Response:
+    def _request(
+        self, auth: tuple, method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None
+    ) -> requests.Response:
         url = self.base_uri + (endpoint or "")
         response = requests.request(method=method, params=params, url=url, json=json, auth=self.auth)
         response.raise_for_status()
@@ -42,7 +46,7 @@ class NGPVANClient:
 
     def get_bulk_import_job_status(self, job_id: str) -> requests.Response:
         """Returns status of bulk import job"""
-        endpoint="bulkImportJobs/"+job_id
+        endpoint = "bulkImportJobs/" + job_id
 
         return self._request(method="GET", auth=self.auth, endpoint=endpoint).json()
 
@@ -108,19 +112,25 @@ class NGPVANClient:
         description = "Create Or Update Contact Records"
         resource_type = "Contacts"
 
-        payload = {"description": description,
-                   "file": {
-                       "columnDelimiter": 'csv',
-                       "columns": [{'name': c} for c in columns],
-                       "fileName": fileName,
-                       "hasHeader": "True",
-                       "hasQuotes": "True",
-                       "sourceUrl": sourceUrl},
-                   "actions": [{"resultFileSizeKbLimit": 100000,
-                                "resourceType": resource_type,
-                                "actionType": "loadMappedFile",
-                                "mappingTypes": [{'name': 'CreateOrUpdateContact'}]}]
-                   }
+        payload = {
+            "description": description,
+            "file": {
+                "columnDelimiter": "csv",
+                "columns": [{"name": c} for c in columns],
+                "fileName": fileName,
+                "hasHeader": "True",
+                "hasQuotes": "True",
+                "sourceUrl": sourceUrl,
+            },
+            "actions": [
+                {
+                    "resultFileSizeKbLimit": 100000,
+                    "resourceType": resource_type,
+                    "actionType": "loadMappedFile",
+                    "mappingTypes": [{"name": "CreateOrUpdateContact"}],
+                }
+            ],
+        }
 
         logging.info(f"Sending POST request to VAN to bulk upsert contacts")
 
@@ -150,19 +160,25 @@ class NGPVANClient:
         description = "Activist Code Upload"
         resource_type = "ContactsActivistCodes"
 
-        payload = {"description": description,
-                   "file": {
-                       "columnDelimiter": 'csv',
-                       "columns": [{'name': c} for c in columns],
-                       "fileName": fileName,
-                       "hasHeader": "True",
-                       "hasQuotes": "True",
-                       "sourceUrl": sourceUrl},
-                   "actions": [{"resultFileSizeKbLimit": 100000,
-                                "resourceType": resource_type,
-                                "actionType": "loadMappedFile",
-                                "mappingTypes": [{'name': 'ActivistCode'}]}]
-                   }
+        payload = {
+            "description": description,
+            "file": {
+                "columnDelimiter": "csv",
+                "columns": [{"name": c} for c in columns],
+                "fileName": fileName,
+                "hasHeader": "True",
+                "hasQuotes": "True",
+                "sourceUrl": sourceUrl,
+            },
+            "actions": [
+                {
+                    "resultFileSizeKbLimit": 100000,
+                    "resourceType": resource_type,
+                    "actionType": "loadMappedFile",
+                    "mappingTypes": [{"name": "ActivistCode"}],
+                }
+            ],
+        }
 
         logging.info(f"Sending POST request to VAN to bulk upsert contacts")
 

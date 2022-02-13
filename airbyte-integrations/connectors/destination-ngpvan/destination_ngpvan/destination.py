@@ -43,7 +43,6 @@ from google.cloud import storage
 
 
 class DestinationNGPVAN(Destination):
-
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -76,12 +75,12 @@ class DestinationNGPVAN(Destination):
                 continue
 
         logging.info(f"Data successfully read from source.")
-        job_id=writer.run_bulk_import_job()
-        logging.info(f'Successfully created VAN bulk import job (ID: {job_id})')
+        job_id = writer.run_bulk_import_job()
+        logging.info(f"Successfully created VAN bulk import job (ID: {job_id})")
 
-        results_file_url=writer.monitor_bulk_import_status(job_id=job_id)
+        results_file_url = writer.monitor_bulk_import_status(job_id=job_id)
         if results_file_url:
-            results_file_local_path=writer.upload_file_url_to_gcs(results_file_url)
+            results_file_local_path = writer.upload_file_url_to_gcs(results_file_url)
             writer.summarize_bulk_import(results_file_local_path)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
@@ -100,10 +99,10 @@ class DestinationNGPVAN(Destination):
 
             writer = NGPVANWriter(NGPVANClient(**config))
 
-            #Validate VAN API key
+            # Validate VAN API key
             writer.client.get_mappings()
 
-            #Try connecting to GCS
+            # Try connecting to GCS
             if writer.local_test:
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secrets/google_credentials_file.json"
 
@@ -117,6 +116,3 @@ class DestinationNGPVAN(Destination):
 
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-
-
-
