@@ -15,6 +15,7 @@ import io.airbyte.integrations.source.e2e_test.ContinuousFeedConfig.MockCatalogT
 import io.airbyte.integrations.source.e2e_test.TestingSources.TestingSourceType;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -22,14 +23,13 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This acceptance test is mostly the same as {@code ContinuousFeedSourceAcceptanceTest}. The only
- * difference is the image name.
+ * difference is the image name. TODO: find a way to share classes from integrationTest.
  */
 public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
 
@@ -115,12 +115,9 @@ public class CloudTestingSourcesAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) {
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(allMessages);
 
-  @Override
-  protected void assertRecordMessages(final List<AirbyteRecordMessage> recordMessages) {
     int index = 0;
     // the first N messages are from stream 1
     while (index < MAX_MESSAGES) {

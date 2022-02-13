@@ -5,10 +5,6 @@
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -18,11 +14,11 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -32,7 +28,6 @@ public class ContinuousFeedConfig {
 
   private static final JsonNode JSON_SCHEMA_DRAFT_07;
   private static final JsonSchemaValidator SCHEMA_VALIDATOR = new JsonSchemaValidator();
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   static {
     try {
@@ -74,15 +69,27 @@ public class ContinuousFeedConfig {
       case SINGLE_STREAM -> {
         final String streamName = mockCatalogConfig.get("stream_name").asText();
         final String streamSchemaText = mockCatalogConfig.get("stream_schema").asText();
+        final int streamDuplication = mockCatalogConfig.has("stream_duplication")
+            ? mockCatalogConfig.get("stream_duplication").asInt()
+            : 1;
         final Optional<JsonNode> streamSchema = Jsons.tryDeserialize(streamSchemaText);
         if (streamSchema.isEmpty()) {
           throw new JsonValidationException(String.format("Stream \"%s\" has invalid schema: %s", streamName, streamSchemaText));
         }
-        processSchema(streamSchema.get());
         checkSchema(streamName, streamSchema.get());
 
-        final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get());
-        return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
+        if (streamDuplication == 1) {
+          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get());
+          return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
+        } else {
+          final List<AirbyteStream> streams = new ArrayList<>(streamDuplication);
+          for (int i = 0; i < streamDuplication; ++i) {
+            streams.add(new AirbyteStream()
+                .withName(String.join("_", streamName, String.valueOf(i)))
+                .withJsonSchema(streamSchema.get()));
+          }
+          return new AirbyteCatalog().withStreams(streams);
+        }
       }
       case MULTI_STREAM -> {
         final String streamSchemasText = mockCatalogConfig.get("stream_schemas").asText();
@@ -91,11 +98,11 @@ public class ContinuousFeedConfig {
           throw new JsonValidationException("Input stream schemas are invalid: %s" + streamSchemasText);
         }
 
-        final List<AirbyteStream> streams = new LinkedList<>();
-        for (final Map.Entry<String, JsonNode> entry : MoreIterators.toList(streamSchemas.get().fields())) {
+        final List<Entry<String, JsonNode>> streamEntries = MoreIterators.toList(streamSchemas.get().fields());
+        final List<AirbyteStream> streams = new ArrayList<>(streamEntries.size());
+        for (final Map.Entry<String, JsonNode> entry : streamEntries) {
           final String streamName = entry.getKey();
-          final JsonNode streamSchema = Jsons.clone(entry.getValue());
-          processSchema(streamSchema);
+          final JsonNode streamSchema = entry.getValue();
           checkSchema(streamName, streamSchema);
           streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema));
         }
@@ -116,31 +123,6 @@ public class ContinuousFeedConfig {
           streamName,
           Strings.join(validationMessages, "; "),
           streamSchema.toString()));
-    }
-  }
-
-  /**
-   * Patch the schema so that 1) it allows no additional properties, and 2) all fields are required.
-   * This is necessary because the mock Json object generation library may add extra properties, or
-   * omit non-required fields. TODO (liren): patch the library so we don't need to patch the schema
-   * here.
-   */
-  private static void processSchema(final JsonNode schema) {
-    if (schema.has("type") && schema.get("type").asText().equals("object")) {
-      // disallow additional properties
-      ((ObjectNode) schema).put("additionalProperties", false);
-      if (!schema.has("properties")) {
-        return;
-      }
-      // mark every field as required
-      final ArrayNode requiredFields = MAPPER.createArrayNode();
-      MoreIterators.toList(schema.get("properties").fieldNames()).forEach(requiredFields::add);
-      ((ObjectNode) schema).set("required", requiredFields);
-
-      final Iterator<JsonNode> iterator = schema.get("properties").elements();
-      while (iterator.hasNext()) {
-        processSchema(iterator.next());
-      }
     }
   }
 

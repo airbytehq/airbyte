@@ -3,35 +3,70 @@
   "type": "object",
   "properties": {
     "query_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "history_created_date": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "history_created_time": {
+      "type": "string",
+      "format": "date-time"
     },
     "query_model": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "query_view": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "space_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "look_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "dashboard_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "user_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "history_query_run_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "history_total_runtime": {
       "multipleOf": 1e-20,
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     }
   }
 }

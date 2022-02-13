@@ -349,26 +349,29 @@ Note that Basic Normalization is packaged in a docker image `airbyte/normalizati
 Therefore, in order to "upgrade" to the desired normalization version, you need to use the corresponding Airbyte version that it's being released in:
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- | :--- |
-| 0.35.4-alpha | 0.1.63 | 2021-01-07 | [\#9301](https://github.com/airbytehq/airbyte/pull/9301) | Fix Snowflake prefix tables starting with numbers |
-|  | 0.1.62 | 2021-01-07 | [\#9340](https://github.com/airbytehq/airbyte/pull/9340) | Use TCP-port support for clickhouse |
-|  | 0.1.62 | 2021-01-07 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Change Snowflake-specific materialization settings |
-|  | 0.1.62 | 2021-01-07 | [\#9317](https://github.com/airbytehq/airbyte/pull/9317) | Fix issue with quoted & case sensitive columns |
-|  | 0.1.62 | 2021-01-07 | [\#9281](https://github.com/airbytehq/airbyte/pull/9281) | Fix SCD partition by float columns in BigQuery |
-| 0.32.11-alpha | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
-| | 0.1.61 | 2021-12-01 | [\#8378](https://github.com/airbytehq/airbyte/pull/8378) | Fix un-nesting queries and add proper ref hints |
-| 0.32.5-alpha | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
-| 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
-| 0.30.24-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
-| 0.30.16-alpha | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
-|  | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
-|  | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
-|  | 0.1.49 | 2021-10-06 | [\#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
-| 0.29.17-alpha | 0.1.47 | 2021-09-20 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel |
-|  | 0.1.45 | 2021-09-18 | [\#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format |
-| 0.29.8-alpha | 0.1.40 | 2021-08-18 | [\#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials\_json for BigQuery |
-| 0.29.5-alpha | 0.1.39 | 2021-08-11 | [\#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
-| 0.28.2-alpha | 0.1.38 | 2021-07-28 | [\#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
-| 0.27.5-alpha | 0.1.37 | 2021-07-22 | [\#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
-| 0.27.2-alpha | 0.1.36 | 2021-07-09 | [\#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
+|:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.1.66 | 2022-02-04 | [\#9341](https://github.com/airbytehq/airbyte/pull/9341) | Fix normalization for bigquery datasetId and tables |
+| 0.35.13-alpha   | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |
+| 0.35.12-alpha   | 0.1.64 | 2021-01-28 | [\#9793](https://github.com/airbytehq/airbyte/pull/9793) | Support PEM format for ssh-tunnel keys |
+| 0.35.4-alpha    | 0.1.63 | 2021-01-07 | [\#9301](https://github.com/airbytehq/airbyte/pull/9301) | Fix Snowflake prefix tables starting with numbers |
+|                 | 0.1.62 | 2021-01-07 | [\#9340](https://github.com/airbytehq/airbyte/pull/9340) | Use TCP-port support for clickhouse |
+|                 | 0.1.62 | 2021-01-07 | [\#9063](https://github.com/airbytehq/airbyte/pull/9063) | Change Snowflake-specific materialization settings |
+|                 | 0.1.62 | 2021-01-07 | [\#9317](https://github.com/airbytehq/airbyte/pull/9317) | Fix issue with quoted & case sensitive columns |
+|                 | 0.1.62 | 2021-01-07 | [\#9281](https://github.com/airbytehq/airbyte/pull/9281) | Fix SCD partition by float columns in BigQuery |
+| 0.32.11-alpha   | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
+|                 | 0.1.61 | 2021-12-01 | [\#8378](https://github.com/airbytehq/airbyte/pull/8378) | Fix un-nesting queries and add proper ref hints |
+| 0.32.5-alpha    | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
+| 0.30.32-alpha   | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
+| 0.30.24-alpha   | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
+| 0.30.16-alpha   | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
+|                 | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
+|                 | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
+|                 | 0.1.49 | 2021-10-06 | [\#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
+| 0.29.17-alpha   | 0.1.47 | 2021-09-20 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel |
+|                 | 0.1.45 | 2021-09-18 | [\#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format |
+| 0.29.8-alpha    | 0.1.40 | 2021-08-18 | [\#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials\_json for BigQuery |
+| 0.29.5-alpha    | 0.1.39 | 2021-08-11 | [\#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
+| 0.28.2-alpha    | 0.1.38 | 2021-07-28 | [\#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
+| 0.27.5-alpha    | 0.1.37 | 2021-07-22 | [\#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
+| 0.27.2-alpha    | 0.1.36 | 2021-07-09 | [\#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
 

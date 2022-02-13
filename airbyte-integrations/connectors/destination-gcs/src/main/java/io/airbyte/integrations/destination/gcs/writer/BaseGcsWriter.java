@@ -12,7 +12,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * <li>Create the bucket and prepare the bucket path.</li>
  * </ul>
  */
-public abstract class BaseGcsWriter implements S3Writer, CommonWriter {
+public abstract class BaseGcsWriter implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseGcsWriter.class);
 

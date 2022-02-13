@@ -5,6 +5,7 @@
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -65,6 +66,13 @@ class GithubStream(HttpStream, ABC):
             self.logger.info(
                 f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
+
+        # Handling secondary rate limits for Github
+        # Additional information here: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+        elif response.headers.get("Retry-After"):
+            time_delay = int(response.headers["Retry-After"])
+            self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
+            sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
@@ -72,7 +80,7 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code in [requests.codes.BAD_GATEWAY, requests.codes.SERVER_ERROR]:
+        if response.status_code == requests.codes.SERVER_ERROR:
             return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")
@@ -81,23 +89,33 @@ class GithubStream(HttpStream, ABC):
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # get out the stream_slice parts for later use.
+        organisation = stream_slice.get("organization", "")
+        repository = stream_slice.get("repository", "")
+        # Reading records while handling the errors
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e)
-
+            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
             if e.response.status_code == requests.codes.FORBIDDEN:
-                # When using the `check` method, we should raise an error if we do not have access to the repository.
+                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
-                error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}` and your `access_token`, seems like you don't have permissions for "
-                    f"this stream."
-                )
+                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+                # For all `Organisation` based streams
+                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                    )
+                # For all other `Repository` base streams
+                else:
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                    )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.

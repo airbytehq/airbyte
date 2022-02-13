@@ -9,6 +9,7 @@ type IProps = {
   name: string | React.ReactNode;
   onClick?: (id: string) => void;
   isActive?: boolean;
+  isPartialSuccess?: boolean;
   num: number;
   status?: string;
 };
@@ -65,6 +66,7 @@ const Step: React.FC<IProps> = ({
   num,
   lightMode,
   status,
+  isPartialSuccess,
 }) => {
   const onItemClickItem = () => {
     if (onClick) {
@@ -81,7 +83,12 @@ const Step: React.FC<IProps> = ({
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {status ? <StatusIcon success={status !== Status.FAILED} /> : null}
+      {status ? (
+        <StatusIcon
+          success={status !== Status.FAILED && !isPartialSuccess}
+          warning={isPartialSuccess}
+        />
+      ) : null}
       {name}
     </StepView>
   );

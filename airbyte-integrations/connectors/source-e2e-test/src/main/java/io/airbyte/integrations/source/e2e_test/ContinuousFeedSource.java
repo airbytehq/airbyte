@@ -12,6 +12,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -20,10 +21,13 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.sentry.ISpan;
+import io.sentry.SpanStatus;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,18 +64,26 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final AtomicLong emittedMessages = new AtomicLong(0);
       final Optional<Long> messageIntervalMs = feedConfig.getMessageIntervalMs();
-      final ThreadLocal<Random> random = ThreadLocal.withInitial(() -> new Random(feedConfig.getSeed()));
 
       final SchemaStore schemaStore = new SchemaStore(true);
       final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(stream.getStream().getJsonSchema()));
-      final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random.get());
+      final Random random = new Random(feedConfig.getSeed());
+      final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random);
 
       final Iterator<AirbyteMessage> streamIterator = new AbstractIterator<>() {
+
+        private ISpan span;
 
         @CheckForNull
         @Override
         protected AirbyteMessage computeNext() {
+          if (span == null) {
+            span = AirbyteSentry.createSpan("ReadStream",
+                Map.of("stream", stream.getStream().getName(), "recordCount", feedConfig.getMaxMessages()));
+          }
+
           if (emittedMessages.get() >= feedConfig.getMaxMessages()) {
+            span.finish(SpanStatus.OK);
             return endOfData();
           }
 
@@ -79,6 +91,8 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
             try {
               Thread.sleep(messageIntervalMs.get());
             } catch (final InterruptedException e) {
+              span.setThrowable(e);
+              span.finish(SpanStatus.INTERNAL_ERROR);
               throw new RuntimeException(e);
             }
           }
@@ -87,6 +101,8 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
           try {
             data = Jsons.jsonNode(generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
           } catch (final JsonGeneratorException e) {
+            span.setThrowable(e);
+            span.finish(SpanStatus.INTERNAL_ERROR);
             throw new RuntimeException(e);
           }
           emittedMessages.incrementAndGet();

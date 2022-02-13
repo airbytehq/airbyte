@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -28,7 +28,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final GcsWriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, S3Writer> streamNameAndNamespaceToWriters;
+  private final Map<AirbyteStreamNameNamespacePair, DestinationFileWriter> streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
 
@@ -50,7 +50,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final S3Writer writer = writerFactory
+      final DestinationFileWriter writer = writerFactory
           .create(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
@@ -87,7 +87,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(final boolean hasFailed) throws Exception {
-    for (final S3Writer handler : streamNameAndNamespaceToWriters.values()) {
+    for (final DestinationFileWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // Gcs stream uploader is all or nothing if a failure happens in the destination.

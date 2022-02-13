@@ -109,7 +109,7 @@ public class JobHistoryHandlerTest {
   }
 
   private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
-    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, timestamps, timestamps, timestamps);
+    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
