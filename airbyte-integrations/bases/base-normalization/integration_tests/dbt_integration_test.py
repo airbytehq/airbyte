@@ -354,26 +354,26 @@ class DbtIntegrationTest(object):
         print("run_destination_process-4 " * 400)
 
         def writer():
-            if os.path.exists(message_file):
-                with open(message_file, "rb") as input_data:
-                    while True:
-                        line = input_data.readline()
-                        if not line:
-                            break
-                        process.stdin.write(line)
-            process.stdin.close()
+            with open(message_file, "rb") as input_data:
+                while True:
+                    line = input_data.readline()
+                    if not line:
+                        break
+                    process.stdin.write(line)
 
         print("run_destination_process-5 " * 400)
-        thread = threading.Thread(target=writer)
-        print("run_destination_process-6 " * 400)
-        thread.start()
-        print("run_destination_process-7 " * 400)
-        print("run_destination_process-8 " * 400)
-        thread.join()
+        if os.path.exists(message_file):
+            thread = threading.Thread(target=writer)
+            print("run_destination_process-6 " * 400)
+            thread.start()
+            print("run_destination_process-7 " * 400)
+            thread.join()
+        else:
+            print("run_destination_process-8 " * 400)
+            process.stdin.close()
         print("run_destination_process-9 " * 400)
-        print("run_destination_process-10 " * 400)
         print("run_destination_process-11 " * 400)
-        process.wait()
+        process.wait(timeout=600)
         print("run_destination_process-12 " * 400)
         print("run_destination_process-13 " * 400)
         print("run_destination_process-14 " * 400)
