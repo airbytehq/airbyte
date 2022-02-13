@@ -35,7 +35,7 @@ const AdditionMessage = styled.span`
 `;
 
 const LabeledToggle: React.FC<IProps> = (props) => (
-  <ToggleContainer>
+  <ToggleContainer className={props.className}>
     {props.checkbox ? (
       <CheckBox {...props} id={`toggle-${props.name}`} />
     ) : (
