@@ -76,8 +76,9 @@ class SnowflakeDestinationIntegrationTest {
 
     final Properties properties = new Properties();
 
-    properties.put("user", config.get("username").asText());
-    properties.put("password", config.get("password").asText());
+    final JsonNode credentials = config.get("credentials");
+    properties.put("user", credentials.get("username").asText());
+    properties.put("password", credentials.get("password").asText());
     properties.put("warehouse", config.get("warehouse").asText());
     properties.put("database", config.get("database").asText());
     properties.put("role", config.get("role").asText());

@@ -33,8 +33,17 @@ public class SnowflakeDatabase {
 
     final Properties properties = new Properties();
 
-    properties.put("user", config.get("username").asText());
-    properties.put("password", config.get("password").asText());
+    final JsonNode credentials = config.get("credentials");
+    if (credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())){
+      // OAuth login option is selected on UI
+      properties.put("authenticator", "oauth");
+      properties.put("token", credentials.get("access_token").asText());
+    }else {
+      // Username and pass login option is selected on UI
+      properties.put("user", credentials.get("username").asText());
+      properties.put("password", credentials.get("password").asText());
+    }
+
     properties.put("warehouse", config.get("warehouse").asText());
     properties.put("database", config.get("database").asText());
     properties.put("role", config.get("role").asText());

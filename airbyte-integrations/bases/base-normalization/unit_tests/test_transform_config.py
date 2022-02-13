@@ -239,8 +239,7 @@ class TestTransformConfig:
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
             "schema": "AIRBYTE_SCHEMA",
-            "username": "AIRBYTE_USER",
-            "password": "password123",
+            "credentials": {"username": "AIRBYTE_USER", "password": "password123"},
         }
 
         actual = TransformConfig().transform_snowflake(input)
