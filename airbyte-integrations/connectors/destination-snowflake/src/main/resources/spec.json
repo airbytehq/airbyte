@@ -64,7 +64,10 @@
             "type": "object",
             "title": "OAuth2.0",
             "order": 0,
-            "required": ["client_id", "client_secret"],
+            "required": [
+              "client_id",
+              "client_secret"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -351,4 +354,5 @@
       }
     }
   }
+
 }

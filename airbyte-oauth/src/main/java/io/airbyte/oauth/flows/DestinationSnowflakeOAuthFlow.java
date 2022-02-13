@@ -110,6 +110,7 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
   /**
    * Extract all OAuth outputs from distant API response and store them in a flat map.
    */
+  // TODO maybe to change to access_token!!!!!!!!!!!!!!!!!!
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl)
       throws IOException {
     final Map<String, Object> result = new HashMap<>();
