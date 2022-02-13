@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from deprecated import deprecated
 import logging
 import logging.config
 import sys
-from threading import Lock
 import traceback
 from typing import List, Tuple
 
@@ -102,14 +102,12 @@ def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
 
     return log_level, rendered_message
 
-AIRBYTE_LOGGER_LOCK = Lock()
-
+@deprecated(version="0.1.47", reason="Use logging.getLogger('airbyte') instead")
 class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)
-        with AIRBYTE_LOGGER_LOCK:
-            print(log_message.json(exclude_unset=True))
+        print(log_message.json(exclude_unset=True))
 
     def fatal(self, message):
         self.log("FATAL", message)
