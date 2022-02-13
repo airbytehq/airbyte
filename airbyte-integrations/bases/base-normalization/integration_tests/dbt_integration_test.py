@@ -346,37 +346,11 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def run_destination_process(message_file: str, test_root_dir: str, commands: List[str]):
-        print("run_destination_process " * 400)
         print("Executing: ", " ".join(commands))
-        print("run_destination_process-2 " * 400)
-        print("run_destination_process-3 " * 400)
-        process = subprocess.Popen(commands, stdin=subprocess.PIPE)
-        print("run_destination_process-4 " * 400)
-
-        def writer():
-            with open(message_file, "rb") as input_data:
-                while True:
-                    line = input_data.readline()
-                    if not line:
-                        break
-                    process.stdin.write(line)
-
-        print("run_destination_process-5 " * 400)
-        if os.path.exists(message_file):
-            thread = threading.Thread(target=writer)
-            print("run_destination_process-6 " * 400)
-            thread.start()
-            print("run_destination_process-7 " * 400)
-            thread.join()
-        else:
-            print("run_destination_process-8 " * 400)
-            process.stdin.close()
-        print("run_destination_process-9 " * 400)
-        print("run_destination_process-11 " * 400)
-        process.wait(timeout=600)
-        print("run_destination_process-12 " * 400)
-        print("run_destination_process-13 " * 400)
-        print("run_destination_process-14 " * 400)
+        input_data = b''
+        if message_file:
+            input_data = open(message_file, "rb").read()
+        process = subprocess.run(commands, input=input_data, timeout=600)
         return process.returncode == 0
 
     @staticmethod
