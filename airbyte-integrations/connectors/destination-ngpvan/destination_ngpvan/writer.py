@@ -1,18 +1,19 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 
-from zipfile import ZipFile
 import csv
-from datetime import datetime
 import logging
+import os
 import ssl
 import time
-import wget
 from collections import Mapping
-from google.cloud import storage
-from destination_ngpvan.client import NGPVANClient
+from datetime import datetime
+from zipfile import ZipFile
 
-import os
+import wget
+from destination_ngpvan.client import NGPVANClient
+from google.cloud import storage
+
 
 class NGPVANWriter:
     """
@@ -79,7 +80,7 @@ class NGPVANWriter:
         blob=bucket.blob(blob_name)
         blob.upload_from_filename(filename_to_upload)
 
-        logging.info('File {} uploaded to {}{}.'.format(
+        logging.info('File {} uploaded to {}/{}.'.format(
             filename_to_upload,
             destination_bucket,
             blob_name))

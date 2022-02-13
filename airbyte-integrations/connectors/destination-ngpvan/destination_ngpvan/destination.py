@@ -25,14 +25,22 @@ TODO()
 
 import logging
 import os
-from google.cloud import storage
-from typing import Mapping, Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_ngpvan.client import NGPVANClient
 from destination_ngpvan.writer import NGPVANWriter
+from google.cloud import storage
+
 
 class DestinationNGPVAN(Destination):
 

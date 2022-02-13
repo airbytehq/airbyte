@@ -2,9 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, Tuple, Union
 import logging
+from typing import Any, Iterable, List, Mapping, Tuple, Union
+
 import requests
+
 
 class NGPVANClient:
     base_uri = "https://api.securevan.com/v4/"
