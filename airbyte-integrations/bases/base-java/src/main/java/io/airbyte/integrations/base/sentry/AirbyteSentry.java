@@ -95,13 +95,21 @@ public class AirbyteSentry {
     }
   }
 
+  public static ISpan createSpan(final String operationName) {
+    return createChildSpan(Sentry.getSpan(), operationName, Collections.emptyMap());
+  }
+
+  public static ISpan createSpan(final String operationName, final Map<String, Object> metadata) {
+    return createChildSpan(Sentry.getSpan(), operationName, metadata);
+  }
+
   private static ISpan createChildSpan(final ISpan currentSpan, final String operationName, final Map<String, Object> metadata) {
-    final String name = Strings.isBlank(operationName) ? DEFAULT_UNKNOWN_OPERATION : operationName;
+    final String spanOperation = Strings.isBlank(operationName) ? DEFAULT_UNKNOWN_OPERATION : operationName;
     final ISpan childSpan;
     if (currentSpan == null) {
-      childSpan = Sentry.startTransaction(DEFAULT_ROOT_TRANSACTION, operationName);
+      childSpan = Sentry.startTransaction(DEFAULT_ROOT_TRANSACTION, spanOperation);
     } else {
-      childSpan = currentSpan.startChild(operationName);
+      childSpan = currentSpan.startChild(spanOperation);
     }
     if (metadata != null && !metadata.isEmpty()) {
       metadata.forEach(childSpan::setData);
