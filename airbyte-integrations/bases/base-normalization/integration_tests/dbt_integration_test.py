@@ -371,8 +371,12 @@ class DbtIntegrationTest(object):
         print("run_destination_process-8 " * 400)
         thread.join()
         print("run_destination_process-9 " * 400)
-        process.wait()
         print("run_destination_process-10 " * 400)
+        print("run_destination_process-11 " * 400)
+        process.wait()
+        print("run_destination_process-12 " * 400)
+        print("run_destination_process-13 " * 400)
+        print("run_destination_process-14 " * 400)
         return process.returncode == 0
 
     @staticmethod
