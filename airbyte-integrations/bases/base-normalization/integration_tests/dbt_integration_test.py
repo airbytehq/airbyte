@@ -50,6 +50,8 @@ class DbtIntegrationTest(object):
             self.setup_mysql_db()
         if DestinationType.MSSQL.value in destinations_to_test:
             self.setup_mssql_db()
+        if DestinationType.CLICKHOUSE.value in destinations_to_test:
+            self.setup_clickhouse_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -312,11 +314,8 @@ class DbtIntegrationTest(object):
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
         as described here: https://docs.getdbt.com/reference/profiles.yml
         """
-        print("generate_profile_yaml_file1 " * 350)
         config_generator = TransformConfig()
-        print("generate_profile_yaml_file2 " * 350)
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
-        print("generate_profile_yaml_file3 " * 350)
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
             credentials = profiles_config["basic_bigquery_config"]
@@ -336,11 +335,8 @@ class DbtIntegrationTest(object):
             clickhouse_config["port"] = 9000
             profiles_yaml = config_generator.transform(destination_type, clickhouse_config)
         else:
-            print("generate_profile_yaml_file4 " * 350)
             profiles_yaml = config_generator.transform(destination_type, profiles_config)
-            print("generate_profile_yaml_file5 " * 350)
         config_generator.write_yaml_config(test_root_dir, profiles_yaml, "profiles.yml")
-        print("generate_profile_yaml_file6 " * 350)
         return profiles_config
 
     @staticmethod

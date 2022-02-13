@@ -48,7 +48,6 @@ def setup_test_path(request):
 @pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize("destination_type", [DestinationType.REDSHIFT])
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
-    print("one " * 2000)
     if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
@@ -58,7 +57,6 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
         column_count = 993
     if destination_type.value == DestinationType.MSSQL.value:
         column_count = 999
-    print("two " * 2000)
     run_test(destination_type, column_count)
 
 
@@ -90,32 +88,18 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
-    print("three " * 2000)
-    print("four " * 2000)
     if destination_type.value == DestinationType.ORACLE.value:
-        print("five " * 2000)
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
     else:
-        print("six  " * 2000)
         dbt_test_utils.set_target_schema("test_ephemeral")
-    print("seven " * 2000)
-    print("eight " * 2000)
-    print("nine " * 2000)
+    print("Testing ephemeral")
     integration_type = destination_type.value
-    print("ten  " * 2000)
-    print("ten2  " * 2000)
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
-    print("eleven " * 2000)
-    print("twelve " * 2000)
-    print("point1 " * 2000)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-    print("point2 " * 2000)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
-    print("point3 " * 2000)
-    print("point4 " * 2000)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
     dbt_test_utils.dbt_check(destination_type, test_root_dir)
@@ -139,17 +123,13 @@ def setup_test_dir(integration_type: str) -> str:
     """
     We prepare a clean folder to run the tests from.
     """
-    print("setup_test_dir " * 1000)
     test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
     temporary_folders.add(test_root_dir)
     shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
-    print("setup_test_dir2 " * 600)
     copy_tree("../dbt-project-template", test_root_dir)
-    print("setup_test_dir3 " * 600)
-    print("setup_test_dir4 " * 600)
     if integration_type == DestinationType.MSSQL.value:
         copy_tree("../dbt-project-template-mssql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:
@@ -158,8 +138,6 @@ def setup_test_dir(integration_type: str) -> str:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
     elif integration_type == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
-    print("setup_test_dir5 " * 600)
-    print("setup_test_dir6 " * 600)
     return test_root_dir
 
 
@@ -167,13 +145,9 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
     """
     This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
     """
-    print("setup_input_raw_data1 " * 400)
     config_file = os.path.join(test_root_dir, "destination_config.json")
-    print("setup_input_raw_data2 " * 400)
     with open(config_file, "w") as f:
         f.write(json.dumps(destination_config))
-    print("setup_input_raw_data3 " * 400)
-    print("setup_input_raw_data3-2 " * 400)
     commands = [
         "docker",
         "run",
@@ -191,24 +165,16 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
         "--catalog",
         "/data/catalog.json",
     ]
-    print("setup_input_raw_data4 " * 400)
-    print("setup_input_raw_data4-2 " * 400)
     # Force a reset in destination raw tables
-    res = dbt_test_utils.run_destination_process("", test_root_dir, commands)
-    print("setup_input_raw_data5 " * 400)
-    print("setup_input_raw_data6 " * 400)
-    return res
+    return dbt_test_utils.run_destination_process("", test_root_dir, commands)
 
 
 def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, column_count: int):
     """
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
-    print("generate_dbt_models1 " * 500)
     output_directory = os.path.join(test_root_dir, "models", "generated")
-    print("generate_dbt_models2 " * 500)
     shutil.rmtree(output_directory, ignore_errors=True)
-    print("generate_dbt_models3 " * 500)
     catalog_config = {
         "streams": [
             {
@@ -233,15 +199,11 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     else:
         for column in [dbt_test_utils.random_string(5) for _ in range(column_count)]:
             catalog_config["streams"][0]["stream"]["json_schema"]["properties"][column] = {"type": "string"}
-    print("generate_dbt_models4 " * 500)
     catalog = os.path.join(test_root_dir, "catalog.json")
-    print("generate_dbt_models5 " * 500)
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
 
-    print("generate_dbt_models6 " * 500)
     transform_catalog = TransformCatalog()
-    print("generate_dbt_models7 " * 500)
     transform_catalog.config = {
         "integration_type": destination_type.value,
         "schema": dbt_test_utils.target_schema,
@@ -250,6 +212,4 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
         "json_column": "_airbyte_data",
         "profile_config_dir": test_root_dir,
     }
-    print("generate_dbt_models8 " * 500)
     transform_catalog.process_catalog()
-    print("generate_dbt_models9 " * 500)
