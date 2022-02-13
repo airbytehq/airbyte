@@ -9,13 +9,8 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "customer": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
+    "customer_id": {
+      "type": "string"
     },
     "start_date": {
       "type": ["null", "string"],
@@ -25,13 +20,8 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "plan": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
+    "plan_id": {
+      "type": "string"
     },
     "status": {
       "type": "string"

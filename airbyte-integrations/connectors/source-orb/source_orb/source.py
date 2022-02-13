@@ -62,10 +62,19 @@ class OrbStream(HttpStream, ABC):
 
         return params
 
+    def transform_record(self, single_record):
+        """
+        Used to transform the record. In this connector, we use this to
+        take IDs out of nested objects, so that they are easier to work with for destinations.
+        """
+        return single_record
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Records are in a container array called data
         response_json = response.json()
-        yield from response_json.get("data", [])
+        records = response_json.get("data", [])
+        for record in records:
+            yield self.transform_record(record)
 
 
 class IncrementalOrbStream(OrbStream, ABC):
@@ -154,6 +163,19 @@ class Subscriptions(IncrementalOrbStream):
     def path(self, **kwargs) -> str:
         return "subscriptions"
 
+    def transform_record(self, subscription_record):
+        # Un-nest customer -> id into customer_id
+        nested_customer_id = subscription_record["customer"]["id"]
+        del subscription_record["customer"]
+        subscription_record["customer_id"] = nested_customer_id
+
+        # Un-nest plan -> id into plan_id
+        nested_plan_id = subscription_record["plan"]["id"]
+        del subscription_record["plan"]
+        subscription_record["plan_id"] = nested_plan_id
+
+        return subscription_record
+
 
 class Plans(IncrementalOrbStream):
     """
@@ -179,7 +201,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         and take a max between the record `created_at` and what's already in the state.
         """
         latest_record_created_at_dt = pendulum.parse(latest_record.get(self.cursor_field))
-        current_customer_id = latest_record["customer"]["id"]
+        current_customer_id = latest_record["customer_id"]
 
         current_customer_state = current_stream_state.get(current_customer_id, {})
         current_customer_existing_created_at = current_customer_state.get(self.cursor_field)
@@ -232,6 +254,14 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         customers_stream = Customers(authenticator=self._session.auth)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"customer_id": customer["id"]}
+
+    def transform_record(self, ledger_entry_record):
+        # Un-nest customer -> id into customer_id
+        nested_customer_id = ledger_entry_record["customer"]["id"]
+        del ledger_entry_record["customer"]
+        ledger_entry_record["customer_id"] = nested_customer_id
+
+        return ledger_entry_record
 
 
 # Source

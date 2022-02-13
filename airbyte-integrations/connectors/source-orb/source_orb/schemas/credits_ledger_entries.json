@@ -33,16 +33,8 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "customer": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "external_customer_id": {
-          "type": ["null", "string"]
-        }
-      }
+    "customer_id": {
+      "type": "string"
     }
   }
 }
