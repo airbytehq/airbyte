@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faMinus } from "@fortawesome/free-solid-svg-icons";
 
 const CheckBoxInput = styled.input`
   opacity: 0;
@@ -11,14 +11,17 @@ const CheckBoxInput = styled.input`
   position: absolute;
 `;
 
-const CheckBoxContainer = styled.label<{ checked?: boolean }>`
+const CheckBoxContainer = styled.label<{
+  checked?: boolean;
+  indeterminate?: boolean;
+}>`
   height: 18px;
   min-width: 18px;
   border: 1px solid
-    ${({ theme, checked }) =>
-      checked ? theme.primaryColor : theme.greyColor20};
-  background: ${({ theme, checked }) =>
-    checked ? theme.primaryColor : theme.whiteColor};
+    ${({ theme, checked, indeterminate }) =>
+      checked || indeterminate ? theme.primaryColor : theme.greyColor20};
+  background: ${({ theme, checked, indeterminate }) =>
+    checked || indeterminate ? theme.primaryColor : theme.whiteColor};
   color: ${({ theme }) => theme.whiteColor};
   text-align: center;
   border-radius: 4px;
@@ -31,16 +34,21 @@ const CheckBoxContainer = styled.label<{ checked?: boolean }>`
   position: relative;
 `;
 
-const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
-  props
-) => (
+const CheckBox: React.FC<
+  React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }
+> = ({ indeterminate, ...props }) => (
   <CheckBoxContainer
     onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
     className={props.className}
     checked={props.checked}
+    indeterminate={indeterminate}
   >
     <CheckBoxInput {...props} type="checkbox" />
-    {props.checked && <FontAwesomeIcon icon={faCheck} />}
+    {indeterminate ? (
+      <FontAwesomeIcon icon={faMinus} />
+    ) : (
+      props.checked && <FontAwesomeIcon icon={faCheck} />
+    )}
   </CheckBoxContainer>
 );
 

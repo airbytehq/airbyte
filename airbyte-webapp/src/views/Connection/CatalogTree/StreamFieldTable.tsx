@@ -10,12 +10,12 @@ import { equal } from "utils/objects";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
+import { pathDisplayName } from "./PathPopout";
 
-const RowsContainer = styled.div<{ depth?: number }>`
+const RowsContainer = styled.div`
   background: ${({ theme }) => theme.whiteColor};
   border-radius: 8px;
-  margin: 0
-    ${({ depth = 0 }) => `${depth * 10}px ${depth * 5}px ${depth * 10}px`};
+  margin: 0 10px 5px 10px;
 `;
 
 type StreamFieldTableProps = {
@@ -42,15 +42,14 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
   return (
     <>
       <TreeRowWrapper noBorder>
-        <FieldHeader depth={1} />
+        <FieldHeader />
       </TreeRowWrapper>
-      <RowsContainer depth={1}>
+      <RowsContainer>
         {props.syncSchemaFields.map((field) => (
           <TreeRowWrapper depth={1} key={field.key}>
             <FieldRow
-              depth={1}
               path={field.path}
-              name={field.path.join(".")}
+              name={pathDisplayName(field.path)}
               type={field.type}
               destinationName={field.cleanedName}
               isCursor={isCursor(field)}

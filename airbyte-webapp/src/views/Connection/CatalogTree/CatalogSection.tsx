@@ -20,29 +20,20 @@ import {
   ConnectionFormValues,
   SUPPORTED_MODES,
 } from "views/Connection/ConnectionForm/formConfig";
+import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+
 import { StreamHeader } from "./StreamHeader";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { StreamFieldTable } from "./StreamFieldTable";
+import { flatten } from "./utils";
 
-const flatten = (
-  fArr: SyncSchemaField[],
-  arr: SyncSchemaField[] = []
-): SyncSchemaField[] =>
-  fArr.reduce<SyncSchemaField[]>((acc, f) => {
-    acc.push(f);
-
-    if (f.fields?.length) {
-      return flatten(f.fields, acc);
-    }
-    return acc;
-  }, arr);
-
-const Section = styled.div<{ error?: boolean }>`
+const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
-  background: ${({ theme }) => theme.greyColor0};
+  background: ${({ theme, isSelected }) =>
+    isSelected ? "rgba(97, 94, 255, 0.1);" : theme.greyColor0};
 
   &:first-child {
     border-radius: 8px 8px 0 0;
@@ -77,6 +68,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
+
+  const [isSelected] = useBulkEditSelect(streamNode.id);
 
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) =>
@@ -148,14 +141,16 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     sourceNamespace: stream.namespace,
   });
 
-  const streamId = stream.name;
   const fields = useMemo(() => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
+    const traversedFields = traverseSchemaToField(
+      stream.jsonSchema,
+      stream.name
+    );
 
     return traversedFields.sort(
       naturalComparatorBy((field) => field.cleanedName)
     );
-  }, [stream.jsonSchema, streamId]);
+  }, [stream.jsonSchema, stream.name]);
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
@@ -169,7 +164,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const hasChildren = fields && fields.length > 0;
 
   return (
-    <Section error={hasError}>
+    <Section error={hasError} isSelected={isSelected}>
       <TreeRowWrapper>
         <StreamHeader
           stream={streamNode}

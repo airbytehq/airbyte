@@ -4,8 +4,11 @@ import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import EditControls from "./ConnectionForm/components/EditControls";
-import { CollapsibleCardProps, CollapsibleCard } from "./CollapsibleCard";
+import EditControls from "views/Connection/ConnectionForm/components/EditControls";
+import {
+  CollapsibleCardProps,
+  CollapsibleCard,
+} from "views/Connection/CollapsibleCard";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 const FormContainer = styled(Form)`

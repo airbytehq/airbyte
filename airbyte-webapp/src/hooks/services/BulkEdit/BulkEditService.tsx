@@ -8,11 +8,13 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 
-const Context = React.createContext<BatchContext>({} as any);
+const Context = React.createContext<BatchContext | null>(null);
 
-export interface BatchContext {
+interface BatchContext {
   isActive: boolean;
-  selectNode: (id: string) => void;
+  toggleNode: (id: string) => void;
+  onCheckAll: () => void;
+  allChecked: boolean;
   selectedBatchNodes: SyncSchemaStream[];
   selectedBatchNodeIds: string[];
   onChangeOption: (
@@ -28,15 +30,17 @@ export interface BatchContext {
   onCancel: () => void;
 }
 
-export const BatchEditProvider: React.FC<{
+const BatchEditProvider: React.FC<{
   nodes: SyncSchemaStream[];
   update: (streams: SyncSchemaStream[]) => void;
   destinationSupportedSyncModes: DestinationSyncMode[];
 }> = ({ children, nodes, destinationSupportedSyncModes, update }) => {
-  const [selectedBatchNodes, { reset, toggle }] = useSet<string>(new Set());
-  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(
-    {}
+  const [selectedBatchNodes, { reset, toggle, add }] = useSet<string>(
+    new Set()
   );
+  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>({
+    selected: false,
+  });
 
   const onApply = () => {
     const updatedConfig = nodes.map((node) =>
@@ -47,16 +51,22 @@ export const BatchEditProvider: React.FC<{
 
     update(updatedConfig);
     reset();
+    setOptions({ selected: false });
   };
 
   const onCancel = () => {
     reset();
   };
 
+  const isActive = selectedBatchNodes.size > 0;
+  const allChecked = selectedBatchNodes.size === nodes.length;
+
   const ctx: BatchContext = {
     destinationSupportedSyncModes,
-    isActive: selectedBatchNodes.size > 0,
-    selectNode: toggle,
+    isActive: isActive,
+    toggleNode: toggle,
+    onCheckAll: () => (allChecked ? reset() : nodes.forEach((n) => add(n.id))),
+    allChecked: allChecked,
     selectedBatchNodeIds: Array.from(selectedBatchNodes),
     selectedBatchNodes: nodes.filter((n) => selectedBatchNodes.has(n.id)),
     onChangeOption: (newOptions) => setOptions({ ...options, ...newOptions }),
@@ -67,20 +77,27 @@ export const BatchEditProvider: React.FC<{
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;
 };
-const useBulkEdit = () => {
+
+const useBulkEdit = (): BatchContext => {
   const ctx = useContext(Context);
+
+  if (!ctx) {
+    throw new Error("useBulkEdit should be used within BatchEditProvider");
+  }
 
   return ctx;
 };
+
 const useBulkEditSelect = (id: string): [boolean, () => void] => {
-  const { selectedBatchNodeIds, selectNode } = useBulkEdit();
+  const { selectedBatchNodeIds, toggleNode } = useBulkEdit();
   const isIncluded = selectedBatchNodeIds.includes(id);
 
-  return useMemo(() => [isIncluded, () => selectNode(id)], [
+  return useMemo(() => [isIncluded, () => toggleNode(id)], [
     isIncluded,
-    selectNode,
+    toggleNode,
     id,
   ]);
 };
-export { useBulkEditSelect };
-export { useBulkEdit };
+
+export type { BatchContext };
+export { useBulkEditSelect, useBulkEdit, BatchEditProvider };

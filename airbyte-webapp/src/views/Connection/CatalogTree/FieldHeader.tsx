@@ -4,8 +4,8 @@ import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
 
-const Name = styled.div<{ depth?: number }>`
-  padding-left: ${({ depth }) => (depth ? depth * 30 : 0)}px;
+const Name = styled.div`
+  padding-left: 30px;
 `;
 
 const HeaderCell = styled(Cell)`
@@ -13,10 +13,10 @@ const HeaderCell = styled(Cell)`
   line-height: 13px;
 `;
 
-const FieldHeaderInner: React.FC<{ depth?: number }> = (props) => (
+const FieldHeaderInner: React.FC = () => (
   <>
     <HeaderCell lighter flex={1.5}>
-      <Name depth={props.depth}>
+      <Name>
         <FormattedMessage id="form.field.name" />
       </Name>
     </HeaderCell>

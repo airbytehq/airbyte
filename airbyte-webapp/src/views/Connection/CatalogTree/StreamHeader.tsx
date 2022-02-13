@@ -2,29 +2,20 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 
 import {
   DestinationSyncMode,
+  Path,
   SyncMode,
   SyncSchemaField,
   SyncSchemaStream,
 } from "core/domain/catalog";
 
-import { Cell, CheckBox, DropDownRow, Popout, Toggle } from "components";
+import { Cell, CheckBox, DropDownRow, Toggle } from "components";
 import { Arrow as ArrowBlock } from "./components/Arrow";
-import { SyncSettingsDropdown } from "./components/SyncSettingsCell";
-import Tooltip from "./components/Tooltip";
-import { useBulkEditSelect } from "../ConnectionForm/BulkEditService";
-
-const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
-  color: ${({ theme }) => theme.greyColor40};
-  margin-left: 6px;
-  transform: ${({ isOpen }) => isOpen && "rotate(180deg)"};
-  transition: 0.3s;
-  vertical-align: sub;
-`;
+import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
+import { useBulkEditSelect } from "../../../hooks/services/BulkEdit/BulkEditService";
+import { IndexerType, PathPopout } from "./PathPopout";
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
@@ -63,17 +54,15 @@ interface StreamHeaderProps {
 
   primitiveFields: SyncSchemaField[];
 
-  pkType: null | "required" | "sourceDefined";
-  onPrimaryKeyChange: (pkPath: string[][]) => void;
-  cursorType: null | "required" | "sourceDefined";
-  onCursorChange: (cursorPath: string[]) => void;
+  pkType: IndexerType;
+  onPrimaryKeyChange: (pkPath: Path[]) => void;
+  cursorType: IndexerType;
+  onCursorChange: (cursorPath: Path) => void;
 
   isRowExpanded: boolean;
   hasFields: boolean;
   onExpand: () => void;
 }
-
-const PkPopupComponents = { MultiValue: () => null };
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
   stream,
@@ -107,10 +96,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   const [isSelected, selectForBulkEdit] = useBulkEditSelect(stream.id);
 
-  const dropdownFields = primitiveFields.map((field) => ({
-    value: field.path,
-    label: field.path.join("."),
-  }));
+  const paths = primitiveFields.map((field) => field.path);
 
   return (
     <>
@@ -151,52 +137,31 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         />
       </Cell>
       <HeaderCell>
-        {cursorType === "required" ? (
-          <Popout
-            options={dropdownFields}
-            value={cursorField}
-            placeholder={
-              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
-            }
-            onChange={(op) => onCursorChange(op.value)}
-            targetComponent={({ onOpen }) => (
-              <div onClick={onOpen}>
-                {stream.config.cursorField.join(".")}
-                <Arrow icon={faSortDown} />
-                <Tooltip items={stream.config.cursorField} />
-              </div>
-            )}
-          />
-        ) : cursorType === "sourceDefined" ? (
-          "<sourceDefined>"
-        ) : null}
-      </HeaderCell>
-      <HeaderCell ellipsis>
-        {pkType === "required" ? (
-          <Popout
-            options={dropdownFields}
-            value={primaryKey}
-            // @ts-ignore need to solve issue with typings
-            isMulti={true}
-            isSearchable
-            onChange={(options: { value: string[] }[]) => {
-              onPrimaryKeyChange(options.map((op) => op.value));
-            }}
+        {cursorType && (
+          <PathPopout
+            pathType={cursorType}
+            paths={paths}
+            path={cursorField}
             placeholder={
               <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
             }
-            components={PkPopupComponents}
-            targetComponent={({ onOpen }) => (
-              <div onClick={onOpen}>
-                {primaryKey.map((k) => k.join(".")).join(", ")}
-                <Arrow icon={faSortDown} />
-                <Tooltip items={primaryKey.map((k) => k.join("."))} />
-              </div>
-            )}
+            onPathChange={onCursorChange}
           />
-        ) : pkType === "sourceDefined" ? (
-          "<sourceDefined>"
-        ) : null}
+        )}
+      </HeaderCell>
+      <HeaderCell ellipsis>
+        {pkType && (
+          <PathPopout
+            pathType={pkType}
+            paths={paths}
+            path={primaryKey}
+            isMulti={true}
+            placeholder={
+              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
+            }
+            onPathChange={onPrimaryKeyChange}
+          />
+        )}
       </HeaderCell>
       <HeaderCell ellipsis title={destNamespace}>
         {destNamespace}

@@ -23,11 +23,15 @@ const TooltipContainer = styled.div`
 `;
 
 type TooltipProps = {
-  items: string[];
+  items?: string[];
   className?: string;
 };
 
-const Tooltip: React.FC<TooltipProps> = ({ items, className }) => {
+const Tooltip: React.FC<TooltipProps> = ({ items = [], className }) => {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <TooltipContainer className={className}>
       {items.map((value, key) => (

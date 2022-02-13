@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { FieldProps, setIn } from "formik";
+import { FieldProps } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -16,7 +16,10 @@ import { naturalComparatorBy } from "utils/objects";
 import InformationToolTip from "./InformationToolTip";
 
 import { BulkHeader } from "../../CatalogTree/BulkHeader";
-import { BatchEditProvider } from "../BulkEditService";
+import {
+  BatchEditProvider,
+  useBulkEdit,
+} from "hooks/services/BulkEdit/BulkEditService";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
@@ -91,14 +94,111 @@ type SchemaViewProps = {
   destinationSupportedSyncModes: DestinationSyncMode[];
 } & FieldProps<SyncSchemaStream[]>;
 
+const CatalogHeader: React.FC = () => {
+  const config = useConfig();
+  const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
+
+  return (
+    <SchemaHeader>
+      <CheckboxCell>
+        <CheckBox
+          onChange={onCheckAll}
+          indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
+          checked={allChecked}
+        />
+      </CheckboxCell>
+      <ArrowCell />
+      <Cell lighter flex={0.4}>
+        <FormattedMessage id="sources.sync" />
+      </Cell>
+      <Cell lighter>
+        <FormattedMessage id="sources.source" />
+        <InformationToolTip>
+          <FormattedMessage
+            id="connectionForm.source.info"
+            values={{
+              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+            }}
+          />
+        </InformationToolTip>
+      </Cell>
+      <Cell />
+      <Cell lighter flex={1.5}>
+        <FormattedMessage id="form.syncMode" />
+        <InformationToolTip>
+          <FormattedMessage id="connectionForm.syncType.info" />
+          <LearnMoreLink target="_blank" href={config.ui.syncModeLink}>
+            <FormattedMessage id="form.entrypoint.docs" />
+          </LearnMoreLink>
+        </InformationToolTip>
+      </Cell>
+      <Cell lighter>
+        <FormattedMessage id="form.cursorField" />
+        <InformationToolTip>
+          <FormattedMessage id="connectionForm.cursor.info" />
+        </InformationToolTip>
+      </Cell>
+      <Cell lighter>
+        <FormattedMessage id="form.primaryKey" />
+        <InformationToolTip>
+          <FormattedMessage id="connectionForm.primaryKey.info" />
+        </InformationToolTip>
+      </Cell>
+      <Cell lighter>
+        <FormattedMessage id="connector.destination" />
+        <InformationToolTip>
+          <FormattedMessage
+            id="connectionForm.destinationName.info"
+            values={{
+              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+            }}
+          />
+          <NextLineText>
+            <FormattedMessage
+              id="connectionForm.destinationStream.info"
+              values={{
+                b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
+              }}
+            />
+          </NextLineText>
+        </InformationToolTip>
+      </Cell>
+      <Cell />
+    </SchemaHeader>
+  );
+};
+
+const CatalogSubheader: React.FC = () => (
+  <SchemaHeader>
+    <CheckboxCell />
+    <ArrowCell />
+    <ClearSubtitleCell flex={0.4} />
+    <SubtitleCell>
+      <FormattedMessage id="form.namespace" />
+    </SubtitleCell>
+    <SubtitleCell>
+      <FormattedMessage id="form.streamName" />
+    </SubtitleCell>
+    <SubtitleCell flex={1.5}>
+      <FormattedMessage id="form.sourceAndDestination" />
+    </SubtitleCell>
+    <ClearSubtitleCell />
+    <ClearSubtitleCell />
+    <SubtitleCell>
+      <FormattedMessage id="form.namespace" />
+    </SubtitleCell>
+    <SubtitleCell>
+      <FormattedMessage id="form.streamName" />
+    </SubtitleCell>
+  </SchemaHeader>
+);
+
 const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
   additionalControl,
   field,
   form,
 }) => {
-  const config = useConfig();
-
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
@@ -137,21 +237,6 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
 
-  const hasSelectedItem = useMemo(
-    () => filteredStreams.some((streamNode) => streamNode.config.selected),
-    [filteredStreams]
-  );
-
-  const onCheckAll = useCallback(() => {
-    const allSelectedValues = !hasSelectedItem;
-
-    const newSchema = filteredStreams.map((streamNode) =>
-      setIn(streamNode, "config.selected", allSelectedValues)
-    );
-
-    onChangeSchema(newSchema);
-  }, [hasSelectedItem, onChangeSchema, filteredStreams]);
-
   return (
     <BatchEditProvider
       nodes={streams}
@@ -164,91 +249,8 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       </HeaderBlock>
       <Search onSearch={setSearchString} />
       <StreamsContent>
-        <SchemaHeader>
-          <CheckboxCell>
-            {/*TODO: Fix it for Batch Edit*/}
-            <CheckBox onChange={onCheckAll} checked={false} disabled={true} />
-          </CheckboxCell>
-          <ArrowCell />
-          <Cell lighter flex={0.4}>
-            <FormattedMessage id="sources.sync" />
-          </Cell>
-          <Cell lighter>
-            <FormattedMessage id="sources.source" />
-            <InformationToolTip>
-              <FormattedMessage
-                id="connectionForm.source.info"
-                values={{
-                  b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-                }}
-              />
-            </InformationToolTip>
-          </Cell>
-          <Cell />
-          <Cell lighter flex={1.5}>
-            <FormattedMessage id="form.syncMode" />
-            <InformationToolTip>
-              <FormattedMessage id="connectionForm.syncType.info" />
-              <LearnMoreLink target="_blank" href={config.ui.syncModeLink}>
-                <FormattedMessage id="form.entrypoint.docs" />
-              </LearnMoreLink>
-            </InformationToolTip>
-          </Cell>
-          <Cell lighter>
-            <FormattedMessage id="form.cursorField" />
-            <InformationToolTip>
-              <FormattedMessage id="connectionForm.cursor.info" />
-            </InformationToolTip>
-          </Cell>
-          <Cell lighter>
-            <FormattedMessage id="form.primaryKey" />
-            <InformationToolTip>
-              <FormattedMessage id="connectionForm.primaryKey.info" />
-            </InformationToolTip>
-          </Cell>
-          <Cell lighter>
-            <FormattedMessage id="connector.destination" />
-            <InformationToolTip>
-              <FormattedMessage
-                id="connectionForm.destinationName.info"
-                values={{
-                  b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-                }}
-              />
-              <NextLineText>
-                <FormattedMessage
-                  id="connectionForm.destinationStream.info"
-                  values={{
-                    b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-                  }}
-                />
-              </NextLineText>
-            </InformationToolTip>
-          </Cell>
-          <Cell />
-        </SchemaHeader>
-        <SchemaHeader>
-          <CheckboxCell />
-          <ArrowCell />
-          <ClearSubtitleCell flex={0.4} />
-          <SubtitleCell>
-            <FormattedMessage id="form.namespace" />
-          </SubtitleCell>
-          <SubtitleCell>
-            <FormattedMessage id="form.streamName" />
-          </SubtitleCell>
-          <SubtitleCell flex={1.5}>
-            <FormattedMessage id="form.sourceAndDestination" />
-          </SubtitleCell>
-          <ClearSubtitleCell />
-          <ClearSubtitleCell />
-          <SubtitleCell>
-            <FormattedMessage id="form.namespace" />
-          </SubtitleCell>
-          <SubtitleCell>
-            <FormattedMessage id="form.streamName" />
-          </SubtitleCell>
-        </SchemaHeader>
+        <CatalogHeader />
+        <CatalogSubheader />
         <BulkHeader />
         <TreeViewContainer>
           <CatalogTree

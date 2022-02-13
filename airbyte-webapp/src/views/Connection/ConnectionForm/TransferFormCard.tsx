@@ -10,7 +10,7 @@ import { useFrequencyDropdownData } from "./formConfig";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import useConnection from "hooks/services/useConnectionHook";
 
-import { FormCard } from "../FormCard";
+import { FormCard } from "views/Connection/FormCard";
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -38,7 +38,7 @@ const TransferFormCard: React.FC<TransferFormProps> = ({ connection }) => {
   const { updateConnection } = useConnection();
   const formatMessage = useIntl().formatMessage;
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: { schedule: ScheduleProperties }) => {
     if (connection) {
       return await updateConnection({
         schedule: values.schedule,
