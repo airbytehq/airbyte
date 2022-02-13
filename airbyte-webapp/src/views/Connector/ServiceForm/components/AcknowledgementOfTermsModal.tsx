@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Modal, Button, LabeledToggle } from "components";
+import { getIcon } from "utils/imageUtils";
+
+type ConnectorItem = {
+  name?: string;
+  stage?: string;
+  icon?: string;
+};
 
 type AcknowledgementOfTermsModalProps = {
-  destinationDefinitionId?: string;
   onClose: () => void;
+  onSubmit: () => void;
+  connector: ConnectorItem;
 };
 
 const Content = styled.div`
@@ -15,6 +23,7 @@ const Content = styled.div`
   font-style: normal;
   font-size: 14px;
   line-height: 17px;
+  text-transform: capitalize;
 `;
 
 const Title = styled.div`
@@ -32,7 +41,6 @@ const CheckBoxContainer = styled.div`
 const Agreement = styled(LabeledToggle)`
   & label {
     font-size: 11px;
-    line-height: 13px;
   }
 `;
 
@@ -60,18 +68,21 @@ const Stage = styled.div`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const Icon = styled.img`
+const Icon = styled.div`
   width: 27px;
   margin-right: 12px;
+  display: inline-block;
+
+  & img {
+    vertical-align: middle;
+  }
 `;
 
-const ModalTitle: React.FC<{ name: string; stage: string; img?: string }> = (
-  props
-) => {
+const ModalTitle: React.FC<ConnectorItem> = (props) => {
   return (
     <Title>
       <div>
-        {props.img && <Icon src={props.img} />}
+        {props.icon && <Icon>{getIcon(props.icon)}</Icon>}
         {props.name}
       </div>
       <Stage>{props.stage}</Stage>
@@ -81,10 +92,20 @@ const ModalTitle: React.FC<{ name: string; stage: string; img?: string }> = (
 
 const AcknowledgementOfTermsModal: React.FC<AcknowledgementOfTermsModalProps> = ({
   onClose,
+  onSubmit,
+  connector,
 }) => {
+  const [agreed, setAgreed] = useState(false);
+
   return (
     <Modal
-      title={<ModalTitle name="Apple Store" stage="alpha" />}
+      title={
+        <ModalTitle
+          name={connector.name}
+          stage={connector.stage}
+          icon={connector.icon}
+        />
+      }
       onClose={onClose}
     >
       <>
@@ -100,15 +121,17 @@ const AcknowledgementOfTermsModal: React.FC<AcknowledgementOfTermsModalProps> = 
           <CheckBoxContainer>
             <Agreement
               checkbox
+              checked={agreed}
+              onChange={() => setAgreed(!agreed)}
               label={<FormattedMessage id="connector.acknowledgeTerms" />}
             />
           </CheckBoxContainer>
         </Content>
         <Footer>
-          <CancelButton secondary>
+          <CancelButton secondary onClick={onClose}>
             <FormattedMessage id="form.cancel" />
           </CancelButton>
-          <Button disabled>
+          <Button onClick={onSubmit} disabled={!agreed}>
             <FormattedMessage id="form.continue" />
           </Button>
         </Footer>

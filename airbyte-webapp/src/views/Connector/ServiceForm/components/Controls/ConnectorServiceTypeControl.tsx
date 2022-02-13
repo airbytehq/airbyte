@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
+import AcknowledgementOfTermsModal from "../AcknowledgementOfTermsModal";
 
 import {
   ControlLabels,
@@ -70,6 +71,10 @@ const Stage = styled.div`
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+type ConnectorOption = DropDownRow.IDataItem & {
+  icon: string;
+  releaseStage: string;
+};
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
@@ -134,6 +139,10 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const [
+    selectedConnector,
+    setSelectedConnector,
+  ] = useState<ConnectorOption | null>(null);
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -161,6 +170,7 @@ const ConnectorServiceTypeControl: React.FC<{
           label: item.name,
           value: Connector.id(item),
           img: <ImageBlock img={item.icon} />,
+          icon: item.icon,
           releaseStage: item.releaseStage,
         }))
         .sort(defaultDataItemSort),
@@ -172,7 +182,7 @@ const ConnectorServiceTypeControl: React.FC<{
     [field.value, availableServices]
   );
 
-  const handleSelect = useCallback(
+  const handleContinueSelect = useCallback(
     (item: DropDownRow.IDataItem | null) => {
       if (item) {
         setValue(item.value);
@@ -182,6 +192,17 @@ const ConnectorServiceTypeControl: React.FC<{
       }
     },
     [setValue, onChangeServiceType]
+  );
+
+  const handleSelect = useCallback(
+    (item: ConnectorOption | null) => {
+      if (item && item.releaseStage === ReleaseStage.ALPHA) {
+        setSelectedConnector(item);
+      } else {
+        handleContinueSelect(item);
+      }
+    },
+    [handleContinueSelect]
   );
 
   return (
@@ -207,6 +228,20 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
         />
+        {selectedConnector ? (
+          <AcknowledgementOfTermsModal
+            onClose={() => setSelectedConnector(null)}
+            onSubmit={() => {
+              handleContinueSelect(selectedConnector);
+              setSelectedConnector(null);
+            }}
+            connector={{
+              name: selectedConnector.label,
+              icon: selectedConnector.icon,
+              stage: selectedConnector.releaseStage,
+            }}
+          />
+        ) : null}
       </ControlLabels>
       {selectedService && documentationUrl && (
         <Instruction
