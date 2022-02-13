@@ -11,7 +11,6 @@ import socket
 import string
 import subprocess
 import sys
-import threading
 import time
 from copy import copy
 from typing import Any, Callable, Dict, List
@@ -347,7 +346,7 @@ class DbtIntegrationTest(object):
     @staticmethod
     def run_destination_process(message_file: str, test_root_dir: str, commands: List[str]):
         print("Executing: ", " ".join(commands))
-        input_data = b''
+        input_data = b""
         if message_file:
             input_data = open(message_file, "rb").read()
         process = subprocess.run(commands, input=input_data, timeout=600)
