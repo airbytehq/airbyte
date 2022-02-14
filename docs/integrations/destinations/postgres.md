@@ -84,6 +84,7 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.3.14  | 2021-01-24 | [9644](https://github.com/airbytehq/airbyte/pull/9644) | Fixed ssh tunnel closing with idle timeout  |
 | 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.3.12  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |  
 | 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
