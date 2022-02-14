@@ -117,18 +117,26 @@ class TwitterAdsStream(HttpStream, ABC):
         if self.__class__.__name__ == "AdsAnalyticsMetrics":
             job_urls = self.job_urls
             results = []
-            
+
             for job_url in job_urls:
                 with requests.get(job_url) as zipped_result:
                  json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
 
                 json_str = json_bytes.decode('utf-8') 
-                result = dict(json.loads(json_str))
-                #ToDo: We Need Request Params Information for to get all needed variables, Result data on its own is not to useful.. In particular we need the start/end time + placement information to make sense of the time series data
-                results.append(result.get("data"))
+                results_full = dict(json.loads(json_str))
+
+                result_data = results_full.get("data")
+                result_params = results_full.get("request")
+
+                for item in result_data:
+                    item['params'] = result_params.get('params')
+
+                results.append(result_data)
+
 
 
             results =[ item for sublist in results for item in sublist]
+
             return results
         else:
             response_json = response.json()
@@ -199,7 +207,6 @@ class PromotedTweets(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        auth = self.auth
         account_id = self.account_id
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets?count=1000"
@@ -222,7 +229,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         
         auth = self.auth
         #ToDo: we need to specifiy a start/end time different from the one in the config as maximum time span is 45days for this endpoint, think about what we want/need here + make it as part of config?
-        start_time = str((datetime.date.today() - datetime.timedelta(days=45)).strftime("%Y-%m-%d"))
+        start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
         end_time = str(datetime.date.today().strftime("%Y-%m-%d"))
         granularity = self.granularity
         metric_groups =  self.metric_groups
@@ -291,6 +298,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
                 job_statuses.append(job_status)
 
             for job_success_url,job_status in zip(job_success_urls, job_statuses):
+                # ToDo: What happens if job fails? 
                 while job_status != "SUCCESS":
                     time.sleep(30)
                     job_success_response = requests.get(job_success_url, auth=auth)
@@ -308,7 +316,6 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
 
         request_url =  job_success_url
 
-        #ToDo: we could think about returning placement + start/end time information here to add to the results later in  the parse_response function
         return request_url
 
 # Basic incremental stream
