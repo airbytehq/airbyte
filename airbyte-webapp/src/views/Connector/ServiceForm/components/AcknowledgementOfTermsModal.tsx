@@ -23,7 +23,7 @@ const Content = styled.div`
   font-style: normal;
   font-size: 14px;
   line-height: 17px;
-  text-transform: capitalize;
+  white-space: break-spaces;
 `;
 
 const Title = styled.div`
@@ -41,6 +41,7 @@ const CheckBoxContainer = styled.div`
 const Agreement = styled(LabeledToggle)`
   & label {
     font-size: 11px;
+    line-height: 16px;
   }
 `;
 
@@ -114,7 +115,6 @@ const AcknowledgementOfTermsModal: React.FC<AcknowledgementOfTermsModalProps> = 
             id="connector.termsModal.text"
             values={{
               b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-              br: <br />,
             }}
           />
 

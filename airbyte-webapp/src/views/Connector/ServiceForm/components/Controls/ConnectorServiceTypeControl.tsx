@@ -5,6 +5,7 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import AcknowledgementOfTermsModal from "../AcknowledgementOfTermsModal";
+import WarningMessage from "../WarningMessage";
 
 import {
   ControlLabels,
@@ -249,6 +250,10 @@ const ConnectorServiceTypeControl: React.FC<{
           documentationUrl={documentationUrl}
         />
       )}
+      {selectedService &&
+        selectedService.releaseStage === ReleaseStage.ALPHA && (
+          <WarningMessage />
+        )}
     </>
   );
 };

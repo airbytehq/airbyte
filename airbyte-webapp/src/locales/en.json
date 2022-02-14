@@ -437,7 +437,8 @@
   "connector.releaseStage.custom": "custom",
   "connector.releaseStage.generally_available": "generally available",
   "connector.acknowledgeTerms": "I acknowledge these terms",
-  "connector.termsModal.text": "<b>Alpha</b> connectors are in active development. The release may not be feature complete and breaking changes may be introduced. {br}{br}On occasion, we will reach out to users to gather feedbacks so that we can improve the connector.",
+  "connector.termsModal.text": "<b>Alpha</b> connectors are in active development. The release may not be feature complete and breaking changes may be introduced. \n\nOn occasion, we will reach out to users to gather feedbacks so that we can improve the connector.",
+  "connector.connectorsInDevelopment": "<b>Alpha connectors</b> are in active development. The release may not be feature complete and breaking changes may be introduced.\nOn occasion, we will reach out to users to gather feedbacks so that we can improve the connector.",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
