@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from requests import HTTPError
-from source_hubspot.api import (
+from source_hubspot.streams import (
     API,
     Campaigns,
     ContactLists,

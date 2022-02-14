@@ -8,7 +8,7 @@ from functools import partial
 
 import pytest
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
-from source_hubspot.api import (
+from source_hubspot.streams import (
     API,
     PROPERTIES_PARAM_MAX_LENGTH,
     CRMObjectIncrementalStream,
