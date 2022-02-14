@@ -30,6 +30,10 @@ interface BatchContext {
   onCancel: () => void;
 }
 
+const defaultOptions: Partial<AirbyteStreamConfiguration> = {
+  selected: false,
+};
+
 const BatchEditProvider: React.FC<{
   nodes: SyncSchemaStream[];
   update: (streams: SyncSchemaStream[]) => void;
@@ -38,9 +42,14 @@ const BatchEditProvider: React.FC<{
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string>(
     new Set()
   );
-  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>({
-    selected: false,
-  });
+  const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(
+    defaultOptions
+  );
+
+  const resetBulk = () => {
+    reset();
+    setOptions(defaultOptions);
+  };
 
   const onApply = () => {
     const updatedConfig = nodes.map((node) =>
@@ -50,12 +59,12 @@ const BatchEditProvider: React.FC<{
     );
 
     update(updatedConfig);
-    reset();
-    setOptions({ selected: false });
+    resetBulk();
   };
 
   const onCancel = () => {
     reset();
+    resetBulk();
   };
 
   const isActive = selectedBatchNodes.size > 0;
