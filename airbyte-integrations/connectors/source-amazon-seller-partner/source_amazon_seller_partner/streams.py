@@ -665,7 +665,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     """
 
     name = "VendorDirectFulfillmentShipping"
-    primary_key = [["labelData", "packageIdentifier"]]
+    primary_key = None
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
