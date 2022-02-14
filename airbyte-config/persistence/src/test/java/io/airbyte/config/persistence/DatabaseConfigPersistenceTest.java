@@ -43,8 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * See {@link DatabaseConfigPersistenceLoadDataTest},
- * {@link DatabaseConfigPersistenceMigrateFileConfigsTest}, and
+ * See {@link DatabaseConfigPersistenceLoadDataTest} and
  * {@link DatabaseConfigPersistenceUpdateConnectorDefinitionsTest} for testing of specific methods.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
@@ -58,7 +57,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+        .execute(
+            "TRUNCATE TABLE state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }
 
   @AfterEach
