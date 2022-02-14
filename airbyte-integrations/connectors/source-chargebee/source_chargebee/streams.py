@@ -289,7 +289,7 @@ class Event(IncrementalChargebeeStream):
 
     api = EventModel
 
-class Event(IncrementalChargebeeStream):
+class Transactions(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.eu.chargebee.com/docs/api/transaction?prod_cat_ver=2#list_transactions
     """
