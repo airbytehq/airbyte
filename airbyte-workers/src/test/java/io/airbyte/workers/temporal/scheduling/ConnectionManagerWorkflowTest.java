@@ -482,6 +482,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
+    @Disabled
     @Test
     @DisplayName("Test that resetting a running workflow starts cancel the running workflow")
     public void resetCancelRunningWorkflow() {
