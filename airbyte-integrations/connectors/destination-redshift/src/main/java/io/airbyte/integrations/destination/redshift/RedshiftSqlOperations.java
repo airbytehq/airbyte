@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -41,7 +42,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
       // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
       // the COLUMN order. This order is required to INSERT the values in correct way.
-      LOGGER.info("Altering table {} column _airbyte_data to SUPER:", tableName);
+      LOGGER.info("Altering table {} column _airbyte_data to SUPER.", tableName);
       return String.format("""
               ALTER TABLE %1$s.%2$s ADD COLUMN %3$s_super super;
               ALTER TABLE %1$s.%2$s ADD COLUMN %4$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
@@ -99,9 +100,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   private void discoverNotSuperTables(final JdbcDatabase database,
       final String schemaName) {
     try {
+      LOGGER.info("Selecting table types...");
       database.execute(String.format("set search_path to %s", schemaName));
-      final List<JsonNode> notSuperTables = database.query(
-          String.format("""
+      final List<JsonNode> tablesNameWithoutSuperDatatype = database.bufferedResultSetQuery(
+          conn -> conn.createStatement().executeQuery(String.format("""
                   select tablename\n
                   from pg_table_def\n
                   where\n
@@ -110,14 +112,18 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
                   and type <> \'super\'\n
                   and tablename like \'%%raw%%\'""",
               schemaName,
-              JavaBaseConstants.COLUMN_NAME_DATA)).toList();
-      if (notSuperTables.isEmpty()) {
-        tablesWithNotSuperType.add("Table with SUPER type not exists");
+              JavaBaseConstants.COLUMN_NAME_DATA)),
+       resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      if (tablesNameWithoutSuperDatatype.isEmpty()) {
+        tablesWithNotSuperType.add("_airbyte_data in all tables is SUPER type.");
       } else {
-        notSuperTables.forEach(e -> tablesWithNotSuperType.add(e.get("tablename").textValue()));
+        tablesNameWithoutSuperDatatype.forEach(e -> tablesWithNotSuperType.add(e.get("tablename").textValue()));
       }
     } catch (SQLException e) {
       LOGGER.error("Error during discoverNotSuperTables() appears: ", e);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 }
+
