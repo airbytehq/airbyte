@@ -81,6 +81,11 @@ const Arrow = styled.div<{
     opacity: 1;
   }
 `;
+const Text = styled.div`
+  font-size: 12px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.greyColor40};
+`;
 
 type IProps = {
   job: JobApiItem | JobInfo;
@@ -135,10 +140,17 @@ const MainInfo: React.FC<IProps> = ({
           {jobStatus}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
-            <AttemptDetails
-              attempt={attempts[attempts.length - 1]}
-              configType={job.configType}
-            />
+            <div>
+              {attempts.length > 1 && (
+                <Text>
+                  <FormattedMessage id="sources.lastAttempt" />
+                </Text>
+              )}
+              <AttemptDetails
+                attempt={attempts[attempts.length - 1]}
+                configType={job.configType}
+              />
+            </div>
           ) : null}
         </Title>
       </InfoCell>
