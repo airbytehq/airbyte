@@ -1,7 +1,7 @@
 - name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
 - name: Amazon SQS
