@@ -23,12 +23,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ContinuousFeedConfigTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ContinuousFeedConfigTest.class);
 
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
@@ -77,10 +73,10 @@ class ContinuousFeedConfigTest {
                                    final AirbyteCatalog expectedCatalog)
       throws Exception {
     if (expectedCatalog == null) {
-      assertThrows(JsonValidationException.class, () -> ContinuousFeedConfig.parseMockCatalog(mockConfig));
+      assertThrows(JsonValidationException.class, () -> ContinuousFeedConfig.parseMockCatalog(mockConfig), testCaseName);
     } else {
       final AirbyteCatalog actualCatalog = ContinuousFeedConfig.parseMockCatalog(mockConfig);
-      assertEquals(expectedCatalog.getStreams(), actualCatalog.getStreams());
+      assertEquals(expectedCatalog.getStreams(), actualCatalog.getStreams(), testCaseName);
     }
   }
 
