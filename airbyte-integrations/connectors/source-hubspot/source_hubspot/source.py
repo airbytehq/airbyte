@@ -18,7 +18,6 @@ from source_hubspot.api import (
     Campaigns,
     ContactLists,
     ContactsListMemberships,
-    CRMObjectIncrementalStream,
     CRMSearchStream,
     DealPipelines,
     Deals,
@@ -32,6 +31,18 @@ from source_hubspot.api import (
     SubscriptionChanges,
     TicketPipelines,
     Workflows,
+    Companies,
+    Contacts,
+    EngagementsCalls,
+    EngagementsEmails,
+    EngagementsMeetings,
+    EngagementsNotes,
+    EngagementsTasks,
+    FeedbackSubmissions,
+    LineItems,
+    Products,
+    Tickets,
+    Quotes,
 )
 
 
@@ -68,72 +79,36 @@ class SourceHubspot(AbstractSource):
         common_params = self.get_common_params(config=config)
         streams = [
             Campaigns(**common_params),
-            CRMSearchStream(
-                entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], name="companies", **common_params
-            ),
+            Companies(**common_params),
             ContactLists(**common_params),
-            CRMSearchStream(
-                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], name="contacts", **common_params
-            ),
+            Contacts(**common_params),
             ContactsListMemberships(**common_params),
             DealPipelines(**common_params),
             Deals(associations=["contacts"], **common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
-            CRMSearchStream(
-                entity="calls",
-                last_modified_field="hs_lastmodifieddate",
-                associations=["contacts", "deal", "company"],
-                name="engagements_calls",
-                **common_params,
-            ),
-            CRMSearchStream(
-                entity="emails",
-                last_modified_field="hs_lastmodifieddate",
-                associations=["contacts", "deal", "company"],
-                name="engagements_emails",
-                **common_params,
-            ),
-            CRMSearchStream(
-                entity="meetings",
-                last_modified_field="hs_lastmodifieddate",
-                associations=["contacts", "deal", "company"],
-                name="engagements_meetings",
-                **common_params,
-            ),
-            CRMSearchStream(
-                entity="notes",
-                last_modified_field="hs_lastmodifieddate",
-                associations=["contacts", "deal", "company"],
-                name="engagements_notes",
-                **common_params,
-            ),
-            CRMSearchStream(
-                entity="tasks",
-                last_modified_field="hs_lastmodifieddate",
-                associations=["contacts", "deal", "company"],
-                name="engagements_tasks",
-                **common_params,
-            ),
-            CRMObjectIncrementalStream(
-                entity="feedback_submissions", associations=["contacts"], name="feedback_submissions", **common_params
-            ),
+            EngagementsCalls(**common_params),
+            EngagementsEmails(**common_params),
+            EngagementsMeetings(**common_params),
+            EngagementsNotes(**common_params),
+            EngagementsTasks(**common_params),
+            FeedbackSubmissions(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
-            CRMObjectIncrementalStream(entity="line_item", name="line_items", **common_params),
+            LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),
-            CRMObjectIncrementalStream(entity="product", name="products", **common_params),
+            Products(**common_params),
             PropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
-            CRMObjectIncrementalStream(entity="ticket", name="tickets", **common_params),
+            Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
 
         credentials_title = credentials.get("credentials_title")
         if credentials_title == "API Key Credentials":
-            streams.append(CRMObjectIncrementalStream(entity="quote", name="quotes", **common_params))
+            streams.append(Quotes(**common_params))
 
         return streams
 

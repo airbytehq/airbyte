@@ -583,6 +583,8 @@ class CRMSearchStream(IncrementalStream, ABC):
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
+    last_modified_field: str = None
+    associations: List[str] = None
 
     @property
     def url(self):
@@ -590,20 +592,18 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def __init__(
         self,
-        entity: Optional[str] = None,
-        last_modified_field: Optional[str] = None,
-        associations: Optional[List[str]] = None,
+        # entity: Optional[str] = None,
+        # last_modified_field: Optional[str] = None,
+        # associations: Optional[List[str]] = None,
         include_archived_only: bool = False,
-        name: str = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._state = None
-        self.entity = entity
-        self.last_modified_field = last_modified_field
-        self.associations = associations
+        # self.entity = entity
+        # self.last_modified_field = last_modified_field
+        # self.associations = associations
         self._include_archived_only = include_archived_only
-        self._name = name
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(fixed_retry_after=1, max_tries=3)
@@ -710,9 +710,8 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
     limit = 100
     need_chunk = False
 
-    def __init__(self, name: str = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._name = name
 
 
 class Campaigns(Stream):
@@ -1047,3 +1046,66 @@ class Workflows(Stream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+
+
+class Companies(CRMSearchStream):
+    entity = 'company'
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts"]
+
+
+class Contacts(CRMSearchStream):
+    entity = "contact"
+    last_modified_field = "lastmodifieddate"
+    associations = ["contacts"]
+
+
+class EngagementsCalls(CRMSearchStream):
+    entity = "calls"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "deal", "company"]
+
+
+class EngagementsEmails(CRMSearchStream):
+    entity = "emails"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "deal", "company"]
+
+
+class EngagementsMeetings(CRMSearchStream):
+    entity = "meetings"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "deal", "company"]
+
+
+class EngagementsNotes(CRMSearchStream):
+    entity = "notes"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "deal", "company"]
+
+
+class EngagementsTasks(CRMSearchStream):
+    entity = "tasks"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "deal", "company"]
+
+
+class FeedbackSubmissions(CRMObjectIncrementalStream):
+    entity = "feedback_submissions"
+    associations = ["contacts"]
+
+
+class LineItems(CRMObjectIncrementalStream):
+    entity = "line_item"
+
+
+class Products(CRMObjectIncrementalStream):
+    entity = "product"
+
+
+class Tickets(CRMObjectIncrementalStream):
+    entity = "ticket"
+
+
+class Quotes(CRMObjectIncrementalStream):
+    entity = "quote"
