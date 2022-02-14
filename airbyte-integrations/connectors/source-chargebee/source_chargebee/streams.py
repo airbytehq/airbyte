@@ -296,4 +296,4 @@ class Transactions(IncrementalChargebeeStream):
 
     cursor_field = "occurred_at"
 
-    api = TrasactionModel
+    api = TransactionModel
