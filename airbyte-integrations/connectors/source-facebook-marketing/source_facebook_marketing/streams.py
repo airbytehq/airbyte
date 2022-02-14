@@ -67,6 +67,7 @@ class FBMarketingStream(Stream, ABC):
 
     enable_deleted = False
     entity_prefix = None
+    send_fields = False
 
     def __init__(self, api: API, include_deleted: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -126,6 +127,9 @@ class FBMarketingStream(Stream, ABC):
 
         if self._include_deleted:
             params.update(self._filter_all_statuses())
+
+        if self.send_fields:
+            params.update({"fields": ",".join(self.fields)})
 
         return params
 
@@ -293,11 +297,88 @@ class Videos(FBMarketingIncrementalStream):
         return self._api.account.get_ad_videos(params=params)
 
 
+class AdAccount(FBMarketingStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
+
+    entity_prefix = "adaccount"
+    send_fields = True
+
+    @backoff_policy
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        # FacebookResponse variable _json is link to response in json format
+        yield self._api.account.api_get(params=self.request_params(stream_state=stream_state)).__dict__["_json"]
+
+
+class Images(FBMarketingIncrementalStream):
+    """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
+
+    entity_prefix = "adimage"
+    enable_deleted = True
+    send_fields = True
+
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Works differently for images, so remove it"""
+        return {}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        """
+        This method is called once for each record returned from the API to
+        compare the cursor field value in that record with the current state
+        we then return an updated state object. If this is the first time we
+        run a sync or no state was passed, current_stream_state will be None.
+        """
+
+        current_stream_state = current_stream_state or {}
+
+        current_stream_state_date = current_stream_state.get(self.cursor_field, str(self._start_date))
+        latest_record_date = latest_record.get(self.cursor_field, str(self._start_date))
+
+        return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
+
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
+        """
+        Endpoint does not provide query filtering params, but they provide us
+        updated_at field in most cases, so we used that as incremental filtering
+        during the slicing.
+        """
+        state_value = stream_state.get(self.cursor_field) if stream_state else None
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+
+        potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
+        if potentially_new_records_in_the_past:
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            filter_value = self._start_date
+
+        first_sync = not stream_state and str(self._start_date) <= record[self.cursor_field]
+
+        if first_sync or pendulum.parse(record[self.cursor_field]) > filter_value:
+            yield record
+
+    @backoff_policy
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        for record in self._api.account.get_ad_images(params=self.request_params(stream_state=stream_state)):
+            yield from self.filter_by_state(stream_state=stream_state, record=record.__dict__["_json"])
+
+
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    primary_key = None
+    primary_key = ["account_id", "campaign_id", "adset_id", "ad_id"]
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",

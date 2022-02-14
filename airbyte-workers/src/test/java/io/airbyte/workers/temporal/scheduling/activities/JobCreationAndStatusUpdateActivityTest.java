@@ -215,18 +215,11 @@ public class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    public void setJobCancelledWithNoFailures() throws IOException {
-      jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, null));
-
-      Mockito.verify(mJobPersistence).cancelJob(JOB_ID);
-      Mockito.verify(mJobPersistence, Mockito.never()).writeAttemptFailureSummary(Mockito.anyLong(), Mockito.anyInt(), Mockito.any());
-    }
-
-    @Test
-    public void setJobCancelledWithFailures() throws IOException {
+    public void setJobCancelled() throws IOException {
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
       Mockito.verify(mJobPersistence).cancelJob(JOB_ID);
+      Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
       Mockito.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
     }
 

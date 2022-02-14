@@ -106,6 +106,7 @@ class DefaultReplicationWorkerTest {
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(destination.attemptRead()).thenReturn(Optional.of(STATE_MESSAGE));
     when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
@@ -154,6 +155,66 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
+  void testReplicationRunnableSourceFailure() throws Exception {
+    final String SOURCE_ERROR_MESSAGE = "the source had a failure";
+
+    when(source.attemptRead()).thenThrow(new RuntimeException(SOURCE_ERROR_MESSAGE));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) && f.getStacktrace().contains(SOURCE_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableDestinationFailure() throws Exception {
+    final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
+
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).accept(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableWorkerFailure() throws Exception {
+    final String WORKER_ERROR_MESSAGE = "the worker had a failure";
+
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromSource(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
+  }
+
+  @Test
   void testDestinationNonZeroExitValue() throws Exception {
     when(destination.getExitValue()).thenReturn(1);
 
@@ -168,6 +229,46 @@ class DefaultReplicationWorkerTest {
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION)));
+  }
+
+  @Test
+  void testDestinationRunnableDestinationFailure() throws Exception {
+    final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
+
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).notifyEndOfStream();
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testDestinationRunnableWorkerFailure() throws Exception {
+    final String WORKER_ERROR_MESSAGE = "the worker had a failure";
+
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromDestination(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
   }
 
   @Test
