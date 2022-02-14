@@ -14,7 +14,6 @@ import io.airbyte.workers.cron.UpdateWorkflowWorkflow.UpdateWorkflowWorkflowImpl
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
-import io.temporal.client.WorkflowStub;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
@@ -145,6 +144,9 @@ public class CronTest {
     logCount(counter, "1.70");
     testEnv.sleep(Duration.ofSeconds(1000));
     logCount(counter, "1.75");
+
+    // verify the schedule is still in place after the manual run.
+    TemporalUtils.logSchedule(temporalService, workflowExecution, 3);
 
     // terminate the workflow
     LOGGER.info("terminating workflow: started");
