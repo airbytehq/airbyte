@@ -46,7 +46,7 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_incremental_stream_config(google_api, config, tz="local"):
+    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], tz: Union[timezone, str] = "local"):
         incremental_stream_config = dict(
             api=google_api,
             conversion_window_days=config["conversion_window_days"],
@@ -56,7 +56,7 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
-    def get_account_info(self, google_api, config) -> dict:
+    def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> dict:
         incremental_stream_config = self.get_incremental_stream_config(google_api, config)
         accounts_streams = Accounts(**incremental_stream_config)
         for stream_slice in accounts_streams.stream_slices(sync_mode=SyncMode.full_refresh):
