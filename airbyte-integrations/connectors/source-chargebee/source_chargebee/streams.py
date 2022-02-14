@@ -289,7 +289,7 @@ class Event(IncrementalChargebeeStream):
 
     api = EventModel
 
-class Event(IncrementalChargebeeStream):
+class Coupon(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
     """
