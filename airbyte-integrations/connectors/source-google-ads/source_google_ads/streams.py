@@ -223,18 +223,6 @@ class Accounts(IncrementalGoogleAdsStream):
     primary_key = "customer.id"
 
 
-class AccountsFullRefresh(GoogleAdsStream):
-    """
-    Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
-    """
-
-    primary_key = "customer.id"
-
-    @property
-    def name(self):
-        return "accounts"
-
-
 class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
