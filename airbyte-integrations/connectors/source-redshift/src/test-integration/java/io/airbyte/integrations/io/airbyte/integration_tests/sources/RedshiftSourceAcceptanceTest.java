@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -33,9 +33,9 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final List<Field> FIELDS = List.of(
-      Field.of("c_custkey", JsonSchemaPrimitive.NUMBER),
-      Field.of("c_name", JsonSchemaPrimitive.STRING),
-      Field.of("c_nation", JsonSchemaPrimitive.STRING));
+      Field.of("c_custkey", JsonSchemaType.NUMBER),
+      Field.of("c_name", JsonSchemaType.STRING),
+      Field.of("c_nation", JsonSchemaType.STRING));
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
   protected ObjectNode config;
