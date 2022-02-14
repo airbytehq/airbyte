@@ -11,6 +11,7 @@ import socket
 import string
 import subprocess
 import sys
+import threading
 import time
 from copy import copy
 from typing import Any, Callable, Dict, List
@@ -342,10 +343,26 @@ class DbtIntegrationTest(object):
     @staticmethod
     def run_destination_process(message_file: str, test_root_dir: str, commands: List[str]):
         print("Executing: ", " ".join(commands))
-        input_data = b""
-        if message_file:
-            input_data = open(message_file, "rb").read()
-        process = subprocess.run(commands, input=input_data, timeout=600)
+        with open(os.path.join(test_root_dir, "destination_output.log"), "ab") as f:
+            process = subprocess.Popen(commands, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            def writer():
+                if os.path.exists(message_file):
+                    with open(message_file, "rb") as input_data:
+                        while True:
+                            line = input_data.readline()
+                            if not line:
+                                break
+                            process.stdin.write(line)
+                process.stdin.close()
+
+            thread = threading.Thread(target=writer)
+            thread.start()
+            for line in iter(process.stdout.readline, b""):
+                f.write(line)
+                sys.stdout.write(line.decode("utf-8"))
+            thread.join()
+            process.wait()
         return process.returncode == 0
 
     @staticmethod
