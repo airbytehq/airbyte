@@ -14,27 +14,12 @@ import {
 import { Cell, CheckBox, DropDownRow, Toggle } from "components";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
-import { useBulkEditSelect } from "../../../hooks/services/BulkEdit/BulkEditService";
-import { IndexerType, PathPopout } from "./PathPopout";
+import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+import { IndexerType, PathPopout } from "./components/PathPopout";
+import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
-`;
-
-const HeaderCell = styled(Cell)`
-  font-size: 10px;
-  line-height: 13px;
-`;
-
-const CheckboxCell = styled(HeaderCell)`
-  max-width: 43px;
-  text-align: center;
-  margin-left: -43px;
-`;
-
-const ArrowCell = styled(HeaderCell)`
-  max-width: 40px;
-  width: 40px;
 `;
 
 type SyncSchema = {

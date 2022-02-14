@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Path } from "core/domain/catalog";
 import { Popout } from "components";
 
-import Tooltip from "./components/Tooltip";
+import Tooltip from "./Tooltip";
 
 export function pathDisplayName(path: Path): string {
   return path.join(".");

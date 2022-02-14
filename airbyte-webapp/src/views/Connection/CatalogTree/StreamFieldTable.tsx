@@ -10,7 +10,7 @@ import { equal } from "utils/objects";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
-import { pathDisplayName } from "./PathPopout";
+import { pathDisplayName } from "./components/PathPopout";
 
 const RowsContainer = styled.div`
   background: ${({ theme }) => theme.whiteColor};

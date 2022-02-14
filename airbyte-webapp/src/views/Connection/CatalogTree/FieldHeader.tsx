@@ -1,24 +1,14 @@
 import React, { memo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { Cell } from "components/SimpleTableComponents";
-
-const Name = styled.div`
-  padding-left: 30px;
-`;
-
-const HeaderCell = styled(Cell)`
-  font-size: 10px;
-  line-height: 13px;
-`;
+import { HeaderCell, NameContainer } from "./styles";
 
 const FieldHeaderInner: React.FC = () => (
   <>
     <HeaderCell lighter flex={1.5}>
-      <Name>
+      <NameContainer>
         <FormattedMessage id="form.field.name" />
-      </Name>
+      </NameContainer>
     </HeaderCell>
     <HeaderCell lighter>
       <FormattedMessage id="form.field.dataType" />

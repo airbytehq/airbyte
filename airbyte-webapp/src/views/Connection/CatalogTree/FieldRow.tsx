@@ -1,8 +1,9 @@
 import React, { memo } from "react";
 import styled from "styled-components";
 
-import { CheckBox, RadioButton, Cell } from "components";
+import { Cell, CheckBox, RadioButton } from "components";
 import DataTypeCell from "./components/DataTypeCell";
+import { NameContainer } from "./styles";
 
 interface FieldRowProps {
   name: string;
@@ -23,16 +24,8 @@ const FirstCell = styled(Cell)`
   margin-left: -10px;
 `;
 
-const NameContainer = styled.span`
-  padding-left: 30px;
-`;
-
 const LastCell = styled(Cell)`
   margin-right: -10px;
-`;
-
-const RadiobuttonContainer = styled.div`
-  padding-right: 10px;
 `;
 
 const FieldRowInner: React.FC<FieldRowProps> = ({
@@ -49,12 +42,10 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
       <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
       <Cell>
         {props.isCursorEnabled && (
-          <RadiobuttonContainer>
-            <RadioButton
-              checked={props.isCursor}
-              onChange={() => onCursorChange(path)}
-            />
-          </RadiobuttonContainer>
+          <RadioButton
+            checked={props.isCursor}
+            onChange={() => onCursorChange(path)}
+          />
         )}
       </Cell>
       <Cell>

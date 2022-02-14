@@ -15,7 +15,7 @@ import Search from "./Search";
 import { naturalComparatorBy } from "utils/objects";
 import InformationToolTip from "./InformationToolTip";
 
-import { BulkHeader } from "../../CatalogTree/BulkHeader";
+import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import {
   BatchEditProvider,
   useBulkEdit,

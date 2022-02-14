@@ -3,10 +3,9 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import intersection from "lodash/intersection";
 
-// import { DestinationSyncMode, SyncMode } from "core/domain/catalog";
 import { Button, Cell, Header, Toggle } from "components";
-import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
-import { SUPPORTED_MODES } from "../ConnectionForm/formConfig";
+import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
+import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import {
   DestinationSyncMode,
@@ -16,24 +15,12 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
-import { flatten } from "./utils";
+import { flatten } from "../utils";
 import { pathDisplayName, PathPopout } from "./PathPopout";
+import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
 
-const HeaderCell = styled(Cell)`
-  font-size: 10px;
-  line-height: 13px;
+const ActionCell = styled.div`
   display: flex;
-`;
-
-const CheckboxCell = styled(HeaderCell)`
-  max-width: 43px;
-  text-align: center;
-  margin-left: -43px;
-`;
-
-const ArrowCell = styled(HeaderCell)`
-  max-width: 40px;
-  width: 40px;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -79,7 +66,7 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   return Array.from(pathMap.values());
 }
 
-export const BulkHeader: React.FC<BulkHeaderProps> = ({}) => {
+export const BulkHeader: React.FC<BulkHeaderProps> = () => {
   const {
     selectedBatchNodes,
     // TODO: extract this from context
@@ -175,12 +162,14 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({}) => {
       </HeaderCell>
       <HeaderCell />
       <HeaderCell>
-        <ActionButton onClick={onCancel}>
-          <FormattedMessage id="connectionForm.bulkEdit.cancel" />
-        </ActionButton>
-        <ActionButton onClick={onApply}>
-          <FormattedMessage id="connectionForm.bulkEdit.apply" />
-        </ActionButton>
+        <ActionCell>
+          <ActionButton onClick={onCancel}>
+            <FormattedMessage id="connectionForm.bulkEdit.cancel" />
+          </ActionButton>
+          <ActionButton onClick={onApply}>
+            <FormattedMessage id="connectionForm.bulkEdit.apply" />
+          </ActionButton>
+        </ActionCell>
       </HeaderCell>
     </SchemaHeader>
   );
