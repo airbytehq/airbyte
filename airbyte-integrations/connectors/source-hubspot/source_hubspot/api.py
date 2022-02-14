@@ -592,17 +592,11 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def __init__(
         self,
-        # entity: Optional[str] = None,
-        # last_modified_field: Optional[str] = None,
-        # associations: Optional[List[str]] = None,
         include_archived_only: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._state = None
-        # self.entity = entity
-        # self.last_modified_field = last_modified_field
-        # self.associations = associations
         self._include_archived_only = include_archived_only
 
     @retry_connection_handler(max_tries=5, factor=5)
