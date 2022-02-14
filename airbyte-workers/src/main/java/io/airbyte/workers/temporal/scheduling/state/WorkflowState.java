@@ -22,15 +22,21 @@ public class WorkflowState {
 
   private UUID id;
   private WorkflowStateChangedListener stateChangedListener;
-  private boolean running = false;
-  private boolean deleted = false;
-  private boolean skipScheduling = false;
-  private boolean updated = false;
-  private boolean cancelled = false;
-  private boolean failed = false;
-  private boolean resetConnection = false;
-  private boolean continueAsReset = false;
-  private boolean cancelledForReset = false;
+
+  // internal events
+  private boolean running = false; // orchestrator is running
+  private boolean failed = false; // orchestrator ran and failed (or any other part of the workflow failed?)
+
+  // external events
+  private boolean deleted = false; // delete connection
+  private boolean updated = false; // update connection
+  private boolean cancelled = false; // cancel current run
+  private boolean resetConnection = false; // reset connection
+
+  // other? both?
+  private boolean continueAsReset = false; // ?
+  private boolean cancelledForReset = false; // this state means we are in a workflow that has been cancelled so a reset can be run.
+  private boolean skipScheduling = false; // manual sync, is this only manual sync? or just execute now?
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
