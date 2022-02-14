@@ -30,7 +30,6 @@ Note that Airbyte will create **permanent** tables. If you prefer to create tran
 ### Requirements
 
 1. Active Snowflake warehouse
-2. A staging S3 or GCS bucket with credentials \(for the Cloud Storage Staging strategy\).
 
 We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so it is possible to track costs specifically related to Airbyte \(including the cost of running this warehouse\) and control permissions at a granular level. Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.
 
@@ -112,14 +111,14 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **Host** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
-* **Role** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
-* **Warehouse** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
-* **Database** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
-* **Schema** : The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. Schema name would be transformed to allowed by Snowflake if it not follow [Snowflake Naming Conventions](https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions).
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
+* **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
+* **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
+* **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
+* **[Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. Schema name would be transformed to allowed by Snowflake if it not follow [Snowflake Naming Conventions](https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions).
 * **Username** : The username you created to allow Airbyte to access the database. Example - `AIRBYTE_USER`
 * **Password** : The password associated with the username.
-* **JDBC URL Params** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). More info on how this works can be found [here](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) 
+* **[JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html)** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). 
 
 ## Notes about Snowflake Naming Conventions
 
@@ -155,11 +154,11 @@ Therefore, Airbyte Snowflake destination will create tables and schemas using th
 
 ## Loading Method
 
-By default, Airbyte uses `INTERNAL STAGING`  
+By default, Airbyte uses [INTERNAL STAGING](https://docs.airbyte.com/integrations/destinations/snowflake#internal-staging)  
 
 ### Internal Staging
 
-Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging. This is also the recommended way of using the connector. 
+Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging. This is also the recommended way of using the connector. It doesn't require any external resources and is quick to setup and use. 
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
 
