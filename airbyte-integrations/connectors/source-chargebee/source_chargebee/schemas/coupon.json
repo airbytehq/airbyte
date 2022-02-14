@@ -23,7 +23,7 @@
             ]
         },
         "discount_percentage": {
-            "type": ["double", "null"]
+            "type": ["number", "null"]
         },
         "discount_amount": {
             "type": ["integer", "null"]
