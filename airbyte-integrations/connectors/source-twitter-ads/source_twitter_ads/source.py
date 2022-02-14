@@ -284,7 +284,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
                     job_id = post_response['data']['id_str']
                 except KeyError:
                     logging.error("Post Response:")
-                    loggin.error(response.json())
+                    logging.error(response.json())
                     logging.error("Check Source Configuration")
 
                 job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
