@@ -1,0 +1,365 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "name": "Transactions",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": ["String", "null"],
+            "max-length": 40  
+        },
+        "customer_id": {
+            "type": ["String", "null"],
+            "max-length": 50 
+        },
+        "subscription_id": {
+            "type": ["String", "null"],
+            "max-length": 50
+        },
+        "gateway_account_id": {
+            "type": ["String", "null"],
+            "max-length": 50
+        },
+        "gateway_account_id": {
+            "type": ["String", "null"],
+            "max-length": 50
+        },
+        "payment_source_id": {
+            "type": ["String", "null"],
+            "max-length": 40
+        },
+        "payment_method": {
+            "type": ["String", "null"],
+            "enum": [
+                "card",
+                "cash",
+                "check"
+            ]
+        },
+        "refrence_number": {
+            "type": ["String", "null"],
+            "max-length": 100
+        },
+        "gateway": {
+            "type": ["String", "null"],
+            "enum": [
+                "chargebee",
+                "stripe",
+                "wepay",
+                "braintree",
+                "authorize_net",
+                "paypal_pro",
+                "pin",
+                "eway",
+                "eway_rapid",
+                "worldpay",
+                "balanced_payments",
+                "beanstream",
+                "bluepay",
+                "elavon",
+                "first_data_global",
+                "hdfc",
+                "migs",
+                "nmi",
+                "ogone",
+                "paymill",
+                "paypal_payflow_pro",
+                "sage_pay",
+                "tco",
+                "wirecard",
+                "amazon_payments",
+                "paypal_express_checkout",
+                "gocardless",
+                "adyen",
+                "orbital",
+                "moneris_us",
+                "moneris",
+                "bluesnap",
+                "cybersource",
+                "vantiv",
+                "checkout_com",
+                "paypal",
+                "ingenico_direct",
+                "exact",
+                "mollie",
+                "not_applicable"
+            ]
+        },
+        "type": {
+            "type": ["String", "null"],
+            "enum": [
+                "authorization",
+                "payment",
+                "refund",
+                "payment_reversal"
+            ]
+        },
+        "date": {
+            "type": ["integer", "null"]
+        },
+        "settled_at": {
+            "type": ["integer", "null"]
+        },
+        "exchange_rate": {
+            "type": ["integer", "null"]
+        },
+        "currency_code": {
+            "type": ["String", "null"]
+        },
+        "amount": {
+            "type": ["String", "null"]
+        },
+        "id_at_gateway": {
+            "type": ["String", "null"],
+            "max-length": 100
+        },
+        "status": {
+            "type": ["String", "null"],
+            "enum": [
+                "in_progress",
+                "success",
+                "voided",
+                "failure",
+                "timeout",
+                "needs_attention"
+            ]
+        },
+        "fraud_flag": {
+            "type": ["String", "null"],
+            "enum": [
+                "safe",
+                "suspicous",
+                "fraudulent"
+            ]
+        },
+        "initiator_type": {
+            "type": ["String", "null"],
+            "enum": [
+                "costumer",
+                "merchant"
+            ]
+        },
+        "three_d_source": {
+            "type": ["boolean", "null"]
+        },
+        "authorization_reason": {
+            "type": ["String", "null"],
+            "enum": [
+                "blocking_funds",
+                "verification"
+            ]
+        },
+        "error_code": {
+            "type": ["String", "null"],
+            "max-length": 100
+        },
+        "error-text": {
+            "type": ["String", "null"],
+            "max-length": 65000
+        },
+        "voided_at": {
+            "type": ["integer", "null"]
+        },
+        "resource_version": {
+            "type": ["integer", "null"]
+        },
+        "updated-at": {
+            "type": ["integer", "null"]
+        },
+        "fraud_reason": {
+            "type": ["String", "null"],
+            "max-length": 250
+        },
+        "amount_unused": {
+            "type": ["String", "null"]
+        },
+        "masked_card_number": {
+            "type": ["String", "null"],
+            "max-length": 20
+        },
+        "reference_transaction_id": {
+            "type": ["String", "null"],
+            "max-length": 40
+        },
+        "refunded_txn_id": {
+            "type": ["String", "null"],
+            "max-length": 40
+        },
+        "reference_authorization_id": {
+            "type": ["String", "null"],
+            "max-length": 40
+        },
+        "amount_capturable": {
+            "type": ["integer", "null"]
+        },
+        "reversal_transaction_id": {
+            "type": ["String", "null"],
+            "max-length": 40
+        },
+        "deleted": {
+            "type": ["boolean", "null"]
+        },
+        "iin": {
+            "type": ["String", "null"],
+            "max-length": 6
+        },
+        "last4": {
+            "type": ["String", "null"],
+            "max-length": 4
+        },
+        "merchant_reference_id": {
+            "type": ["String", "null"],
+            "max-length": 500
+        },
+        "linked_invoices": {
+            "type": ["array", "null"],
+            "items": {
+                "type": ["object", "null"],
+                "properties": {
+                    "invoice_id": {
+                        "type": ["String", "null"],
+                        "max-length": 50
+                    },
+                    "applied_amount": {
+                        "type": ["integer", "null"]
+                    },
+                    "applied_at": {
+                        "type": ["integer", "null"]
+                    },
+                    "invoice_date": {
+                        "type": ["integer", "null"]
+                    },
+                    "invoice_total": {
+                        "type": ["integer", "null"]
+                    },
+                    "invoice_status": {
+                        "type": ["String", "null"],
+                        "enum": [
+                            "paid",
+                            "posted",
+                            "payment_due",
+                            "not_paid",
+                            "voided",
+                            "pending"
+                        ]
+                    }
+                }
+            }
+        },
+        "linked_credit_notes": {
+            "type": ["array", "null"],
+            "items": {
+                "type": ["object", "null"],
+                "properties": {
+                    "cn_id": {
+                        "type": ["String", "null"],
+                        "max-length": 50
+                    },
+                    "applied_amount": {
+                        "type": ["integer", "null"]
+                    },
+                    "applied_at": {
+                        "type": ["integer", "null"]
+                    },
+                    "cn_reason_code": {
+                        "type": ["String", "null"],
+                        "enum": [
+                            "write_off",
+                            "subscription_change",
+                            "subscription_cancellation",
+                            "subscription_pause",
+                            "chargeback",
+                            "product_unsatisfactory",
+                            "service_unsatisfactory",
+                            "order_change",
+                            "order_cancellation",
+                            "waiver",
+                            "other",
+                            "fraudulent"
+                        ]
+                    }
+                }
+            }
+        },
+        "cn_create_reason_code": {
+            "type": ["String", "null"],
+            "max-length": 100
+        },
+        "cn_date": {
+            "type": ["integer", "null"]
+        },
+        "cn_total": {
+            "type": ["integer", "null"]
+        },
+        "cn_status": {
+            "type": ["String", "null"],
+            "enum": [
+                "adjusted",
+                "refunded",
+                "refund_due",
+                "voided"
+            ]
+        },
+        "cn_reference_invoice_id": {
+            "type": ["String", "null"],
+            "max-length": 50
+        },
+        "linked_refunds": {
+            "type": ["array", "null"],
+            "items": {
+                "type": ["object", "null"],
+                "properties": {
+                    "txn_id": {
+                        "type": ["String", "null"],
+                        "max-length": 40
+                    },
+                    "txn_status": {
+                        "type": ["String", "null"],
+                        "enum": [
+                            "in_progress",
+                            "success",
+                            "voided",
+                            "failure",
+                            "timeout",
+                            "needs_attention"
+                        ]
+                    }
+                }
+            }
+        },
+        "txn_date": {
+            "type": ["integer", "null"]
+        },
+        "txn_amount": {
+            "type": ["integer", "null"]
+        },
+        "linked_payments": {
+            "type": ["array", "null"],
+            "items": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {
+                        "type": ["String", "null"],
+                        "max-length": 40
+                    },
+                    "status": {
+                        "type": ["String", "null"],
+                        "enum": [
+                            "in_progress",
+                            "success",
+                            "voided",
+                            "failure",
+                            "timeout",
+                            "needs_attention"
+                        ]
+                    }
+                }
+            }
+        },
+        "amount": {
+            "type": ["integer", "null"]
+        },
+        "date": {
+            "type": ["integer", "null"]
+        }
+    }
+}

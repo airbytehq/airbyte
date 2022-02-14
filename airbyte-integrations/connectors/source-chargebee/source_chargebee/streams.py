@@ -14,6 +14,7 @@ from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Event as EventModel
+from chargebee.models import Transactions as TransactionModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
@@ -287,3 +288,12 @@ class Event(IncrementalChargebeeStream):
     cursor_field = "occurred_at"
 
     api = EventModel
+
+class Event(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.eu.chargebee.com/docs/api/transaction?prod_cat_ver=2#list_transactions
+    """
+
+    cursor_field = "occurred_at"
+
+    api = TrasactionModel
