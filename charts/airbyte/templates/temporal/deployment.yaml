@@ -14,7 +14,12 @@ spec:
     metadata:
       labels:
         airbyte: temporal
+      {{- if .Values.temporal.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.temporal.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
     spec:
+      serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
       {{- if .Values.temporal.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
