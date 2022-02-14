@@ -204,7 +204,11 @@ function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   return streamNode.config.cursorField;
 }
 
-const useInitialSchema = (schema: SyncSchema): SyncSchema =>
+const useInitialSchema = (
+  schema: SyncSchema,
+  destDefinition: DestinationDefinitionSpecification,
+  isEditMode?: boolean
+): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
@@ -218,37 +222,45 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
               SyncMode.FullRefresh,
             ]);
 
-        // If syncMode isn't null - don't change item
-        if (streamNode.config.syncMode) {
+        // If syncMode isn't null and we are in create mode - don't change item
+        if (streamNode.config.syncMode && isEditMode) {
           return streamNode;
         }
 
-        const updateStreamConfig = (
-          config: Partial<AirbyteStreamConfiguration>
-        ): SyncSchemaStream => ({
-          ...streamNode,
-          config: { ...streamNode.config, ...config },
-        });
+        const updatedConfig: AirbyteStreamConfiguration = {
+          ...streamNode.config,
+        };
+
+        if (
+          destDefinition.supportedDestinationSyncModes.includes(
+            DestinationSyncMode.Dedupted
+          )
+        ) {
+          updatedConfig.destinationSyncMode = DestinationSyncMode.Dedupted;
+        }
 
         const supportedSyncModes = streamNode.stream.supportedSyncModes;
 
         // Prefer INCREMENTAL sync mode over other sync modes
         if (supportedSyncModes.includes(SyncMode.Incremental)) {
-          return updateStreamConfig({
-            cursorField: streamNode.config.cursorField.length
-              ? streamNode.config.cursorField
-              : getDefaultCursorField(streamNode),
-            syncMode: SyncMode.Incremental,
-          });
+          updatedConfig.syncMode = SyncMode.Incremental;
+          updatedConfig.cursorField = streamNode.config.cursorField.length
+            ? streamNode.config.cursorField
+            : getDefaultCursorField(streamNode);
         }
 
-        // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-        return updateStreamConfig({
-          syncMode: streamNode.stream.supportedSyncModes[0],
-        });
+        // If source syncMode is somehow nullable - just pick one from supportedSyncModes
+        if (!updatedConfig.syncMode) {
+          updatedConfig.syncMode = streamNode.stream.supportedSyncModes[0];
+        }
+
+        return {
+          ...streamNode,
+          config: updatedConfig,
+        };
       }),
     }),
-    [schema.streams]
+    [schema.streams, destDefinition, isEditMode]
   );
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] =>
@@ -277,7 +289,11 @@ const useInitialValues = (
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
-  const initialSchema = useInitialSchema(connection.syncCatalog);
+  const initialSchema = useInitialSchema(
+    connection.syncCatalog,
+    destDefinition,
+    isEditMode
+  );
 
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
