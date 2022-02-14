@@ -207,7 +207,7 @@ def get_secret_values(schema: Mapping[str, Any], config: Mapping[str, Any]) -> L
                     traverse_schema(i, path)
             else:
                 if path[-1] == "airbyte_secret" and schema is True:
-                    path_str = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])  # type: ignore
+                    path_str = "/".join([p for p in path[:-1] if p not in ["properties", "oneOf"]])
                     pathes.add(path_str)
 
         traverse_schema(schema, [])
