@@ -4,8 +4,6 @@
 
 package io.airbyte.protocol.models;
 
-import static io.airbyte.protocol.models.JsonSchemaType.DATE_TIME;
-import static io.airbyte.protocol.models.JsonSchemaType.TIMESTAMP_WITH_TIMEZONE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -30,20 +28,6 @@ class AirbyteProtocolSchemaTest {
 
   @Test
   void testJsonSchemaType() {
-    JsonSchemaType build = new JsonSchemaType.Builder()
-        .withType(JsonSchemaPrimitive.STRING)
-        .withFormat(DATE_TIME)
-        .build();
-    JsonSchemaType build1 = new JsonSchemaType.Builder()
-        .withType(JsonSchemaPrimitive.STRING)
-        .withFormat(DATE_TIME)
-        .build();
-    JsonSchemaType build2 = new JsonSchemaType.Builder()
-        .withType(JsonSchemaPrimitive.STRING)
-        .withFormat(TIMESTAMP_WITH_TIMEZONE)
-        .build();
-    JsonSchemaType build3 = JsonSchemaType.STRING;
-    JsonSchemaType build4 = JsonSchemaType.STRING;;
     for (final AirbyteProtocolSchema value : AirbyteProtocolSchema.values()) {
       assertTrue(Files.exists(value.getFile().toPath()));
     }
