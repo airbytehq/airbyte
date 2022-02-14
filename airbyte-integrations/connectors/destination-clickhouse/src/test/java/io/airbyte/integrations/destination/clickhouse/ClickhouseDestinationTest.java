@@ -22,7 +22,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -56,8 +56,8 @@ public class ClickhouseDestinationTest {
         CatalogHelpers.createConfiguredAirbyteStream(
             STREAM_NAME,
             DB_NAME,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
