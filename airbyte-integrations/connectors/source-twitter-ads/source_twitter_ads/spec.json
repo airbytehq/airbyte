@@ -44,8 +44,8 @@
         "description": "Metric Groups to be pulled."
       },
       "PLACEMENT": {
-        "type": "string",
-        "description": "Placement of data to be pulled."
+        "type": "array",
+        "description": "Placements of data to be pulled."
       },
       "SEGMENTATION": {
         "type": "string",
