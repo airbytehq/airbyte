@@ -246,13 +246,9 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         response = requests.get(promoted_tweet_ids_url, auth=auth)
         promoted_tweet_ids = []
 
-        try:
-            for each in response.json()['data']:
-                promoted_tweet_ids.append(each["entity_id"])
-        except KeyError:
-            logging.error("Post Response:")
-            loggin.error(response.json())
-            logging.error("Check Source Configuration")
+        for each in response.json()['data']:
+            promoted_tweet_ids.append(each["entity_id"])
+
  
         promoted_tweet_ids = list(set(promoted_tweet_ids))
 
@@ -284,8 +280,12 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
                 post_response = requests.post(post_url,  auth=auth)
                 post_response = post_response.json()
 
-        
-                job_id = post_response['data']['id_str']
+                try:
+                    job_id = post_response['data']['id_str']
+                except KeyError:
+                    logging.error("Post Response:")
+                    loggin.error(response.json())
+                    logging.error("Check Source Configuration")
 
                 job_success_url = "https://ads-api.twitter.com/10/stats/jobs/accounts/" + account_id + "?"
                 job_success_params = urllib.parse.urlencode({"job_id": job_id})
