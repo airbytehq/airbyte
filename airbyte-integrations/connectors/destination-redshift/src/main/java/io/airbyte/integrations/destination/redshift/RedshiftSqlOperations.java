@@ -4,10 +4,11 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -113,7 +114,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
                   and tablename like \'%%raw%%\'""",
               schemaName,
               JavaBaseConstants.COLUMN_NAME_DATA)),
-       resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          getDefaultSourceOperations()::rowToJson);
       if (tablesNameWithoutSuperDatatype.isEmpty()) {
         tablesWithNotSuperType.add("_airbyte_data in all tables is SUPER type.");
       } else {
