@@ -215,7 +215,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class Accounts(GoogleAdsStream):
+class Accounts(IncrementalGoogleAdsStream):
     """
     Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
     """
@@ -223,7 +223,19 @@ class Accounts(GoogleAdsStream):
     primary_key = "customer.id"
 
 
-class Campaigns(GoogleAdsStream):
+class AccountsFullRefresh(GoogleAdsStream):
+    """
+    Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
+    """
+
+    primary_key = "customer.id"
+
+    @property
+    def name(self):
+        return "accounts"
+
+
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
     """
@@ -231,7 +243,7 @@ class Campaigns(GoogleAdsStream):
     primary_key = "campaign.id"
 
 
-class AdGroups(GoogleAdsStream):
+class AdGroups(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
     """
@@ -239,7 +251,7 @@ class AdGroups(GoogleAdsStream):
     primary_key = "ad_group.id"
 
 
-class AdGroupAds(GoogleAdsStream):
+class AdGroupAds(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
     """

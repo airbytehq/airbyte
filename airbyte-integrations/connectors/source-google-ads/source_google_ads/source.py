@@ -29,6 +29,7 @@ from .streams import (
     KeywordReport,
     ShoppingPerformanceReport,
     UserLocationReport,
+    AccountsFullRefresh,
 )
 
 
@@ -47,7 +48,7 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_account_info(google_api) -> dict:
-        accounts_streams = Accounts(api=google_api)
+        accounts_streams = AccountsFullRefresh(api=google_api)
         for stream_slice in accounts_streams.stream_slices(sync_mode=SyncMode.full_refresh):
             return next(accounts_streams.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), {})
 
@@ -107,10 +108,10 @@ class SourceGoogleAds(AbstractSource):
         )
 
         streams = [
-            AdGroupAds(api=google_api),
-            AdGroups(api=google_api),
-            Accounts(api=google_api),
-            Campaigns(api=google_api),
+            AdGroupAds(**incremental_stream_config),
+            AdGroups(**incremental_stream_config),
+            Accounts(**incremental_stream_config),
+            Campaigns(**incremental_stream_config),
             ClickView(**incremental_stream_config),
         ]
 
