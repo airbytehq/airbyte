@@ -201,7 +201,6 @@ class Stream(BaseStream, ABC):
     limit_field = "limit"
     limit = 100
     offset = 0
-    _name: str = None
     primary_key = None
 
     @property
@@ -212,12 +211,6 @@ class Stream(BaseStream, ABC):
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
-
-    @property
-    def name(self) -> str:
-        if self._name:
-            return self._name
-        return super().name
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
