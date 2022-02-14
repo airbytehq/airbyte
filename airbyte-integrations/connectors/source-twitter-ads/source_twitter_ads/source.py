@@ -246,9 +246,13 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         response = requests.get(promoted_tweet_ids_url, auth=auth)
         promoted_tweet_ids = []
 
-
-        for each in response.json()['data']:
-            promoted_tweet_ids.append(each["entity_id"])
+        try:
+            for each in response.json()['data']:
+                promoted_tweet_ids.append(each["entity_id"])
+        except KeyError:
+            logging.error("Post Response:")
+            loggin.error(response.json())
+            logging.error("Check Source Configuration")
  
         promoted_tweet_ids = list(set(promoted_tweet_ids))
 
