@@ -4,12 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Outbrain Amplify Api Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": ["USERNAME", "PASSWORD"],
     "additionalProperties": false,
     "properties": {
-      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+      "USERNAME": {
         "type": "string",
-        "description": "describe me"
+        "description": "Outbrain Username"
+      },
+      "PASSWORD": {
+        "type": "string",
+        "description": "Outbrain Password"
       }
     }
   }

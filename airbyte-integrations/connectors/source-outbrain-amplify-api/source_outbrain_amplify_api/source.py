@@ -193,6 +193,20 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        url = 'https://api.outbrain.com/amplify/v0.1/login'
+    
+        auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
+        check_connection_respone = (requests.get(url, auth=auth))
+        print(config["USERNAME"])
+        print(config["PASSWORD"])
+        if check_connection_respone.ok ==  True:
+            token = response.json()['OB-TOKEN-V1']
+            print(token)
+            return True, None
+        else:
+            return False,  "Unable to connect to Outbrain API with the provided credentials"
+
+
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
