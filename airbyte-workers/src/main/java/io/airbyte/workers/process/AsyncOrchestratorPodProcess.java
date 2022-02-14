@@ -7,11 +7,13 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
@@ -56,6 +58,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretName;
   private final String secretMountPath;
   private final String containerOrchestratorImage;
+  private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
 
   public AsyncOrchestratorPodProcess(
@@ -64,13 +67,15 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
-                                     final String containerOrchestratorImage) {
+                                     final String containerOrchestratorImage,
+                                     final String googleApplicationCredentials) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
     this.containerOrchestratorImage = containerOrchestratorImage;
+    this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
   }
 
@@ -241,6 +246,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                      final Map<Integer, Integer> portMap) {
     final List<Volume> volumes = new ArrayList<>();
     final List<VolumeMount> volumeMounts = new ArrayList<>();
+    final List<EnvVar> envVars = new ArrayList<>();
 
     volumes.add(new VolumeBuilder()
         .withName("airbyte-config")
@@ -254,7 +260,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withMountPath(KubePodProcess.CONFIG_DIR)
         .build());
 
-    if (secretName != null && secretMountPath != null) {
+    if (secretName != null && secretMountPath != null && googleApplicationCredentials != null) {
       volumes.add(new VolumeBuilder()
           .withName("airbyte-secret")
           .withSecret(new SecretVolumeSourceBuilder()
@@ -267,16 +273,19 @@ public class AsyncOrchestratorPodProcess implements KubePod {
           .withName("airbyte-secret")
           .withMountPath(secretMountPath)
           .build());
+
+      envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
     }
 
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
+    containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
         .withImage(containerOrchestratorImage)
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
+        .withEnv(envVars)
         .withPorts(containerPorts)
-        .withPorts(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null))
         .withVolumeMounts(volumeMounts)
         .build();
 
