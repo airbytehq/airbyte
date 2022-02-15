@@ -7,8 +7,7 @@
     "required": [
       "client_id",
       "client_secret",
-      "account_id",
-      "initial_date"
+      "account_id"
     ],
     "additionalProperties": true,
     "properties": {
@@ -30,13 +29,6 @@
         "description": "Account ID to be used.",
         "airbyte_secret": false,
         "examples": ["company-sc"]
-      },
-      "initial_date": {
-        "type": "string",
-        "title": "Initial Start Date for Summary",
-        "format": "date",
-        "default": "2020-01-01",
-        "description": "UTC date in YYYY-MM-DD format. Any reports before this date will not be replicated."
       }
     }
   }

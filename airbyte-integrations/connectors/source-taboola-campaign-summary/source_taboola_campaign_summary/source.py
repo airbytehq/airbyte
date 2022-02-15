@@ -6,6 +6,7 @@
 from abc import ABC
 from re import A
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from datetime import date, timedelta
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -16,18 +17,12 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class TaboolaCampaignSummaryStream(HttpStream, ABC):
     url_base = "https://backstage.taboola.com/backstage/api/1.0/"
 
-    def __init__(self, account_id: str, initial_date: str, **kwargs):
+    def __init__(self, account_id: str, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
-        self.initial_date = initial_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json().get("results", [])
@@ -41,33 +36,81 @@ class Campaigns(TaboolaCampaignSummaryStream):
     ) -> str:
         return f"{self.account_id}/campaigns"
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
 
-class IncrementalTaboolaCampaignSummaryStream(TaboolaCampaignSummaryStream, ABC):
-    state_checkpoint_interval = None
+class DailyPerCampaignSite(TaboolaCampaignSummaryStream):
+    primary_key = ["date", "site", "campaign"]
 
-    @property
-    def cursor_field(self) -> str:
-        pass
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
-
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state:
-            params["start_date"] = stream_state.get(self.cursor_field)
-        return params
-
-
-class DailyPerCampaignSite(IncrementalTaboolaCampaignSummaryStream):
-
-    cursor_field = "date"
-    primary_key = ["date", "campaign", "site"]
-
-    def path(self, **kwargs) -> str:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"{self.account_id}/reports/campaign-summary/dimensions/campaign_site_day_breakdown"
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        start_date = (date.today() - timedelta(days=8)).strftime("%Y-%m-%d")
+        end_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        return {
+            "start_date": start_date,
+            "end_date": end_date
+        }
+
+class IncrementalTaboolaCampaignSummaryStream(TaboolaCampaignSummaryStream, ABC):
+    cursor_field = "date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "date": date.today().strftime("%Y-%m-%d")
+        }
+
+    def _chunk_date_range(self, start_date: date) -> List[Mapping[str, any]]:
+        dates = []
+        while start_date < date.today():
+            dates.append({'date': start_date.strftime("%Y-%m-%d")})
+            start_date += timedelta(days=1)
+        return dates
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+        start_date = (date.today() - timedelta(days=8))
+        return self._chunk_date_range(start_date)
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        if stream_slice:
+            params["start_date"] = stream_slice.get("date")
+            params["end_date"] = stream_slice.get("date")
+
+        self.logger.info(f"PARAMS: start_date: {params['start_date']} end_date: {params['end_date']}")
+        return params
+
+class DailyPerCountry(IncrementalTaboolaCampaignSummaryStream):
+    primary_key = ["date", "country"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"{self.account_id}/reports/campaign-summary/dimensions/country_breakdown"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        results = response.json().get("results", [])
+
+        self.logger.info(f"SLICE: start_date: {stream_slice.get('date')}")
+
+        for result in results:
+            result["date"] = stream_slice.get("date")
+
+        return results
 
 class SourceTaboolaCampaignSummary(AbstractSource):
     def get_authenticator(self, client_id, client_secret) -> TokenAuthenticator:
@@ -100,6 +143,7 @@ class SourceTaboolaCampaignSummary(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_authenticator(config["client_id"], config["client_secret"])
         return [
-            Campaigns(account_id=config["account_id"], initial_date=config["initial_date"], authenticator=auth),
-            DailyPerCampaignSite(account_id=config["account_id"], initial_date=config["initial_date"], authenticator=auth)
+            Campaigns(account_id=config["account_id"], authenticator=auth),
+            DailyPerCampaignSite(account_id=config["account_id"], authenticator=auth),
+            DailyPerCountry(account_id=config["account_id"], authenticator=auth)
         ]
