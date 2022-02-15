@@ -33,7 +33,8 @@ public interface WorkflowStateChangedListener {
     CONTINUE_AS_RESET,
     RETRY_FAILED_ACTIVITY,
     STUCK,
-    SUCCESS
+    SUCCESS,
+    CANCELLED_FOR_RESET,
   }
 
   @Value

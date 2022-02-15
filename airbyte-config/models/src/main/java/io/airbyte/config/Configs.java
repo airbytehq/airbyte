@@ -10,6 +10,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -245,7 +246,22 @@ public interface Configs {
   /**
    * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
    */
-  Map<String, String> getJobKubeNodeSelectors();
+  Optional<Map<String, String>> getJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
 
   /**
    * Define the Job pod connector image pull policy.
@@ -352,6 +368,26 @@ public interface Configs {
    * Define the image to use for the container orchestrator. Defaults to the Airbyte version.
    */
   String getContainerOrchestratorImage();
+
+  /**
+   * Define the replication orchestrator's minimum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuRequest();
+
+  /**
+   * Define the replication orchestrator's maximum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuLimit();
+
+  /**
+   * Define the replication orchestrator's minimum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryRequest();
+
+  /**
+   * Define the replication orchestrator's maximum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryLimit();
 
   /**
    * Get the longest duration of non long running activity

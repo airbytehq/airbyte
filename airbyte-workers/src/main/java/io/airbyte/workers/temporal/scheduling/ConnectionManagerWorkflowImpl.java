@@ -197,7 +197,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // When cancelling a reset, we endure that the next workflow won't be a reset.
       // We are using a specific workflow state for that, this makes the set of the fact that we are going
       // to continue as a reset testable.
-      if (workflowState.isResetConnection() && !workflowState.isCancelled()) {
+      if (workflowState.isCancelledForReset()) {
         workflowState.setContinueAsReset(true);
         connectionUpdaterInput.setJobId(null);
         connectionUpdaterInput.setAttemptNumber(1);
@@ -215,7 +215,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         final ConnectionDeletionInput connectionDeletionInput = new ConnectionDeletionInput(connectionUpdaterInput.getConnectionId());
         runActivity((input) -> connectionDeletionActivity.deleteConnection(input), connectionDeletionInput);
         return;
-      } else if (workflowState.isCancelled()) {
+      } else if (workflowState.isCancelled() || workflowState.isCancelledForReset()) {
         runActivity((input) -> jobCreationAndStatusUpdateActivity.jobCancelled(input),
             new JobCancelledInput(
                 maybeJobId.get(),
@@ -313,7 +313,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void resetConnection() {
     workflowState.setResetConnection(true);
     if (workflowState.isRunning()) {
-      cancelJob();
+      workflowState.setCancelledForReset(true);
+      syncWorkflowCancellationScope.cancel();
     }
   }
 

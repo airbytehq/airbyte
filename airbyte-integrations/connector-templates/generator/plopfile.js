@@ -252,12 +252,6 @@ module.exports = function (plop) {
         path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
       },
       {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/destination-definition.json.hbs`,
-        path: `${definitionRoot}/config/STANDARD_DESTINATION_DEFINITION/{{uuid}}.json`
-      },
-      {
         type: 'append',
         abortOnFail: true,
         path: `${definitionRoot}/seed/destination_definitions.yaml`,
