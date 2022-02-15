@@ -742,8 +742,12 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
-        // Forked from https://github.com/dbt-labs/jaffle_shop because they made a change that would have required a dbt version upgrade https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
-        // We're actually two commits upstream of that, because the previous commit (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also breaks something
+        // Forked from https://github.com/dbt-labs/jaffle_shop because they made a change that would have
+        // required a dbt version upgrade
+        // https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
+        // We're actually two commits upstream of that, because the previous commit
+        // (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also
+        // breaks something
         // TODO once we're on DBT 1.x, switch this back to using the main branch
         .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
         .withGitRepoBranch("pre_dbt_upgrade")
