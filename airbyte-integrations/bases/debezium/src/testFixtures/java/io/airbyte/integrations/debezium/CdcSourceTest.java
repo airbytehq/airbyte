@@ -31,7 +31,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,9 +65,9 @@ public abstract class CdcSourceTest {
       CatalogHelpers.createAirbyteStream(
           MODELS_STREAM_NAME,
           MODELS_SCHEMA,
-          Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-          Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
-          Field.of(COL_MODEL, JsonSchemaPrimitive.STRING))
+          Field.of(COL_ID, JsonSchemaType.NUMBER),
+          Field.of(COL_MAKE_ID, JsonSchemaType.NUMBER),
+          Field.of(COL_MODEL, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
@@ -459,9 +459,9 @@ public abstract class CdcSourceTest {
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
             MODELS_SCHEMA,
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_MODEL, JsonSchemaPrimitive.STRING))
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_MAKE_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_MODEL, JsonSchemaType.STRING))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
@@ -582,9 +582,9 @@ public abstract class CdcSourceTest {
     final AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_2",
         MODELS_SCHEMA,
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MODEL, JsonSchemaPrimitive.STRING));
+        Field.of(COL_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_MAKE_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_MODEL, JsonSchemaType.STRING));
     streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
     streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     addCdcMetadataColumns(streamWithoutPK);
@@ -592,9 +592,9 @@ public abstract class CdcSourceTest {
     final AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_random",
         MODELS_SCHEMA + "_random",
-        Field.of(COL_ID + "_random", JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MAKE_ID + "_random", JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MODEL + "_random", JsonSchemaPrimitive.STRING))
+        Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
+        Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
         .withSourceDefinedCursor(true)
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));

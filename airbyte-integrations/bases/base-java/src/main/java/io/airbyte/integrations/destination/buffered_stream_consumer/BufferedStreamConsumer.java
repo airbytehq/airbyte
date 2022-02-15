@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,13 +80,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
-  private final List<AirbyteMessage> buffer;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
-  private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
+  private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
+  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer;
   private String fileName;
 
   private boolean hasStarted;
@@ -127,9 +125,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.buffer = new ArrayList<>(10_000);
     this.bufferSizeInBytes = 0;
-    this.pairToIgnoredRecordCount = new HashMap<>();
+    this.streamToIgnoredRecordCount = new HashMap<>();
+    this.streamBuffer = new HashMap<>();
   }
 
   @Override
@@ -138,7 +136,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
-    pairToIgnoredRecordCount.clear();
+    streamToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
     onStart.call();
@@ -156,7 +154,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       if (!isValidRecord.apply(message.getRecord().getData())) {
-        pairToIgnoredRecordCount.put(stream, pairToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
+        streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
 
@@ -166,15 +164,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
         LOGGER.info("Flushing buffer...");
-        AirbyteSentry.executeWithTracing("FlushBuffer",
-            this::flushQueueToDestination,
-            Map.of("stream", stream.getName(),
-                "namespace", Objects.requireNonNullElse(stream.getNamespace(), "null"),
-                "bufferSizeInBytes", bufferSizeInBytes));
+        flushQueueToDestination(bufferSizeInBytes);
         bufferSizeInBytes = 0;
       }
 
-      buffer.add(message);
+      final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
+      bufferedRecords.add(message.getRecord());
       bufferSizeInBytes += messageSizeInBytes;
 
     } else if (message.getType() == Type.STATE) {
@@ -185,19 +180,16 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void flushQueueToDestination() throws Exception {
-    final Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> recordsByStream = buffer.stream()
-        .map(AirbyteMessage::getRecord)
-        .collect(Collectors.groupingBy(AirbyteStreamNameNamespacePair::fromRecordMessage));
-
-    buffer.clear();
-
-    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
-      recordWriter.accept(entry.getKey(), entry.getValue());
-      if (checkAndRemoveRecordWriter != null) {
-        fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
+  private void flushQueueToDestination(long bufferSizeInBytes) throws Exception {
+    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
+      for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+        recordWriter.accept(entry.getKey(), entry.getValue());
+        if (checkAndRemoveRecordWriter != null) {
+          fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
+        }
       }
-    }
+    }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
+    streamBuffer = new HashMap<>();
 
     if (pendingState != null) {
       lastFlushedState = pendingState;
@@ -217,13 +209,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
 
-    pairToIgnoredRecordCount
+    streamToIgnoredRecordCount
         .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
-      flushQueueToDestination();
+      flushQueueToDestination(bufferSizeInBytes);
     }
 
     try {
