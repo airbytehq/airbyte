@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
@@ -28,7 +27,7 @@ public class MySQLDestinationTest {
     return config;
   }
 
-  private JsonNode buildConfigWithExtraParam(String extraParam) {
+  private JsonNode buildConfigWithExtraParam(final String extraParam) {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
@@ -39,7 +38,7 @@ public class MySQLDestinationTest {
     return config;
   }
 
-  private JsonNode buildConfigWithExtraParamWithoutSSL(String extraParam) {
+  private JsonNode buildConfigWithExtraParamWithoutSSL(final String extraParam) {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
@@ -52,49 +51,50 @@ public class MySQLDestinationTest {
   }
 
   @Test
-  void testNoExtraParams()  {
-    JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoExtraParams());
-    String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&useSSL=true&requireSSL=true&verifyServerCertificate=false&",url);
+  void testNoExtraParams() {
+    final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoExtraParams());
+    final String url = jdbcConfig.get("jdbc_url").asText();
+    assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&useSSL=true&requireSSL=true&verifyServerCertificate=false&", url);
   }
 
   @Test
-  void testEmptyExtraParams()  {
-    JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParam(""));
-    String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&useSSL=true&requireSSL=true&verifyServerCertificate=false&",url);
+  void testEmptyExtraParams() {
+    final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParam(""));
+    final String url = jdbcConfig.get("jdbc_url").asText();
+    assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&useSSL=true&requireSSL=true&verifyServerCertificate=false&", url);
   }
 
   @Test
-  void testExtraParams()  {
-    String extraParam = "key1=value1&key2=value2&key3=value3";
-    JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParam(extraParam));
-    String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&key1=value1&key2=value2&key3=value3&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
+  void testExtraParams() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParam(extraParam));
+    final String url = jdbcConfig.get("jdbc_url").asText();
+    assertEquals(
+        "jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&key1=value1&key2=value2&key3=value3&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
         url);
   }
 
   @Test
-  void testExtraParamsWithSSLParameter()  {
-    for (Entry<String, String> entry: MySQLDestination.getSSLParameters().entrySet()) {
-      String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
+  void testExtraParamsWithSSLParameter() {
+    for (final Entry<String, String> entry : MySQLDestination.getSSLParameters().entrySet()) {
+      final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
       try {
         getDestination().toJdbcConfig(buildConfigWithExtraParam(extraParam));
         //FIXME: why can't I use Test(expected = ?)
         assertTrue(false);
-      } catch (RuntimeException e) {
+      } catch (final RuntimeException e) {
         // pass
       }
     }
   }
 
   @Test
-  void testExtraParamsWithSSLParameterButNoSSL()  {
-    for (Entry<String, String> entry: MySQLDestination.getSSLParameters().entrySet()) {
-      String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
-      JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParamWithoutSSL(extraParam));
-      String url = jdbcConfig.get("jdbc_url").asText();
-      String expected = String.format("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&%s&", extraParam);
+  void testExtraParamsWithSSLParameterButNoSSL() {
+    for (final Entry<String, String> entry : MySQLDestination.getSSLParameters().entrySet()) {
+      final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
+      final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraParamWithoutSSL(extraParam));
+      final String url = jdbcConfig.get("jdbc_url").asText();
+      final String expected = String.format("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&%s&", extraParam);
       assertEquals(expected,
           url);
     }

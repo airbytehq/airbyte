@@ -32,7 +32,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
-  public static final String ADDITIONAL_PARAMETERS_KEY = "jdbc_url_params";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
@@ -83,28 +83,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final List<String> additionalParameters = new ArrayList<>();
-
-    if (config.has(ADDITIONAL_PARAMETERS_KEY)) {
-      String additionalParams = config.get(ADDITIONAL_PARAMETERS_KEY).asText();
-      if (!additionalParams.isEmpty()) {
-        if (useSSL(config)) {
-          for (String p: getSSLParameters().keySet()) {
-            String paramToFilter = String.format("%s=", p);
-            if (additionalParams.contains(paramToFilter)) {
-              throw new RuntimeException(); //FIXME
-            }
-          }
-        }
-        additionalParameters.add(additionalParams);
-      }
-    }
-    if (useSSL(config)) {
-      for (Entry<String, String> sslParameter: getSSLParameters().entrySet()) {
-        String param = formatParameter(sslParameter.getKey(), sslParameter.getValue());
-        additionalParameters.add(param);
-      }
-    }
+    final List<String> additionalParameters = getAdditionalParameters(config);
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
@@ -115,7 +94,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     // and can't
     // remove zero date values.
     // since zero dates are placeholders, we convert them to null by default
-    //FIXME(girard): do we also want to prevent people from overriding zeroDateTimeBehavior?
+    //FIXME(girarda): do we also want to prevent people from overriding zeroDateTimeBehavior?
     jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
       jdbcUrl.append("&");
@@ -133,20 +112,54 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private boolean useSSL(JsonNode config) {
+  private List<String> getAdditionalParameters(final JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
+    addJDBCUrlParameters(config, additionalParameters);
+    if (useSSL(config)) {
+      addSSLJdbcParameters(additionalParameters);
+    }
+    return additionalParameters;
+  }
+
+  private void addJDBCUrlParameters(final JsonNode config, final List<String> additionalParameters) {
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      final String additionalParams = config.get(JDBC_URL_PARAMS_KEY).asText();
+      if (additionalParams.isBlank()) {
+        return;
+      }
+      if (useSSL(config)) {
+        for (final String p : getSSLParameters().keySet()) {
+          final String paramToFilter = String.format("%s=", p);
+          if (additionalParams.contains(paramToFilter)) {
+            throw new RuntimeException(); //FIXME
+          }
+        }
+      }
+      additionalParameters.add(additionalParams);
+    }
+  }
+
+  private void addSSLJdbcParameters(final List<String> additionalParameters) {
+    for (final Entry<String, String> sslParameter : getSSLParameters().entrySet()) {
+      final String param = formatParameter(sslParameter.getKey(), sslParameter.getValue());
+      additionalParameters.add(param);
+    }
+  }
+
+  private boolean useSSL(final JsonNode config) {
     return !config.has("ssl") || config.get("ssl").asBoolean();
   }
 
   static Map<String, String> getSSLParameters() {
-    Builder<String, String> builder = ImmutableMap.builder();
-      return builder
-          .put("useSSL", "true")
-          .put("requireSSL", "true")
-          .put("verifyServerCertificate", "false")
-          .build();
+    final Builder<String, String> builder = ImmutableMap.builder();
+    return builder
+        .put("useSSL", "true")
+        .put("requireSSL", "true")
+        .put("verifyServerCertificate", "false")
+        .build();
   }
-  
-  static String formatParameter(String key, String value) {
+
+  static String formatParameter(final String key, final String value) {
     return String.format("%s=%s", key, value);
   }
 
