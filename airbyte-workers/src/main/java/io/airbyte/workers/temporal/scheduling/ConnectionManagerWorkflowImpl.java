@@ -57,7 +57,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
-  Optional<Long> maybeJobId = Optional.empty();
+  Long jobId = null;
   Optional<Integer> maybeAttemptId = Optional.empty();
 
   Optional<StandardSyncOutput> standardSyncOutput = Optional.empty();
@@ -79,6 +79,41 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   public ConnectionManagerWorkflowImpl() {}
 
+  /**
+   * Return the duration to wait. This is calculated by the configFetchActivity and return the duration to wait until the next run
+   */
+  private Duration getTimeToWait(UUID connectionId) {
+    // Scheduling
+    final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(connectionId);
+
+    final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getTimeToWait(scheduleRetrieverInput);
+
+    return scheduleRetrieverOutput.getTimeToWait();
+  }
+
+  /**
+   * Check if a sync need to be run based on the workflow state.
+   */
+  private boolean needToProcessSync() {
+    return !(workflowState.isUpdated() || workflowState.isDeleted());
+  }
+
+  /**
+   * Creates a new job if it is not present in the input. If the jobId is specified in the input of the connectionManagerWorkflow, we will return it.
+   * Otherwise we will create a job and return its id.
+   */
+  private Long getOrCreateJobId(final ConnectionUpdaterInput connectionUpdaterInput) {
+    return Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
+      final JobCreationOutput jobCreationOutput =
+          runMandatoryActivityWithOutput(
+              (input) -> jobCreationAndStatusUpdateActivity.createNewJob(input),
+              new JobCreationInput(
+                  connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
+      connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
+      return Optional.ofNullable(jobCreationOutput.getJobId());
+    }).get();
+  }
+
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
@@ -86,46 +121,36 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
           connectionId = connectionUpdaterInput.getConnectionId();
 
-          // Scheduling
-          final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
-              connectionUpdaterInput.getConnectionId());
-
           workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
-          final ScheduleRetrieverOutput scheduleRetrieverOutput = configFetchActivity.getTimeToWait(scheduleRetrieverInput);
-          Workflow.await(scheduleRetrieverOutput.getTimeToWait(),
-              () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
-          if (!workflowState.isUpdated() && !workflowState.isDeleted()) {
-            maybeJobId = Optional.ofNullable(connectionUpdaterInput.getJobId()).or(() -> {
-              final JobCreationOutput jobCreationOutput =
-                  runMandatoryActivityWithOutput(
-                      (input) -> jobCreationAndStatusUpdateActivity.createNewJob(input),
-                      new JobCreationInput(
-                          connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
-              connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
-              return Optional.ofNullable(jobCreationOutput.getJobId());
-            });
+          Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
-            maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> maybeJobId.map(jobId -> {
+          Workflow.await(timeToWait,
+              () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+          if (needToProcessSync()) {
+            jobId = getOrCreateJobId(connectionUpdaterInput);
+
+            maybeAttemptId = Optional.ofNullable(connectionUpdaterInput.getAttemptId()).or(() -> {
               final AttemptCreationOutput attemptCreationOutput =
                   runMandatoryActivityWithOutput(
                       (input) -> jobCreationAndStatusUpdateActivity.createNewAttempt(input),
                       new AttemptCreationInput(
                           jobId));
               connectionUpdaterInput.setAttemptId(attemptCreationOutput.getAttemptId());
-              return attemptCreationOutput.getAttemptId();
-            }));
+              return Optional.ofNullable(attemptCreationOutput.getAttemptId());
+            });
 
             // Sync workflow
             final SyncInput getSyncInputActivitySyncInput = new SyncInput(
                 maybeAttemptId.get(),
-                maybeJobId.get(),
+                jobId,
                 workflowState.isResetConnection());
 
             runMandatoryActivity(
                 (input) -> jobCreationAndStatusUpdateActivity.reportJobStart(input),
                 new ReportJobStartInput(
-                    maybeJobId.get()));
+                    jobId));
 
             final SyncOutput syncWorkflowInputs = runMandatoryActivityWithOutput(
                 (input) -> getSyncInputActivity.getSyncWorkflowInput(input),
@@ -135,7 +160,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
             final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
                 ChildWorkflowOptions.newBuilder()
-                    .setWorkflowId("sync_" + maybeJobId.get())
+                    .setWorkflowId("sync_" + jobId)
                     .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                     // This will cancel the child workflow when the parent is terminated
                     .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
@@ -172,12 +197,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                     childWorkflowFailure.getWorkflowType(),
                     af.getActivityType(),
                     af.getCause(),
-                    maybeJobId.get(),
+                    jobId,
                     maybeAttemptId.get()));
                 throw childWorkflowFailure;
               } else {
                 failures.add(
-                    FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), maybeJobId.get(), maybeAttemptId.get()));
+                    FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), jobId, maybeAttemptId.get()));
                 throw childWorkflowFailure;
               }
             }
@@ -216,9 +241,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       } else if (workflowState.isCancelled() || workflowState.isCancelledForReset()) {
         runMandatoryActivity((input) -> jobCreationAndStatusUpdateActivity.jobCancelled(input),
             new JobCancelledInput(
-                maybeJobId.get(),
+                jobId,
                 maybeAttemptId.get(),
-                FailureHelper.failureSummaryForCancellation(maybeJobId.get(), maybeAttemptId.get(), failures, partialSuccess)));
+                FailureHelper.failureSummaryForCancellation(jobId, maybeAttemptId.get(), failures, partialSuccess)));
         resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
         reportFailure(connectionUpdaterInput);
@@ -238,7 +263,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput) {
     workflowState.setSuccess(true);
     runMandatoryActivity((input) -> jobCreationAndStatusUpdateActivity.jobSuccess(input), new JobSuccessInput(
-        maybeJobId.get(),
+        jobId,
         maybeAttemptId.get(),
         standardSyncOutput.orElse(null)));
 
@@ -334,7 +359,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public JobInformation getJobInformation() {
     return new JobInformation(
-        maybeJobId.orElse(NON_RUNNING_JOB_ID),
+        jobId == null ? NON_RUNNING_JOB_ID : jobId,
         maybeAttemptId.orElse(NON_RUNNING_ATTEMPT_ID));
   }
 
@@ -342,7 +367,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public QuarantinedInformation getQuarantinedInformation() {
     return new QuarantinedInformation(
         connectionId,
-        maybeJobId.orElse(NON_RUNNING_JOB_ID),
+        jobId == null ? NON_RUNNING_JOB_ID : jobId,
         maybeAttemptId.orElse(NON_RUNNING_ATTEMPT_ID),
         workflowState.isQuarantined());
   }
