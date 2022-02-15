@@ -1,0 +1,517 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "advertiser_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "branding_text": {
+      "type": ["null", "string"]
+    },
+    "tracking_code": {
+      "type": ["null", "string"]
+    },
+    "pricing_model": {
+      "type": ["null", "string"]
+    },
+    "cpc": {
+      "type": ["null", "number"]
+    },
+    "safety_rating": {
+      "type": ["null", "string"]
+    },
+    "daily_cap": {
+      "type": ["null", "number"]
+    },
+    "daily_ad_delivery_model": {
+      "type": ["null", "string"]
+    },
+    "spending_limit": {
+      "type": ["null", "number"]
+    },
+    "spending_limit_model": {
+      "type": ["null", "string"]
+    },
+    "cpa_goal": {
+      "type": ["null", "number"]
+    },
+    "country_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sub_country_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dma_country_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "region_country_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "city_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "postal_code_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "contextual_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "platform_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "publisher_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "auto_publisher_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "os_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "os_family": {
+                "type": ["null", "string"]
+              },
+              "sub_categories": {
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "connection_type_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "string"]
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "publisher_bid_modifier": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": ["null", "string"]
+              },
+              "cpc_modification": {
+                "type": ["null", "number"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "publisher_bid_strategy_modifiers": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "publisher": {
+                "type": ["null", "string"]
+              },
+              "bid_strategy": {
+                "type": ["null", "number"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "campaign_profile": {
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "spent": {
+      "type": ["null", "number"]
+    },
+    "bid_type": {
+      "type": ["null", "string"]
+    },
+    "bid_strategy": {
+      "type": ["null", "string"]
+    },
+    "traffic_allocation_mode": {
+      "type": ["null", "string"]
+    },
+    "external_brand_safety": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "risk_level": {
+                "type": ["null", "string"]
+              },
+              "category_name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "campaign_groups": {
+      "type": ["null", "string"]
+    },
+    "start_date": {
+      "type": ["null", "string"]
+    },
+    "end_date": {
+      "type": ["null", "string"]
+    },
+    "start_date_in_utc": {
+      "type": ["null", "string"]
+    },
+    "end_date_in_utc": {
+      "type": ["null", "string"]
+    },
+    "traffic_allocation_ab_test_end_date": {
+      "type": ["null", "string"]
+    },
+    "approval_state": {
+      "type": ["null", "string"]
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "audience_segments_multi_targeting": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "contextual_segments_targeting": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_audience_targeting": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "marking_label_multi_targeting": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "lookalike_audience_targeting": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "marketing_objective": {
+      "type": ["null", "string"]
+    },
+    "verification_pixel": {
+      "type": ["null", "string"]
+    },
+    "viewability_tag": {
+      "type": ["null", "string"]
+    },
+    "activity_schedule": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": ["null", "string"]
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "day": {
+                "type": ["null", "string"]
+              },
+              "from_hour": {
+                "type": ["null", "integer"]
+              },
+              "until_hour": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "time_zone": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "policy_review": {
+      "type": "object",
+      "properties": {
+        "reject_reason": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "browser_targeting": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "string"
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}
