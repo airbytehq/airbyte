@@ -737,7 +737,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(-1400000)
+  @Order(14)
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -810,8 +810,6 @@ public class AcceptanceTests {
     LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
     assertTrue(connectionState.getState().get("column1").asInt() > 0);
     assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
-
-    // todo: assert that we actually cancelled properly
   }
 
   @Test
