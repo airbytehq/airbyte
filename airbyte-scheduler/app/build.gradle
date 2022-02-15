@@ -24,7 +24,7 @@ dependencies {
 application {
     applicationName = "airbyte-scheduler"
     mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 Properties env = new Properties()
