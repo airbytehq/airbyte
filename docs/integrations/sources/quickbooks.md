@@ -1,10 +1,10 @@
-# Quickbooks
+# QuickBooks
 
 ## Overview
 
-The Quickbooks source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The QuickBooks source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source wraps the [Singer Quickbooks Tap](https://github.com/singer-io/tap-quickbooks).
+This source wraps the [Singer QuickBooks Tap](https://github.com/singer-io/tap-quickbooks).
 
 ### Output schema
 
