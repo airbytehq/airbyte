@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,7 +77,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
   @Override
   public OUTPUT run(INPUT input, Path jobRoot) throws WorkerException {
-    return TemporalUtils.withBackgroundHeartbeat(() -> {
+    final AtomicBoolean isCanceled = new AtomicBoolean(false);
+    final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
+    return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
@@ -114,6 +117,15 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.containerOrchestratorImage(),
             containerOrchestratorConfig.googleApplicationCredentials());
+
+        cancellationCallback.set(() -> {
+          // When cancelled, try to set to true.
+          // Only proceed if value was previously false, so we only have one cancellation going. at a time
+          if (!isCanceled.getAndSet(true)) {
+            log.info("Trying to cancel async pod process.");
+            process.destroy();
+          }
+        });
 
         // only kill running pods and create process for the first run for an attempt
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
@@ -176,7 +188,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
       log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
       runningPods.stream()
           .parallel()
-          .filter(pod -> !pod.getMetadata().getName().equals(podNameToKeep))
           .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
 
       log.info("Waiting for deletion...");

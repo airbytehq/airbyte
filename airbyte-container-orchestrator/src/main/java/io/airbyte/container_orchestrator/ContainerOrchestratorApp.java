@@ -165,7 +165,7 @@ public class ContainerOrchestratorApp {
         secondsWaited = secondsWaited + 1;
       }
 
-      if(!successFile.toFile().exists()) {
+      if (!successFile.toFile().exists()) {
         log.error("Config files did not transfer within the maximum amount of time!");
         System.exit(1);
       }

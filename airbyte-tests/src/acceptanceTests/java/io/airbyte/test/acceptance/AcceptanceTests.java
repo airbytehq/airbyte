@@ -101,7 +101,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -123,6 +122,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -501,7 +501,7 @@ public class AcceptanceTests {
   // todo: only test if we have container_orchestrator setup setup!
 
   @Test
-  @Order(-1000)
+  @Order(-999000)
   @EnabledIfEnvironmentVariable(named = "KUBE",
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
@@ -535,7 +535,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(-100)
-  @EnabledIfEnvironmentVariable(named = "KUBE", matches = "true")
+  @EnabledIfEnvironmentVariable(named = "KUBE",
+                                matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -546,7 +547,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     // Avoid Race condition with the new scheduler
     if (featureFlags.usesNewScheduler()) {
@@ -565,11 +566,12 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-
   @Test
   @Order(-100001)
-  @Timeout(value = 5, unit = TimeUnit.MINUTES)
-  @EnabledIfEnvironmentVariable(named = "KUBE", matches = "true")
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "KUBE",
+                                matches = "true")
   public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -582,7 +584,7 @@ public class AcceptanceTests {
 
     LOGGER.info("Creating connection...");
     final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
     // Avoid Race condition with the new scheduler
@@ -612,13 +614,14 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
   }
 
-
   // todo: test that container app won't get stuck if files don't copy.
 
   @Test
   @Order(-100000)
-  @Timeout(value = 5, unit = TimeUnit.MINUTES)
-  @EnabledIfEnvironmentVariable(named = "KUBE", matches = "true")
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "KUBE",
+                                matches = "true")
   public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -631,7 +634,7 @@ public class AcceptanceTests {
 
     LOGGER.info("Creating connection...");
     final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
     // Avoid Race condition with the new scheduler
@@ -651,13 +654,25 @@ public class AcceptanceTests {
     LOGGER.info("Scale down workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
 
-
     LOGGER.info("Waiting for worker shutdown...");
     Thread.sleep(2000);
 
     LOGGER.info("Starting background cancellation request...");
     final var pool = Executors.newSingleThreadExecutor();
-    final Future<JobInfoRead> resp = pool.submit(() -> apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId())));
+    final var mdc = MDC.getCopyOfContextMap();
+    final Future<JobInfoRead> resp =
+        pool.submit(() -> {
+          MDC.setContextMap(mdc);
+          try {
+            final JobInfoRead jobInfoRead = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+            LOGGER.info("jobInfoRead = " + jobInfoRead);
+            return jobInfoRead;
+          } catch (ApiException e) {
+            LOGGER.error("Failed to read from api", e);
+            throw e;
+          }
+        });
+    Thread.sleep(2000);
 
     LOGGER.info("Scaling up workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
