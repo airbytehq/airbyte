@@ -29,6 +29,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
+  public static final String ADDITIONAL_PARAMETERS_KEY = "jdbc_url_params";
+
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
   }
@@ -79,6 +81,10 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
+
+    if (config.has(ADDITIONAL_PARAMETERS_KEY)) {
+      additionalParameters.add(config.get(ADDITIONAL_PARAMETERS_KEY).asText());
+    }
 
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("useSSL=true");
