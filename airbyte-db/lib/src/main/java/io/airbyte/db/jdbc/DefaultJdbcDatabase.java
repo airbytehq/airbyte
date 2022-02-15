@@ -52,8 +52,9 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = connectionSupplier.getConnection()) {
-      return toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+    try (final Connection connection = connectionSupplier.getConnection();
+        final Stream<T> results = toStream(query.apply(connection), recordTransform)) {
+      return results.collect(Collectors.toList());
     }
   }
 
