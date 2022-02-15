@@ -2621,7 +2621,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.14"
+- dockerImage: "airbyte/destination-oracle:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
