@@ -24,10 +24,22 @@ import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class JdbcSqlOperations implements SqlOperations {
 
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";
+
+  // this adapter modifies record message before inserting them to the destination
+  protected final Optional<DataAdapter> dataAdapter;
+
+  protected JdbcSqlOperations() {
+    this.dataAdapter = Optional.empty();
+  }
+
+  protected JdbcSqlOperations(final DataAdapter dataAdapter) {
+    this.dataAdapter = Optional.of(dataAdapter);
+  }
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -128,7 +140,6 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       throws Exception {
     AirbyteSentry.executeWithTracing("InsertRecords",
         () -> {
-          final Optional<DataAdapter> dataAdapter = getDataAdapter();
           dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
           insertRecordsInternal(database, records, schemaName, tableName);
         },
@@ -140,9 +151,5 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
-
-  protected Optional<DataAdapter> getDataAdapter() {
-    return Optional.empty();
-  }
 
 }
