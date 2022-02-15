@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.jdbc.DataAdapter;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.BufferedReader;
@@ -17,12 +16,12 @@ import java.sql.SQLException;
 import java.util.List;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PostgresSqlOperations extends JdbcSqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
+  public PostgresSqlOperations() {
+    super(new PostgresDataAdapter());
+  }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
@@ -56,11 +55,6 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
         }
       }
     });
-  }
-
-  @Override
-  protected DataAdapter getDataAdapter() {
-    return new PostgresDataAdapter();
   }
 
 }
