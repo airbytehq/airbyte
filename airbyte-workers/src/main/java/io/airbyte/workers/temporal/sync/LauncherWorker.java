@@ -131,7 +131,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         // only kill running pods and create process if it is not already running.
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
-          killRunningPodsForConnection(podName);
+          killRunningPodsForConnection();
 
           try {
             process.create(
@@ -179,10 +179,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
    * It is imperative that we do not run multiple replications, normalizations, syncs, etc. at the
    * same time. Our best bet is to kill everything that is labelled with the connection id and wait
    * until no more pods exist with that connection id.
-   *
-   * @param podNameToKeep a nullable name of a pod we don't want to delete.
    */
-  private void killRunningPodsForConnection(String podNameToKeep) {
+  private void killRunningPodsForConnection() {
     final var client = containerOrchestratorConfig.kubernetesClient();
 
     // delete all pods with the connection id label
@@ -234,13 +232,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     }
 
     log.debug("Closing sync runner process");
-    killRunningPodsForConnection(null);
+    killRunningPodsForConnection();
 
     if (process.hasExited()) {
       log.info("Successfully cancelled process.");
     } else {
       // try again
-      killRunningPodsForConnection(null);
+      killRunningPodsForConnection();
 
       if (process.hasExited()) {
         log.info("Successfully cancelled process.");
