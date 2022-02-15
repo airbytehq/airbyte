@@ -83,8 +83,8 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
     MESSAGE_USERS2.getRecord().setNamespace(DATASET_ID);
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
             CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, DATASET_ID,
-                            io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
-                            io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.STRING))
+                            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+                            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
