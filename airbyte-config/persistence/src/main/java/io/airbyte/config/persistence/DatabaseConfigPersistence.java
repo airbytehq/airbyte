@@ -1338,7 +1338,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(ACTOR_CATALOG_FETCH_EVENT)
           .where(ACTOR_CATALOG_FETCH_EVENT.ID.eq(actorCatalogFetchEvent.getId())));
 
-      if (isExistingConfig) {} else {
+      if (!isExistingConfig) {
         ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
             .set(ACTOR_CATALOG_FETCH_EVENT.ID, actorCatalogFetchEvent.getId())
             .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, actorCatalogFetchEvent.getConfigHash())
