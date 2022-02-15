@@ -32,6 +32,11 @@ runs:
       with:
         python-version: 3.7
 
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+
     - name: Tests of CI
       shell: bash
       run: |
