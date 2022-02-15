@@ -12,7 +12,6 @@ import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,7 +50,6 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
   private final boolean isOrchestrator;
-  private final Duration statusCheckInterval;
 
   /**
    * Sets up a process factory with the default processRunnerHost.
@@ -61,8 +59,13 @@ public class KubeProcessFactory implements ProcessFactory {
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final boolean isOrchestrator) {
-    this(workerConfigs, namespace, fabricClient, kubeHeartbeatUrl,
-        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), isOrchestrator, KubePodProcess.DEFAULT_STATUS_CHECK_INTERVAL);
+    this(
+        workerConfigs,
+        namespace,
+        fabricClient,
+        kubeHeartbeatUrl,
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()),
+        isOrchestrator);
   }
 
   /**
@@ -73,8 +76,6 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
    * @param isOrchestrator determines if this should run as airbyte-admin
-   * @param statusCheckInterval specifies how often the Kubernetes API should be consulted when
-   *        attempting to get the exit code after termination
    */
   @VisibleForTesting
   public KubeProcessFactory(final WorkerConfigs workerConfigs,
@@ -82,15 +83,13 @@ public class KubeProcessFactory implements ProcessFactory {
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost,
-                            final boolean isOrchestrator,
-                            final Duration statusCheckInterval) {
+                            final boolean isOrchestrator) {
     this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
     this.isOrchestrator = isOrchestrator;
-    this.statusCheckInterval = statusCheckInterval;
   }
 
   @Override
@@ -123,7 +122,7 @@ public class KubeProcessFactory implements ProcessFactory {
           isOrchestrator,
           processRunnerHost,
           fabricClient,
-          statusCheckInterval,
+          workerConfigs.getWorkerStatusCheckInterval(),
           podName,
           namespace,
           imageName,
