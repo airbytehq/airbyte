@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -18,6 +19,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,20 +87,23 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
     if (config.has(ADDITIONAL_PARAMETERS_KEY)) {
       String additionalParams = config.get(ADDITIONAL_PARAMETERS_KEY).asText();
-
-      if (useSSL(config)) {
-        if (additionalParams.contains("verifyServerCertificate=")) {
-          throw new RuntimeException(); //FIXME
+      if (!additionalParams.isEmpty()) {
+        if (useSSL(config)) {
+          for (String p: getSSLParameters().keySet()) {
+            String paramToFilter = String.format("%s=", p);
+            if (additionalParams.contains(paramToFilter)) {
+              throw new RuntimeException(); //FIXME
+            }
+          }
         }
+        additionalParameters.add(additionalParams);
       }
-
-      additionalParameters.add(additionalParams);
     }
-
     if (useSSL(config)) {
-      additionalParameters.add("useSSL=true");
-      additionalParameters.add("requireSSL=true");
-      additionalParameters.add("verifyServerCertificate=false");
+      for (Entry<String, String> sslParameter: getSSLParameters().entrySet()) {
+        String param = formatParameter(sslParameter.getKey(), sslParameter.getValue());
+        additionalParameters.add(param);
+      }
     }
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
@@ -109,6 +115,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     // and can't
     // remove zero date values.
     // since zero dates are placeholders, we convert them to null by default
+    //FIXME(girard): do we also want to prevent people from overriding zeroDateTimeBehavior?
     jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
       jdbcUrl.append("&");
@@ -128,6 +135,19 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   private boolean useSSL(JsonNode config) {
     return !config.has("ssl") || config.get("ssl").asBoolean();
+  }
+
+  static Map<String, String> getSSLParameters() {
+    Builder<String, String> builder = ImmutableMap.builder();
+      return builder
+          .put("useSSL", "true")
+          .put("requireSSL", "true")
+          .put("verifyServerCertificate", "false")
+          .build();
+  }
+  
+  static String formatParameter(String key, String value) {
+    return String.format("%s=%s", key, value);
   }
 
   public static void main(final String[] args) throws Exception {
