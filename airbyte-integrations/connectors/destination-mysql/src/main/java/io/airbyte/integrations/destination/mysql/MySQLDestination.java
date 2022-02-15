@@ -129,14 +129,18 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       }
       if (useSSL(config)) {
         for (final String p : getSSLParameters().keySet()) {
-          final String paramToFilter = String.format("%s=", p);
-          if (additionalParams.contains(paramToFilter)) {
+          if (containsParameterKey(additionalParams, p)) {
             throw new RuntimeException(); //FIXME
           }
         }
       }
       additionalParameters.add(additionalParams);
     }
+  }
+
+  private boolean containsParameterKey(final String additionalParametersString, final String key) {
+    final String s = String.format("%s=", key);
+    return additionalParametersString.contains(s);
   }
 
   private void addSSLJdbcParameters(final List<String> additionalParameters) {
