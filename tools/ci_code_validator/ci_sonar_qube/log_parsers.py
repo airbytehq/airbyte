@@ -267,7 +267,7 @@ class LogParser(SonarQubeApi):
                 others = re.sub(r"\s+", " ", others.replace(code, ". Code line: "))
                 break
         if not rule:
-            cls.logger.warning(f"couldn't find the code '{code}' the lines: {lines}, available rules: {cls._mypy_rules.keys()}")
+            cls.logger.warning(f"couldn't find the  rule with '{others}' and lines: {lines}, available rules: {cls._mypy_rules.keys()}")
             return None
 
         description = others.split("^")[0]
