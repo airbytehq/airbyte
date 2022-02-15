@@ -1312,7 +1312,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(ACTOR_CATALOG)
           .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId())));
 
-      if (isExistingConfig) {} else {
+      if (!isExistingConfig) {
         ctx.insertInto(ACTOR_CATALOG)
             .set(ACTOR_CATALOG.ID, actorCatalog.getId())
             .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
