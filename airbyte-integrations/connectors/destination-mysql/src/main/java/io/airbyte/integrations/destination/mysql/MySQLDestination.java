@@ -130,7 +130,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       if (useSSL(config)) {
         for (final String p : getSSLParameters().keySet()) {
           if (containsParameterKey(additionalParams, p)) {
-            throw new RuntimeException(); //FIXME
+            throw new RuntimeException("Cannot overwrite JDBC parameter " + p);
           }
         }
       }
