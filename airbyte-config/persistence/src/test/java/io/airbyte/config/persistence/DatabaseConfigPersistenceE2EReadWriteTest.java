@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
@@ -31,7 +30,6 @@ import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -265,27 +263,30 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final SourceConnection source = MockData.sourceConnections().get(0);
-    final ActorCatalog actorCatalog = new ActorCatalog()
-        .withId(UUID.randomUUID())
-        .withCatalog(Jsons.deserialize("{}"))
-        .withCatalogHash("TESTHASH");
-    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
-        .withId(UUID.randomUUID())
-        .withActorCatalogId(actorCatalog.getId())
-        .withActorId(source.getSourceId())
-        .withConfigHash("CONFIG_HASH")
-        .withConnectorVersion("1.0.0");
 
-    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
-    final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
-        ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
-    assertEquals(actorCatalog, retrievedActorCatalog);
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+      final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
+          ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
+      assertEquals(actorCatalog, retrievedActorCatalog);
+    } ;
+    final List<ActorCatalog> actorCatalogs = configPersistence
+        .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
+    assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());
+    assertThat(MockData.actorCatalogs()).hasSameElementsAs(actorCatalogs);
 
-    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(), actorCatalogFetchEvent);
-    final ActorCatalogFetchEvent retrievedActorCatalogFetchEvent = configPersistence.getConfig(
-        ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(), ActorCatalogFetchEvent.class);
-    assertEquals(actorCatalogFetchEvent, retrievedActorCatalogFetchEvent);
+    for (final ActorCatalogFetchEvent actorCatalogFetchEvent : MockData.actorCatalogFetchEvents()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+          actorCatalogFetchEvent.getId().toString(), actorCatalogFetchEvent);
+      final ActorCatalogFetchEvent retrievedActorCatalogFetchEvent = configPersistence.getConfig(
+          ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(),
+          ActorCatalogFetchEvent.class);
+      assertEquals(actorCatalogFetchEvent, retrievedActorCatalogFetchEvent);
+    }
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = configPersistence
+        .listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class);
+    assertEquals(MockData.actorCatalogFetchEvents().size(), actorCatalogFetchEvents.size());
+    assertThat(MockData.actorCatalogFetchEvents()).hasSameElementsAs(actorCatalogFetchEvents);
   }
 
 }

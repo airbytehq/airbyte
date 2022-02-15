@@ -556,7 +556,7 @@ public class ConfigRepository {
       throw new IllegalStateException(e);
     }
   }
-  
+
   public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
                                                  final String configurationHash,
                                                  final String connectorVersion)
