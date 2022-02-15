@@ -59,7 +59,7 @@ class XolaStream(HttpStream, ABC):
 
 
 class Orders(XolaStream):
-    primary_key = "order_id"
+    primary_key = "id"
     seller_id = None
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
