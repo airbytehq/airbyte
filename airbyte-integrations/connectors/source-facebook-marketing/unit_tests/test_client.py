@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, Campaigns, AdsInsights
+from source_facebook_marketing.streams import AdCreatives, AdsInsights, Campaigns
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 

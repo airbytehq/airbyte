@@ -49,7 +49,12 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
             call_connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
-            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE or call_rate_limit_error or call_connection_reset_error
+            return (
+                exc.api_transient_error()
+                or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
+                or call_rate_limit_error
+                or call_connection_reset_error
+            )
         return True
 
     return backoff.on_exception(
