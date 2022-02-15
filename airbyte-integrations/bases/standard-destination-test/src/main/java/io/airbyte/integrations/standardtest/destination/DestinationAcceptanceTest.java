@@ -742,8 +742,8 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
-        .withGitRepoUrl("https://github.com/grubberr/jaffle_shop.git")
-        .withGitRepoBranch("old_0_21")
+        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
+        .withGitRepoBranch("main")
         .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft() + ":" + NORMALIZATION_VERSION);
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
