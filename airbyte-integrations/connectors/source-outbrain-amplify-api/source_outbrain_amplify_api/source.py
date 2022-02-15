@@ -197,11 +197,8 @@ class SourceOutbrainAmplifyApi(AbstractSource):
     
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
         check_connection_respone = (requests.get(url, auth=auth))
-        print(config["USERNAME"])
-        print(config["PASSWORD"])
+
         if check_connection_respone.ok ==  True:
-            token = response.json()['OB-TOKEN-V1']
-            print(token)
             return True, None
         else:
             return False,  "Unable to connect to Outbrain API with the provided credentials"
