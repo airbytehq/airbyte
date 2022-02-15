@@ -33,7 +33,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   // "Split your load data files so that the files are about equal size, between 1 MB and 1 GB after
   // compression"
   public static final int MAX_PARTS_PER_FILE = 4;
-  public static final int MAX_CHUNK_SIZE = 1000;
+  public static final int MAX_FILES_PER_COPY = 1000;
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
                                  final String schema,
@@ -80,7 +80,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_CHUNK_SIZE);
+    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_FILES_PER_COPY);
     for (int i = 0; i < partition.size(); i++) {
       LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
           schemaName, partition.size());
