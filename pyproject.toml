@@ -25,7 +25,7 @@ extend-exclude = [
  ".tox",
  "airbyte_api_client"
 ]
-max-complexity = 10
+max-complexity = 15
 max-line-length = 140
 
 extend-ignore = [
@@ -76,10 +76,11 @@ pretty = true
 color_output = true
 error_summary = true
 
-#[[tool.mypy.overrides]]
-#module = [
-#    "integration_tests.*",
-#    "unit_tests.*",
-#]
-#allow_incomplete_defs = true
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts ="-r a --capture=no -vv --log-level=INFO --color=yes"
+log_cli = 1
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 

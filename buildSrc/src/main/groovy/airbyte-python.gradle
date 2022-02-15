@@ -36,7 +36,7 @@ class Helpers {
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
                 project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
                     module = "coverage"
-                    command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('pyproject.toml').absolutePath} -m pytest -s ${testFilesDirectory}"
+                    command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('pyproject.toml').absolutePath} -m pytest -s ${testFilesDirectory} -c ${project.rootProject.file('pyproject.toml').absolutePath}"
                 }
                 // generation of coverage report is optional and we should skip it if tests are empty
                 project.task(taskName, type: Exec){
