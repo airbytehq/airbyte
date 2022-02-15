@@ -162,7 +162,7 @@ public class ContainerOrchestratorApp {
       while (!successFile.toFile().exists() && secondsWaited < MAX_SECONDS_TO_WAIT_FOR_FILE_COPY) {
         log.info("Waiting for config file transfers to complete...");
         Thread.sleep(1000);
-        secondsWaited = secondsWaited + 1;
+        secondsWaited++;
       }
 
       if (!successFile.toFile().exists()) {
