@@ -72,6 +72,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
       public boolean tryAdvance(final Consumer<? super T> action) {
         try {
           if (!resultSet.next()) {
+            resultSet.close();
             return false;
           }
           action.accept(mapper.apply(resultSet));
