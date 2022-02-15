@@ -18,8 +18,8 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
-ENV APPLICATION_VERSION 0.4.10
+ENV APPLICATION_VERSION 0.4.11
 ENV ENABLE_SENTRY true
 
-LABEL io.airbyte.version=0.4.10
+LABEL io.airbyte.version=0.4.11
 LABEL io.airbyte.name=airbyte/destination-snowflake
