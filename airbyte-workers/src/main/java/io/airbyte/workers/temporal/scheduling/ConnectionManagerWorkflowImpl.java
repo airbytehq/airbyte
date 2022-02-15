@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -59,8 +60,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   Optional<Integer> maybeAttemptId = Optional.empty();
 
   Optional<StandardSyncOutput> standardSyncOutput = Optional.empty();
-  final Set<FailureReason> failures = new HashSet<>();
-  Boolean partialSuccess = null;
 
   private final GenerateInputActivity getSyncInputActivity =
       Workflow.newActivityStub(GenerateInputActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
@@ -80,6 +79,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     connectionId = connectionUpdaterInput.getConnectionId();
+    final Set<FailureReason> failures = new HashSet<>();
+    final AtomicBoolean partialSuccess = new AtomicBoolean();
     try {
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
@@ -151,7 +152,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
               if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
                 failures.addAll(standardSyncOutput.get().getFailures());
-                partialSuccess = standardSyncSummary.getTotalStats().getRecordsCommitted() > 0;
+                partialSuccess.set(standardSyncSummary.getTotalStats().getRecordsCommitted() > 0);
                 workflowState.setFailed(true);
               }
             } catch (final ChildWorkflowFailure childWorkflowFailure) {
@@ -209,10 +210,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(
             maybeJobId.get(),
             maybeAttemptId.get(),
-            FailureHelper.failureSummaryForCancellation(maybeJobId.get(), maybeAttemptId.get(), failures, partialSuccess)));
+            FailureHelper.failureSummaryForCancellation(maybeJobId.get(), maybeAttemptId.get(), failures, partialSuccess.get())));
         resetNewConnectionInput(connectionUpdaterInput);
       } else if (workflowState.isFailed()) {
-        reportFailure(connectionUpdaterInput);
+        reportFailure(connectionUpdaterInput, failures, partialSuccess.get());
       } else {
         // report success
         reportSuccess(connectionUpdaterInput);
@@ -221,7 +222,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } catch (final Exception e) {
       log.error("The connection update workflow has failed, will create a new attempt.", e);
 
-      reportFailure(connectionUpdaterInput);
+      reportFailure(connectionUpdaterInput, failures, partialSuccess.get());
       continueAsNew(connectionUpdaterInput);
     }
   }
@@ -235,7 +236,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     resetNewConnectionInput(connectionUpdaterInput);
   }
 
-  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput) {
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput, final Set<FailureReason> failures, final Boolean partialSuccess) {
     jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(
         connectionUpdaterInput.getJobId(),
         connectionUpdaterInput.getAttemptId(),
@@ -326,8 +327,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     // Continue the workflow as new
     connectionUpdaterInput.setAttemptId(null);
     connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
-    failures.clear();
-    partialSuccess = null;
     final boolean isDeleted = workflowState.isDeleted();
     workflowState.reset();
     if (!isDeleted) {
