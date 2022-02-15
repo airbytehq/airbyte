@@ -1218,7 +1218,7 @@ class FormSubmissions(Stream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
-        return self.url
+        return f"{self.url}/{stream_slice['form_id']}"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1235,15 +1235,44 @@ class FormSubmissions(Stream):
 
             yield record
 
-    def list_records(self, fields) -> Iterable:
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ):
+        slices = []
         seen = set()
         # To get submissions for all forms date filtering has to be disabled
-        for form in self.forms.read(getter=partial(self.forms._api.get, url=self.forms.url), filter_old_records=False):
+        self.forms.filter_old_records = False  # TODO make it object attribute
+        for form in self.forms.read_records(sync_mode):
             if form["id"] not in seen:
                 seen.add(form["id"])
-                for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
-                    submission["formId"] = form["id"]
-                    yield submission
+                slices.append({"form_id": form['id']})
+
+                # for submission in self.read_records(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
+                    # submission["formId"] = form["id"]
+                    # yield submission
+
+        return slices
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
+        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            record["formId"] = stream_slice['form_id']
+            yield record
+
+    # def list_records(self, fields) -> Iterable:  # TODO remove it
+    #     seen = set()
+    #     # To get submissions for all forms date filtering has to be disabled
+    #     for form in self.forms.read(getter=partial(self.forms._api.get, url=self.forms.url), filter_old_records=False):
+    #         if form["id"] not in seen:
+    #             seen.add(form["id"])
+    #             for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
+    #                 submission["formId"] = form["id"]
+    #                 yield submission
 
 
 class MarketingEmails(Stream):
