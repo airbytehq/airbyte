@@ -234,6 +234,65 @@
                 "order": 3
               }
             }
+          },
+          {
+            "title": "Azure Blob Storage Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "method",
+              "azure_blob_storage_account_name",
+              "azure_blob_storage_container_name",
+              "azure_blob_storage_account_key",
+              "snowflake_azure_external_stage_name"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Azure Blob Staging"],
+                "default": "Azure Blob Staging",
+                "order": 0
+              },
+              "azure_blob_storage_endpoint_domain_name": {
+                "title": "Endpoint Domain Name",
+                "type": "string",
+                "default": "blob.core.windows.net",
+                "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+                "examples": ["blob.core.windows.net"],
+                "order": 1
+              },
+              "azure_blob_storage_account_name": {
+                "title": "Azure Blob Storage Account Name",
+                "type": "string",
+                "description": "The account's name of the Azure Blob Storage.",
+                "examples": ["airbyte5storage"],
+                "order": 2
+              },
+              "azure_blob_storage_container_name": {
+                "title": "Azure blob storage container (Bucket) Name",
+                "type": "string",
+                "description": "The name of the Azure blob storage container. *This needs to coincide with the container specified in the Snowflake Storage Integration and Snowflake Azure External Stage (see description of 'Snowflake Azure External Stage' for details",
+                "examples": ["airbytetestcontainername"],
+                "order": 3
+              },
+              "azure_blob_storage_account_key": {
+                "title": "Azure Blob Storage Account Key",
+                "description": "The Azure blob storage account key.",
+                "airbyte_secret": true,
+                "type": "string",
+                "examples": [
+                  "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+                ],
+                "order": 4
+              },
+              "snowflake_azure_external_stage_name": {
+                "title": "Snowflake External Stage Name",
+                "type": "string",
+                "description": "The name of the Snowflake Azure External Stage. In Snowflake, 'azure://<account name>.<endpiont domain name>/<container name>' needs to be added to the 'allowed path' of the Storage Integration AND 'azure://<account name>.<endpiont domain name>/<container name>/' needs to be set as the 'url' of the Stage.  See Snowflake details for creating a Storage Integration and External Stage here: https://docs.snowflake.com/en/user-guide/data-load-azure-config.html",
+                "examples": ["AIRBYTE_AZURE_STAGE"],
+                "order": 5
+              }
+            }
           }
         ]
       }
