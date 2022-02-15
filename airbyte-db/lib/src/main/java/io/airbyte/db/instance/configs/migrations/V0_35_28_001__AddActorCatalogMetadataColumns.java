@@ -6,6 +6,7 @@ package io.airbyte.db.instance.configs.migrations;
 
 import static org.jooq.impl.DSL.currentOffsetDateTime;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.time.OffsetDateTime;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
@@ -26,6 +27,11 @@ public class V0_35_28_001__AddActorCatalogMetadataColumns extends BaseJavaMigrat
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
     final DSLContext ctx = DSL.using(context.getConnection());
+    migrate(ctx);
+  }
+
+  @VisibleForTesting
+  public static void migrate(final DSLContext ctx) {
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> modifiedAt =
