@@ -69,18 +69,20 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   private void deletion() throws ConfigNotFoundException, IOException, JsonValidationException {
-    // Deleting the workspace should delete everything except for definitions
+    // Deleting the workspace should delete everything except for definitions and catalogs
     configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, MockData.standardWorkspace().getWorkspaceId().toString());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_STATE, StandardSyncState.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, SourceConnection.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class).isEmpty());
+    assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class).isEmpty());
 
     assertFalse(configPersistence.listConfigs(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
+    assertFalse(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
 
     for (final SourceOAuthParameter sourceOAuthParameter : MockData.sourceOauthParameters()) {
       configPersistence.deleteConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString());
@@ -102,6 +104,12 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
           .deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, standardDestinationDefinition.getDestinationDefinitionId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
+
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence
+          .deleteConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString());
+    }
+    assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
   }
 
   private void standardSyncState() throws JsonValidationException, IOException, ConfigNotFoundException {

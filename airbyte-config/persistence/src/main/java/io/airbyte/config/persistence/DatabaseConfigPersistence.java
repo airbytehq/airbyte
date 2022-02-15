@@ -1421,6 +1421,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       deleteStandardSync(configId);
     } else if (configType == ConfigSchema.STANDARD_SYNC_STATE) {
       deleteConfig(STATE, STATE.CONNECTION_ID, UUID.fromString(configId));
+    } else if (configType == ConfigSchema.ACTOR_CATALOG) {
+      deleteConfig(ACTOR_CATALOG, ACTOR_CATALOG.ID, UUID.fromString(configId));
+    } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
+      deleteConfig(ACTOR_CATALOG_FETCH_EVENT, ACTOR_CATALOG_FETCH_EVENT.ID, UUID.fromString(configId));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1476,6 +1480,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(CONNECTION).restartIdentity().cascade().execute();
       ctx.truncate(CONNECTION_OPERATION).restartIdentity().cascade().execute();
       ctx.truncate(STATE).restartIdentity().cascade().execute();
+      ctx.truncate(ACTOR_CATALOG).restartIdentity().cascade().execute();
+      ctx.truncate(ACTOR_CATALOG_FETCH_EVENT).restartIdentity().cascade().execute();
 
       if (configs.containsKey(ConfigSchema.STANDARD_WORKSPACE)) {
         configs.get(ConfigSchema.STANDARD_WORKSPACE).map(c -> (StandardWorkspace) c)
@@ -1553,6 +1559,22 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         originalConfigs.remove(ConfigSchema.STANDARD_SYNC_STATE);
       } else {
         LOGGER.warn(ConfigSchema.STANDARD_SYNC_STATE + " not found");
+      }
+
+      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG)) {
+        configs.get(ConfigSchema.ACTOR_CATALOG).map(c -> (ActorCatalog) c)
+            .forEach(c -> writeActorCatalog(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG);
+      } else {
+        LOGGER.warn(ConfigSchema.ACTOR_CATALOG + " not found");
+      }
+
+      if (configs.containsKey(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT)) {
+        configs.get(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT).map(c -> (ActorCatalogFetchEvent) c)
+            .forEach(c -> writeActorCatalogFetchEvent(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
+      } else {
+        LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + " not found");
       }
 
       if (!originalConfigs.isEmpty()) {
@@ -1646,6 +1668,22 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSyncState>> standardSyncStateWithMetadata = listStandardSyncStateWithMetadata();
     if (!standardSyncStateWithMetadata.isEmpty()) {
       result.put(ConfigSchema.STANDARD_SYNC_STATE.name(),
+          standardSyncStateWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<ActorCatalog>> actorCatalogWithMetadata = listActorCatalogWithMetadata();
+    if (!standardSyncStateWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.ACTOR_CATALOG.name(),
+          standardSyncStateWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+    final List<ConfigWithMetadata<ActorCatalogFetchEvent>> actorCatalogFetchEventWithMetadata = listActorCatalogFetchEventWithMetadata();
+    if (!standardSyncStateWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT.name(),
           standardSyncStateWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
