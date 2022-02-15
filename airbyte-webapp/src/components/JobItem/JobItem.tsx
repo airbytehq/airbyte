@@ -46,7 +46,10 @@ const JobCurrentLogs: React.FC<{
 };
 
 const isPartialSuccessCheck = (attempts: Attempt[]) => {
-  if (attempts[attempts.length - 1].status === Status.FAILED) {
+  if (
+    attempts.length > 0 &&
+    attempts[attempts.length - 1].status === Status.FAILED
+  ) {
     return attempts.some(
       (attempt) =>
         attempt.failureSummary && attempt.failureSummary.partialSuccess
@@ -92,11 +95,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
           >
             {isOpen ? (
               isJobEntity(props) ? (
-                <JobLogs
-                  id={jobMeta.id}
-                  jobIsFailed={isFailed}
-                  isPartialSuccess={isPartialSuccess}
-                />
+                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
               ) : (
                 <JobCurrentLogs
                   id={jobMeta.id}

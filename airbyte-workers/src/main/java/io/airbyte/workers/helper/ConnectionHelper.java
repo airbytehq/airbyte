@@ -74,7 +74,7 @@ public class ConnectionHelper {
           .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      newConnection.withResourceRequirements(workerConfigs.getResourceRequirements());
+      newConnection.withResourceRequirements(persistedSync.getResourceRequirements());
     }
 
     // update sync schedule

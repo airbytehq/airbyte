@@ -5,6 +5,7 @@
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -65,6 +66,13 @@ class GithubStream(HttpStream, ABC):
             self.logger.info(
                 f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
+
+        # Handling secondary rate limits for Github
+        # Additional information here: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+        elif response.headers.get("Retry-After"):
+            time_delay = int(response.headers["Retry-After"])
+            self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
+            sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
