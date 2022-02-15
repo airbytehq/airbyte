@@ -160,7 +160,7 @@ class SourceHubspot(AbstractSource):
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
         internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
+    ) -> Iterator[AirbyteMessage]:  # TODO
         """
         This method is overridden to checkpoint the latest actual state,
         because stream state is refreshed after reading each batch of records (if need_chunk is True),
