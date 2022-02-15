@@ -32,12 +32,12 @@ class Helpers {
         if (project.file(testFilesDirectory).exists()) {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
-                project.task("_${taskName}Coverage", type: PythonTask) {
+                project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
                     module = "coverage"
                     command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath} -m pytest -s ${testFilesDirectory}"
                 }
                 // generation of coverage report is optional and we should skip it if tests are empty
-                project.task(taskName, type: Exec, dependsOn: taskDependencies) {
+                project.task(taskName, type: Exec){
                     commandLine = ".venv/bin/python"
                     args "-m", "coverage", "report", "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('tools/python/.coveragerc').absolutePath}"
                     dependsOn project.tasks.findByName("_${taskName}Coverage")

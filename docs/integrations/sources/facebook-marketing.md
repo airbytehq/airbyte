@@ -5,17 +5,24 @@
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | except AdCreatives |
+| Incremental Sync | Yes | except AdCreatives and AdAccount |
+
+##### Incremental Deletes Sync
+The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. 
+While a user could archive or delete an ad campaign, there is still a record of that campaign having existed in the Facebook Marketing API. 
+If configured by the user, the Facebook connector replicates records for campaigns or ads even if they were archived or deleted from the Facebook platform.
 
 ## Supported Tables
 
 This Source is capable of syncing the following tables and their data:
 
 * [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
-* [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields) 
+* [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
 * [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
-* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields) 
-* [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/) 
+* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
+* [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account) 
+* [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -31,7 +38,7 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 
 1. Click `Authenticate your Facebook Marketing account`.
 2. Enter your Account ID. Learn how to find it are [here](https://www.facebook.com/business/help/1492627900875762).
-3. Enter a start date and your Insights settings.   
+3. Enter a start date and your Insights settings.
 4. You're done.
 
 ## Getting Started \(Airbyte Open-Source\)
@@ -96,9 +103,11 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.31  | 2021-12-28 | [](https://github.com/airbytehq/airbyte/pull/) | Fixed videos stream format field incorrect type |
-| 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Added `asset_feed_spec` field to `ad creatives` stream |
-| 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrive ad_creatives image as data encoded |
+| 0.2.33  | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams |
+| 0.2.32  | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams. |
+| 0.2.31  | 2021-12-29 | [9138](https://github.com/airbytehq/airbyte/pull/9138) | Fix videos stream format field incorrect type |
+| 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Add `asset_feed_spec` field to `ad creatives` stream |
+| 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrieve ad_creatives image as data encoded |
 | 0.2.28  | 2021-12-13 | [8742](https://github.com/airbytehq/airbyte/pull/8742) | Fix for schema generation related to "breakdown" fields |
 | 0.2.27  | 2021-11-29 | [8257](https://github.com/airbytehq/airbyte/pull/8257) | Add fields to Campaign stream |
 | 0.2.26  | 2021-11-19 | [7855](https://github.com/airbytehq/airbyte/pull/7855) | Add Video stream |
