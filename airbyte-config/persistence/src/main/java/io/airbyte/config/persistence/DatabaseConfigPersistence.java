@@ -1312,7 +1312,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(ACTOR_CATALOG)
           .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId())));
 
-      if (!isExistingConfig) {
+      if (isExistingConfig) {
+        ctx.update(ACTOR_CATALOG)
+            .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
+            .set(ACTOR_CATALOG.CATALOG_HASH, actorCatalog.getCatalogHash())
+            .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)
+            .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId()))
+            .execute();
+      } else {
         ctx.insertInto(ACTOR_CATALOG)
             .set(ACTOR_CATALOG.ID, actorCatalog.getId())
             .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
@@ -1338,7 +1345,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .from(ACTOR_CATALOG_FETCH_EVENT)
           .where(ACTOR_CATALOG_FETCH_EVENT.ID.eq(actorCatalogFetchEvent.getId())));
 
-      if (!isExistingConfig) {
+      if (isExistingConfig) {
+        ctx.update(ACTOR_CATALOG_FETCH_EVENT)
+            .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, actorCatalogFetchEvent.getConfigHash())
+            .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, actorCatalogFetchEvent.getActorCatalogId())
+            .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorCatalogFetchEvent.getActorId())
+            .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, actorCatalogFetchEvent.getConnectorVersion())
+            .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
+            .where(ACTOR_CATALOG_FETCH_EVENT.ID.eq(actorCatalogFetchEvent.getId()))
+            .execute();
+      } else {
         ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
             .set(ACTOR_CATALOG_FETCH_EVENT.ID, actorCatalogFetchEvent.getId())
             .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, actorCatalogFetchEvent.getConfigHash())
