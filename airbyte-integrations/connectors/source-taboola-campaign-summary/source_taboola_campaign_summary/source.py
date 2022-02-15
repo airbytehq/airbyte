@@ -12,7 +12,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 class TaboolaCampaignSummaryStream(HttpStream, ABC):
     url_base = "https://backstage.taboola.com/backstage/api/1.0/"
@@ -52,7 +52,7 @@ class DailyPerCampaignSite(TaboolaCampaignSummaryStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = (date.today() - timedelta(days=8)).strftime("%Y-%m-%d")
+        start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
         end_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
         return {
             "start_date": start_date,
@@ -76,7 +76,7 @@ class IncrementalTaboolaCampaignSummaryStream(TaboolaCampaignSummaryStream, ABC)
 
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
         Optional[Mapping[str, any]]]:
-        start_date = (date.today() - timedelta(days=8))
+        start_date = (date.today() - timedelta(days=7))
         return self._chunk_date_range(start_date)
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -105,8 +105,6 @@ class DailyPerCountry(IncrementalTaboolaCampaignSummaryStream):
     ) -> Iterable[Mapping]:
         results = response.json().get("results", [])
 
-        self.logger.info(f"SLICE: start_date: {stream_slice.get('date')}")
-
         for result in results:
             result["date"] = stream_slice.get("date")
 
@@ -125,7 +123,7 @@ class SourceTaboolaCampaignSummary(AbstractSource):
             "grant_type": "client_credentials"
         }
 
-        response = requests.post(url, params=params)
+        response = requests.post(url, data=params)
         response.raise_for_status()
         json_response = response.json()
         return json_response.get("access_token", None)
