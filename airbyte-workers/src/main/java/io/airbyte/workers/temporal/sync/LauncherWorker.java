@@ -128,7 +128,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           }
         });
 
-        // only kill running pods and create process for the first run for an attempt
+        // only kill running pods and create process if it is not already running.
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
           log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection(podName);
