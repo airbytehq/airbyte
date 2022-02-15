@@ -20,6 +20,7 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -127,18 +128,21 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           }
         });
 
-        // todo: why is this re-running create for the same attempt
         // only kill running pods and create process for the first run for an attempt
-        // todo: it looks like it isn't able to read these properly. is something not working for reading from the same location?
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
-          log.info("in creation if for " + podName + " and attempt number " + jobRunConfig.getAttemptId());
+          log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection(podName);
 
-          process.create(
-              allLabels,
-              resourceRequirements,
-              fileMap,
-              portMap);
+          try {
+            process.create(
+                allLabels,
+                resourceRequirements,
+                fileMap,
+                portMap);
+          } catch (KubernetesClientException e) {
+            throw new WorkerException(
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+          }
         }
 
         // this waitFor can resume if the activity is re-run

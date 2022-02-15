@@ -243,7 +243,7 @@ public class TemporalUtils {
     try {
       scheduledExecutor.scheduleAtFixedRate(() -> {
         final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler();
-        
+
         cancellationHandler.checkAndHandleCancellation(() -> {
           if (cancellationCallbackRef != null) {
             final Runnable cancellationCallback = cancellationCallbackRef.get();

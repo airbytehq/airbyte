@@ -29,10 +29,8 @@ public class ActivityConfiguration {
   // retry infinitely if the worker is killed without exceptions and dies due to timeouts
   // but fail for everything thrown by the call itself which is rethrown as runtime exceptions
   private static final RetryOptions ORCHESTRATOR_RETRY = RetryOptions.newBuilder()
-      .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName()) // todo: how to check if this is being respected? doesn't look like it is.
+      .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName())
       .build();
-
-  // todo: is this policy even needed if we handle the timeout properly?
 
   private static final RetryOptions RETRY_POLICY = new EnvConfigs().getContainerOrchestratorEnabled() ? ORCHESTRATOR_RETRY : TemporalUtils.NO_RETRY;
 
