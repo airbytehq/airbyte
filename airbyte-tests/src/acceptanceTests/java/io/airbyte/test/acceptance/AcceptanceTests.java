@@ -517,7 +517,7 @@ public class AcceptanceTests {
       waitForTemporalWorkflow(connectionId);
     }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
@@ -1052,7 +1052,7 @@ public class AcceptanceTests {
       waitForTemporalWorkflow(connectionId);
     }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     Thread.sleep(5000);
 
@@ -1093,8 +1093,8 @@ public class AcceptanceTests {
     LOGGER.info("Run manual sync...");
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    LOGGER.info("Waiting for job to become pending...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    LOGGER.info("Waiting for job to run...");
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Scale down workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
@@ -1141,8 +1141,8 @@ public class AcceptanceTests {
     LOGGER.info("Run manual sync...");
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    LOGGER.info("Waiting for job to become pending...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    LOGGER.info("Waiting for job to run...");
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Waiting for job to run a little...");
     Thread.sleep(5000);
