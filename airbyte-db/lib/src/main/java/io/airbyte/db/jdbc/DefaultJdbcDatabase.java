@@ -7,7 +7,6 @@ package io.airbyte.db.jdbc;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -39,11 +38,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
-    this.connectionSupplier = connectionSupplier;
-  }
-
-  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier) {
-    super(JdbcUtils.getDefaultSourceOperations());
     this.connectionSupplier = connectionSupplier;
   }
 
@@ -119,40 +113,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   @Override
   public void close() throws Exception {
     connectionSupplier.close();
-  }
-
-  public interface CloseableConnectionSupplier extends AutoCloseable {
-
-    Connection getConnection() throws SQLException;
-
-  }
-
-  public static final class DataSourceConnectionSupplier implements CloseableConnectionSupplier {
-
-    private final DataSource dataSource;
-
-    public DataSourceConnectionSupplier(final DataSource dataSource) {
-      this.dataSource = dataSource;
-    }
-
-    @Override
-    public Connection getConnection() throws SQLException {
-      return dataSource.getConnection();
-    }
-
-    @Override
-    public void close() throws Exception {
-      // Just a safety in case we are using a datasource implementation that requires closing.
-      // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-
-      if (dataSource instanceof AutoCloseable) {
-        ((AutoCloseable) dataSource).close();
-      }
-      if (dataSource instanceof Closeable) {
-        ((Closeable) dataSource).close();
-      }
-    }
-
   }
 
 }

@@ -4,21 +4,20 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationIntegrationTest {
@@ -37,57 +36,30 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   @Test
-  public void testInvalidSchemaName() {
-    assertDoesNotThrow(this::syncWithNamingResolver);
-    assertThrows(SQLException.class, this::syncWithoutNamingResolver);
-
-  }
-
-  public void syncWithNamingResolver() throws IOException, SQLException {
+  public void testInvalidSchemaName() throws Exception {
     final JsonNode config = getConfig();
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", namingResolver.getIdentifier(config.get("schema").asText()));
-    Connection connection = null;
+    final String schema = config.get("schema").asText();
+    try (final JdbcDatabase database = SnowflakeDatabase.getDatabase(config)) {
+      assertDoesNotThrow(() -> syncWithNamingResolver(database, schema));
+      assertThrows(SQLException.class, () -> syncWithoutNamingResolver(database, schema));
+    }
+  }
+
+  public void syncWithNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+    final String normalizedSchemaName = namingResolver.getIdentifier(schema);
     try {
-      connection = SnowflakeDatabase.getConnection(config);
-      connection.createStatement().execute(createSchemaQuery);
+      database.execute(String.format("CREATE SCHEMA %s", normalizedSchemaName));
     } finally {
-      if (connection != null) {
-        final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", namingResolver.getIdentifier(config.get("schema").asText()));
-        connection.createStatement().execute(dropSchemaQuery);
-        connection.close();
-      }
+      database.execute(String.format("DROP SCHEMA IF EXISTS %s", normalizedSchemaName));
     }
   }
 
-  private void syncWithoutNamingResolver() throws SQLException, IOException {
-    JsonNode config = getConfig();
-    String schemaName = config.get("schema").asText();
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-
-    try (Connection connection = getConnection(config, false)) {
-      Statement statement = connection.createStatement();
-      statement.execute(createSchemaQuery);
+  private void syncWithoutNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+    try {
+      database.execute(String.format("CREATE SCHEMA %s", schema));
+    } finally {
+      database.execute(String.format("DROP SCHEMA IF EXISTS %s", schema));
     }
-  }
-
-  public Connection getConnection(JsonNode config, boolean useNameTransformer) throws SQLException {
-
-    final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
-
-    final Properties properties = new Properties();
-
-    properties.put("user", config.get("username").asText());
-    properties.put("password", config.get("password").asText());
-    properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("database", config.get("database").asText());
-    properties.put("role", config.get("role").asText());
-    properties.put("schema", useNameTransformer
-        ? namingResolver.getIdentifier(config.get("schema").asText())
-        : config.get("schema").asText());
-
-    properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
-
-    return DriverManager.getConnection(connectUrl, properties);
   }
 
   private JsonNode getConfig() throws IOException {
