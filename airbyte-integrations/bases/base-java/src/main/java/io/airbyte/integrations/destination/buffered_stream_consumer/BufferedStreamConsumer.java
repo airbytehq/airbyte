@@ -191,8 +191,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
 
-    streamToIgnoredRecordCount.forEach((pair, count) ->
-        LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
+    streamToIgnoredRecordCount
+        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
     } else {
