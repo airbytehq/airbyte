@@ -294,6 +294,6 @@ class Coupon(IncrementalChargebeeStream):
     API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
     """
 
-    cursor_field = "occurred_at"
+    cursor_field = "updated_at"
 
     api = CouponModel
