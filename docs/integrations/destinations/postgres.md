@@ -35,12 +35,12 @@ Make sure your Postgres database can be accessed by Airbyte. If your database is
 
 #### **Permissions**
 
-You need a Postgres user with the following permissions: 
+You need a Postgres user with the following permissions:
 
-* can create tables and write rows. 
-* can create schemas e.g: 
+* can create tables and write rows.
+* can create schemas e.g:
 
-You can create such a user by runnig: 
+You can create such a user by runnig:
 
 ```
 CREATE USER airbyte_user PASSWORD <password>;
@@ -84,8 +84,9 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
-| 0.3.12  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |  
+| 0.3.12  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
 | 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
 
