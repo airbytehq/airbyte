@@ -285,6 +285,11 @@ public interface Configs {
   LogConfigs getLogConfigs();
 
   /**
+   * Defines the optional Google application credentials used for logging.
+   */
+  String getGoogleApplicationCredentials();
+
+  /**
    * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here.
    * Please see {@link CloudStorageConfigs} for more info.
    */
@@ -347,6 +352,26 @@ public interface Configs {
    * Define the image to use for the container orchestrator. Defaults to the Airbyte version.
    */
   String getContainerOrchestratorImage();
+
+  /**
+   * Define the replication orchestrator's minimum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuRequest();
+
+  /**
+   * Define the replication orchestrator's maximum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuLimit();
+
+  /**
+   * Define the replication orchestrator's minimum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryRequest();
+
+  /**
+   * Define the replication orchestrator's maximum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryLimit();
 
   /**
    * Get the longest duration of non long running activity
