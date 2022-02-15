@@ -41,7 +41,7 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
             INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        workerConfigs.getReplicationOrchestratorResourceRequirements(),
+        workerConfigs.getResourceRequirements(),
         ReplicationOutput.class);
   }
 
