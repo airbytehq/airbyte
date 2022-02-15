@@ -19,7 +19,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import org.jooq.SQLDialect;
@@ -100,8 +100,8 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -110,8 +110,8 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
