@@ -127,8 +127,11 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           }
         });
 
+        // todo: why is this re-running create for the same attempt
         // only kill running pods and create process for the first run for an attempt
+        // todo: it looks like it isn't able to read these properly. is something not working for reading from the same location?
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
+          log.info("in creation if for " + podName + " and attempt number " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection(podName);
 
           process.create(

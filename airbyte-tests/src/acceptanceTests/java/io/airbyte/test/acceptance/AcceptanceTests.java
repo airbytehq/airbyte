@@ -501,7 +501,7 @@ public class AcceptanceTests {
   // todo: only test if we have container_orchestrator setup setup!
 
   @Test
-  @Order(-999000)
+  @Order(-99909000)
   @EnabledIfEnvironmentVariable(named = "KUBE",
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
@@ -525,12 +525,17 @@ public class AcceptanceTests {
 
     Thread.sleep(5000);
 
+    LOGGER.info("Scaling down workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
     Thread.sleep(1000);
+
+    LOGGER.info("Scaling up workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
 
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
+
+    // todo: explicitly test for just one attempt id for this job
   }
 
   @Test

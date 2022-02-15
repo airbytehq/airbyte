@@ -217,6 +217,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   }
 
   private boolean checkStatus(final AsyncKubePodStatus status) {
+    log.info("document is present " + status.name() + " = " + getDocument(status.name()).isPresent());
     return getDocument(status.name()).isPresent();
   }
 
