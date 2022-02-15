@@ -116,7 +116,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final List<String> additionalParameters = new ArrayList<>();
     addJDBCUrlParameters(config, additionalParameters);
     if (useSSL(config)) {
-      addSSLJdbcParameters(additionalParameters);
+      addSSLJDBCParameters(additionalParameters);
     }
     return additionalParameters;
   }
@@ -143,7 +143,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return additionalParametersString.contains(s);
   }
 
-  private void addSSLJdbcParameters(final List<String> additionalParameters) {
+  private void addSSLJDBCParameters(final List<String> additionalParameters) {
     for (final Entry<String, String> sslParameter : getSSLParameters().entrySet()) {
       final String param = formatParameter(sslParameter.getKey(), sslParameter.getValue());
       additionalParameters.add(param);
