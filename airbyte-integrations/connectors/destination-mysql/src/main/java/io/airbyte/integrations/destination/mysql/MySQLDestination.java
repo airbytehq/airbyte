@@ -83,10 +83,18 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final List<String> additionalParameters = new ArrayList<>();
 
     if (config.has(ADDITIONAL_PARAMETERS_KEY)) {
-      additionalParameters.add(config.get(ADDITIONAL_PARAMETERS_KEY).asText());
+      String additionalParams = config.get(ADDITIONAL_PARAMETERS_KEY).asText();
+
+      if (useSSL(config)) {
+        if (additionalParams.contains("verifyServerCertificate=")) {
+          throw new RuntimeException(); //FIXME
+        }
+      }
+
+      additionalParameters.add(additionalParams);
     }
 
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+    if (useSSL(config)) {
       additionalParameters.add("useSSL=true");
       additionalParameters.add("requireSSL=true");
       additionalParameters.add("verifyServerCertificate=false");
@@ -116,6 +124,10 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  private boolean useSSL(JsonNode config) {
+    return !config.has("ssl") || config.get("ssl").asBoolean();
   }
 
   public static void main(final String[] args) throws Exception {

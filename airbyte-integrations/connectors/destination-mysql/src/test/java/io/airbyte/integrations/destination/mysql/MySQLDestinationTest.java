@@ -1,7 +1,9 @@
 package io.airbyte.integrations.destination.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,6 +45,17 @@ public class MySQLDestinationTest {
     return config;
   }
 
+  private JsonNode buildConfigWithSSLParam() {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db",
+        "jdbc_url_params", "verifyServerCertificate=false"
+    ));
+    return config;
+  }
+
   @Test
   void testNoExtraParams()  {
     JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoExtraParams());
@@ -56,5 +69,20 @@ public class MySQLDestinationTest {
     String url = jdbcConfig.get("jdbc_url").asText();
     assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&key1=value1&key2=value2&key3=value3&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
         url);
+  }
+
+  @Test
+  void testExtraParamsWithSSLParameter()  {
+    try {
+      JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithSSLParam());
+      String url = jdbcConfig.get("jdbc_url").asText();
+      assertEquals("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&key1=value1&key2=value2&key3=value3&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
+          url);
+      //FIXME: why can't I use Test(expected = ?)
+      assertTrue(false);
+    } catch (RuntimeException e) {
+// pass
+    }
+
   }
 }
