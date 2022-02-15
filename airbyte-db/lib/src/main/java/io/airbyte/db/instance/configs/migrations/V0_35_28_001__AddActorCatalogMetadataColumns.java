@@ -25,9 +25,6 @@ public class V0_35_28_001__AddActorCatalogMetadataColumns extends BaseJavaMigrat
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
-    // Warning: please do not use any jOOQ generated code to write a migration.
-    // As database schema changes, the generated jOOQ code can be deprecated. So
-    // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
