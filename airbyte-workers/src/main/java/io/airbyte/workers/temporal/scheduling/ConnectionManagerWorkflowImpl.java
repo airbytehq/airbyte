@@ -81,10 +81,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
-    connectionId = connectionUpdaterInput.getConnectionId();
     try {
       try {
         syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
+          connectionId = connectionUpdaterInput.getConnectionId();
+
           // Scheduling
           final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(
               connectionUpdaterInput.getConnectionId());
