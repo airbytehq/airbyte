@@ -698,6 +698,7 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
     }
+
   }
 
   @Nested
@@ -856,6 +857,7 @@ public class ConnectionManagerWorkflowTest {
   @Nested
   @DisplayName("Test that the workflow are properly getting stuck")
   class StuckWorkflow {
+
     @BeforeEach
     public void setup() {
       testEnv = TestWorkflowEnvironment.newInstance();
@@ -950,7 +952,7 @@ public class ConnectionManagerWorkflowTest {
 
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(80L));
-      workflow.retryFailActivity();
+      workflow.retryFailedActivity();
       testEnv.sleep(Duration.ofSeconds(30L));
 
       testEnv.shutdown();
@@ -1026,6 +1028,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
           .hasSize(1);
     }
+
   }
 
   private class HasFailureFromOrigin implements ArgumentMatcher<AttemptFailureInput> {

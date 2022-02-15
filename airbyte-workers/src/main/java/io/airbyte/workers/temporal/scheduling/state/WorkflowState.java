@@ -31,7 +31,7 @@ public class WorkflowState {
   private boolean resetConnection = false;
   private boolean continueAsReset = false;
   private boolean retryFailedActivity = false;
-  private boolean stuck = false;
+  private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
 
@@ -107,12 +107,12 @@ public class WorkflowState {
     this.retryFailedActivity = retryFailedActivity;
   }
 
-  public void setStuck(final boolean stuck) {
+  public void setQuarantined(final boolean quarantined) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.STUCK,
-        stuck);
+        quarantined);
     stateChangedListener.addEvent(id, event);
-    this.stuck = stuck;
+    this.quarantined = quarantined;
   }
 
   public void setSuccess(final boolean success) {
@@ -142,7 +142,7 @@ public class WorkflowState {
     this.setContinueAsReset(false);
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
-    this.setStuck(false);
+    this.setQuarantined(false);
     this.setCancelledForReset(false);
   }
 

@@ -61,7 +61,7 @@ public interface ConnectionManagerWorkflow {
    * activity.
    */
   @SignalMethod
-  void retryFailActivity();
+  void retryFailedActivity();
 
   /**
    * Use for testing in order to simulate a job failure.
@@ -94,12 +94,12 @@ public interface ConnectionManagerWorkflow {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class StuckInformation {
+  class QuarantinedInformation {
 
     private UUID connectionId;
     private long jobId;
     private int attemptId;
-    private boolean isStuck;
+    private boolean isQuarantined;
 
   }
 
@@ -107,6 +107,6 @@ public interface ConnectionManagerWorkflow {
    * Return if a job is stuck or not with the job information
    */
   @QueryMethod
-  StuckInformation getStuckInformation();
+  QuarantinedInformation getQuarantinedInformation();
 
 }
