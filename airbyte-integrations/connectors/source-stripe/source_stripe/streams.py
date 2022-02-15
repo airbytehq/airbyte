@@ -4,7 +4,7 @@
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union, List
 
 import pendulum
 import requests
@@ -197,6 +197,15 @@ class Invoices(IncrementalStripeStream):
 class InvoiceLineItems(StripeStream):
     """
     API docs: https://stripe.com/docs/api/invoices/invoice_lines
+
+    Line items are part of each 'invoice' record, so use Invoices stream because
+    it allows bulk extraction:
+        0.1.28 and below - 1 request extracts line items for 1 invoice (+ pagination reqs)
+        0.1.29 and above - 1 request extracts line items for 100 invoices (+ pagination reqs)
+
+    if line items object has indication for next pages ('has_more' attr)
+    then use current stream to extract next pages. In major cases pagination requests
+    are not performed because line items are fully reported in 'invoice' record
     """
 
     name = "invoice_line_items"
@@ -204,10 +213,42 @@ class InvoiceLineItems(StripeStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"invoices/{stream_slice['invoice_id']}/lines"
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+
+        # add 'starting_after' param
+        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
+            params["starting_after"] = stream_slice["starting_after"]
+
+        return params
+
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+
         invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
+
+            lines_obj = invoice.get('lines', {})
+            if not lines_obj:
+                continue
+
+            line_items = lines_obj.get('data', [])
+
+            # get the next pages with line items
+            line_items_next_pages = []
+            if lines_obj.get('has_more') and line_items:
+                stream_slice = {"invoice_id": invoice["id"], "starting_after": line_items[-1]['id']}
+                line_items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
+
+            # link invoice and relevant lines items by adding 'invoice_id' attr to each line_item record
+            for line_item in [*line_items, *line_items_next_pages]:
+                line_item['invoice_id'] = invoice['id']
+                yield line_item
 
 
 class InvoiceItems(IncrementalStripeStream):
@@ -286,12 +327,30 @@ class SubscriptionItems(StripeStream):
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["subscription"] = stream_slice["subscription_id"]
+
+        # add 'starting_after' param
+        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
+            params["starting_after"] = stream_slice["starting_after"]
+
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for subscriptions in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"subscription_id": subscriptions["id"]}, **kwargs)
+        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+
+            items_obj = subscription.get('items', {})
+            if not items_obj:
+                continue
+
+            items = items_obj.get('data', [])
+
+            # get the next pages with subscription items
+            items_next_pages = []
+            if items_obj.get('has_more') and items:
+                stream_slice = {"subscription_id": subscription["id"], "starting_after": items[-1]['id']}
+                items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
+
+            yield from [*items, *items_next_pages]
 
 
 class Transfers(IncrementalStripeStream):
@@ -338,15 +397,34 @@ class BankAccounts(StripeStream):
         customer_id = stream_slice["customer_id"]
         return f"customers/{customer_id}/sources"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["object"] = "bank_account"
+
+        # add 'starting_after' param
+        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
+            params["starting_after"] = stream_slice["starting_after"]
+
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
+
+            sources_obj = customer.get('sources', {})
+            if not sources_obj:
+                continue
+
+            # filter out 'bank_account' source items only
+            bank_accounts = [item for item in sources_obj.get('data', []) if item.get('object') == 'bank_account']
+
+            # get the next pages with subscription items
+            bank_accounts_next_pages = []
+            if sources_obj.get('has_more') and bank_accounts:
+                stream_slice = {"customer_id": customer["id"], "starting_after": bank_accounts[-1]['id']}
+                bank_accounts_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
+
+            yield from [*bank_accounts, *bank_accounts_next_pages]
 
 
 class CheckoutSessions(StripeStream):
