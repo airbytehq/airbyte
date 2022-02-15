@@ -994,10 +994,30 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
 
-    def list_records(self, fields) -> Iterable:
-        for row in self.read(getter=partial(self._api.get, url=self.url)):
-            record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return self.url
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
+        for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")  # TODO how to bypass _api ?
             yield {**row, **record}
+
+    # def list_records(self, fields) -> Iterable:
+    #     for row in self.read(getter=partial(self._api.get, url=self.url)):
+    #         record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
+    #         yield {**row, **record}
 
 
 class ContactLists(IncrementalStream):
