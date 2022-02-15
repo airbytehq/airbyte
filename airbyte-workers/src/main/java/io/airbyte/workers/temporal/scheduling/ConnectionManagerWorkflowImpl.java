@@ -83,9 +83,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     connectionId = connectionUpdaterInput.getConnectionId();
     try {
-      if (connectionUpdaterInput.getWorkflowState() != null) {
-        workflowState = connectionUpdaterInput.getWorkflowState();
-      }
       try {
         syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
           // Scheduling

@@ -25,8 +25,6 @@ public class ConnectionUpdaterInput {
   private Integer attemptId;
   private boolean fromFailure;
   private int attemptNumber;
-  @Nullable
-  private WorkflowState workflowState;
   private boolean resetConnection;
 
 }
