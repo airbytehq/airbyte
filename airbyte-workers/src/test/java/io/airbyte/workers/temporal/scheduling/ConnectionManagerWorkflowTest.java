@@ -421,6 +421,8 @@ public class ConnectionManagerWorkflowTest {
     @MethodSource("getSetupFailingFailingActivityBeforeRun")
     void testGetStuckBeforeRun(Thread mockSetup) {
       mockSetup.run();
+      Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
+          Duration.ZERO));
 
       final UUID testId = UUID.randomUUID();
       TestStateListener.reset();
@@ -456,6 +458,9 @@ public class ConnectionManagerWorkflowTest {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))
           .thenReturn(new JobCreationOutput(1l));
+
+      Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
+          Duration.ZERO));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
@@ -699,8 +704,6 @@ public class ConnectionManagerWorkflowTest {
     @DisplayName("Test that cancelling a reset doesn't restart a reset")
     public void cancelResetDontContinueAsReset() {
 
-      Mockito.when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(2));
-
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
@@ -824,11 +827,19 @@ public class ConnectionManagerWorkflowTest {
           false);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(10L));
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(90L));
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
       signalSender.accept(workflow);
-      testEnv.sleep(Duration.ofSeconds(60L));
+
+      // TODO
+      // For some reason this transiently fails if it is below the runtime.
+      // However, this should be reported almost immediately. I think this is a bug.
+      testEnv.sleep(Duration.ofMinutes(SleepingSyncWorkflow.RUN_TIME.toMinutes() + 1));
       testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
