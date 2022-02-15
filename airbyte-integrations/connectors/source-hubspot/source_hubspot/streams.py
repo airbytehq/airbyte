@@ -1051,6 +1051,15 @@ class ContactsListMemberships(Stream):
     page_filter = "vidOffset"
     page_field = "vid-offset"
 
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return self.url
+
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
         According to documentation Contacts may have multiple vids,
@@ -1062,10 +1071,20 @@ class ContactsListMemberships(Stream):
             for item in record.get("list-memberships", []):
                 yield {"canonical-vid": canonical_vid, **item}
 
-    def list_records(self, fields) -> Iterable:
-        """Receiving all contacts with list memberships"""
-        params = {"showListMemberships": True}
-        yield from self.read(partial(self._api.get, url=self.url), params)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({"showListMemberships": True})
+        return params
+
+    # def list_records(self, fields) -> Iterable:
+    #     """Receiving all contacts with list memberships"""
+    #     params = {"showListMemberships": True}
+    #     yield from self.read(partial(self._api.get, url=self.url), params)
 
 
 class DealStageHistoryStream(Stream):
