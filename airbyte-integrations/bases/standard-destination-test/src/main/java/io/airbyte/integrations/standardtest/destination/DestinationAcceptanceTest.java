@@ -791,10 +791,10 @@ public abstract class DestinationAcceptanceTest {
       throw new WorkerException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
-    // This step is commented out because it can take a very long time to run, and is not vital for Airbyte
+    // This step is commented out because it takes a long time, but is not vital for Airbyte
     // dbtConfig.withDbtArguments("docs generate");
     // if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-    //   throw new WorkerException("dbt docs generate Failed.");
+    // throw new WorkerException("dbt docs generate Failed.");
     // }
     runner.close();
   }
