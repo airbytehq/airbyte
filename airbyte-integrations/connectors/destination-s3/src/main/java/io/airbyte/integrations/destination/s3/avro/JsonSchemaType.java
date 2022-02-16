@@ -10,7 +10,8 @@ import org.apache.avro.Schema;
  * Mapping of JsonSchema types to Avro types.
  */
 public enum JsonSchemaType {
-
+  // map integer to long in order to handle int64 values
+  // https://avro.apache.org/docs/current/spec.html#schema_primitive
   STRING("string", true, Schema.Type.STRING),
   NUMBER("number", true, Schema.Type.DOUBLE),
   INTEGER("integer", true, Schema.Type.LONG),

@@ -158,6 +158,8 @@ public class BigQueryDenormalizedGscDestinationAcceptanceTest extends Destinatio
 
   private Object getTypedFieldValue(final FieldValueList row, final Field field) {
     final FieldValue fieldValue = row.get(field.getName());
+    // getLongValue used to get an Integer
+    // https://googleapis.dev/java/google-cloud-bigquery/latest/com/google/cloud/bigquery/LegacySQLTypeName.html#INTEGER
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
