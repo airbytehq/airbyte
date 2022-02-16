@@ -91,45 +91,6 @@ public class TestStreamingJdbcDatabase {
     PSQL_DB.close();
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  void testExecute() throws SQLException {
-    final CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
-    doNothing().when(defaultJdbcDatabase).execute(queryExecutor);
-
-    streamingJdbcDatabase.execute(queryExecutor);
-
-    verify(defaultJdbcDatabase).execute(queryExecutor);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testBufferedResultQuery() throws SQLException {
-    doReturn(RECORDS_AS_JSON).when(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
-
-    final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
-
-    assertEquals(RECORDS_AS_JSON, actual);
-    verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testResultSetQuery() throws SQLException {
-    doReturn(RECORDS_AS_JSON.stream()).when(defaultJdbcDatabase).resultSetQuery(any(), any());
-
-    final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
-    final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
-    actual.close();
-
-    assertEquals(RECORDS_AS_JSON, actualAsList);
-    verify(defaultJdbcDatabase).resultSetQuery(any(), any());
-  }
-
   @Test
   void testQuery() throws SQLException {
     // grab references to connection and prepared statement so we can verify the streaming config is
