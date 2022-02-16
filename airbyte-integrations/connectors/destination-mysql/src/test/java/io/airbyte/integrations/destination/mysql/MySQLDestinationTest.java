@@ -37,19 +37,7 @@ public class MySQLDestinationTest {
     ));
     return config;
   }
-
-  private JsonNode buildConfigWithExtraJDBCParametersNoSSL(final String extraParam) {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "ssl", false,
-        "jdbc_url_params", extraParam
-    ));
-    return config;
-  }
-
+  
   @Test
   void testNoExtraParams() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoJDBCParameters());
