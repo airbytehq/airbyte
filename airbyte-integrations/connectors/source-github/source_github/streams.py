@@ -828,3 +828,12 @@ class PullRequestCommentReactions(ReactionStream):
     """
 
     parent_entity = ReviewComments
+
+
+class Deployments(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/deployments#list-deployments
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/deployments"
