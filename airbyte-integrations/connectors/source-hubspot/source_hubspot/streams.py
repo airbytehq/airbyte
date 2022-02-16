@@ -149,43 +149,43 @@ class API:
             "User-Agent": self.USER_AGENT,
         }
 
-    # @staticmethod
-    # def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-    #     """Handle response"""
-    #     message = "Unknown error"
-    #     if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
-    #         message = response.json().get("message")
-    #
-    #     if response.status_code == HTTPStatus.FORBIDDEN:
-    #         """Once hit the forbidden endpoint, we return the error message from response."""
-    #         pass
-    #     elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
-    #         raise HubspotInvalidAuth(message, response=response)
-    #     elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-    #         retry_after = response.headers.get("Retry-After")
-    #         raise HubspotRateLimited(
-    #             f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
-    #             " See https://developers.hubspot.com/docs/api/usage-details",
-    #             response=response,
-    #         )
-    #     elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
-    #         raise HubspotTimeout(message, response=response)
-    #     else:
-    #         response.raise_for_status()
-    #
-    #     return response.json()
+    @staticmethod  # TODO call it inside self._parse_response
+    def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+        """Handle response"""
+        message = "Unknown error"
+        if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
+            message = response.json().get("message")
+
+        if response.status_code == HTTPStatus.FORBIDDEN:
+            """Once hit the forbidden endpoint, we return the error message from response."""
+            pass
+        elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
+            raise HubspotInvalidAuth(message, response=response)
+        elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            retry_after = response.headers.get("Retry-After")
+            raise HubspotRateLimited(
+                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+                " See https://developers.hubspot.com/docs/api/usage-details",
+                response=response,
+            )
+        elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
+            raise HubspotTimeout(message, response=response)
+        else:
+            response.raise_for_status()
+
+        return response.json()
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
-    def get(self, url: str, params: MutableMapping[str, Any] = None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+    def get(self, url: str, params: MutableMapping[str, Any] = None) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
-        return self._parse_and_handle_errors(response)
+        return self._parse_and_handle_errors(response), response
 
     def post(
         self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
-    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
-        return self._parse_and_handle_errors(response)
+        return self._parse_and_handle_errors(response), response
 
 
 class Stream(HttpStream, ABC):
@@ -877,40 +877,150 @@ class CRMSearchStream(IncrementalStream, ABC):
     @retry_after_handler(fixed_retry_after=1, max_tries=3)
     def search(
         self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
-    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
         # We can safely retry this POST call, because it's a search operation.
         # Given Hubspot does not return any Retry-After header (https://developers.hubspot.com/docs/api/crm/search)
         # from the search endpoint, it waits one second after trying again.
         # As per their docs: `These search endpoints are rate limited to four requests per second per authentication token`.
         return self._api.post(url=url, data=data, params=params)
 
-    def list_records(self, fields) -> Iterable:
-        params = {
-            "archived": str(self._include_archived_only).lower(),
-            "associations": self.associations,
-        }
+    def list_records(self, fields) -> Iterable:  # TODO REMOVE IT
+        # params = {
+        #     "archived": str(self._include_archived_only).lower(),
+        #     "associations": self.associations,
+        # }
+
         if self.state:
             generator = self.read(partial(self.search, url=self.url), params)
         else:
             generator = self.read(partial(self._api.get, url=self.url), params)
         yield from self._flat_associations(self._filter_old_records(generator))
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
-        latest_cursor = None
-        default_params = {"limit": self.limit}
-        params = {**default_params, **params} if params else {**default_params}
-        properties_list = list(self.properties.keys())
-
+    def _process_search(self, properties_list, next_page_token: Mapping[str, Any] = None) -> dict:
+        stream_records = {}
         payload = (
             {
-                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "filters": [
+                    {"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field,
+                     "operator": "GTE"}],
                 "properties": properties_list,
                 "limit": 100,
             }
             if self.state
             else {}
         )
+        if next_page_token:
+            payload.update(next_page_token['payload'])
+
+        response, raw_response = self.search(url=self.url, data=payload)
+        for record in self._transform(
+                self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
+            stream_records[record["id"]] = record
+
+        return stream_records
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:  # TODO
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        if stream_state:
+            self.state = stream_state
+
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span(
+                "read_records"):
+            while not pagination_complete:
+                properties_list = list(self.properties.keys())
+
+                if self.state:
+                    stream_records = self._process_search(properties_list, next_page_token=next_page_token)
+
+                # if properties_list:
+                else:
+                    stream_records, raw_response = self._read_stream_records(
+                        properties_list=properties_list,
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                    )
+
+                records = [value for key, value in stream_records.items()]
+
+                # else:
+                    # response = getter(params=params)
+                    # response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+                    # records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+                if self.filter_old_records:
+                    records = self._filter_old_records(records)
+
+                records = self._flat_associations(records)  # TODO check
+
+                latest_cursor = None
+                for record in records:
+                    cursor = self._field_to_datetime(record[self.updated_at_field])
+                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                    yield record
+                self._update_state(latest_cursor=latest_cursor)  # TODO update state
+
+                next_page_token = self.next_page_token(raw_response)
+                if not next_page_token:
+                    pagination_complete = True
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        params = {
+            "archived": str(self._include_archived_only).lower(),
+            "associations": self.associations,
+            "limit": self.limit
+        }
+        if next_page_token:
+            params.update(next_page_token.get('params', {}))
+        return params
+
+    def next_page_token(self, response: requests.Response):
+        response = self._parse_response(response)
+        params = {}
+        payload = {}
+
+        if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+            params["after"] = response["paging"]["next"]["after"]
+            payload["after"] = response["paging"]["next"]["after"]
+
+        return {
+            "params": params,
+            "payload": payload
+        }
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:  # TODO remove it
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        # latest_cursor = None
+        # default_params = {"limit": self.limit}
+        # params = {**default_params, **params} if params else {**default_params}
+        # properties_list = list(self.properties.keys())
+
+        # payload = (
+        #     {
+        #         "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+        #         "properties": properties_list,
+        #         "limit": 100,
+        #     }
+        #     if self.state
+        #     else {}
+        # )
 
         while True:
             stream_records = {}
@@ -925,13 +1035,14 @@ class CRMSearchStream(IncrementalStream, ABC):
                 yield record
                 cursor = self._field_to_datetime(record[self.updated_at_field])
                 latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-            if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
-                params["after"] = response["paging"]["next"]["after"]
-                payload["after"] = response["paging"]["next"]["after"]
-            else:
-                break
 
-        self._update_state(latest_cursor=latest_cursor)
+            # if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+            #     params["after"] = response["paging"]["next"]["after"]
+            #     payload["after"] = response["paging"]["next"]["after"]
+            # else:
+            #     break
+
+        # self._update_state(latest_cursor=latest_cursor)
 
 
 class CRMObjectStream(Stream):
