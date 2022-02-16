@@ -15,6 +15,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog
 from dotmap import DotMap
 from psycopg2.pool import ThreadedConnectionPool
 
+from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
 from destination_redshift_py.table import AIRBYTE_AB_ID, AIRBYTE_EMITTED_AT, Table
 
@@ -27,6 +28,8 @@ class DestinationRedshiftPy(Destination):
 
         self.tables = dict()
 
+        self.csv_writers = dict()
+
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
 
@@ -37,6 +40,7 @@ class DestinationRedshiftPy(Destination):
         if cmd == "write":
             self._extract_tables_from_json_schema(ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
             self._create_tables()
+            self._initialize_csv_writers()
             return super().run_cmd(parsed_args)
         else:
             return super().run_cmd(parsed_args)
@@ -84,6 +88,7 @@ class DestinationRedshiftPy(Destination):
         """
         for message in input_messages:
             if message.type == Type.STATE:
+                self._flush()
                 yield message
             elif message.type == Type.RECORD:
                 data = DotMap({message.record.stream: message.record.data})
@@ -107,7 +112,9 @@ class DestinationRedshiftPy(Destination):
                     # Delete the child after visiting
                     delattr(parent, node[-1])
 
-                    print(f"{table.name} -> {records}")
+                    self.csv_writers[table.name].write(records)
+
+        self._flush()
 
     def _process_record(self, table: Table, parent_record: DotMap, record: DotMap, emitted_at: int):
         record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat()
@@ -127,6 +134,13 @@ class DestinationRedshiftPy(Destination):
             converter.convert()
 
             self.tables = dict(**self.tables, **converter.tables)
+
+    def _initialize_csv_writers(self):
+        for table in self.tables.values():
+            csv_writer = CSVWriter(table=table)
+            csv_writer.initialize_writer()
+
+            self.csv_writers[table.name] = csv_writer
 
     def _create_tables(self):
         cursor = self._get_connection(autocommit=True).cursor()
@@ -164,3 +178,8 @@ class DestinationRedshiftPy(Destination):
     def _assign_unique_id(fields: DotMap):
         if AIRBYTE_AB_ID.name not in fields:
             fields[AIRBYTE_AB_ID.name] = uuid4().hex
+
+    def _flush(self):
+        for csv_writer in self.csv_writers.values():
+            if csv_writer.flush_gzipped():
+                print(csv_writer.flush_gzipped().name)

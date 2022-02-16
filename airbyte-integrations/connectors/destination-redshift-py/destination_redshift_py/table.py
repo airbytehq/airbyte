@@ -40,3 +40,7 @@ class Table:
     def reference_key(self) -> Optional[str]:
         if self.references:
             return f"_airbyte_{self.references.name}_id"
+
+    @property
+    def field_names(self) -> List[str]:
+        return list(map(lambda field: field.name, self.fields))
