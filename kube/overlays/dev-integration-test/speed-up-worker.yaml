@@ -8,11 +8,6 @@ spec:
       containers:
         - name: airbyte-worker-container
           env:
-            - name: CONTAINER_ORCHESTRATOR_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: CONTAINER_ORCHESTRATOR_ENABLED
             - name: REPLICATION_WORKER_STATUS_CHECK_INTERVAL
               valueFrom:
                 configMapKeyRef:
