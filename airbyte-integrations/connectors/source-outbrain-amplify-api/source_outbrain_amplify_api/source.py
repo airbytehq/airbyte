@@ -182,6 +182,16 @@ class Employees(IncrementalOutbrainAmplifyApiStream):
 
 # Source
 class SourceOutbrainAmplifyApi(AbstractSource):
+
+    @property
+    def retry_factor(self) -> int:
+         # For python backoff package expo backoff delays calculated according to formula:
+        # delay = factor * base ** n where base is 2
+        # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
+        # For exports stream there is a limit of 4 requests per minute.
+        # With retry_factor == 1800, we avoid hitting the api rate limit of generating more than 2 token within 30mins
+        return 1800
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -212,6 +222,11 @@ class SourceOutbrainAmplifyApi(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        url = 'https://api.outbrain.com/amplify/v0.1/login'
+    
+        auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
+        response = (requests.get(url, auth=auth))
+        token = response.json()['OB-TOKEN-V1']
+
+        auth = TokenAuthenticator(token=token) 
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
