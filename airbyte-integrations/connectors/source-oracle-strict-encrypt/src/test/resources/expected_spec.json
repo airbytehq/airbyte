@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Oracle Source Spec",
     "type": "object",
-    "required": ["host", "port", "sid", "username", "encryption"],
+    "required": ["host", "port", "sid", "username"],
     "additionalProperties": false,
     "properties": {
       "host": {

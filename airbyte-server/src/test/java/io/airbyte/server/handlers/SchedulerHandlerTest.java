@@ -58,7 +58,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -363,7 +363,7 @@ class SchedulerHandlerTest {
     final SynchronousResponse<AirbyteCatalog> discoverResponse = (SynchronousResponse<AirbyteCatalog>) jobResponse;
     final SynchronousJobMetadata metadata = mock(SynchronousJobMetadata.class);
     when(discoverResponse.isSuccess()).thenReturn(true);
-    when(discoverResponse.getOutput()).thenReturn(CatalogHelpers.createAirbyteCatalog("shoes", Field.of("sku", JsonSchemaPrimitive.STRING)));
+    when(discoverResponse.getOutput()).thenReturn(CatalogHelpers.createAirbyteCatalog("shoes", Field.of("sku", JsonSchemaType.STRING)));
     when(discoverResponse.getMetadata()).thenReturn(metadata);
     when(metadata.isSucceeded()).thenReturn(true);
 

@@ -52,7 +52,7 @@ class TestFacebookMarketingSource:
         assert deleted_records, f"{stream_name} stream should have deleted records returned"
         assert is_specific_deleted_pulled, f"{stream_name} stream should have a deleted record with id={deleted_id}"
 
-    @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 1), ("ad_sets", 1)])
+    @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("ad_sets", 1)])
     def test_streams_with_include_deleted_and_state(self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state):
         """Should ignore state because of include_deleted enabled"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})

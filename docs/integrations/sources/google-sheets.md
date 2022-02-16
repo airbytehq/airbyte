@@ -32,8 +32,8 @@ This section should contain a table with the following format:
 
 At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Source to ensure high transfer speeds.
 
-## Getting Started (Airbyte Cloud) 
-To configure the connector you'll need to: 
+## Getting Started (Airbyte Cloud)
+To configure the connector you'll need to:
 
 * Authorize your Google account via OAuth
 * The ID of the spreadsheet you'd like to sync
@@ -41,7 +41,7 @@ To configure the connector you'll need to:
 ### Setup Guide
 
 #### Authorization
-Click on the "Sign in with Google" button and authorize via your Google account. 
+Click on the "Sign in with Google" button and authorize via your Google account.
 
 #### Sheet ID
 you'll need the ID of the Spreadsheet you'd like to sync. To get it, navigate to the spreadsheet in your browser, then copy the portion of the URL which comes after "/d" and before "/edit" or "/view". This is the highlighted portion of the screenshot below:
@@ -57,7 +57,7 @@ To configure the Google Sheets Source for syncs, you'll need the following:
 * Enable the Google Sheets API for your personal or organization account
 * Enable the Google Drive API for your personal or organization account
 * Create a service account with permissions to access the Google Sheets and Drive APIs
-* Create a Service Account Key for the Service Account 
+* Create a Service Account Key for the Service Account
 * Share the spreadsheets you'd like to sync with the Service Account created above
 * The ID of the spreadsheet you'd like to sync
 
@@ -98,12 +98,13 @@ Finally, you'll need the ID of the Spreadsheet you'd like to sync. To get it, na
 The Airbyte UI will ask for two things:
 
 1. The spreadsheet ID
-2. The content of the credentials JSON you created in the "Create a Service Account and Service Account Key" step above. This should be as simple as opening the file and copy-pasting all its contents into this field in the Airbyte UI. 
+2. The content of the credentials JSON you created in the "Create a Service Account and Service Account Key" step above. This should be as simple as opening the file and copy-pasting all its contents into this field in the Airbyte UI.
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                       |
 |:--------| :--------  | :-----       |:------------------------------------------------------------------------------|
+| 0.2.9   | 2022-01-25 | [9208](https://github.com/airbytehq/airbyte/pull/9208) | Update title and descriptions                                                 |
 | 0.2.7   | 2021-09-27 | [8470](https://github.com/airbytehq/airbyte/pull/8470) | Migrate to the CDK                                                            |
 | 0.2.6   | 2021-09-27 | [6354](https://github.com/airbytehq/airbyte/pull/6354) | Support connecting via Oauth webflow                                          |
 | 0.2.5   | 2021-09-12 | [5972](https://github.com/airbytehq/airbyte/pull/5972) | Fix full_refresh test by adding supported_sync_modes to Stream initialization |

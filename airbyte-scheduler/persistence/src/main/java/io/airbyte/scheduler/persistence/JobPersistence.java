@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -124,6 +125,16 @@ public interface JobPersistence {
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
+
+  /**
+   * Writes a summary of all failures that occurred during the attempt.
+   *
+   * @param jobId job id
+   * @param attemptNumber attempt number
+   * @param failureSummary summary containing failure metadata and ordered list of failures
+   * @throws IOException exception due to interaction with persistence
+   */
+  void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
 
   /**
    * @param configTypes - type of config, e.g. sync

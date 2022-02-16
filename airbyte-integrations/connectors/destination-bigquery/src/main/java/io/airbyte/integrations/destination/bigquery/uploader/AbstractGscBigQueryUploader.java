@@ -18,14 +18,14 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
-import io.airbyte.integrations.destination.gcs.writer.GscWriter;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractGscBigQueryUploader<T extends GscWriter> extends AbstractBigQueryUploader<GscWriter> {
+public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWriter> extends AbstractBigQueryUploader<DestinationFileWriter> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGscBigQueryUploader.class);
 
