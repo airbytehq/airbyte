@@ -147,8 +147,6 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
     // value in the following format
     try {
-      LOGGER.error("===>> {}", value);
-      LOGGER.error("===>> {}", DataTypeUtils.DATE_FORMAT_WITH_MILLISECONDS.parse(value));
       preparedStatement.setTimestamp(parameterIndex, Timestamp
           .from(DataTypeUtils.DATE_FORMAT_WITH_MILLISECONDS.parse(value).toInstant()));
     } catch (final ParseException e) {
