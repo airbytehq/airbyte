@@ -12,6 +12,7 @@ from chargebee.list_result import ListResult
 from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
+from chargebee.models import Coupon as CouponModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Event as EventModel
 from chargebee.models import Transactions as TransactionModel

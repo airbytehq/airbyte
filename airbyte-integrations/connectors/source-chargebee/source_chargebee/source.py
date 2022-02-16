@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams import Stream
 
 from .streams import Addon, AttachedItem, Transactions, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription
 
-
 class SourceChargebee(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # Configure the Chargebee Python SDK
@@ -34,6 +33,7 @@ class SourceChargebee(AbstractSource):
 
         # Below streams are suitable for both `Product Catalog 1.0` and `Product Catalog 2.0`.
         common_streams = [
+            Coupon(**kwargs),
             Customer(**kwargs),
             Event(**kwargs),
             Invoice(**kwargs),

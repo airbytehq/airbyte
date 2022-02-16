@@ -48,7 +48,7 @@ exception = GoogleAdsException(
 
 
 def mock_response_1():
-    yield from [
+    yield [
         {"segments.date": "2021-01-01", "click_view.gclid": "1"},
         {"segments.date": "2021-01-02", "click_view.gclid": "2"},
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
@@ -58,7 +58,7 @@ def mock_response_1():
 
 
 def mock_response_2():
-    yield from [
+    yield [
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
         {"segments.date": "2021-01-03", "click_view.gclid": "4"},
         {"segments.date": "2021-01-03", "click_view.gclid": "5"},
@@ -73,7 +73,7 @@ class MockGoogleAds(GoogleAds):
     def parse_single_result(self, schema, result):
         return result
 
-    def send_request(self, query: str):
+    def send_request(self, query: str, customer_id: str):
         self.count += 1
         if self.count == 1:
             return mock_response_1()
@@ -109,7 +109,7 @@ def test_page_token_expired_retry_succeeds(mock_ads_client, test_config):
 
 
 def mock_response_fails_1():
-    yield from [
+    yield [
         {"segments.date": "2021-01-01", "click_view.gclid": "1"},
         {"segments.date": "2021-01-02", "click_view.gclid": "2"},
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
@@ -120,7 +120,7 @@ def mock_response_fails_1():
 
 
 def mock_response_fails_2():
-    yield from [
+    yield [
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
         {"segments.date": "2021-01-03", "click_view.gclid": "4"},
         {"segments.date": "2021-01-03", "click_view.gclid": "5"},
@@ -131,7 +131,7 @@ def mock_response_fails_2():
 
 
 class MockGoogleAdsFails(MockGoogleAds):
-    def send_request(self, query: str):
+    def send_request(self, query: str, customer_id: str):
         self.count += 1
         if self.count == 1:
             return mock_response_fails_1()
@@ -166,7 +166,7 @@ def test_page_token_expired_retry_fails(mock_ads_client, test_config):
 
 
 def mock_response_fails_one_date():
-    yield from [
+    yield [
         {"segments.date": "2021-01-03", "click_view.gclid": "3"},
         {"segments.date": "2021-01-03", "click_view.gclid": "4"},
         {"segments.date": "2021-01-03", "click_view.gclid": "5"},
@@ -177,7 +177,7 @@ def mock_response_fails_one_date():
 
 
 class MockGoogleAdsFailsOneDate(MockGoogleAds):
-    def send_request(self, query: str):
+    def send_request(self, query: str, customer_id: str):
         return mock_response_fails_one_date()
 
 
