@@ -51,8 +51,6 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
   private final Timestamp uploadTime;
-  protected final String stagingFolder;
-  protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
   protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
   protected final Set<String> stagingFileNames = new LinkedHashSet<>();
   private final boolean purgeStagingData;
