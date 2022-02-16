@@ -31,7 +31,7 @@ class Helpers {
         """
 
         if (project.file(testFilesDirectory).exists()) {
-            def outputArg = project.hasProperty('reports_folder') ?"-otemp_coverage.xml" : ''
+            def outputArg = project.hasProperty('reports_folder') ?"-otemp_coverage.xml" : "--skip-empty"
             def coverageFormat = project.hasProperty('reports_folder') ? 'xml' : 'report'
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
                 project.task("_${taskName}Coverage", type: PythonTask, dependsOn: taskDependencies) {
@@ -39,6 +39,7 @@ class Helpers {
                     command = "run --data-file=${testFilesDirectory}/.coverage.${taskName} --rcfile=${project.rootProject.file('pyproject.toml').absolutePath} -m pytest -s ${testFilesDirectory} -c ${project.rootProject.file('pyproject.toml').absolutePath}"
                 }
                 // generation of coverage report is optional and we should skip it if tests are empty
+
                 project.task(taskName, type: Exec){
                     commandLine = ".venv/bin/python"
                     args "-m", "coverage", coverageFormat, "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}", outputArg
@@ -259,7 +260,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
                 // saves tools reports to a custom folder
         def reportsFolder = project.hasProperty('reports_folder') ? project.reports_folder : ''
-        if ( reportsFolder != '') {
+        if ( reportsFolder != '' ) {
 
             // clean reports folders
             project.file(reportsFolder).deleteDir()
