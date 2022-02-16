@@ -4,7 +4,7 @@
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union, List
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -233,21 +233,21 @@ class InvoiceLineItems(StripeStream):
         invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
 
-            lines_obj = invoice.get('lines', {})
+            lines_obj = invoice.get("lines", {})
             if not lines_obj:
                 continue
 
-            line_items = lines_obj.get('data', [])
+            line_items = lines_obj.get("data", [])
 
             # get the next pages with line items
             line_items_next_pages = []
-            if lines_obj.get('has_more') and line_items:
-                stream_slice = {"invoice_id": invoice["id"], "starting_after": line_items[-1]['id']}
+            if lines_obj.get("has_more") and line_items:
+                stream_slice = {"invoice_id": invoice["id"], "starting_after": line_items[-1]["id"]}
                 line_items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
             # link invoice and relevant lines items by adding 'invoice_id' attr to each line_item record
             for line_item in [*line_items, *line_items_next_pages]:
-                line_item['invoice_id'] = invoice['id']
+                line_item["invoice_id"] = invoice["id"]
                 yield line_item
 
 
@@ -338,16 +338,16 @@ class SubscriptionItems(StripeStream):
         subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
 
-            items_obj = subscription.get('items', {})
+            items_obj = subscription.get("items", {})
             if not items_obj:
                 continue
 
-            items = items_obj.get('data', [])
+            items = items_obj.get("data", [])
 
             # get the next pages with subscription items
             items_next_pages = []
-            if items_obj.get('has_more') and items:
-                stream_slice = {"subscription_id": subscription["id"], "starting_after": items[-1]['id']}
+            if items_obj.get("has_more") and items:
+                stream_slice = {"subscription_id": subscription["id"], "starting_after": items[-1]["id"]}
                 items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
             yield from [*items, *items_next_pages]
@@ -411,17 +411,17 @@ class BankAccounts(StripeStream):
         customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
 
-            sources_obj = customer.get('sources', {})
+            sources_obj = customer.get("sources", {})
             if not sources_obj:
                 continue
 
             # filter out 'bank_account' source items only
-            bank_accounts = [item for item in sources_obj.get('data', []) if item.get('object') == 'bank_account']
+            bank_accounts = [item for item in sources_obj.get("data", []) if item.get("object") == "bank_account"]
 
             # get the next pages with subscription items
             bank_accounts_next_pages = []
-            if sources_obj.get('has_more') and bank_accounts:
-                stream_slice = {"customer_id": customer["id"], "starting_after": bank_accounts[-1]['id']}
+            if sources_obj.get("has_more") and bank_accounts:
+                stream_slice = {"customer_id": customer["id"], "starting_after": bank_accounts[-1]["id"]}
                 bank_accounts_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
             yield from [*bank_accounts, *bank_accounts_next_pages]
