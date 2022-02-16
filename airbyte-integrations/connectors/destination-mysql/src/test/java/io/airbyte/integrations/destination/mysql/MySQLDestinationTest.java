@@ -78,4 +78,12 @@ public class MySQLDestinationTest {
       );
     }
   }
+
+  @Test
+  void testInvalidExtraParam() {
+    final String extraParam = "key1=value1&sdf&";
+    assertThrows(RuntimeException.class, () -> {
+      getDestination().toJdbcConfig(buildConfigWithExtraJDBCParameters(extraParam));
+    });
+  }
 }
