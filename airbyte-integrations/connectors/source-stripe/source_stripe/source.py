@@ -34,6 +34,7 @@ from source_stripe.streams import (
     SubscriptionItems,
     Subscriptions,
     Transfers,
+    IssuingCards,
 )
 
 
@@ -74,4 +75,5 @@ class SourceStripe(AbstractSource):
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             Transfers(**incremental_args),
+            IssuingCards(**incremental_args),
         ]

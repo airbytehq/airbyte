@@ -408,3 +408,14 @@ class PromotionCodes(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "promotion_codes"
+
+
+class IssuingCards(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/cards/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "issuing/cards"
