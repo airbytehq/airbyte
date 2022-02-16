@@ -83,24 +83,11 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     List<List<String>> partitions = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_FILES_PER_COPY);
-    LOGGER.info("Starting parallel int copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
+    LOGGER.info("Starting parallel copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
         schemaName, partitions.size());
 
-    copyFilesInParallel(partitions);
+    copyFilesInParallel(partitions, executorService);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
-  }
-
-  private void copyFilesInParallel(List<List<String>> partitions) {
-    partitions.forEach(files -> {
-      try {
-        executorService.execute(() -> copyIntoStage(files));
-      } catch (Exception e) {
-        LOGGER.error("Failed to copy files from stage to tmp table {}", tmpTableName, e);
-        throw new RuntimeException(e);
-      } finally {
-        executorService.shutdown();
-      }
-    });
   }
 
   @Override
