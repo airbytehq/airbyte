@@ -4,7 +4,7 @@
 
 
 from enum import Enum
-from typing import Any, List, Mapping
+from typing import Any, Iterator, List, Mapping
 
 import pendulum
 from google.ads.googleads.client import GoogleAdsClient
@@ -32,18 +32,21 @@ class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
     def __init__(self, credentials: Mapping[str, Any], customer_id: str):
+        # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
+        # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
+        credentials["use_proto_plus"] = True
+
         self.client = GoogleAdsClient.load_from_dict(credentials)
-        self.customer_id = customer_id
+        self.customer_ids = customer_id.split(",")
         self.ga_service = self.client.get_service("GoogleAdsService")
 
-    def send_request(self, query: str) -> SearchGoogleAdsResponse:
+    def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
         client = self.client
         search_request = client.get_type("SearchGoogleAdsRequest")
-        search_request.customer_id = self.customer_id
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
-
-        return self.ga_service.search(search_request)
+        search_request.customer_id = customer_id
+        yield self.ga_service.search(search_request)
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
