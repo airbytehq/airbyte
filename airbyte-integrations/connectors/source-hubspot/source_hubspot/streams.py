@@ -1086,13 +1086,39 @@ class CRMObjectStream(Stream):
         if not self.entity:
             raise ValueError("Entity must be set either on class or instance level")
 
-    def list_records(self, fields) -> Iterable:
-        params = {
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return {
             "archived": str(self._include_archived_only).lower(),
             "associations": self.associations,
         }
-        generator = self.read(partial(self._api.get, url=self.url), params)
-        yield from self._flat_associations(generator)
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
+        records = super().read_records(
+            sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=stream_slice,
+            stream_state=stream_state,
+        )
+        yield from self._flat_associations(records)
+
+    # def list_records(self, fields) -> Iterable:
+        # params = {
+        #     "archived": str(self._include_archived_only).lower(),
+        #     "associations": self.associations,
+        # }
+        # generator = self.read(partial(self._api.get, url=self.url), params)
+        # yield from self._flat_associations(generator)
 
 
 class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
