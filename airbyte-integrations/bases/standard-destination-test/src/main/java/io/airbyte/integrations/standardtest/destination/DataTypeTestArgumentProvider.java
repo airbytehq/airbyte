@@ -55,15 +55,15 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
       LOGGER.info("--------------------------------------");
 
       if (requireBasicCompatibility && !supportBasicDataTypeTest) {
-        LOGGER.info("The destination doesn't support required Basic data type test. The test is skipped!");
+        LOGGER.warn("The destination doesn't support required Basic data type test. The test is skipped!");
         return false;
       }
       if (requireArrayCompatibility && !supportArrayDataTypeTest) {
-        LOGGER.info("The destination doesn't support required Array data type test. The test is skipped!");
+        LOGGER.warn("The destination doesn't support required Array data type test. The test is skipped!");
         return false;
       }
       if (requireObjectCompatibility && !supportObjectDataTypeTest) {
-        LOGGER.info("The destination doesn't support required Object data type test. The test is skipped!");
+        LOGGER.warn("The destination doesn't support required Object data type test. The test is skipped!");
         return false;
       }
 
