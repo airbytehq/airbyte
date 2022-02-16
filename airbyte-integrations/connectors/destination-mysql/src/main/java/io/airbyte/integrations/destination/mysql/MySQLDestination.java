@@ -132,20 +132,26 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
   }
 
-  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final List<Map<String, String>> maps) {
-    final Set<String> keys = maps.stream()
-        .map(Map::keySet)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
-    final List<String> duplicateKeys = keys.stream().filter(customParameters::containsKey).toList();
-    if (!duplicateKeys.isEmpty()) {
-      throw new RuntimeException("Cannot overwrite default JDBC parameter " + duplicateKeys);
-    }
-    return Streams.concat(Stream.of(customParameters), maps.stream())
+  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final List<Map<String, String>> defaultParametersMaps) {
+    assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParametersMaps);
+    return Streams.concat(Stream.of(customParameters), defaultParametersMaps.stream())
         .map(Map::entrySet)
         .flatMap(Collection::stream)
         .map(entry -> formatParameter(entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
+  }
+
+  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+      final List<Map<String, String>> defaultParametersMaps) {
+    final Set<String> keys = defaultParametersMaps.stream()
+        .map(Map::keySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet());
+
+    final List<String> duplicateKeys = keys.stream().filter(customParameters::containsKey).toList();
+    if (!duplicateKeys.isEmpty()) {
+      throw new RuntimeException("Cannot overwrite default JDBC parameter " + duplicateKeys);
+    }
   }
 
   private Map<String, String> getCustomJdbcParameters(final JsonNode config) {
