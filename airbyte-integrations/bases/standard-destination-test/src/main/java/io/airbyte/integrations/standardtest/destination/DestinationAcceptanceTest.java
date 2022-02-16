@@ -53,6 +53,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -71,6 +72,7 @@ import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
@@ -320,7 +322,7 @@ public abstract class DestinationAcceptanceTest {
   /**
    * Verify that when the integrations returns a valid spec.
    */
-  //@Test
+  @Test
   public void testGetSpec() throws WorkerException {
     assertNotNull(runSpec());
   }
@@ -329,7 +331,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that when given valid credentials, that check connection returns a success response.
    * Assume that the {@link DestinationAcceptanceTest#getConfig()} is valid.
    */
-  //@Test
+  @Test
   public void testCheckConnection() throws Exception {
     assertEquals(Status.SUCCEEDED, runCheck(getConfig()).getStatus());
   }
@@ -338,7 +340,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that when given invalid credentials, that check connection returns a failed response.
    * Assume that the {@link DestinationAcceptanceTest#getFailCheckConfig()} is invalid.
    */
-  //@Test
+  @Test
   public void testCheckConnectionInvalidCredentials() throws Exception {
     assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
@@ -347,7 +349,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that the integration successfully writes records. Tests a wide variety of messages and
    * schemas (aspirationally, anyway).
    */
-  //@ParameterizedTest
+  @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSync(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
@@ -365,7 +367,7 @@ public abstract class DestinationAcceptanceTest {
    * This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
    * insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
    */
-  //@ParameterizedTest
+  @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithLargeRecordBatch(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
@@ -382,7 +384,7 @@ public abstract class DestinationAcceptanceTest {
   /**
    * Verify that the integration overwrites the first sync with the second sync.
    */
-  //@Test
+  @Test
   public void testSecondSync() throws Exception {
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
@@ -425,7 +427,7 @@ public abstract class DestinationAcceptanceTest {
    * Tests that we are able to read over special characters properly when processing line breaks in
    * destinations.
    */
-  //@Test
+  @Test
   public void testLineBreakCharacters() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
@@ -456,7 +458,7 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
   }
 
-  //@Test
+  @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
@@ -472,7 +474,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  //@Test
+  @Test
   public void specDBTValueShouldBeCorrect() throws WorkerException {
     assertEquals(dbtFromSpec(), supportsDBT());
   }
@@ -481,7 +483,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that the integration successfully writes records incrementally. The second run should
    * append records to the datastore instead of overwriting the previous run.
    */
-  //@Test
+  @Test
   public void testIncrementalSync() throws Exception {
     if (!implementsAppend()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
@@ -532,7 +534,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that the integration successfully writes records successfully both raw and normalized.
    * Tests a wide variety of messages an schemas (aspirationally, anyway).
    */
-  //@ParameterizedTest
+  @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     if (!normalizationFromSpec()) {
@@ -559,7 +561,7 @@ public abstract class DestinationAcceptanceTest {
    * Although this test assumes append-dedup requires normalization, and almost all our Destinations
    * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
    */
-  //@Test
+  @Test
   public void testIncrementalDedupeSync() throws Exception {
     if (!implementsAppendDedup()) {
       LOGGER.info("Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'");
@@ -653,7 +655,7 @@ public abstract class DestinationAcceptanceTest {
    * The first big message should be small enough to fit into the destination while the second message
    * would be too big and fails to replicate.
    */
-  //@Test
+  @Test
   void testSyncVeryBigRecords() throws Exception {
     if (!implementsRecordSizeLimitChecks()) {
       return;
@@ -716,7 +718,7 @@ public abstract class DestinationAcceptanceTest {
     return 1000000000;
   }
 
-  //@Test
+  @Test
   public void testCustomDbtTransformations() throws Exception {
     if (!dbtFromSpec()) {
       return;
@@ -790,7 +792,7 @@ public abstract class DestinationAcceptanceTest {
     runner.close();
   }
 
-  //@Test
+  @Test
   void testCustomDbtTransformationsFailure() throws Exception {
     if (!normalizationFromSpec() || !dbtFromSpec()) {
       // we require normalization implementation for this destination, because we make sure to install
@@ -825,7 +827,7 @@ public abstract class DestinationAcceptanceTest {
   /**
    * Verify the destination uses the namespace field if it is set.
    */
-  //@Test
+  @Test
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
     if (!implementsNamespaces()) {
       return;
@@ -856,7 +858,7 @@ public abstract class DestinationAcceptanceTest {
   /**
    * Verify a destination is able to write tables with the same name to different namespaces.
    */
-  //@Test
+  @Test
   void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
     if (!implementsNamespaces()) {
       return;
@@ -910,7 +912,7 @@ public abstract class DestinationAcceptanceTest {
    * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
    * ensures that the entrypoint environment variable is set.
    */
-  //@Test
+  @Test
   public void testEntrypointEnvVar() throws Exception {
     final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
         processFactory,
@@ -1180,7 +1182,7 @@ public abstract class DestinationAcceptanceTest {
    * "docker ps" command in console to find the container's id. Then run "docker container attach
    * your_containers_id" (ex. docker container attach 18cc929f44c8) to see the container's output
    */
-  //@Test
+  @Test
   @Disabled
   public void testStressPerformance() throws Exception {
     final int streamsSize = 5; // number of generated streams
@@ -1314,20 +1316,48 @@ public abstract class DestinationAcceptanceTest {
                                final String catalogFilename,
                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
           throws Exception {
-    if (!checkTestCompatibility(testCompatibility) || !normalizationFromSpec())
+    if (!checkTestCompatibility(testCompatibility))
       return;
 
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-            .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final AirbyteCatalog catalog = readCatalogFromFile(catalogFilename);
+    final ConfiguredAirbyteCatalog configuredCatalog = getDefaultAirbyteCatalog(catalog);
+    final List<AirbyteMessage> messages = reedMessagesFromFile(messagesFilename);
 
+    if (supportsNormalization()) {
+      LOGGER.info("Normalization is supported! Run test with normalization.");
+      runAndCheckWithNormalization(messages, configuredCatalog, catalog);
+    }
+    else {
+      LOGGER.info("Normalization is not supported! Run test without normalization.");
+      runAndCheckWithoutNormalization(messages, configuredCatalog, catalog);
+    }
+  }
+
+  private AirbyteCatalog readCatalogFromFile(String catalogFilename) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+  }
+
+  private ConfiguredAirbyteCatalog getDefaultAirbyteCatalog(AirbyteCatalog catalog) {
+    return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+  }
+
+  private List<AirbyteMessage> reedMessagesFromFile(String messagesFilename) throws IOException {
+    return MoreResources.readResource(messagesFilename).lines()
+            .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+  }
+
+  private void runAndCheckWithNormalization(final List<AirbyteMessage> messages, final ConfiguredAirbyteCatalog configuredCatalog, final AirbyteCatalog catalog) throws Exception {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, getDefaultSchema(config));
     assertSameMessages(messages, actualMessages, true);
+  }
+
+  private void runAndCheckWithoutNormalization(final List<AirbyteMessage> messages, final ConfiguredAirbyteCatalog configuredCatalog, final AirbyteCatalog catalog) throws Exception {
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));
   }
 
 }
