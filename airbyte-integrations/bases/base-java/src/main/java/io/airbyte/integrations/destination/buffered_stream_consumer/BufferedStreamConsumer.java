@@ -163,7 +163,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // the destination
       final long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-        flushQueueToDestination(bufferSizeInBytes);
+        flushQueueToDestination();
         bufferSizeInBytes = 0;
       }
 
@@ -179,7 +179,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void flushQueueToDestination(long bufferSizeInBytes) throws Exception {
+  private void flushQueueToDestination() throws Exception {
     LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
@@ -216,7 +216,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
-      flushQueueToDestination(bufferSizeInBytes);
+      flushQueueToDestination();
     }
 
     try {
