@@ -19,40 +19,55 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
+public class SnowflakeGcsStreamCopier extends GcsStreamCopier implements SnowflakeParallelCopyStreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStreamCopier.class);
+  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
   public SnowflakeGcsStreamCopier(final String stagingFolder,
-                                  final DestinationSyncMode destSyncMode,
-                                  final String schema,
-                                  final String streamName,
-                                  final Storage storageClient,
-                                  final JdbcDatabase db,
-                                  final GcsConfig gcsConfig,
-                                  final ExtendedNameTransformer nameTransformer,
-                                  final SqlOperations sqlOperations,
-                                  final StagingFilenameGenerator stagingFilenameGenerator) {
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final Storage storageClient,
+      final JdbcDatabase db,
+      final GcsConfig gcsConfig,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, storageClient, db, gcsConfig, nameTransformer, sqlOperations);
     this.filenameGenerator = stagingFilenameGenerator;
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(gcsStagingFiles), MAX_FILES_PER_COPY);
-    for (int i = 0; i < partition.size(); i++) {
-      LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
-          schemaName, partition.size());
-      executeCopy(partition.get(i));
-    }
+    List<List<String>> partitions = Lists.partition(new ArrayList<>(gcsStagingFiles), MAX_FILES_PER_COPY);
+    LOGGER.info("Starting parallel imt copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
+        schemaName, partitions.size());
+
+    copyFilesInParallel(partitions);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
-  private void executeCopy(List<String> files) {
+  private void copyFilesInParallel(List<List<String>> partitions) {
+    partitions.forEach(files -> {
+      try {
+        executorService.execute(() -> copyIntoStage(files));
+      } catch (Exception e) {
+        LOGGER.error("Failed to copy files from stage to tmp table {}", tmpTableName, e);
+        throw new RuntimeException(e);
+      } finally {
+        executorService.shutdown();
+      }
+    });
+  }
+
+  @Override
+  public void copyIntoStage(List<String> files) {
 
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' storage_integration = gcs_airbyte_integration "
@@ -65,22 +80,17 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
 
+  @Override
   public String generateBucketPath() {
     return "gcs://" + gcsConfig.getBucketName() + "/" + stagingFolder + "/" + schemaName + "/";
   }
 
-  public String generateFilesList(List<String> files) {
-    StringJoiner joiner = new StringJoiner(",");
-    files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
-    return joiner.toString();
-  }
-
   @Override
   public void copyGcsCsvFileIntoTable(final JdbcDatabase database,
-                                      final String gcsFileLocation,
-                                      final String schema,
-                                      final String tableName,
-                                      final GcsConfig gcsConfig)
+      final String gcsFileLocation,
+      final String schema,
+      final String tableName,
+      final GcsConfig gcsConfig)
       throws SQLException {
     throw new RuntimeException("Snowflake GCS Stream Copier should not copy individual files without use of a parallel copy");
 

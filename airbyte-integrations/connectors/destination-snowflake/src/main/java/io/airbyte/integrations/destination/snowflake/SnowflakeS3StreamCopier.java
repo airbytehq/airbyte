@@ -21,11 +21,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeS3StreamCopier extends S3StreamCopier {
+public class SnowflakeS3StreamCopier extends S3StreamCopier implements SnowflakeParallelCopyStreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StreamCopier.class);
 
@@ -34,15 +35,16 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
   // compression"
   public static final int MAX_PARTS_PER_FILE = 4;
   public static final int MAX_FILES_PER_COPY = 1000;
+  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
-                                 final String schema,
-                                 final AmazonS3 client,
-                                 final JdbcDatabase db,
-                                 final S3CopyConfig config,
-                                 final ExtendedNameTransformer nameTransformer,
-                                 final SqlOperations sqlOperations,
-                                 final ConfiguredAirbyteStream configuredAirbyteStream) {
+      final String schema,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
         stagingFolder,
         schema,
@@ -57,14 +59,14 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @VisibleForTesting
   SnowflakeS3StreamCopier(final String stagingFolder,
-                          final String schema,
-                          final AmazonS3 client,
-                          final JdbcDatabase db,
-                          final S3CopyConfig config,
-                          final ExtendedNameTransformer nameTransformer,
-                          final SqlOperations sqlOperations,
-                          final Timestamp uploadTime,
-                          final ConfiguredAirbyteStream configuredAirbyteStream) {
+      final String schema,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3CopyConfig config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final Timestamp uploadTime,
+      final ConfiguredAirbyteStream configuredAirbyteStream) {
 
     super(stagingFolder,
         schema,
@@ -80,16 +82,28 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    List<List<String>> partition = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_FILES_PER_COPY);
-    for (int i = 0; i < partition.size(); i++) {
-      LOGGER.info("Starting copy chunk {} to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", i, tmpTableName, streamName,
-          schemaName, partition.size());
-      executeCopy(partition.get(i));
-    }
+    List<List<String>> partitions = Lists.partition(new ArrayList<>(stagingWritersByFile.keySet()), MAX_FILES_PER_COPY);
+    LOGGER.info("Starting parallel int copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
+        schemaName, partitions.size());
+
+    copyFilesInParallel(partitions);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
-  private void executeCopy(List<String> files) {
+    private void copyFilesInParallel(List<List<String>> partitions) {
+    partitions.forEach(files -> {
+      try {
+        executorService.execute(() -> copyIntoStage(files));
+      } catch (Exception e) {
+        LOGGER.error("Failed to copy files from stage to tmp table {}", tmpTableName, e);
+        throw new RuntimeException(e);
+      } finally {
+        executorService.shutdown();
+      }
+    });
+  }
+  @Override
+  public void copyIntoStage(List<String> files) {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
@@ -104,23 +118,18 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
 
+  @Override
   public String generateBucketPath() {
     return "s3://" + s3Config.getBucketName() + "/"
         + S3OutputPathHelper.getOutputPrefix(s3Config.getBucketPath(), configuredAirbyteStream.getStream()) + "/";
   }
 
-  public String generateFilesList(List<String> files) {
-    StringJoiner joiner = new StringJoiner(",");
-    files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
-    return joiner.toString();
-  }
-
   @Override
   public void copyS3CsvFileIntoTable(final JdbcDatabase database,
-                                     final String s3FileLocation,
-                                     final String schema,
-                                     final String tableName,
-                                     final S3DestinationConfig s3Config)
+      final String s3FileLocation,
+      final String schema,
+      final String tableName,
+      final S3DestinationConfig s3Config)
       throws SQLException {
     throw new RuntimeException("Snowflake Stream Copier should not copy individual files without use of a parallel copy");
 
