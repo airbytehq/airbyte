@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -109,12 +110,14 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createMySqlDatabase(
+    return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
-            config.get("port").asText()));
+            config.get("port").asText()),
+        MySQLDestination.DRIVER_CLASS,
+        SQLDialect.MYSQL);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {

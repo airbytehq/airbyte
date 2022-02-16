@@ -46,7 +46,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
             config.get("host").asText(),
             config.get("port").asText(),
             dbName),
-        "com.mysql.cj.jdbc.Driver",
+        MySqlSource.DRIVER_CLASS,
         SQLDialect.MYSQL,
         "zeroDateTimeBehavior=convertToNull");
 
