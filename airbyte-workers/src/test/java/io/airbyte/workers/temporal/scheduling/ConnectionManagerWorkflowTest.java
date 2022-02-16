@@ -163,7 +163,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -202,7 +201,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           true,
           1,
           workflowState,
@@ -237,7 +235,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -282,7 +279,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -327,7 +323,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -372,7 +367,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -446,7 +440,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -485,7 +478,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -539,7 +531,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -574,7 +565,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -622,7 +612,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = Mockito.spy(new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -654,7 +643,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           JOB_ID,
-          ATTEMPT_ID,
           false,
           1,
           workflowState,
@@ -732,7 +720,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, false, 1, workflowState, false);
 
       WorkflowClient.start(workflow::run, input);
 
@@ -759,7 +747,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, false, 1, workflowState, false);
 
       WorkflowClient.start(workflow::run, input);
 
@@ -785,7 +773,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, false, 1, workflowState, false);
 
       WorkflowClient.start(workflow::run, input);
 
@@ -811,7 +799,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, false, 1, workflowState, false);
 
       WorkflowClient.start(workflow::run, input);
 
@@ -837,7 +825,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, false, 1, workflowState, false);
 
       WorkflowClient.start(workflow::run, input);
 
@@ -907,7 +895,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           null,
-          null,
           false,
           1,
           workflowState,
@@ -924,7 +911,7 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.QUARANTINED && changedStateEvent.isValue())
           .hasSize(1);
     }
 
@@ -944,7 +931,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           null,
-          null,
           false,
           1,
           workflowState,
@@ -960,7 +946,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.QUARANTINED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
       Assertions.assertThat(events)
@@ -1000,7 +986,6 @@ public class ConnectionManagerWorkflowTest {
       final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
           UUID.randomUUID(),
           null,
-          null,
           false,
           1,
           workflowState,
@@ -1025,7 +1010,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.STUCK && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.QUARANTINED && changedStateEvent.isValue())
           .hasSize(1);
     }
 

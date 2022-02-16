@@ -21,10 +21,10 @@ public class ConnectionUpdaterInput {
   private UUID connectionId;
   @Nullable
   private Long jobId;
-  @Nullable
-  private Integer attemptId;
   private boolean fromFailure;
   private int attemptNumber;
+  @Nullable
+  private WorkflowState workflowState;
   private boolean resetConnection;
 
 }
