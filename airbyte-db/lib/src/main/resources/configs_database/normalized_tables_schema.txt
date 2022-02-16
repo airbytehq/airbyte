@@ -31,6 +31,10 @@
  public      | status_type               | active
  public      | status_type               | inactive
  public      | status_type               | deprecated
+ public      | release_stage             | alpha
+ public      | release_stage             | beta
+ public      | release_stage             | generally_available
+ public      | release_stage             | custom
 
 
 
@@ -77,6 +81,9 @@ Referenced by:
  spec              | jsonb                    |           | not null |
  created_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
  updated_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ tombstone         | boolean                  |           | not null | false
+ release_stage     | release_stage            |           |          |
+ release_date      | date                     |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)
 Referenced by:

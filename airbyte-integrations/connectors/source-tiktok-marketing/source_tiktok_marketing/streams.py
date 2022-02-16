@@ -9,20 +9,17 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
-from typing import (Any, Dict, Iterable, List, Mapping, MutableMapping,
-                    Optional, Tuple, TypeVar, Union)
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 import pendulum
-import requests
-
 import pydantic
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import (TransformConfig,
-                                                 TypeTransformer)
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"

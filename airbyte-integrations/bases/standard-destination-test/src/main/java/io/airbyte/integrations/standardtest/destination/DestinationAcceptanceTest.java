@@ -38,7 +38,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -742,8 +742,15 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
-        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
-        .withGitRepoBranch("main")
+        // Forked from https://github.com/dbt-labs/jaffle_shop because they made a change that would have
+        // required a dbt version upgrade
+        // https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
+        // We're actually two commits upstream of that, because the previous commit
+        // (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also
+        // breaks something
+        // TODO once we're on DBT 1.x, switch this back to using the main branch
+        .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
+        .withGitRepoBranch("pre_dbt_upgrade")
         .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft() + ":" + NORMALIZATION_VERSION);
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
@@ -811,7 +818,7 @@ public abstract class DestinationAcceptanceTest {
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
-        .withGitRepoBranch("master")
+        .withGitRepoBranch("main")
         .withDockerImage("fishtownanalytics/dbt:0.19.1")
         .withDbtArguments("debug");
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
@@ -1197,9 +1204,9 @@ public abstract class DestinationAcceptanceTest {
     for (int i = 0; i < streamsSize; i++) {
       configuredAirbyteStreams
           .add(CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME + i,
-              Field.of(NAME, JsonSchemaPrimitive.STRING),
+              Field.of(NAME, JsonSchemaType.STRING),
               Field
-                  .of(ID, JsonSchemaPrimitive.STRING)));
+                  .of(ID, JsonSchemaType.STRING)));
     }
     final AirbyteCatalog testCatalog = new AirbyteCatalog().withStreams(configuredAirbyteStreams);
     final ConfiguredAirbyteCatalog configuredTestCatalog = CatalogHelpers

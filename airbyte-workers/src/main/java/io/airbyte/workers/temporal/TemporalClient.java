@@ -357,7 +357,43 @@ public class TemporalClient {
       }
     } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
 
-    log.info("end of reset");
+    log.info("end of reset submission");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  /**
+   * This is launching a reset and wait for the reset to be performed.
+   *
+   * The way to do so is to wait for the jobId to change, either to a new job id or the default id
+   * that signal that a workflow is waiting to be submitted
+   */
+  public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
+    ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
+    if (resetResult.getFailingReason().isPresent()) {
+      return resetResult;
+    }
+
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("End of reset");
 
     final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
 

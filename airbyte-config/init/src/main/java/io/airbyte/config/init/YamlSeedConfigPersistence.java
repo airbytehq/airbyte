@@ -5,6 +5,7 @@
 package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
@@ -54,12 +55,18 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> sourceDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION);
     final Map<String, JsonNode> sourceSpecConfigs = getConfigs(seedResourceClass, SeedType.SOURCE_SPEC);
     final Map<String, JsonNode> fullSourceDefinitionConfigs = sourceDefinitionConfigs.entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> mergeSpecIntoDefinition(e.getValue(), sourceSpecConfigs)));
+        .collect(Collectors.toMap(Entry::getKey, e -> {
+          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
+          return mergeSpecIntoDefinition(withTombstone, sourceSpecConfigs);
+        }));
 
     final Map<String, JsonNode> destinationDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION);
     final Map<String, JsonNode> destinationSpecConfigs = getConfigs(seedResourceClass, SeedType.DESTINATION_SPEC);
     final Map<String, JsonNode> fullDestinationDefinitionConfigs = destinationDefinitionConfigs.entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> mergeSpecIntoDefinition(e.getValue(), destinationSpecConfigs)));
+        .collect(Collectors.toMap(Entry::getKey, e -> {
+          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
+          return mergeSpecIntoDefinition(withTombstone, destinationSpecConfigs);
+        }));
 
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
         .put(SeedType.STANDARD_SOURCE_DEFINITION, fullSourceDefinitionConfigs)
@@ -86,7 +93,16 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     return definitionJson;
   }
 
+  private JsonNode addMissingTombstoneField(final JsonNode definitionJson) {
+    final JsonNode currTombstone = definitionJson.get("tombstone");
+    if (currTombstone == null || currTombstone.isNull()) {
+      ((ObjectNode) definitionJson).set("tombstone", BooleanNode.FALSE);
+    }
+    return definitionJson;
+  }
+
   @SuppressWarnings("UnstableApiUsage")
+
   private static Map<String, JsonNode> getConfigs(final Class<?> seedDefinitionsResourceClass, final SeedType seedType) throws IOException {
     final URL url = Resources.getResource(seedDefinitionsResourceClass, seedType.getResourcePath());
     final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
@@ -117,6 +133,12 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
     }
     return configs.values().stream().map(json -> Jsons.object(json, clazz)).collect(Collectors.toList());
+  }
+
+  @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    throw new UnsupportedOperationException("Yaml Seed Config doesn't support metadata");
   }
 
   @Override

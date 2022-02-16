@@ -31,3 +31,5 @@ tests:
       ignored_fields:
         "ads_insights_age_and_gender": ["cost_per_estimated_ad_recallers"]
         "ad_creatives": ["thumbnail_url"]
+        "ad_account": ["age"]
+        "images": ["permalink_url"]
