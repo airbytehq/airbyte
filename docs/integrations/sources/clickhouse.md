@@ -78,11 +78,8 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                          |
 |:--------| :--- |:---------------------------------------------------------|:-----------------------------------------------------------------|
-<<<<<<< HEAD
+| 0.1.9   | 2022-02-09 | [\#10214](https://github.com/airbytehq/airbyte/pull/10214) | Fix exception in case `password` field is not provided |
 | 0.1.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-=======
-| 0.1.8   | 2022-02-09 | [\#10214](https://github.com/airbytehq/airbyte/pull/10214) | Fix exception in case `password` field is not provided |
->>>>>>> b9bdfc125ad57bba27b3e1370c10e55d7f58c588
 | 0.1.7   | 2021-12-24 | [\#8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
 | 0.1.6   | 2021-12-15 | [\#8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions                                   |
 | 0.1.5   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                         |
