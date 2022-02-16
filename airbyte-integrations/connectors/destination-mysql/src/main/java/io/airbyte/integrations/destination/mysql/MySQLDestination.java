@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -17,10 +17,13 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +36,15 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "useSSL", "true",
+      "requireSSL", "true",
+      "verifyServerCertificate", "false"
+  );
+  static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
+      "zeroDateTimeBehavior", "convertToNull"
+  );
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
@@ -94,10 +106,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     // and can't
     // remove zero date values.
     // since zero dates are placeholders, we convert them to null by default
-    //FIXME(girarda): do we also want to prevent people from overriding zeroDateTimeBehavior?
-    jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
     if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append("&");
+      jdbcUrl.append("?");
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
@@ -113,54 +123,48 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private List<String> getAdditionalParameters(final JsonNode config) {
-    final List<String> additionalParameters = new ArrayList<>();
-    addJDBCUrlParameters(config, additionalParameters);
+    final Map<String, String> customParameters = getCustomJdbcParameters(config);
+
     if (useSSL(config)) {
-      addSSLJDBCParameters(additionalParameters);
+      return convertToJdbcStrings(customParameters, List.of(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS));
+    } else {
+      return convertToJdbcStrings(customParameters, List.of(DEFAULT_JDBC_PARAMETERS));
     }
-    return additionalParameters;
   }
 
-  private void addJDBCUrlParameters(final JsonNode config, final List<String> additionalParameters) {
+  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final List<Map<String, String>> maps) {
+    final Set<String> keys = maps.stream()
+        .map(Map::keySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet());
+    final boolean hasDuplicateKeys = keys.stream().anyMatch(customParameters::containsKey);
+    if (hasDuplicateKeys) {
+      throw new RuntimeException(); // TODO
+    }
+    return Streams.concat(Stream.of(customParameters), maps.stream())
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .map(entry -> formatParameter(entry.getKey(), entry.getValue()))
+        .collect(Collectors.toList());
+  }
+
+  private Map<String, String> getCustomJdbcParameters(final JsonNode config) {
+    final Map<String, String> parameters = new HashMap<>();
     if (config.has(JDBC_URL_PARAMS_KEY)) {
-      final String additionalParams = config.get(JDBC_URL_PARAMS_KEY).asText();
-      if (additionalParams.isBlank()) {
-        return;
-      }
-      if (useSSL(config)) {
-        for (final String p : getSSLParameters().keySet()) {
-          if (containsParameterKey(additionalParams, p)) {
-            throw new RuntimeException("Cannot overwrite JDBC parameter " + p);
-          }
+      final String jdbcParams = config.get(JDBC_URL_PARAMS_KEY).asText();
+      if (!jdbcParams.isBlank()) {
+        final String[] keyValuePairs = jdbcParams.split("&");
+        for (final String kv : keyValuePairs) {
+          final String[] split = kv.split("=");
+          parameters.put(split[0], split[1]);
         }
       }
-      additionalParameters.add(additionalParams);
     }
-  }
-
-  private boolean containsParameterKey(final String additionalParametersString, final String key) {
-    final String s = String.format("%s=", key);
-    return additionalParametersString.contains(s);
-  }
-
-  private void addSSLJDBCParameters(final List<String> additionalParameters) {
-    for (final Entry<String, String> sslParameter : getSSLParameters().entrySet()) {
-      final String param = formatParameter(sslParameter.getKey(), sslParameter.getValue());
-      additionalParameters.add(param);
-    }
+    return parameters;
   }
 
   private boolean useSSL(final JsonNode config) {
     return !config.has("ssl") || config.get("ssl").asBoolean();
-  }
-
-  static Map<String, String> getSSLParameters() {
-    final Builder<String, String> builder = ImmutableMap.builder();
-    return builder
-        .put("useSSL", "true")
-        .put("requireSSL", "true")
-        .put("verifyServerCertificate", "false")
-        .build();
   }
 
   static String formatParameter(final String key, final String value) {

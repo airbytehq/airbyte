@@ -70,29 +70,24 @@ public class MySQLDestinationTest {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJDBCParameters(extraParam));
     final String url = jdbcConfig.get("jdbc_url").asText();
     assertEquals(
-        "jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&key1=value1&key2=value2&key3=value3&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
+        "jdbc:mysql://localhost:1337/db?key1=value1&key2=value2&key3=value3&zeroDateTimeBehavior=convertToNull&useSSL=true&requireSSL=true&verifyServerCertificate=false&",
         url);
   }
 
   @Test
-  void testExtraParamsWithSSLParameter() {
-    for (final Entry<String, String> entry : MySQLDestination.getSSLParameters().entrySet()) {
+  void testExtraParamsWithDefaultParameter() {
+    for (final Entry<String, String> entry : MySQLDestination.SSL_JDBC_PARAMETERS.entrySet()) {
       final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
       assertThrows(RuntimeException.class, () ->
           getDestination().toJdbcConfig(buildConfigWithExtraJDBCParameters(extraParam))
       );
     }
-  }
 
-  @Test
-  void testExtraParamsWithSSLParameterNoSSL() {
-    for (final Entry<String, String> entry : MySQLDestination.getSSLParameters().entrySet()) {
+    for (final Entry<String, String> entry : MySQLDestination.DEFAULT_JDBC_PARAMETERS.entrySet()) {
       final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
-      final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJDBCParametersNoSSL(extraParam));
-      final String url = jdbcConfig.get("jdbc_url").asText();
-      final String expected = String.format("jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&%s&", extraParam);
-      assertEquals(expected,
-          url);
+      assertThrows(RuntimeException.class, () ->
+          getDestination().toJdbcConfig(buildConfigWithExtraJDBCParameters(extraParam))
+      );
     }
   }
 }
