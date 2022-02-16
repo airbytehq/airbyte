@@ -7,10 +7,8 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.DataSourceConnectionSupplier;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.time.Duration;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -57,7 +55,7 @@ public class SnowflakeDatabase {
 
   public static JdbcDatabase getDatabase(final JsonNode config) {
     final DataSource dataSource = createDataSource(config);
-    return new DefaultJdbcDatabase(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
+    return new DefaultJdbcDatabase(dataSource);
   }
 
 }
