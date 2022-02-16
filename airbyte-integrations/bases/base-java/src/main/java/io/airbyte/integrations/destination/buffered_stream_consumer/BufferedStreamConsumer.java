@@ -163,7 +163,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // the destination
       final long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-        LOGGER.info("Flushing buffer...");
         flushQueueToDestination(bufferSizeInBytes);
         bufferSizeInBytes = 0;
       }
@@ -181,8 +180,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void flushQueueToDestination(long bufferSizeInBytes) throws Exception {
+    LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+        LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
         recordWriter.accept(entry.getKey(), entry.getValue());
         if (checkAndRemoveRecordWriter != null) {
           fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
