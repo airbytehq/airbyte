@@ -27,19 +27,15 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
-  private final CloseableConnectionSupplier connectionSupplier;
+  protected final CloseableConnectionSupplier connectionSupplier;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
-    this(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
+    this(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
   public DefaultJdbcDatabase(final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
-    this(new DataSourceConnectionSupplier(dataSource), sourceOperations);
-  }
-
-  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
-    this.connectionSupplier = connectionSupplier;
+    this.connectionSupplier = new DataSourceConnectionSupplier(dataSource);
   }
 
   @Override

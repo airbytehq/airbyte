@@ -78,7 +78,7 @@ public class TestStreamingJdbcDatabase {
         config.get("database").asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
-    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQueryConfiguration);
+    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), jdbcStreamingQueryConfiguration);
 
     defaultJdbcDatabase.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
