@@ -37,7 +37,7 @@ public class MySQLDestinationTest {
     ));
     return config;
   }
-  
+
   @Test
   void testNoExtraParams() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoJDBCParameters());

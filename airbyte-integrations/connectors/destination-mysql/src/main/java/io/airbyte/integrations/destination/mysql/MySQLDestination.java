@@ -162,7 +162,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         final String[] keyValuePairs = jdbcParams.split("&");
         for (final String kv : keyValuePairs) {
           final String[] split = kv.split("=");
-          parameters.put(split[0], split[1]);
+          if (split.length == 2) {
+            parameters.put(split[0], split[1]);
+          } else {
+            throw new RuntimeException(
+                "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+                    + jdbcParams);
+          }
         }
       }
     }
