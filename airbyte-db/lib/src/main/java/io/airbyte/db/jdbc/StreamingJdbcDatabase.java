@@ -52,7 +52,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
-      final Connection connection = connectionSupplier.getConnection();
+      final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);

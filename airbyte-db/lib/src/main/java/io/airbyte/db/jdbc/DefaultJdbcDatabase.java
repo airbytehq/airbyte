@@ -8,6 +8,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -27,7 +28,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
-  protected final CloseableConnectionSupplier connectionSupplier;
+  protected final DataSource dataSource;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
     this(dataSource, JdbcUtils.getDefaultSourceOperations());
@@ -35,12 +36,12 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   public DefaultJdbcDatabase(final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
-    this.connectionSupplier = new DataSourceConnectionSupplier(dataSource);
+    this.dataSource = dataSource;
   }
 
   @Override
   public void execute(final CheckedConsumer<Connection, SQLException> query) throws SQLException {
-    try (final Connection connection = connectionSupplier.getConnection()) {
+    try (final Connection connection = dataSource.getConnection()) {
       query.accept(connection);
     }
   }
@@ -49,7 +50,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = connectionSupplier.getConnection();
+    try (final Connection connection = dataSource.getConnection();
         final Stream<T> results = toStream(query.apply(connection), recordTransform)) {
       return results.collect(Collectors.toList());
     }
@@ -60,7 +61,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                       final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = connectionSupplier.getConnection();
+    final Connection connection = dataSource.getConnection();
     return toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
@@ -73,7 +74,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    final Connection conn = connectionSupplier.getConnection();
+    final Connection conn = dataSource.getConnection();
     final DatabaseMetaData metaData = conn.getMetaData();
     conn.close();
     return metaData;
@@ -98,7 +99,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = connectionSupplier.getConnection();
+    final Connection connection = dataSource.getConnection();
     return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
@@ -112,7 +113,12 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public void close() throws Exception {
-    connectionSupplier.close();
+    if (dataSource instanceof AutoCloseable autoCloseable) {
+      autoCloseable.close();
+    }
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
 }
