@@ -1379,27 +1379,46 @@ class Engagements(IncrementalStream):
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        max_last_updated_at = None
-        default_params = {self.limit_field: self.limit}
-        params = {**default_params, **params} if params else {**default_params}
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        params = {self.limit_field: self.limit}
         if self.state:
             params["since"] = self._state
-        count = 0
-        for record in self._filter_old_records(self._read(getter, params)):
-            yield record
-            count += 1
-            cursor = record[self.updated_at_field]
-            max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
+        return params
 
-        logger.info(f"Processed {count} records")
+    def _field_to_datetime(value: Union[int, str]):
+        return value
 
-        if max_last_updated_at:
-            new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
-            if new_state != self._state:
-                logger.info(f"Advancing bookmark for engagement stream from {self._state} to {max_last_updated_at}")
-                self._state = new_state
-                self._start_date = self._state
+    # def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        # max_last_updated_at = None
+
+        # default_params = {self.limit_field: self.limit}
+        # params = {**default_params, **params} if params else {**default_params}
+        # if self.state:
+        #     params["since"] = self._state
+
+        # count = 0
+        # for record in self._filter_old_records(self._read(getter, params)):
+        #     yield record
+        #     count += 1
+        #     cursor = record[self.updated_at_field]
+        #     max_last_updated_at = max(cursor, max_last_updated_at) if max_last_updated_at else cursor
+        #
+        # logger.info(f"Processed {count} records")
+        #
+        # if max_last_updated_at:
+        #     new_state = max(max_last_updated_at, self._state) if self._state else max_last_updated_at
+        #     if new_state != self._state:
+        #         logger.info(f"Advancing bookmark for engagement stream from {self._state} to {max_last_updated_at}")
+        #         self._state = new_state
+        #         self._start_date = self._state
+
+    # def _update_state(self, latest_cursor):  # TODO
+    #     pass
 
 
 class Forms(Stream):
