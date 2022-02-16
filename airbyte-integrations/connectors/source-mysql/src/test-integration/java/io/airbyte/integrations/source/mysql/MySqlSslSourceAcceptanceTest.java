@@ -40,7 +40,7 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
             config.get("port").asText(),
             config.get("database").asText(),
             String.join("&", SSL_PARAMETERS)),
-        MySqlSource.DRIVER_CLASS,
+        "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL);
 
     database.query(ctx -> {

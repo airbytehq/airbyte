@@ -92,12 +92,24 @@ public class Databases {
     return database;
   }
 
+  public static JdbcDatabase createRedshiftDatabase(final String username, final String password, final String jdbcConnectionString) {
+    return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
+  public static Database createMySqlDatabase(final String username, final String password, final String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
+  }
+
   public static Database createSqlServerDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
   public static Database createOracleDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
+  }
+
+  public static Database createClickhouseDatabase(final String username, final String password, final String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "ru.yandex.clickhouse.ClickHouseDriver", SQLDialect.DEFAULT);
   }
 
   public static Database createMariaDbDatabase(final String username, final String password, final String jdbcConnectionString) {

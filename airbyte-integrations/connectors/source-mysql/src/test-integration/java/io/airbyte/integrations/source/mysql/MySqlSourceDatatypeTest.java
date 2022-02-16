@@ -72,7 +72,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        MySqlSource.DRIVER_CLASS,
+        "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
         "zeroDateTimeBehavior=convertToNull");
 

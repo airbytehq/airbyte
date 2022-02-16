@@ -52,7 +52,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             config.get("host").asText(),
             config.get("port").asText(),
             dbName),
-        MySqlSource.DRIVER_CLASS,
+        "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
         "zeroDateTimeBehavior=convertToNull");
 

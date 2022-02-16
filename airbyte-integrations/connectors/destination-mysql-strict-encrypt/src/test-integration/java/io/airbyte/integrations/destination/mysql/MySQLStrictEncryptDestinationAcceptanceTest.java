@@ -106,7 +106,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        MySQLDestination.DRIVER_CLASS,
+        "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
@@ -167,7 +167,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
               db.getHost(),
               db.getFirstMappedPort(),
               db.getDatabaseName()),
-          MySQLDestination.DRIVER_CLASS,
+          "com.mysql.cj.jdbc.Driver",
           SQLDialect.MYSQL).query(
               ctx -> ctx
                   .execute(query));

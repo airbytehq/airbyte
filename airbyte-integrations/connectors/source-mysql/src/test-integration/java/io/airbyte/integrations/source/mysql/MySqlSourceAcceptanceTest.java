@@ -55,7 +55,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        MySqlSource.DRIVER_CLASS,
+        "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL);
 
     database.query(ctx -> {
