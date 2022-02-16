@@ -96,7 +96,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Check if a sync need to be run based on the workflow state.
    */
   private boolean needToProcessSync() {
-    return !(workflowState.isUpdated() || workflowState.isDeleted());
+    return !workflowState.isUpdated() && !workflowState.isDeleted();
   }
 
   /**
@@ -135,6 +135,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> {
           connectionId = connectionUpdaterInput.getConnectionId();
+
+          if (connectionUpdaterInput.getWorkflowState() != null) {
+            workflowState = connectionUpdaterInput.getWorkflowState();
+          }
 
           workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
