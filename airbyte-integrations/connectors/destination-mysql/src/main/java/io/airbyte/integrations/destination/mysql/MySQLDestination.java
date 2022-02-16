@@ -137,9 +137,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         .map(Map::keySet)
         .flatMap(Collection::stream)
         .collect(Collectors.toSet());
-    final boolean hasDuplicateKeys = keys.stream().anyMatch(customParameters::containsKey);
-    if (hasDuplicateKeys) {
-      throw new RuntimeException(); // TODO
+    final List<String> duplicateKeys = keys.stream().filter(customParameters::containsKey).toList();
+    if (!duplicateKeys.isEmpty()) {
+      throw new RuntimeException("Cannot overwrite default JDBC parameter " + duplicateKeys);
     }
     return Streams.concat(Stream.of(customParameters), maps.stream())
         .map(Map::entrySet)
