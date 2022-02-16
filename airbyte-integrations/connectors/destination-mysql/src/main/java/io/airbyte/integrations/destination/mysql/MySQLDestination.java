@@ -109,7 +109,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     // since zero dates are placeholders, we convert them to null by default
     if (!additionalParameters.isEmpty()) {
       jdbcUrl.append("?");
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+      jdbcUrl.append(String.join("&", additionalParameters));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
