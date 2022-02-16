@@ -65,10 +65,10 @@ You should now have all the requirements needed to configure MySQL as a destinat
 
 The following JDBC URL parameters are set by Airbyte and cannot be overridden by the `jdbc_url_params` field:
 
-* useSSL
-* requireSSL
-* verifyServerCertificate
-* zeroDateTimeBehavior
+* `useSSL=true` (unless `ssl` is set to false)
+* `requireSSL=true` (unless `ssl` is set to false)
+* `verifyServerCertificate=false` (unless `ssl` is set to false)
+* `zeroDateTimeBehavior=convertToNull`
 
 ## Known Limitations
 
