@@ -79,8 +79,5 @@ error_summary = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts ="-r a --capture=no -vv --log-level=INFO --color=yes"
-log_cli = 1
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
 
