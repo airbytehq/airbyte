@@ -38,6 +38,29 @@ public class MySQLDestinationTest {
     return config;
   }
 
+  private JsonNode buildConfigWithExtraJDBCParametersWithNoSSL(final String extraParam) {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db",
+        "ssl", false,
+        "jdbc_url_params", extraParam
+    ));
+    return config;
+  }
+
+  private JsonNode buildConfigNoExtraJDBCParametersWithoutSSL() {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db",
+        "ssl", false
+    ));
+    return config;
+  }
+
   @Test
   void testNoExtraParams() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoJDBCParameters());
@@ -77,6 +100,25 @@ public class MySQLDestinationTest {
           getDestination().toJdbcConfig(buildConfigWithExtraJDBCParameters(extraParam))
       );
     }
+  }
+
+  @Test
+  void testExtraParameterNoSsl() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJDBCParametersWithNoSSL(extraParam));
+    final String url = jdbcConfig.get("jdbc_url").asText();
+    assertEquals(
+        "jdbc:mysql://localhost:1337/db?key1=value1&key2=value2&key3=value3&zeroDateTimeBehavior=convertToNull&",
+        url);
+  }
+
+  @Test
+  void testNoExtraParameterNoSsl() {
+    final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoExtraJDBCParametersWithoutSSL());
+    final String url = jdbcConfig.get("jdbc_url").asText();
+    assertEquals(
+        "jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull&",
+        url);
   }
 
   @Test
