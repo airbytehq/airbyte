@@ -1254,9 +1254,17 @@ class DealStageHistoryStream(Stream):
             if updated_at:
                 yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
 
-    def list_records(self, fields) -> Iterable:
-        params = {"propertiesWithHistory": "dealstage"}
-        yield from self.read(partial(self._api.get, url=self.url), params)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return {"propertiesWithHistory": "dealstage"}
+
+    # def list_records(self, fields) -> Iterable:
+        # params = {"propertiesWithHistory": "dealstage"}
+        # yield from self.read(partial(self._api.get, url=self.url), params)
 
 
 class Deals(CRMSearchStream):
@@ -1271,6 +1279,7 @@ class Deals(CRMSearchStream):
         for record in self._stage_history.list_records(fields):
             if all(field in record for field in ("id", "dealstage")):
                 history_by_id[record["id"]] = record["dealstage"]
+
         for record in super().list_records(fields):
             if record.get("id") and int(record["id"]) in history_by_id:
                 record["dealstage"] = history_by_id[int(record["id"])]
