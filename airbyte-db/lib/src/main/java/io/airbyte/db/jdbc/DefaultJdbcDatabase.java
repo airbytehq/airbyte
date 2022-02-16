@@ -4,6 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -59,6 +60,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   }
 
   @Override
+  @MustBeClosed
   public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                       final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
@@ -96,6 +98,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @Override
+  @MustBeClosed
   public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
