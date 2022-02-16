@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
@@ -21,7 +22,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -126,15 +126,15 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final Map<String, String> customParameters = getCustomJdbcParameters(config);
 
     if (useSSL(config)) {
-      return convertToJdbcStrings(customParameters, List.of(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS));
+      return convertToJdbcStrings(customParameters, MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS));
     } else {
-      return convertToJdbcStrings(customParameters, List.of(DEFAULT_JDBC_PARAMETERS));
+      return convertToJdbcStrings(customParameters, DEFAULT_JDBC_PARAMETERS);
     }
   }
 
-  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final List<Map<String, String>> defaultParametersMaps) {
-    assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParametersMaps);
-    return Streams.concat(Stream.of(customParameters), defaultParametersMaps.stream())
+  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final Map<String, String> defaultParametersMap) {
+    assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParametersMap);
+    return Streams.concat(Stream.of(customParameters, defaultParametersMap))
         .map(Map::entrySet)
         .flatMap(Collection::stream)
         .map(entry -> formatParameter(entry.getKey(), entry.getValue()))
@@ -142,13 +142,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final List<Map<String, String>> defaultParametersMaps) {
-    final Set<String> keys = defaultParametersMaps.stream()
-        .map(Map::keySet)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
-
-    final List<String> duplicateKeys = keys.stream().filter(customParameters::containsKey).toList();
+      final Map<String, String> defaultParametersMaps) {
+    final List<String> duplicateKeys = defaultParametersMaps.keySet().stream().filter(customParameters::containsKey).toList();
     if (!duplicateKeys.isEmpty()) {
       throw new RuntimeException("Cannot overwrite default JDBC parameter " + duplicateKeys);
     }
