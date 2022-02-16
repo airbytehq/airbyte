@@ -78,6 +78,6 @@ error_summary = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts ="-r a --capture=no -vv --log-level=INFO --color=yes"
+addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
 
 
