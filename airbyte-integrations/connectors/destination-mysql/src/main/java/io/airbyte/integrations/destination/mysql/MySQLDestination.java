@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -142,10 +143,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParametersMaps) {
-    final List<String> duplicateKeys = defaultParametersMaps.keySet().stream().filter(customParameters::containsKey).toList();
-    if (!duplicateKeys.isEmpty()) {
-      throw new RuntimeException("Cannot overwrite default JDBC parameter " + duplicateKeys);
+      final Map<String, String> defaultParameters) {
+    for (final String key : defaultParameters.keySet()) {
+      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+        throw new RuntimeException("Cannot overwrite default JDBC parameter " + key);
+      }
     }
   }
 

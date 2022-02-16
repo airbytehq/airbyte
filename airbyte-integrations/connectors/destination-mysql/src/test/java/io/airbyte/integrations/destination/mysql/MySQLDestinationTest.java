@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.mysql;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
@@ -7,6 +8,8 @@ import static org.mockito.Mockito.spy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.junit.jupiter.api.Test;
 
@@ -87,17 +90,19 @@ public class MySQLDestinationTest {
 
   @Test
   void testExtraParamsWithDefaultParameter() {
-    for (final Entry<String, String> entry : MySQLDestination.SSL_JDBC_PARAMETERS.entrySet()) {
-      final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
-      assertThrows(RuntimeException.class, () ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam))
-      );
-    }
+    final Map<String, String> allDefaultParameters = MoreMaps.merge(MySQLDestination.SSL_JDBC_PARAMETERS,
+        MySQLDestination.DEFAULT_JDBC_PARAMETERS);
+    for (final Entry<String, String> entry : allDefaultParameters.entrySet()) {
+      final String identicalParameter = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
+      final String overridingParameter = MySQLDestination.formatParameter(entry.getKey(), "DIFFERENT_VALUE");
 
-    for (final Entry<String, String> entry : MySQLDestination.DEFAULT_JDBC_PARAMETERS.entrySet()) {
-      final String extraParam = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
+      // Do not throw an exception if the values are equal
+      assertDoesNotThrow(() ->
+          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(identicalParameter)).get("jdbc_url").asText()
+      );
+      // Throw an exception if the values are different
       assertThrows(RuntimeException.class, () ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam))
+          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(overridingParameter))
       );
     }
   }
