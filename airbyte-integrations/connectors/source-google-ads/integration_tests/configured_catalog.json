@@ -30,6 +30,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
+        "source_defined_primary_key": [["click_view.gclid", "segments.date"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
@@ -102,7 +103,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "source_defined_primary_key": [["ad_group_ad.ad.id"]],
+        "source_defined_primary_key": [["ad_group_ad.ad.id", "segments.date"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
@@ -116,7 +117,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["ad_group.id"]]
+        "source_defined_primary_key": [["ad_group.id", "segments.date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -129,7 +130,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["customer.id"]]
+        "source_defined_primary_key": [["customer.id", "segments.date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -142,7 +143,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["campaign.id"]]
+        "source_defined_primary_key": [["campaign.id", "segments.date"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",

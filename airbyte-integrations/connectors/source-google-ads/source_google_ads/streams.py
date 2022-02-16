@@ -306,5 +306,6 @@ class ClickView(IncrementalGoogleAdsStream):
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
 
+    primary_key = ["click_view.gclid", "segments.date"]
     days_of_data_storage = 90
     range_days = 1
