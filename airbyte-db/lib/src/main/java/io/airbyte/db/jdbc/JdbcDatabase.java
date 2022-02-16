@@ -5,6 +5,7 @@
 package io.airbyte.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -65,13 +66,15 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @param <T> type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
-  public static <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
+  @MustBeClosed
+  protected static <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
       public boolean tryAdvance(final Consumer<? super T> action) {
         try {
           if (!resultSet.next()) {
+            resultSet.close();
             return false;
           }
           action.accept(mapper.apply(resultSet));
@@ -116,6 +119,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a stream.
    * @throws SQLException SQL related exceptions.
    */
+  @MustBeClosed
   public abstract <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
                                                CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
@@ -135,6 +139,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a stream.void execute(String sql)
    * @throws SQLException SQL related exceptions.
    */
+  @MustBeClosed
   public abstract <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
@@ -154,6 +159,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }
   }
 
+  @MustBeClosed
   @Override
   public Stream<JsonNode> query(final String sql, final String... params) throws SQLException {
     return query(connection -> {
