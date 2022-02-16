@@ -12,6 +12,7 @@ import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from deprecated.classic import deprecated
 
 
 def package_name_from_class(cls: object) -> str:
@@ -21,7 +22,7 @@ def package_name_from_class(cls: object) -> str:
 
 
 class IncrementalMixin(ABC):
-    """Mixing to make stream incremental.
+    """Mixin to make stream incremental.
 
     class IncrementalStream(Stream, IncrementalMixin):
         @property
@@ -170,9 +171,9 @@ class Stream(ABC):
         """
         return None
 
+    @deprecated(version='0.1.48', reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """This method is going to be deprecated in favor of IncrementalMixin, see IncrementalMixin docs for more info.
-        Override to extract state from the latest record. Needed to implement incremental sync.
+        """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
 
