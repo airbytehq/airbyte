@@ -864,6 +864,15 @@ class CRMSearchStream(IncrementalStream, ABC):
     def url(self):
         return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return self.url
+
     def __init__(
         self,
         include_archived_only: bool = False,
@@ -884,19 +893,25 @@ class CRMSearchStream(IncrementalStream, ABC):
         # As per their docs: `These search endpoints are rate limited to four requests per second per authentication token`.
         return self._api.post(url=url, data=data, params=params)
 
-    def list_records(self, fields) -> Iterable:  # TODO REMOVE IT
+    # def list_records(self, fields) -> Iterable:  # TODO REMOVE IT
         # params = {
         #     "archived": str(self._include_archived_only).lower(),
         #     "associations": self.associations,
         # }
 
-        if self.state:
-            generator = self.read(partial(self.search, url=self.url), params)
-        else:
-            generator = self.read(partial(self._api.get, url=self.url), params)
-        yield from self._flat_associations(self._filter_old_records(generator))
+        # if self.state:
+        #     generator = self.read(partial(self.search, url=self.url), params)
+        # else:
+        #     generator = self.read(partial(self._api.get, url=self.url), params)
+        # yield from self._flat_associations(self._filter_old_records(generator))
 
-    def _process_search(self, properties_list, next_page_token: Mapping[str, Any] = None) -> dict:
+    def _process_search(
+        self,
+        properties_list: List[str],
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
+    ) -> Tuple[dict, requests.Response]:
         stream_records = {}
         payload = (
             {
@@ -913,11 +928,10 @@ class CRMSearchStream(IncrementalStream, ABC):
             payload.update(next_page_token['payload'])
 
         response, raw_response = self.search(url=self.url, data=payload)
-        for record in self._transform(
-                self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
+        for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
             stream_records[record["id"]] = record
 
-        return stream_records
+        return stream_records, raw_response
 
     def read_records(
             self,
@@ -928,7 +942,6 @@ class CRMSearchStream(IncrementalStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:  # TODO
         stream_state = stream_state or {}
         pagination_complete = False
-
         next_page_token = None
         if stream_state:
             self.state = stream_state
@@ -939,7 +952,12 @@ class CRMSearchStream(IncrementalStream, ABC):
                 properties_list = list(self.properties.keys())
 
                 if self.state:
-                    stream_records = self._process_search(properties_list, next_page_token=next_page_token)
+                    stream_records, raw_response = self._process_search(
+                        properties_list,
+                        next_page_token=next_page_token,
+                        stream_state=stream_state,
+                        stream_slice=stream_slice,
+                    )
 
                 # if properties_list:
                 else:
@@ -951,15 +969,8 @@ class CRMSearchStream(IncrementalStream, ABC):
                     )
 
                 records = [value for key, value in stream_records.items()]
-
-                # else:
-                    # response = getter(params=params)
-                    # response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-                    # records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
-
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
-
+                # if self.filter_old_records:
+                records = self._filter_old_records(records)
                 records = self._flat_associations(records)  # TODO check
 
                 latest_cursor = None
@@ -1000,12 +1011,12 @@ class CRMSearchStream(IncrementalStream, ABC):
             params["after"] = response["paging"]["next"]["after"]
             payload["after"] = response["paging"]["next"]["after"]
 
-        return {
-            "params": params,
-            "payload": payload
-        }
+            return {
+                "params": params,
+                "payload": payload
+            }
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:  # TODO remove it
+    # def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:  # TODO remove it
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         # latest_cursor = None
         # default_params = {"limit": self.limit}
@@ -1022,19 +1033,19 @@ class CRMSearchStream(IncrementalStream, ABC):
         #     else {}
         # )
 
-        while True:
-            stream_records = {}
-            if self.state:
-                response = getter(data=payload)
-                for record in self._transform(self.parse_response(response)):
-                    stream_records[record["id"]] = record
-            else:
-                stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
-
-            for _, record in stream_records.items():
-                yield record
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+        # while True:
+        #     stream_records = {}
+        #     if self.state:
+        #         response = getter(data=payload)
+        #         for record in self._transform(self.parse_response(response)):
+        #             stream_records[record["id"]] = record
+        #     else:
+        #         stream_records, response = self._read_stream_records(getter=getter, params=params, properties_list=properties_list)
+        #
+        #     for _, record in stream_records.items():
+        #         yield record
+        #         cursor = self._field_to_datetime(record[self.updated_at_field])
+        #         latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
             # if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
             #     params["after"] = response["paging"]["next"]["after"]
