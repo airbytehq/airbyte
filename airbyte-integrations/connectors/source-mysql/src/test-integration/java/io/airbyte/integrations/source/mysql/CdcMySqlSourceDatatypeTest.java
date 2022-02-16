@@ -245,7 +245,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
              .sourceType("date")
              .fullSourceDataType("date not null")
-             .airbyteType(JsonSchemaPrimitive.STRING)
+             .airbyteType(JsonSchemaType.STRING)
              .addInsertValues("'0000-00-00'")
              .addExpectedValues("1970-01-01T00:00:00Z")
              .build());
@@ -263,7 +263,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("datetime")
             .fullSourceDataType("datetime not null")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0000-00-00 00:00:00'")
             .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
@@ -281,7 +281,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
        TestDataHolder.builder()
             .sourceType("timestamp")
             .fullSourceDataType("timestamp not null")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0000-00-00 00:00:00.000000'")
             .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
