@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "count": {
+            "type": "integer"
+        },
+        "budgets": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "budgets": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "shared": {
+                                    "type": "boolean"
+                                },
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "amountRemaining": {
+                                    "type": "integer"
+                                },
+                                "amountSpent": {
+                                    "type": "integer"
+                                },
+                                "creationTime": {
+                                    "type": "string"
+                                },
+                                "lastModified": {
+                                    "type": "string"
+                                },
+                                "startDate": {
+                                    "type": "string"
+                                },
+                                "runForever": {
+                                    "type": "boolean"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "pacing": {
+                                    "type": "string"
+                                },
+                                "dailyTarget": {
+                                    "type": "integer"
+                                },
+                                "maximumAmount": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,82 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "budgets",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                            "type": "integer"
+                        },
+                        "budgets": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "shared": {
+                                            "type": "boolean"
+                                        },
+                                        "amount": {
+                                            "type": "integer"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "amountRemaining": {
+                                            "type": "integer"
+                                        },
+                                        "amountSpent": {
+                                            "type": "integer"
+                                        },
+                                        "creationTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModified": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "runForever": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "pacing": {
+                                            "type": "string"
+                                        },
+                                        "dailyTarget": {
+                                            "type": "integer"
+                                        },
+                                        "maximumAmount": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "supported_sync_modes": [
+                            "full_refresh"
+                        ]
+                    }
+                }
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        }
+    ]
+}

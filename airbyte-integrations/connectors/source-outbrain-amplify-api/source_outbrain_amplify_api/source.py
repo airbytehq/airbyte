@@ -11,7 +11,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
+from airbyte_cdk.sources.streams.http.auth import NoAuth
+import logging
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -55,8 +56,13 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://api.outbrain.com/amplify/v0.1/"
+
+    def __init__(self,  marketer_id, ob_token_v1, authenticator, **kwargs):
+        super().__init__(authenticator, **kwargs)
+        self.marketer_id = marketer_id
+        self.token = ob_token_v1
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -82,23 +88,31 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        marketer_id = self.marketer_id
+        #return {"id": marketer_id, "detachedOnly": "true"}
+        return None
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        header = {"OB-TOKEN-V1": self.token}
+        return header
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        return [response.json()]
 
 
-class Customers(OutbrainAmplifyApiStream):
+class Budgets(OutbrainAmplifyApiStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -107,7 +121,8 @@ class Customers(OutbrainAmplifyApiStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
+        marketer_id = self.marketer_id
+        return 'https://api.outbrain.com/amplify/v0.1/marketers/' +marketer_id + '/budgets?detachedOnly=false'
 
 
 # Basic incremental stream
@@ -227,6 +242,6 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
         response = (requests.get(url, auth=auth))
         token = response.json()['OB-TOKEN-V1']
-
-        auth = TokenAuthenticator(token=token) 
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        
+        authenticator = NoAuth()
+        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator)]
