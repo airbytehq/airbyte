@@ -36,7 +36,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return new HashMap<>();
   }
 

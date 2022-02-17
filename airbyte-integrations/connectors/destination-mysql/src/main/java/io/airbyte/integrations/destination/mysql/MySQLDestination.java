@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,33 +92,18 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return super.getDatabase(config);
   }
 
-  @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
-    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
-    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
-    return MoreMaps.merge(customProperties, defaultProperties);
-  }
 
-  private Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     if (useSSL(config)) {
       return MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS);
     } else {
-      return MoreMaps.merge(DEFAULT_JDBC_PARAMETERS);
+      return DEFAULT_JDBC_PARAMETERS;
     }
   }
 
   private boolean useSSL(final JsonNode config) {
     return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
-  }
-
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
-    for (final String key : defaultParameters.keySet()) {
-      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
-        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
-      }
-    }
   }
 
   @Override
@@ -141,10 +125,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     return Jsons.jsonNode(configBuilder.build());
-  }
-
-  static String formatParameter(final String key, final String value) {
-    return String.format("%s=%s", key, value);
   }
 
   public static void main(final String[] args) throws Exception {

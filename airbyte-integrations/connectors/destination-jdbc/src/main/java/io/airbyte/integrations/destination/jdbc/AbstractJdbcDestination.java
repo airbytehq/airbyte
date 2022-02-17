@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -20,6 +21,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
+
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
@@ -92,27 +96,22 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         getConnectionProperties(config));
   }
 
-  protected abstract Map<String, String> getConnectionProperties(final JsonNode config);
-
-  public abstract JsonNode toJdbcConfig(JsonNode config);
-
-  @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties = parseJdbcParameters(config);
+    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
   }
 
-
-  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcParametersKey) {
-    if (config.has(jdbcParametersKey)) {
-      return parseJdbcParameters(config.get(jdbcParametersKey).asText());
+  private Map<String, String> parseJdbcParameters(final JsonNode config) {
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      return parseJdbcParameters(config.get(JDBC_URL_PARAMS_KEY).asText());
     } else {
       return Maps.newHashMap();
     }
   }
 
-  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
+  private Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {
       final String[] keyValuePairs = jdbcPropertiesString.split("&");
@@ -128,5 +127,25 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       }
     }
     return parameters;
+  }
+
+  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+      final Map<String, String> defaultParameters) {
+    for (final String key : defaultParameters.keySet()) {
+      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
+      }
+    }
+  }
+
+  protected abstract Map<String, String> getDefaultConnectionProperties(final JsonNode config);
+
+  public abstract JsonNode toJdbcConfig(JsonNode config);
+
+  @Override
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 }

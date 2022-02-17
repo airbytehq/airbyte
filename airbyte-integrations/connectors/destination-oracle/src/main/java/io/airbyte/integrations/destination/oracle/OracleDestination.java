@@ -56,7 +56,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return new HashMap<>();
   }
 

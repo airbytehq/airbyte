@@ -111,8 +111,8 @@ public class MySQLDestinationTest {
     final Map<String, String> allDefaultParameters = MoreMaps.merge(MySQLDestination.SSL_JDBC_PARAMETERS,
         MySQLDestination.DEFAULT_JDBC_PARAMETERS);
     for (final Entry<String, String> entry : allDefaultParameters.entrySet()) {
-      final String identicalParameter = MySQLDestination.formatParameter(entry.getKey(), entry.getValue());
-      final String overridingParameter = MySQLDestination.formatParameter(entry.getKey(), "DIFFERENT_VALUE");
+      final String identicalParameter = formatParameter(entry.getKey(), entry.getValue());
+      final String overridingParameter = formatParameter(entry.getKey(), "DIFFERENT_VALUE");
 
       // Do not throw an exception if the values are equal
       assertDoesNotThrow(() ->
@@ -170,5 +170,9 @@ public class MySQLDestinationTest {
               anyString(), nullable(String.class), anyString(), anyString(), Mockito.eq(connectionProperties)),
           times(1));
     }
+  }
+
+  String formatParameter(final String key, final String value) {
+    return String.format("%s=%s", key, value);
   }
 }

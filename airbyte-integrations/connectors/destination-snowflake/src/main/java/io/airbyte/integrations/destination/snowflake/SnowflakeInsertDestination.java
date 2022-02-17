@@ -29,7 +29,7 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
   }
 
   @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return new HashMap<>();
   }
 

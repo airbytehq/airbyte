@@ -70,7 +70,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   }
 
   @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return DEFAULT_JDBC_PARAMETERS;
   }
 
