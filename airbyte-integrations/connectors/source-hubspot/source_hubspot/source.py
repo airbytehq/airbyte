@@ -70,8 +70,12 @@ class SourceHubspot(AbstractSource):
 
     def get_common_params(self, config) -> Mapping[str, Any]:
         start_date = config.get("start_date")
+        credentials = config["credentials"]
         api = self.get_api(config=config)
-        common_params = dict(api=api, start_date=start_date)
+        common_params = dict(api=api, start_date=start_date, credentials=credentials)
+
+        if credentials.get("credentials_title") == "OAuth Credentials":
+            common_params["authenticator"] = api.get_authenticator(credentials)
         return common_params
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

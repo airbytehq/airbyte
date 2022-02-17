@@ -128,17 +128,20 @@ class API:
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
 
-    def __init__(self, credentials: Mapping[str, Any]):
-        self._session = requests.Session()
-        credentials_title = credentials.get("credentials_title")
-
-        if credentials_title == "OAuth Credentials":
-            self._session.auth = Oauth2Authenticator(
+    def get_authenticator(self, credentials):
+        return Oauth2Authenticator(
                 token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
                 client_id=credentials["client_id"],
                 client_secret=credentials["client_secret"],
                 refresh_token=credentials["refresh_token"],
             )
+
+    def __init__(self, credentials: Mapping[str, Any]):
+        self._session = requests.Session()
+        credentials_title = credentials.get("credentials_title")
+
+        if credentials_title == "OAuth Credentials":
+            self._session.auth = self.get_authenticator(credentials)
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
@@ -224,9 +227,21 @@ class Stream(HttpStream, ABC):
     ):
         return self.url
 
-    def __init__(self, api: API, start_date: str = None, **kwargs):
+    def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
+        super().__init__(**kwargs)
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
+
+        if credentials["credentials_title"] == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ):
+        return {
+            "Content-Type": "application/json",
+            "User-Agent": self._api.USER_AGENT,
+        }
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
