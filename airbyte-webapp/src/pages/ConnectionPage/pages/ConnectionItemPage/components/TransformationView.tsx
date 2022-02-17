@@ -22,6 +22,7 @@ import {
 import useConnection from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
+import { ContentCard, H4 } from "components";
 
 type TransformationViewProps = {
   connection: Connection;
@@ -31,6 +32,15 @@ const Content = styled.div`
   max-width: 1073px;
   margin: 0 auto;
   padding-bottom: 10px;
+`;
+
+const NoSupportedTransformationCard = styled(ContentCard)`
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const CustomTransformationsCard: React.FC<{
@@ -151,6 +161,13 @@ const TransformationView: React.FC<TransformationViewProps> = ({
           operations={connection.operations}
           onSubmit={onSubmit}
         />
+      )}
+      {!definition.supportsNormalization && !definition.supportsDbt && (
+        <NoSupportedTransformationCard>
+          <H4 center>
+            <FormattedMessage id="connectionForm.operations.notSupported" />
+          </H4>
+        </NoSupportedTransformationCard>
       )}
     </Content>
   );

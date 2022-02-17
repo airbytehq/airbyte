@@ -114,6 +114,8 @@ const connectionValidationSchema = yup
                 if (
                   DestinationSyncMode.Dedupted === value.destinationSyncMode
                 ) {
+                  // it's possible that primaryKey array is always present
+                  // however yup couldn't determine type correctly even with .required() call
                   if (value.primaryKey?.length === 0) {
                     return this.createError({
                       message: "connectionForm.primaryKey.required",
@@ -125,6 +127,8 @@ const connectionValidationSchema = yup
                 if (SyncMode.Incremental === value.syncMode) {
                   if (
                     !this.parent.stream.sourceDefinedCursor &&
+                    // it's possible that cursorField array is always present
+                    // however yup couldn't determine type correctly even with .required() call
                     value.cursorField?.length === 0
                   ) {
                     return this.createError({
