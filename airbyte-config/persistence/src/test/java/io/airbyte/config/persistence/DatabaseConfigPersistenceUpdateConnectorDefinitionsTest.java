@@ -53,9 +53,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @BeforeEach
   public void resetDatabase() throws SQLException {
-    database.query(ctx -> ctx
-        .execute(
-            "TRUNCATE TABLE state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    truncateAllTables();
   }
 
   @Test
