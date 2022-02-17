@@ -940,8 +940,8 @@ class CRMSearchStream(IncrementalStream, ABC):
             if self.state
             else {}
         )
-        # if next_page_token:  # TODO got 400 status if update payload with key 'after'
-        #     payload.update(next_page_token['payload'])
+        if next_page_token:  # TODO got 400 status if update payload with key 'after'
+            payload.update(next_page_token['payload'])
 
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
@@ -962,6 +962,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         if stream_state:
             self.state = stream_state
 
+        latest_cursor = None
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span(
                 "read_records"):
             while not pagination_complete:
@@ -989,17 +990,18 @@ class CRMSearchStream(IncrementalStream, ABC):
                 records = self._filter_old_records(records)
                 records = self._flat_associations(records)  # TODO check
 
-                latest_cursor = None
+                # latest_cursor = None
                 for record in records:
                     cursor = self._field_to_datetime(record[self.updated_at_field])
                     latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                     yield record
-                self._update_state(latest_cursor=latest_cursor)  # TODO update state
+                # self._update_state(latest_cursor=latest_cursor)  # TODO update state
 
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
                     pagination_complete = True
 
+            self._update_state(latest_cursor=latest_cursor)  # TODO update state
             # Always return an empty generator just in case no records were ever yielded
             yield from []
 
