@@ -21,8 +21,9 @@ class SurveymonkeyStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
 
-    def __init__(self, start_date: pendulum.datetime, **kwargs):
+    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str], **kwargs):
         self._start_date = start_date
+        self._survey_ids = survey_ids
         super().__init__(**kwargs)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -132,13 +133,15 @@ class Surveys(IncrementalSurveymonkeyStream):
         return "surveys"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        survey_ids = params.get("survey_ids", [])
+        # params = super().request_params(stream_state=stream_state, **kwargs)
+        survey_ids = self._survey_ids
         result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in result:
-            if not survey_ids or record["id"] in survey_ids:
-                substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
-                child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
+            substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
+            child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
+            if survey_ids and record["id"] in survey_ids:
+                yield from child_record
+            else:
                 yield from child_record
 
 
