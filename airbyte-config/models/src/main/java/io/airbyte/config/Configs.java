@@ -239,22 +239,26 @@ public interface Configs {
 
   // Jobs - Kube only
   /**
-   * Define the check job container's minimum CPU request. Defaults to {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   * Define the check job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerCpuRequest();
 
   /**
-   * Define the check job container's maximum CPU usage. Defaults to {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   * Define the check job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Defaults to {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   * Define the job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Defaults to {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   * Define the job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
 
