@@ -85,7 +85,7 @@ public class DestinationDefinitionsHandler {
 
   private static ReleaseStage getReleaseStage(final StandardDestinationDefinition standardDestinationDefinition) {
     if (standardDestinationDefinition.getReleaseStage() == null) {
-      return null;
+      return ReleaseStage.ALPHA;
     }
     return ReleaseStage.fromValue(standardDestinationDefinition.getReleaseStage().value());
   }

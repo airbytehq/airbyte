@@ -82,7 +82,7 @@ public class SourceDefinitionsHandler {
 
   private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
     if (standardSourceDefinition.getReleaseStage() == null) {
-      return null;
+      return ReleaseStage.ALPHA;
     }
     return ReleaseStage.fromValue(standardSourceDefinition.getReleaseStage().value());
   }
