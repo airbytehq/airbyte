@@ -17,6 +17,7 @@ from psycopg2.pool import ThreadedConnectionPool
 
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
+from destination_redshift_py.s3_writer import S3Writer
 from destination_redshift_py.table import AIRBYTE_AB_ID, AIRBYTE_EMITTED_AT, Table
 
 logger = logging.getLogger("airbyte")
@@ -24,9 +25,8 @@ logger = logging.getLogger("airbyte")
 
 class DestinationRedshiftPy(Destination):
     def __init__(self):
-        self.connection_pool: ThreadedConnectionPool = None
-
-        self.tables = dict()
+        self.final_tables = dict()
+        self.staging_tables = dict()
 
         self.csv_writers = dict()
 
@@ -37,13 +37,16 @@ class DestinationRedshiftPy(Destination):
             config = self.read_config(config_path=parsed_args.config)
             self._create_pool(config=config)
 
-        if cmd == "write":
-            self._extract_tables_from_json_schema(ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
-            self._create_tables()
-            self._initialize_csv_writers()
-            return super().run_cmd(parsed_args)
-        else:
-            return super().run_cmd(parsed_args)
+            if cmd == "write":
+                self._extract_tables_from_json_schema(ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
+                self._create_tables()
+                self._initialize_staging_schema()
+                self._initialize_csv_writers()
+                self._initialize_s3_writer(config=config)
+                self._initialize_iam_role_arn(iam_role_arn=config.get("iam_role_arn"))
+                return super().run_cmd(parsed_args)
+
+        return super().run_cmd(parsed_args)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -70,7 +73,6 @@ class DestinationRedshiftPy(Destination):
             configured_catalog: ConfiguredAirbyteCatalog,
             input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
@@ -95,19 +97,23 @@ class DestinationRedshiftPy(Destination):
 
                 # Build a simple tree out of the dictionary and visit the leave nodes before parents to clear the leave nodes
                 # attributes. The leave nodes are the dictionary keys with the largest length after splitting the name
-                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.tables.keys()), key=len, reverse=True)
+                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.final_tables.keys()), key=len, reverse=True)
 
                 for node in nodes:
-                    table = self.tables[PARENT_CHILD_SPLITTER.join(node)]
+                    table = self.final_tables[PARENT_CHILD_SPLITTER.join(node)]
 
                     parent = reduce(self._visit_node, [data] + node[0:-1])
                     records = getattr(parent, node[-1])
 
+                    parent_id = parent[AIRBYTE_AB_ID.name]
+                    reference_key = table.reference_key
+                    emitted_at = message.record.emitted_at
+
                     if isinstance(records, list):
                         for record in records:
-                            self._process_record(table=table, parent_record=parent, record=record, emitted_at=message.record.emitted_at)
+                            self._add_columns(record=record, emitted_at=emitted_at, parent_id=parent_id, reference_key=reference_key)
                     else:
-                        self._process_record(table=table, parent_record=parent, record=records, emitted_at=message.record.emitted_at)
+                        self._add_columns(record=records, emitted_at=emitted_at, parent_id=parent_id, reference_key=reference_key)
 
                     # Delete the child after visiting
                     delattr(parent, node[-1])
@@ -116,13 +122,13 @@ class DestinationRedshiftPy(Destination):
 
         self._flush()
 
-    def _process_record(self, table: Table, parent_record: DotMap, record: DotMap, emitted_at: int):
-        record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat()
+    def _add_columns(self, record: DotMap, emitted_at: int, parent_id: str = None, reference_key: str = None):
+        record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat(timespec="seconds")
 
-        self._assign_unique_id(record)
+        self._assign_unique_id(record=record)
 
-        if table.reference_key:
-            record[table.reference_key] = parent_record[AIRBYTE_AB_ID.name]
+        if reference_key:
+            record[reference_key] = parent_id
 
     def _extract_tables_from_json_schema(self, configured_catalog: ConfiguredAirbyteCatalog):
         for stream in configured_catalog.streams:
@@ -133,21 +139,30 @@ class DestinationRedshiftPy(Destination):
             converter = JsonToTables(stream.stream.json_schema, schema=schema, root_table=root_table, primary_keys=primary_keys)
             converter.convert()
 
-            self.tables = dict(**self.tables, **converter.tables)
-
-    def _initialize_csv_writers(self):
-        for table in self.tables.values():
-            csv_writer = CSVWriter(table=table)
-            csv_writer.initialize_writer()
-
-            self.csv_writers[table.name] = csv_writer
+            self.final_tables = dict(**self.final_tables, **converter.tables)
 
     def _create_tables(self):
         cursor = self._get_connection(autocommit=True).cursor()
 
-        for _, table_def in self.tables.items():
+        for _, table_def in self.final_tables.items():
             sql = table_def.create_statement()
             cursor.execute(sql)
+
+    def _initialize_staging_schema(self):
+        cursor = self._get_connection(autocommit=True).cursor()
+        random_table = list(self.final_tables.values())[0]  # All final_tables will be stored in the same schema
+
+        staging_schema = f"_airbyte_{random_table.schema}"
+        sql = f"CREATE SCHEMA IF NOT EXISTS {staging_schema}"
+        cursor.execute(sql)
+
+        for key, table in self.final_tables.items():
+            staging_table = table
+            staging_table.schema = staging_schema
+
+            self.staging_tables[key] = staging_table
+
+            cursor.execute(staging_table.create_statement())
 
     def _create_pool(self, config: Mapping[str, Any]):
         self.connection_pool = ThreadedConnectionPool(
@@ -166,20 +181,45 @@ class DestinationRedshiftPy(Destination):
 
         return connection
 
-    @staticmethod
-    def _visit_node(parent: DotMap, attr: str) -> DotMap:
-        node = getattr(parent, attr)
+    def _initialize_csv_writers(self):
+        for table in self.final_tables.values():
+            csv_writer = CSVWriter(table=table)
+            csv_writer.initialize_writer()
 
-        DestinationRedshiftPy._assign_unique_id(node)
+            self.csv_writers[table.name] = csv_writer
+
+    def _initialize_s3_writer(self, config: Mapping[str, Any]):
+        self.s3_writer = S3Writer(bucket=config.get("s3_bucket_name"), s3_path=config.get("s3_bucket_path"))
+
+    def _initialize_iam_role_arn(self, iam_role_arn: str):
+        self.iam_role_arn = iam_role_arn
+
+    @staticmethod
+    def _visit_node(parent: DotMap, key: str) -> DotMap:
+        node = getattr(parent, key)
+
+        DestinationRedshiftPy._assign_unique_id(record=node)
 
         return node
 
     @staticmethod
-    def _assign_unique_id(fields: DotMap):
-        if AIRBYTE_AB_ID.name not in fields:
-            fields[AIRBYTE_AB_ID.name] = uuid4().hex
+    def _assign_unique_id(record: DotMap):
+        if AIRBYTE_AB_ID.name not in record:
+            record[AIRBYTE_AB_ID.name] = uuid4().hex
 
     def _flush(self):
-        for csv_writer in self.csv_writers.values():
-            if csv_writer.flush_gzipped():
-                print(csv_writer.flush_gzipped().name)
+        connection = self._get_connection()
+        cursor = connection.cursor()
+
+        for table in self.staging_tables.values():
+            csv_writer = self.csv_writers[table.name]
+            temporary_gzip_file = csv_writer.flush_gzipped()
+
+            if temporary_gzip_file:
+                s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
+                csv_writer.delete_gzip_file(temporary_gzip_file)
+                sql = table.coy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                cursor.execute(sql)
+
+        connection.commit()
+

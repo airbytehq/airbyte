@@ -25,7 +25,8 @@ class Table:
             reference_key = self.reference_key
             references = f", FOREIGN KEY({reference_key}) REFERENCES {self.references.schema}.{self.references.name}({AIRBYTE_AB_ID.name})"
 
-            self.fields.append(Field(name=reference_key, data_type=AIRBYTE_KEY_DATA_TYPE))
+            if reference_key not in self.field_names:
+                self.fields.append(Field(name=reference_key, data_type=AIRBYTE_KEY_DATA_TYPE))
 
         fields = ", ".join(map(lambda field: field.__str__(), self.fields))
         primary_keys = f", PRIMARY KEY({', '.join(self.primary_keys)})"
@@ -34,6 +35,18 @@ class Table:
             CREATE TABLE IF NOT EXISTS {self.schema}.{self.name} (
                 {fields}{primary_keys}{references}, UNIQUE({AIRBYTE_AB_ID.name})  
             );
+        """
+
+    def coy_csv_gzip_statement(self, iam_role_arn: str, s3_full_path: str):
+        return f"""
+            COPY {self.schema}.{self.name}
+            FROM '{s3_full_path}'
+            iam_role '{iam_role_arn}'
+            FORMAT CSV
+            TIMEFORMAT 'auto'
+            ACCEPTANYDATE
+            IGNOREHEADER 1
+            GZIP
         """
 
     @property

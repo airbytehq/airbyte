@@ -85,17 +85,11 @@
           "me-south-1"
         ]
       },
-      "access_key_id": {
+      "iam_role_arn": {
         "type": "string",
-        "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
-        "title": "S3 Key Id",
-        "airbyte_secret": true
-      },
-      "secret_access_key": {
-        "type": "string",
-        "description": "The corresponding secret to the above access key id.",
-        "title": "S3 Access Key",
-        "airbyte_secret": true
+        "description": "The IAM role ARN used to copy files from S3 to Redshift",
+        "examples": ["arn:aws:iam::<aws-account-id>:role/<role-name>"],
+        "title": "IAM Role Name"
       },
       "max_connections": {
         "description": "Maximum number of connections in the connection pool",

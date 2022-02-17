@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk", "pydantic==1.9.0", "psycopg2==2.9.3", "dotmap==1.3.26"
+    "airbyte-cdk", "pydantic==1.9.0", "psycopg2==2.9.3", "dotmap==1.3.26", "boto3==1.21.0"
 ]
 
 TEST_REQUIREMENTS = [

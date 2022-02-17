@@ -2,6 +2,7 @@ import csv
 import gzip
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Union, List, Optional
 
 from dotmap import DotMap
@@ -47,3 +48,6 @@ class CSVWriter:
                 shutil.copyfileobj(temp_file, f_out)
 
             return temporary_gzip_file
+
+    def delete_gzip_file(self, gzip_file: gzip.GzipFile):
+        Path(gzip_file.name).unlink()
