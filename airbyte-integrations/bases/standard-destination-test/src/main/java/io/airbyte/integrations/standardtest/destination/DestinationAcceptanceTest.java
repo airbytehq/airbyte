@@ -1313,9 +1313,9 @@ public abstract class DestinationAcceptanceTest {
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
   public void testDataTypeTestWithNormalization(final String messagesFilename,
-                               final String catalogFilename,
-                               final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
-          throws Exception {
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
     if (!checkTestCompatibility(testCompatibility))
       return;
 
@@ -1326,8 +1326,7 @@ public abstract class DestinationAcceptanceTest {
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
-    }
-    else {
+    } else {
       LOGGER.info("Normalization is not supported! Run test without normalization.");
       runAndCheckWithoutNormalization(messages, configuredCatalog, catalog);
     }
@@ -1343,10 +1342,13 @@ public abstract class DestinationAcceptanceTest {
 
   private List<AirbyteMessage> reedMessagesFromFile(String messagesFilename) throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
-            .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
   }
 
-  private void runAndCheckWithNormalization(final List<AirbyteMessage> messages, final ConfiguredAirbyteCatalog configuredCatalog, final AirbyteCatalog catalog) throws Exception {
+  private void runAndCheckWithNormalization(final List<AirbyteMessage> messages,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final AirbyteCatalog catalog)
+      throws Exception {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
@@ -1354,7 +1356,10 @@ public abstract class DestinationAcceptanceTest {
     assertSameMessages(messages, actualMessages, true);
   }
 
-  private void runAndCheckWithoutNormalization(final List<AirbyteMessage> messages, final ConfiguredAirbyteCatalog configuredCatalog, final AirbyteCatalog catalog) throws Exception {
+  private void runAndCheckWithoutNormalization(final List<AirbyteMessage> messages,
+                                               final ConfiguredAirbyteCatalog configuredCatalog,
+                                               final AirbyteCatalog catalog)
+      throws Exception {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));

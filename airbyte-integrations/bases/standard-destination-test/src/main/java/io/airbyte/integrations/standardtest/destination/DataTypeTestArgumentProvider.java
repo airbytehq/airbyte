@@ -48,8 +48,10 @@ public class DataTypeTestArgumentProvider implements ArgumentsProvider {
     public boolean isTestCompatible(boolean supportBasicDataTypeTest, boolean supportArrayDataTypeTest, boolean supportObjectDataTypeTest) {
       LOGGER.info("---- Data type test compatibility ----");
       LOGGER.info("| Data type test | Require | Support |");
-      LOGGER.info("| Basic test     | {}   | {}   |", (requireBasicCompatibility ? "true " : "false"), (supportBasicDataTypeTest ? "true " : "false"));
-      LOGGER.info("| Array test     | {}   | {}   |", (requireArrayCompatibility ? "true " : "false"), (supportArrayDataTypeTest ? "true " : "false"));
+      LOGGER.info("| Basic test     | {}   | {}   |", (requireBasicCompatibility ? "true " : "false"),
+          (supportBasicDataTypeTest ? "true " : "false"));
+      LOGGER.info("| Array test     | {}   | {}   |", (requireArrayCompatibility ? "true " : "false"),
+          (supportArrayDataTypeTest ? "true " : "false"));
       LOGGER.info("| Object test    | {}   | {}   |", (requireObjectCompatibility ? "true " : "false"),
           (supportObjectDataTypeTest ? "true " : "false"));
       LOGGER.info("--------------------------------------");

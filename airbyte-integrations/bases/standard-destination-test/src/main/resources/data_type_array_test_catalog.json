@@ -5,28 +5,20 @@
       "json_schema": {
         "properties": {
           "string_array": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
-              "type": [
-                "string"
-              ]
+              "type": ["string"]
             }
           },
           "array_date": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "string",
               "format": "date"
             }
           },
           "array_timestamp_with_timezone": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "string",
               "format": "date-time",
@@ -34,9 +26,7 @@
             }
           },
           "array_timestamp_without_timezone": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "string",
               "format": "date-time",
@@ -44,43 +34,33 @@
             }
           },
           "array_number": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "number"
             }
           },
           "array_big_number": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "string",
               "airbyte_type": "big_number"
             }
           },
           "array_integer": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "integer"
             }
           },
           "array_big_integer": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "string",
               "airbyte_type": "big_integer"
             }
           },
           "array_boolean": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "boolean"
             }

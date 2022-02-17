@@ -3,9 +3,7 @@
     {
       "name": "object_test_1",
       "json_schema": {
-        "type": [
-          "object"
-        ],
+        "type": ["object"],
         "properties": {
           "property_string": {
             "type": "string"
