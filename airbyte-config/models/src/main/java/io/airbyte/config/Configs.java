@@ -8,6 +8,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -292,6 +293,41 @@ public interface Configs {
    * Define the Kubernetes namespace Job pods are created in.
    */
   String getJobKubeNamespace();
+
+  /**
+   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDefaultWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "get spec" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getSpecWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "check connection" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getCheckWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "discover" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDiscoverWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "replication" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getReplicationWorkerStatusCheckInterval();
 
   // Logging/Monitoring/Tracking
   /**
