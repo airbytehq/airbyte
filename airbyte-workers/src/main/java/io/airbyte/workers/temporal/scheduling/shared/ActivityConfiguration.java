@@ -6,10 +6,10 @@ package io.airbyte.workers.temporal.scheduling.shared;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
+import io.temporal.client.WorkflowFailedException;
 import io.temporal.common.RetryOptions;
 import java.time.Duration;
 
@@ -28,11 +28,11 @@ public class ActivityConfiguration {
 
   // retry infinitely if the worker is killed without exceptions and dies due to timeouts
   // but fail for everything thrown by the call itself which is rethrown as runtime exceptions
-  private static final RetryOptions ORCHESTRATOR_RETRY = RetryOptions.newBuilder()
-      .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName())
+  public static final RetryOptions ORCHESTRATOR_RETRY = RetryOptions.newBuilder()
+      .setDoNotRetry(RuntimeException.class.getName(), WorkflowFailedException.class.getName())
       .build();
 
-  private static final RetryOptions RETRY_POLICY = new EnvConfigs().getContainerOrchestratorEnabled() ? ORCHESTRATOR_RETRY : TemporalUtils.NO_RETRY;
+  public static final RetryOptions RETRY_POLICY = new EnvConfigs().getContainerOrchestratorEnabled() ? ORCHESTRATOR_RETRY : TemporalUtils.NO_RETRY;
 
   public static final ActivityOptions LONG_RUN_OPTIONS = ActivityOptions.newBuilder()
       .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
