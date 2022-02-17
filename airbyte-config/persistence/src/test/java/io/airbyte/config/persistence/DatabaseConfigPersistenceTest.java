@@ -56,8 +56,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    truncateAllTables();
   }
 
   @AfterEach

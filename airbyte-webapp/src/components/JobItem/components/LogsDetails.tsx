@@ -15,6 +15,10 @@ const CenteredDetails = styled.div`
   color: ${({ theme }) => theme.greyColor40};
   position: relative;
 `;
+const AttemptDetailsSection = styled.div`
+  padding-left: 10px;
+  padding-top: 10px;
+`;
 
 const LogsDetails: React.FC<{
   id: number | string;
@@ -24,7 +28,11 @@ const LogsDetails: React.FC<{
   jobDebugInfo?: JobDebugInfoMeta;
 }> = ({ path, logs, id, currentAttempt, jobDebugInfo }) => (
   <>
-    {currentAttempt && <AttemptDetails attempt={currentAttempt} />}
+    {currentAttempt && (
+      <AttemptDetailsSection>
+        <AttemptDetails attempt={currentAttempt} />
+      </AttemptDetailsSection>
+    )}
     <CenteredDetails>
       <div>{path}</div>
       {logs?.logLines && (

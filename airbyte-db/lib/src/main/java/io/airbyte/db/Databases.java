@@ -14,6 +14,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.mongodb.MongoDatabase;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.val;
@@ -185,9 +186,7 @@ public class Databases {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
-    final JdbcDatabase defaultJdbcDatabase =
-        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties, sourceOperations);
-    return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
+    return new StreamingJdbcDatabase(connectionPool, sourceOperations, jdbcStreamingQuery);
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
@@ -198,6 +197,10 @@ public class Databases {
         Optional.empty());
   }
 
+  /**
+   * Prefer to use the method that takes in the connection properties as a map.
+   */
+  @Deprecated
   private static BasicDataSource createBasicDataSource(final String username,
                                                        final String password,
                                                        final String jdbcConnectionString,
@@ -211,6 +214,22 @@ public class Databases {
     connectionPool.setMaxTotal(5);
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
+    return connectionPool;
+  }
+
+  public static BasicDataSource createBasicDataSource(final String username,
+                                                      final String password,
+                                                      final String jdbcConnectionString,
+                                                      final String driverClassName,
+                                                      final Map<String, String> connectionProperties) {
+    final BasicDataSource connectionPool = new BasicDataSource();
+    connectionPool.setDriverClassName(driverClassName);
+    connectionPool.setUsername(username);
+    connectionPool.setPassword(password);
+    connectionPool.setInitialSize(0);
+    connectionPool.setMaxTotal(5);
+    connectionPool.setUrl(jdbcConnectionString);
+    connectionProperties.forEach(connectionPool::addConnectionProperty);
     return connectionPool;
   }
 

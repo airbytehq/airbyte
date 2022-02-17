@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +96,6 @@ public class KubePodProcess extends Process implements KubePod {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
-  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
@@ -343,7 +343,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
                         final List<TolerationPOJO> tolerations,
-                        final Map<String, String> nodeSelectors,
+                        final Optional<Map<String, String>> nodeSelectors,
                         final Map<String, String> labels,
                         final String socatImage,
                         final String busyboxImage,
@@ -469,7 +469,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
-        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
+        .withNodeSelector(nodeSelectors.orElse(null))
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
