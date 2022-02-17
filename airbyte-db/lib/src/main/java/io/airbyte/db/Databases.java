@@ -186,9 +186,7 @@ public class Databases {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
-    final JdbcDatabase defaultJdbcDatabase =
-        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties, sourceOperations);
-    return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
+    return new StreamingJdbcDatabase(connectionPool, sourceOperations, jdbcStreamingQuery);
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
