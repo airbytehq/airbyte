@@ -210,10 +210,19 @@ class Stream(HttpStream, ABC):
     def url_base(self) -> str:  # TODO
         return "https://api.hubapi.com"
 
-    # @property
-    # @abstractmethod
-    # def url(self):
-    #     """Default URL to read from"""
+    @property
+    @abstractmethod
+    def url(self):
+        """Default URL to read from"""
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return self.url
 
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
@@ -526,30 +535,32 @@ class Stream(HttpStream, ABC):
         # yield from generator
 
     def _parse_response(self, response: requests.Response):
-        message = "Unknown error"
-        if response.headers.get(
-                "content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
-            message = response.json().get("message")
+        # message = "Unknown error"
+        # if response.headers.get(
+        #         "content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
+        #     message = response.json().get("message")
+        #
+        # if response.status_code == HTTPStatus.FORBIDDEN:
+        #     """Once hit the forbidden endpoint, we return the error message from response."""
+        #     pass
+        # elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
+        #     raise HubspotInvalidAuth(message, response=response)
+        # elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+        #     retry_after = response.headers.get("Retry-After")
+        #     raise HubspotRateLimited(
+        #         f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+        #         " See https://developers.hubspot.com/docs/api/usage-details",
+        #         response=response,
+        #     )
+        # elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
+        #     raise HubspotTimeout(message, response=response)
+        # else:
+        #     response.raise_for_status()
+        #
+        # return response.json()
+        # # response = response.json()
 
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            """Once hit the forbidden endpoint, we return the error message from response."""
-            pass
-        elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
-            raise HubspotInvalidAuth(message, response=response)
-        elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            retry_after = response.headers.get("Retry-After")
-            raise HubspotRateLimited(
-                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
-                " See https://developers.hubspot.com/docs/api/usage-details",
-                response=response,
-            )
-        elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
-            raise HubspotTimeout(message, response=response)
-        else:
-            response.raise_for_status()
-
-        return response.json()
-        # response = response.json()
+        return self._api._parse_and_handle_errors(response)
 
     def parse_response(  # TODO
         self,
@@ -864,15 +875,6 @@ class CRMSearchStream(IncrementalStream, ABC):
     def url(self):
         return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        return self.url
-
     def __init__(
         self,
         include_archived_only: bool = False,
@@ -1142,15 +1144,6 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
 
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        return self.url
-
     def read_records(
             self,
             sync_mode: SyncMode,
@@ -1198,15 +1191,6 @@ class ContactsListMemberships(Stream):
     data_field = "contacts"
     page_filter = "vidOffset"
     page_field = "vid-offset"
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        return self.url
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1335,15 +1319,6 @@ class EmailEvents(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "created"
     created_at_field = "created"
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        return self.url
 
 
 class Engagements(IncrementalStream):
