@@ -27,7 +27,7 @@ import {
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-import { OperationsSection } from "./OperationsSection";
+import { OperationsSection } from "./components/OperationsSection";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;

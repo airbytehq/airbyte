@@ -1,13 +1,19 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import { Field, FieldArray } from "formik";
+import styled from "styled-components";
 
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { useDefaultTransformation } from "./formConfig";
-import SectionTitle from "./components/SectionTitle";
-import { NormalizationField } from "./components/NormalizationField";
-import { TransformationField } from "./components/TransformationField";
+import { useDefaultTransformation } from "../formConfig";
+import { NormalizationField } from "./NormalizationField";
+import { TransformationField } from "./TransformationField";
+
+const SectionTitle = styled.div`
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 17px;
+`;
 
 export const OperationsSection: React.FC<{
   destDefinition: DestinationDefinitionSpecification;
