@@ -14,8 +14,8 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.GetMaxAttemptOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
-import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncOutput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
@@ -110,7 +110,7 @@ public class ConnectionManagerWorkflowTest {
 
     Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
         .thenReturn(
-            new SyncOutput(
+            new GeneratedJobInput(
                 new JobRunConfig(),
                 new IntegrationLauncherConfig(),
                 new IntegrationLauncherConfig(),
@@ -547,8 +547,6 @@ public class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
-
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
 
     }
 
