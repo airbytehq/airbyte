@@ -208,10 +208,7 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        import json
-        filename = self.__class__.__name__
-        with open(filename + '.json', 'w', encoding='utf-8') as f:
-            json.dump(response.json(), f, ensure_ascii=False, indent=4)
+
 
         return response.json().get("campaignResults")
 
@@ -243,10 +240,6 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        import json
-        filename = self.__class__.__name__
-        with open(filename + '.json', 'w', encoding='utf-8') as f:
-            json.dump(response.json(), f, ensure_ascii=False, indent=4)
 
         return response.json().get("results")
 
