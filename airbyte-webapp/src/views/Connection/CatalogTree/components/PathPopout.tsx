@@ -60,7 +60,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
     <Popout
       options={options}
       value={props.path}
-      // @ts-ignore need to solve issue with typings
+      // @ts-expect-error need to solve issue with typings
       isMulti={props.isMulti}
       isSearchable
       onChange={(
