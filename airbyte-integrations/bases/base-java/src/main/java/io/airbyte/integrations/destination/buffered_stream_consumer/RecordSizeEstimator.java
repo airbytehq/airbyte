@@ -7,6 +7,12 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class estimate the byte size of the record message. To reduce memory footprint,
+ * 1) it assumes that a character is always four bytes, and 2) it only performs a sampling
+ * every N records. The size of the samples are averaged together to protect the estimation
+ * against outliers.
+ */
 public class RecordSizeEstimator {
 
   // by default, perform one estimation for every 20 records
@@ -36,12 +42,26 @@ public class RecordSizeEstimator {
   public long getEstimatedByteSize(final AirbyteRecordMessage recordMessage) {
     final String stream = recordMessage.getStream();
     final Integer countdown = streamSampleCountdown.get(stream);
-    if (countdown == null || countdown <= 0) {
+
+    // this is a new stream; initialize its estimation
+    if (countdown == null) {
       final long byteSize = getStringByteSize(recordMessage.getData());
       streamRecordSizes.put(stream, byteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return byteSize;
     }
+
+    // this stream needs update; compute a new estimation
+    if (countdown <= 0) {
+      final long prevMeanByteSize = streamRecordSizes.get(stream);
+      final long currentByteSize = getStringByteSize(recordMessage.getData());
+      final long newMeanByteSize = prevMeanByteSize / 2 + currentByteSize / 2;
+      streamRecordSizes.put(stream, newMeanByteSize);
+      streamSampleCountdown.put(stream, sampleBatchSize - 1);
+      return newMeanByteSize;
+    }
+
+    // this stream does not need update; return current estimation
     streamSampleCountdown.put(stream, countdown - 1);
     return streamRecordSizes.get(stream);
   }

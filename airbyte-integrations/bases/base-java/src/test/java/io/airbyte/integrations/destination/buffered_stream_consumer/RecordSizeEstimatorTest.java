@@ -26,16 +26,25 @@ class RecordSizeEstimatorTest {
     final AirbyteRecordMessage record2 = new AirbyteRecordMessage().withStream(stream).withData(DATA_2);
 
     // sample record message 1
-    assertEquals(DATA_1_SIZE, sizeEstimator.getEstimatedByteSize(record1));
+    final long firstEstimation = DATA_1_SIZE;
+    assertEquals(firstEstimation, sizeEstimator.getEstimatedByteSize(record1));
     // next two calls return the first sampling result
-    assertEquals(DATA_1_SIZE, sizeEstimator.getEstimatedByteSize(record0));
-    assertEquals(DATA_1_SIZE, sizeEstimator.getEstimatedByteSize(record0));
+    assertEquals(firstEstimation, sizeEstimator.getEstimatedByteSize(record0));
+    assertEquals(firstEstimation, sizeEstimator.getEstimatedByteSize(record0));
 
     // sample record message 2
-    assertEquals(DATA_2_SIZE, sizeEstimator.getEstimatedByteSize(record2));
+    final long secondEstimation = firstEstimation / 2 + DATA_2_SIZE / 2;
+    assertEquals(secondEstimation, sizeEstimator.getEstimatedByteSize(record2));
     // next two calls return the second sampling result
-    assertEquals(DATA_2_SIZE, sizeEstimator.getEstimatedByteSize(record0));
-    assertEquals(DATA_2_SIZE, sizeEstimator.getEstimatedByteSize(record0));
+    assertEquals(secondEstimation, sizeEstimator.getEstimatedByteSize(record0));
+    assertEquals(secondEstimation, sizeEstimator.getEstimatedByteSize(record0));
+
+    // sample record message 1
+    final long thirdEstimation = secondEstimation / 2 + DATA_1_SIZE / 2;
+    assertEquals(thirdEstimation, sizeEstimator.getEstimatedByteSize(record1));
+    // next two calls return the first sampling result
+    assertEquals(thirdEstimation, sizeEstimator.getEstimatedByteSize(record0));
+    assertEquals(thirdEstimation, sizeEstimator.getEstimatedByteSize(record0));
   }
 
   @Test
