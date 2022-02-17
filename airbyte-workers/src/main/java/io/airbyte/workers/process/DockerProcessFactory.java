@@ -101,12 +101,15 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
+      LOGGER.info("Creating docker job ID: {}", jobId);
       final List<String> cmd = Lists.newArrayList(
           "docker",
           "run",
           "--rm",
           "--init",
           "-i",
+          "-p",
+          "9010:9010",
           "-w",
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
@@ -115,6 +118,12 @@ public class DockerProcessFactory implements ProcessFactory {
       if (networkName != null) {
         cmd.add("--network");
         cmd.add(networkName);
+      }
+
+      if (imageName.startsWith("airbyte/destination-snowflake")) {
+        LOGGER.info("Exposing image {} port 6000", imageName);
+        cmd.add("-p");
+        cmd.add("6000:6000");
       }
 
       if (workspaceMountSource != null) {

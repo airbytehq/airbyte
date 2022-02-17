@@ -8,17 +8,17 @@ application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
 // enable when profiling
     applicationDefaultJvmArgs = [
-            '-XX:+ExitOnOutOfMemoryError',
-            '-XX:MaxRAMPercentage=75.0',
-//            '-XX:NativeMemoryTracking=detail',
-//            "-Djava.rmi.server.hostname=localhost",
-//            '-Dcom.sun.management.jmxremote=true',
-//            '-Dcom.sun.management.jmxremote.port=6000',
-//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
-//            '-Dcom.sun.management.jmxremote.local.only=false',
-//            '-Dcom.sun.management.jmxremote.authenticate=false',
-//            '-Dcom.sun.management.jmxremote.ssl=false',
-//            '-agentpath:/usr/local/YourKit-JavaProfiler-2021.3/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all'
+        '-XX:+ExitOnOutOfMemoryError',
+        '-XX:MaxRAMPercentage=75.0',
+        '-Xmx2000m',
+        '-XX:NativeMemoryTracking=detail',
+        '-Djava.rmi.server.hostname=localhost',
+        '-Dcom.sun.management.jmxremote=true',
+        '-Dcom.sun.management.jmxremote.port=6000',
+        "-Dcom.sun.management.jmxremote.rmi.port=6000",
+        '-Dcom.sun.management.jmxremote.local.only=false',
+        '-Dcom.sun.management.jmxremote.authenticate=false',
+        '-Dcom.sun.management.jmxremote.ssl=false',
     ]
 
 }
@@ -29,7 +29,7 @@ dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.13.9'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
-    implementation "io.aesy:datasize:1.0.0"
+    implementation 'io.aesy:datasize:1.0.0'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:lib')
