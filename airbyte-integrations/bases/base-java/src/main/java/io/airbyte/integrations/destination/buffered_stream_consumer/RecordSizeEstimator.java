@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,10 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class estimate the byte size of the record message. To reduce memory footprint,
- * 1) it assumes that a character is always four bytes, and 2) it only performs a sampling
- * every N records. The size of the samples are averaged together to protect the estimation
- * against outliers.
+ * This class estimate the byte size of the record message. To reduce memory footprint, 1) it
+ * assumes that a character is always four bytes, and 2) it only performs a sampling every N
+ * records. The size of the samples are averaged together to protect the estimation against
+ * outliers.
  */
 public class RecordSizeEstimator {
 
@@ -26,8 +30,8 @@ public class RecordSizeEstimator {
   private final int sampleBatchSize;
 
   /**
-   * The estimator will perform a real calculation once per sample batch.
-   * The size of the batch is determined by {@code sampleBatchSize}.
+   * The estimator will perform a real calculation once per sample batch. The size of the batch is
+   * determined by {@code sampleBatchSize}.
    */
   public RecordSizeEstimator(final int sampleBatchSize) {
     this.streamRecordSizeEstimation = new HashMap<>();
