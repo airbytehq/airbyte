@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedHTMLMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
@@ -27,12 +27,7 @@ const WarningMessage: React.FC = () => {
     <Content>
       <Exclamation icon={faExclamationCircle} />
       <div>
-        <FormattedMessage
-          id="connector.connectorsInDevelopment"
-          values={{
-            b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-          }}
-        />
+        <FormattedHTMLMessage id="connector.connectorsInDevelopment" />
       </div>
     </Content>
   );
