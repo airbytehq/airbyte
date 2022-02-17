@@ -18,7 +18,6 @@ from source_hubspot.streams import (
     Campaigns,
     ContactLists,
     ContactsListMemberships,
-    CRMSearchStream,
     DealPipelines,
     Deals,
     EmailEvents,

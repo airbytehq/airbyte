@@ -17,7 +17,6 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import Stream as BaseStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
@@ -941,8 +940,8 @@ class CRMSearchStream(IncrementalStream, ABC):
             if self.state
             else {}
         )
-        if next_page_token:
-            payload.update(next_page_token['payload'])
+        # if next_page_token:  # TODO got 400 status if update payload with key 'after'
+        #     payload.update(next_page_token['payload'])
 
         response, raw_response = self.search(url=self.url, data=payload)
         for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
@@ -1025,8 +1024,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         payload = {}
 
         if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
-            params["after"] = response["paging"]["next"]["after"]
-            payload["after"] = response["paging"]["next"]["after"]
+            params["after"] = int(response["paging"]["next"]["after"])
+            payload["after"] = int(response["paging"]["next"]["after"])
 
             return {
                 "params": params,
@@ -1363,16 +1362,16 @@ class Engagements(IncrementalStream):
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
 
-    @property
-    def state(self) -> Optional[Mapping[str, Any]]:
-        """Current state, if wasn't set return None"""
-        return {self.state_pk: self._state} if self._state else None
+    # @property
+    # def state(self) -> Optional[Mapping[str, Any]]:
+    #     """Current state, if wasn't set return None"""
+    #     return {self.state_pk: self._state} if self._state else None
 
-    @state.setter
-    def state(self, value):
-        state = value[self.state_pk]
-        self._state = state
-        self._start_date = max(self._field_to_datetime(self._state), self._start_date)
+    # @state.setter
+    # def state(self, value):
+    #     state = value[self.state_pk]
+    #     self._state = state
+    #     self._start_date = max(self._field_to_datetime(self._state), self._start_date)
 
     def _transform(self, records: Iterable) -> Iterable:
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
@@ -1385,11 +1384,13 @@ class Engagements(IncrementalStream):
     ):
         params = {self.limit_field: self.limit}
         if self.state:
-            params["since"] = self._state
+            # params["since"] = self._state
+            params["since"] = int(self._state.timestamp() * 1000)
         return params
 
-    def _field_to_datetime(value: Union[int, str]):
-        return value
+    # @staticmethod
+    # def _field_to_datetime(value: Union[int, str]):  # TODO fix
+    #     return value
 
     # def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         # max_last_updated_at = None
