@@ -472,7 +472,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-              .addExpectedValues("2004-10-19T10:23:54.0000Z", "2004-10-19T10:23:54.123456Z", null)
+              .addExpectedValues("2004-10-19T10:23:54.000000Z", "2004-10-19T10:23:54.123456Z", null)
               .build());
     }
 
@@ -485,7 +485,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
               // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
-              .addExpectedValues("2004-10-19T17:23:54.0000Z", "2004-10-19T17:23:54.123456Z", null)
+              .addExpectedValues("2004-10-19T17:23:54.000000Z", "2004-10-19T17:23:54.123456Z", null)
               .build());
     }
 

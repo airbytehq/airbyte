@@ -190,7 +190,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("smalldatetime")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            .addExpectedValues("1900-01-01T00:00:00.0000Z", "2079-06-06T00:00:00.0000Z", null)
+            .addExpectedValues("1900-01-01T00:00:00.000000Z", "2079-06-06T00:00:00.000000Z", null)
             .build());
 
     addDataTypeTestData(
@@ -199,8 +199,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04Z'",
                 "'9999-12-31T13:00:04.123Z'", "null")
-            .addExpectedValues("1753-01-01T00:00:00.0000Z", "9999-12-31T00:00:00.0000Z", "9999-12-31T13:00:04.0000Z",
-                "9999-12-31T13:00:04.1230Z", null)
+            .addExpectedValues("1753-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.000000Z",
+                "9999-12-31T13:00:04.123000Z", null)
             .build());
 
     addDataTypeTestData(
@@ -208,7 +208,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime2")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456Z'", "null")
-            .addExpectedValues("0001-01-01T00:00:00.0000Z", "9999-12-31T00:00:00.0000Z", "9999-12-31T13:00:04.123456Z", null)
+            .addExpectedValues("0001-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.123456Z", null)
             .build());
 
     addDataTypeTestData(

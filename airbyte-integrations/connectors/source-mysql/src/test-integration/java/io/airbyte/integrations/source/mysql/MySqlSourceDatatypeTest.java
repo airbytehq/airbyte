@@ -290,7 +290,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2005-10-10 23:22:21'")
-            .addExpectedValues(null, "2005-10-10T23:22:21.0000Z")
+            .addExpectedValues(null, "2005-10-10T23:22:21.000000Z")
             .build());
 
     addDataTypeTestData(
