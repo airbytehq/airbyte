@@ -8,6 +8,7 @@ from functools import partial
 
 import pytest
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
+from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import (
     API,
     PROPERTIES_PARAM_MAX_LENGTH,
@@ -17,7 +18,6 @@ from source_hubspot.streams import (
     Workflows,
     split_properties,
 )
-from source_hubspot.source import SourceHubspot
 
 NUMBER_OF_PROPERTIES = 2000
 
