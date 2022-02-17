@@ -10,7 +10,8 @@ jobs:
     steps:
         - uses: jenschelkopf/issue-label-notification-action@1.3
           with:
-             message: 'cc {recipients}'
-             # Specify a map of label -> team/user to notify
-             recipients: |
-                  area/frontend=@airbytehq/frontend
+            token: ${{ secrets.OCTAVIA_PAT }}
+            message: 'cc {recipients}'
+            # Specify a map of label -> team/user to notify
+            recipients: |
+              area/frontend=@airbytehq/frontend
