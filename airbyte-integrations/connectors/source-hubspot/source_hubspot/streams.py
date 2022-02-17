@@ -759,8 +759,8 @@ class IncrementalStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ):
-        if stream_state:
-            self.state = stream_state
+        # if stream_state:
+        #     self.state = stream_state
 
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         latest_cursor = None
@@ -959,8 +959,9 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
-        if stream_state:
-            self.state = stream_state
+
+        # if stream_state:
+        #     self.state = stream_state
 
         latest_cursor = None
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span(
@@ -1104,31 +1105,31 @@ class CRMObjectStream(Stream):
         if not self.entity:
             raise ValueError("Entity must be set either on class or instance level")
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-        return {
-            "archived": str(self._include_archived_only).lower(),
-            "associations": self.associations,
-        }
+    # def request_params(
+    #     self,
+    #     stream_state: Mapping[str, Any],
+    #     stream_slice: Mapping[str, Any] = None,
+    #     next_page_token: Mapping[str, Any] = None,
+    # ):
+    #     return {
+    #         "archived": str(self._include_archived_only).lower(),
+    #         "associations": self.associations,
+    #     }
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ):
-        records = super().read_records(
-            sync_mode,
-            cursor_field=cursor_field,
-            stream_slice=stream_slice,
-            stream_state=stream_state,
-        )
-        yield from self._flat_associations(records)
+    # def read_records(
+    #         self,
+    #         sync_mode: SyncMode,
+    #         cursor_field: List[str] = None,
+    #         stream_slice: Mapping[str, Any] = None,
+    #         stream_state: Mapping[str, Any] = None,
+    # ):
+    #     records = super().read_records(
+    #         sync_mode,
+    #         cursor_field=cursor_field,
+    #         stream_slice=stream_slice,
+    #         stream_state=stream_state,
+    #     )
+    #     yield from self._flat_associations(records)
 
     # def list_records(self, fields) -> Iterable:
         # params = {
@@ -1139,13 +1140,47 @@ class CRMObjectStream(Stream):
         # yield from self._flat_associations(generator)
 
 
-class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
+class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):  # TODO Fix calling read_records
     state_pk = "updatedAt"
     limit = 100
     need_chunk = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        params = IncrementalStream.request_params(
+            self,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token
+        )
+        params.update({
+            "archived": str(self._include_archived_only).lower(),
+            "associations": self.associations,
+        })
+        return params
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
+        records = IncrementalStream.read_records(  # TODO check
+            self,
+            sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=stream_slice,
+            stream_state=stream_state,
+        )
+        yield from self._flat_associations(records)
 
 
 class Campaigns(Stream):
