@@ -209,7 +209,7 @@ public class Jsons {
   public static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
-      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
@@ -239,8 +239,8 @@ public class Jsons {
   /**
    * Prepend all keys in subMap with prefix, then merge that map into originalMap.
    * <p>
-   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is treated as {prefix: value} when merging into
-   * originalMap.
+   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
+   * treated as {prefix: value} when merging into originalMap.
    */
   public static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
     originalMap.putAll(subMap.entrySet().stream().collect(toMap(
@@ -256,7 +256,8 @@ public class Jsons {
   }
 
   /**
-   * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" : "airbyte"}. We prefer {"name": "airbyte"}.
+   * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
+   * "airbyte"}. We prefer {"name": "airbyte"}.
    */
   private static class JsonPrettyPrinter extends DefaultPrettyPrinter {
 

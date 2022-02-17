@@ -234,7 +234,8 @@ public class JobTracker {
       final Map<String, Object> output = new HashMap<>();
       final JsonNode maybeProperties = schema.get("properties");
 
-      // If additionalProperties is not set, or it's a boolean, then there's no schema for additional properties. Use the accept-all schema.
+      // If additionalProperties is not set, or it's a boolean, then there's no schema for additional
+      // properties. Use the accept-all schema.
       // Otherwise, it's an actual schema.
       final JsonNode maybeAdditionalProperties = schema.get("additionalProperties");
       final JsonNode additionalPropertiesSchema;
@@ -244,7 +245,7 @@ public class JobTracker {
         additionalPropertiesSchema = maybeAdditionalProperties;
       }
 
-      for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext(); ) {
+      for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
