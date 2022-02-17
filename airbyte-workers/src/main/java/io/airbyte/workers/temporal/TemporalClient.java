@@ -31,7 +31,6 @@ import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
@@ -40,7 +39,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -461,10 +459,10 @@ public class TemporalClient {
     do {
       final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
           service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
-      final long matchingWorkflowCoumt = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+      final long matchingWorkflowCount = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
           .count();
-      if (matchingWorkflowCoumt != 0) {
+      if (matchingWorkflowCount != 0) {
         return true;
       }
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
