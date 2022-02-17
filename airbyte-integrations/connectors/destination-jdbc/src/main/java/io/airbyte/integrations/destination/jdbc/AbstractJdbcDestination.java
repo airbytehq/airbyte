@@ -44,8 +44,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public AbstractJdbcDestination(final String driverClass,
-      final NamingConventionTransformer namingResolver,
-      final SqlOperations sqlOperations) {
+                                 final NamingConventionTransformer namingResolver,
+                                 final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -68,9 +68,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-      final JdbcDatabase database,
-      final NamingConventionTransformer namingResolver,
-      final SqlOperations sqlOps)
+                                                            final JdbcDatabase database,
+                                                            final NamingConventionTransformer namingResolver,
+                                                            final SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
@@ -102,7 +102,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                    final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -116,8 +116,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 }
