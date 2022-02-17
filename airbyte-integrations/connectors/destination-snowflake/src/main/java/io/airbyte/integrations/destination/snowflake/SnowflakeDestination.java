@@ -9,18 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
   enum DestinationType {
     COPY_S3,
@@ -62,23 +53,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   public static void main(final String[] args) throws Exception {
-    int mb = 1024 * 1024;
-    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
-    LOGGER.info("Initial Memory (xms) : {} mb", xms);
-    LOGGER.info("Max Memory (xmx) : {} mb", xmx);
-
-    ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    service.scheduleAtFixedRate(() -> LOGGER.info(
-        "Used heap memory: {} mb, Used non-heap memory: {} mb",
-        memoryBean.getHeapMemoryUsage().getUsed() / mb,
-        memoryBean.getNonHeapMemoryUsage().getUsed() / mb), 0, 20, TimeUnit.SECONDS);
-
     final Destination destination = new SnowflakeDestination();
     new IntegrationRunner(destination).run(args);
-
-    service.shutdown();
   }
 
 }

@@ -6,20 +6,20 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
-// enable when profiling
     applicationDefaultJvmArgs = [
         '-XX:+ExitOnOutOfMemoryError',
         '-XX:MaxRAMPercentage=75.0',
-        '-Xmx2000m',
-        '-XX:NativeMemoryTracking=detail',
-        '-XX:+UsePerfData',
-        '-Djava.rmi.server.hostname=localhost',
-        '-Dcom.sun.management.jmxremote=true',
-        '-Dcom.sun.management.jmxremote.port=6000',
-        "-Dcom.sun.management.jmxremote.rmi.port=6000",
-        '-Dcom.sun.management.jmxremote.local.only=false',
-        '-Dcom.sun.management.jmxremote.authenticate=false',
-        '-Dcom.sun.management.jmxremote.ssl=false',
+// uncomment when profiling
+//        '-Xmx256m',
+//        '-XX:NativeMemoryTracking=detail',
+//        '-XX:+UsePerfData',
+//        '-Djava.rmi.server.hostname=localhost',
+//        '-Dcom.sun.management.jmxremote=true',
+//        '-Dcom.sun.management.jmxremote.port=6000',
+//        "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//        '-Dcom.sun.management.jmxremote.local.only=false',
+//        '-Dcom.sun.management.jmxremote.authenticate=false',
+//        '-Dcom.sun.management.jmxremote.ssl=false',
     ]
 
 }
