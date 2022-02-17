@@ -33,9 +33,9 @@ public class Databases {
   }
 
   public static Database createPostgresDatabaseWithRetry(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final Function<Database, Boolean> isDbReady) {
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final Function<Database, Boolean> isDbReady) {
     Database database = null;
     while (database == null) {
       try {
@@ -51,10 +51,10 @@ public class Databases {
   }
 
   public static Database createPostgresDatabaseWithRetryTimeout(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final Function<Database, Boolean> isDbReady,
-      final long timeoutMs)
+                                                                final String password,
+                                                                final String jdbcConnectionString,
+                                                                final Function<Database, Boolean> isDbReady,
+                                                                final long timeoutMs)
       throws IOException {
     Database database = null;
     if (jdbcConnectionString == null || jdbcConnectionString.trim().equals("")) {
@@ -117,21 +117,21 @@ public class Databases {
   }
 
   public static Database createDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final SQLDialect dialect) {
+                                        final String password,
+                                        final String jdbcConnectionString,
+                                        final String driverClassName,
+                                        final SQLDialect dialect) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
     return new Database(connectionPool, dialect);
   }
 
   public static Database createDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final SQLDialect dialect,
-      final Map<String, String> connectionProperties) {
+                                        final String password,
+                                        final String jdbcConnectionString,
+                                        final String driverClassName,
+                                        final SQLDialect dialect,
+                                        final Map<String, String> connectionProperties) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
@@ -139,37 +139,37 @@ public class Databases {
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName) {
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName) {
     return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, JdbcUtils.getDefaultSourceOperations());
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final JdbcSourceOperations sourceOperations) {
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final JdbcSourceOperations sourceOperations) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
     return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final Map<String, String> connectionProperties) {
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final Map<String, String> connectionProperties) {
     return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties,
         JdbcUtils.getDefaultSourceOperations());
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final Map<String, String> connectionProperties,
-      final JdbcCompatibleSourceOperations<?> sourceOperations) {
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final Map<String, String> connectionProperties,
+                                                final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
@@ -177,12 +177,12 @@ public class Databases {
   }
 
   public static JdbcDatabase createStreamingJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
-      final Map<String, String> connectionProperties,
-      final JdbcCompatibleSourceOperations<?> sourceOperations) {
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final String driverClassName,
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final Map<String, String> connectionProperties,
+                                                         final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
@@ -190,18 +190,18 @@ public class Databases {
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName) {
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName) {
     return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
         Maps.newHashMap());
   }
 
   public static BasicDataSource createBasicDataSource(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final Map<String, String> connectionProperties) {
+                                                      final String password,
+                                                      final String jdbcConnectionString,
+                                                      final String driverClassName,
+                                                      final Map<String, String> connectionProperties) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
