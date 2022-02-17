@@ -4,7 +4,6 @@
 
 package io.airbyte.db;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
@@ -16,7 +15,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.mongodb.MongoDatabase;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.val;
@@ -222,31 +220,4 @@ public class Databases {
   public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
     return new MongoDatabase(connectionString, databaseName);
   }
-
-  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcParametersKey) {
-    if (config.has(jdbcParametersKey)) {
-      return parseJdbcParameters(config.get(jdbcParametersKey).asText());
-    } else {
-      return Maps.newHashMap();
-    }
-  }
-
-  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
-    final Map<String, String> parameters = new HashMap<>();
-    if (!jdbcPropertiesString.isBlank()) {
-      final String[] keyValuePairs = jdbcPropertiesString.split("&");
-      for (final String kv : keyValuePairs) {
-        final String[] split = kv.split("=");
-        if (split.length == 2) {
-          parameters.put(split[0], split[1]);
-        } else {
-          throw new IllegalArgumentException(
-              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
-                  + jdbcPropertiesString);
-        }
-      }
-    }
-    return parameters;
-  }
-
 }

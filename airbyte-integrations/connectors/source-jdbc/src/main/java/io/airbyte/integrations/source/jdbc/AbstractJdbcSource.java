@@ -30,6 +30,7 @@ import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
@@ -293,7 +294,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        Databases.parseJdbcParameters(config.get("connection_properties").asText()),
+        JdbcUtils.parseJdbcParameters(config.get("connection_properties").asText()),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);

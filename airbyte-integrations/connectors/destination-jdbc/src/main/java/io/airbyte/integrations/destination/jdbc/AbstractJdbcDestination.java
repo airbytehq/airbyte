@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -17,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -43,8 +46,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public AbstractJdbcDestination(final String driverClass,
-                                 final NamingConventionTransformer namingResolver,
-                                 final SqlOperations sqlOperations) {
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -67,9 +70,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps)
+      final JdbcDatabase database,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
@@ -89,16 +92,45 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
-        driverClass);
+        driverClass,
+        getConnectionProperties(config));
   }
+
+  protected abstract Map<String, String> getConnectionProperties(final JsonNode config);
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 
+
+  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcParametersKey) {
+    if (config.has(jdbcParametersKey)) {
+      return parseJdbcParameters(config.get(jdbcParametersKey).asText());
+    } else {
+      return Maps.newHashMap();
+    }
+  }
+
+  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
+    final Map<String, String> parameters = new HashMap<>();
+    if (!jdbcPropertiesString.isBlank()) {
+      final String[] keyValuePairs = jdbcPropertiesString.split("&");
+      for (final String kv : keyValuePairs) {
+        final String[] split = kv.split("=");
+        if (split.length == 2) {
+          parameters.put(split[0], split[1]);
+        } else {
+          throw new IllegalArgumentException(
+              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+                  + jdbcPropertiesString);
+        }
+      }
+    }
+    return parameters;
+  }
 }

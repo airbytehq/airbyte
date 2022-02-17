@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -74,7 +75,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         getDriverClass(),
-        Databases.parseJdbcParameters("allowLoadLocalInfile=true"));
+        JdbcUtils.parseJdbcParameters("allowLoadLocalInfile=true"));
   }
 
   @Override

@@ -6,10 +6,8 @@ package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -18,12 +16,9 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +43,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       "verifyServerCertificate", "false"
   );
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "zeroDateTimeBehavior", "convertToNull"
+      // zero dates by default cannot be parsed into java date objects (they will throw an error)
+      // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
+      // and can't
+      // remove zero date values.
+      // since zero dates are placeholders, we convert them to null by default
+      "zeroDateTimeBehavior", "convertToNull",
+      "allowLoadLocalInfile", "true"
   );
 
   public static Destination sshWrappedDestination() {
@@ -86,66 +87,30 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     super(DRIVER_CLASS, new MySQLNameTransformer(), new MySQLSqlOperations());
   }
 
+  //Override for testing purposes...
   @Override
   protected JdbcDatabase getDatabase(final JsonNode config) {
-    final JsonNode jdbcConfig = toJdbcConfig(config);
-
-    final Map<String, String> connectionProperties = ImmutableMap.of("allowLoadLocalInfile", "true");
-
-    return Databases.createJdbcDatabase(
-        jdbcConfig.get(USERNAME_KEY).asText(),
-        jdbcConfig.has(PASSWORD_KEY) ? jdbcConfig.get(PASSWORD_KEY).asText() : null,
-        jdbcConfig.get(JDBC_URL_KEY).asText(),
-        getDriverClass(),
-        connectionProperties);
+    return super.getDatabase(config);
   }
 
   @Override
-  public JsonNode toJdbcConfig(final JsonNode config) {
-    final List<String> additionalParameters = getAdditionalParameters(config);
-
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get(HOST_KEY).asText(),
-        config.get(PORT_KEY).asText(),
-        config.get(DATABASE_KEY).asText()));
-    // zero dates by default cannot be parsed into java date objects (they will throw an error)
-    // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
-    // and can't
-    // remove zero date values.
-    // since zero dates are placeholders, we convert them to null by default
-    if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append("?");
-      jdbcUrl.append(String.join("&", additionalParameters));
-    }
-
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl.toString());
-
-    if (config.has(PASSWORD_KEY)) {
-      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
-    }
-
-    return Jsons.jsonNode(configBuilder.build());
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties = parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
+    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
   }
 
-  private List<String> getAdditionalParameters(final JsonNode config) {
-    final Map<String, String> customParameters = Databases.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
-
+  private Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     if (useSSL(config)) {
-      return convertToJdbcStrings(customParameters, MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS));
+      return MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS);
     } else {
-      return convertToJdbcStrings(customParameters, DEFAULT_JDBC_PARAMETERS);
+      return MoreMaps.merge(DEFAULT_JDBC_PARAMETERS);
     }
   }
 
-  private List<String> convertToJdbcStrings(final Map<String, String> customParameters, final Map<String, String> defaultParametersMap) {
-    assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParametersMap);
-    return Streams.concat(Stream.of(customParameters, defaultParametersMap))
-        .map(Map::entrySet)
-        .flatMap(Collection::stream)
-        .map(entry -> formatParameter(entry.getKey(), entry.getValue()))
-        .collect(Collectors.toList());
+  private boolean useSSL(final JsonNode config) {
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
@@ -157,8 +122,25 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
   }
 
-  private boolean useSSL(final JsonNode config) {
-    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
+  @Override
+  public JsonNode toJdbcConfig(final JsonNode config) {
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+        config.get(HOST_KEY).asText(),
+        config.get(PORT_KEY).asText(),
+        config.get(DATABASE_KEY).asText()));
+
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JDBC_URL_KEY, jdbcUrl.toString());
+
+    if (config.has(PASSWORD_KEY)) {
+      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
+    }
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   static String formatParameter(final String key, final String value) {

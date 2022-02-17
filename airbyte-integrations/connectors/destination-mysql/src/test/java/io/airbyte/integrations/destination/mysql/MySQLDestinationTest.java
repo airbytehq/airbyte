@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,16 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 public class MySQLDestinationTest {
+
+  private static final Map<String, String> DEFAULT_PARAMETERS_WITH_SSL = MoreMaps.merge(
+      MySQLDestination.DEFAULT_JDBC_PARAMETERS,
+      MySQLDestination.SSL_JDBC_PARAMETERS
+  );
+  private static final Map<String, String> CUSTOM_PROPERTIES = ImmutableMap.of(
+      "key1", "value1",
+      "key2", "value2",
+      "key3", "value3"
+  );
 
   private MySQLDestination getDestination() {
     final MySQLDestination result = new MySQLDestination();
@@ -74,14 +83,16 @@ public class MySQLDestinationTest {
   void testNoExtraParams() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoJdbcParameters());
     final String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals("jdbc:mysql://localhost:1337/db?verifyServerCertificate=false&zeroDateTimeBehavior=convertToNull&requireSSL=true&useSSL=true", url);
+    assertEquals("jdbc:mysql://localhost:1337/db", url);
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigNoJdbcParameters(), DEFAULT_PARAMETERS_WITH_SSL);
   }
 
   @Test
   void testEmptyExtraParams() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
     final String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals("jdbc:mysql://localhost:1337/db?verifyServerCertificate=false&zeroDateTimeBehavior=convertToNull&requireSSL=true&useSSL=true", url);
+    assertEquals("jdbc:mysql://localhost:1337/db", url);
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigNoJdbcParameters(), DEFAULT_PARAMETERS_WITH_SSL);
   }
 
   @Test
@@ -89,9 +100,10 @@ public class MySQLDestinationTest {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     final String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals(
-        "jdbc:mysql://localhost:1337/db?key1=value1&key2=value2&key3=value3&verifyServerCertificate=false&zeroDateTimeBehavior=convertToNull&requireSSL=true&useSSL=true",
-        url);
+    assertEquals("jdbc:mysql://localhost:1337/db", url);
+
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam),
+        MoreMaps.merge(CUSTOM_PROPERTIES, DEFAULT_PARAMETERS_WITH_SSL));
   }
 
   @Test
@@ -104,11 +116,17 @@ public class MySQLDestinationTest {
 
       // Do not throw an exception if the values are equal
       assertDoesNotThrow(() ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(identicalParameter)).get("jdbc_url").asText()
+          getDestination().getDatabase(buildConfigWithExtraJdbcParameters(identicalParameter))
       );
+      final Map<String, String> connectionProperties = MoreMaps.merge(
+          ImmutableMap.of(entry.getKey(), entry.getValue()),
+          MySQLDestination.DEFAULT_JDBC_PARAMETERS
+      );
+      verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigWithExtraJdbcParametersWithNoSsl(identicalParameter), connectionProperties);
+
       // Throw an exception if the values are different
       assertThrows(IllegalArgumentException.class, () ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(overridingParameter))
+          getDestination().getDatabase(buildConfigWithExtraJdbcParameters(overridingParameter))
       );
     }
   }
@@ -118,38 +136,36 @@ public class MySQLDestinationTest {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigWithExtraJdbcParametersWithNoSsl(extraParam));
     final String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals(
-        "jdbc:mysql://localhost:1337/db?key1=value1&key2=value2&key3=value3&zeroDateTimeBehavior=convertToNull",
-        url);
+    assertEquals("jdbc:mysql://localhost:1337/db", url);
+
+    final Map<String, String> connectionProperties = ImmutableMap.of(
+        "key1", "value1",
+        "key2", "value2",
+        "key3", "value3");
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigWithExtraJdbcParametersWithNoSsl(extraParam),
+        MoreMaps.merge(connectionProperties, MySQLDestination.DEFAULT_JDBC_PARAMETERS));
   }
 
   @Test
   void testNoExtraParameterNoSsl() {
     final JsonNode jdbcConfig = getDestination().toJdbcConfig(buildConfigNoExtraJdbcParametersWithoutSsl());
     final String url = jdbcConfig.get("jdbc_url").asText();
-    assertEquals(
-        "jdbc:mysql://localhost:1337/db?zeroDateTimeBehavior=convertToNull",
-        url);
+    assertEquals("jdbc:mysql://localhost:1337/db", url);
+
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl(), MySQLDestination.DEFAULT_JDBC_PARAMETERS);
   }
 
   @Test
   void testInvalidExtraParam() {
     final String extraParam = "key1=value1&sdf&";
     assertThrows(IllegalArgumentException.class, () -> {
-      getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
+      getDestination().getDatabase(buildConfigWithExtraJdbcParameters(extraParam));
     });
   }
 
-  @Test
-  void test() throws SQLException {
-    final ImmutableMap<String, String> connectionProperties = ImmutableMap.of("allowLoadLocalInfile", "true");
-    verifyJdbcDatabaseIsCreatedWithConnectionProperties(() -> getDestination().getDatabase(buildConfigNoExtraJdbcParametersWithoutSsl()),
-        connectionProperties);
-  }
-
-  void verifyJdbcDatabaseIsCreatedWithConnectionProperties(final Runnable runnable, final Map<String, String> connectionProperties) {
+  void verifyJdbcDatabaseIsCreatedWithConnectionProperties(final JsonNode jsonNode, final Map<String, String> connectionProperties) {
     try (final MockedStatic<Databases> databases = Mockito.mockStatic(Databases.class)) {
-      runnable.run();
+      getDestination().getDatabase(jsonNode);
       databases.verify(() -> Databases.createJdbcDatabase(
               anyString(), nullable(String.class), anyString(), anyString(), Mockito.eq(connectionProperties)),
           times(1));

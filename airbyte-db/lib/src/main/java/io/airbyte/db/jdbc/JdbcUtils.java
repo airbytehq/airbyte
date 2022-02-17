@@ -23,5 +23,4 @@ public class JdbcUtils {
   public static String getFullyQualifiedTableName(final String schemaName, final String tableName) {
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
-
 }
