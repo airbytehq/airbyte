@@ -19,7 +19,7 @@ public class RecordSizeEstimator {
   private static final int DEFAULT_SAMPLE_BATCH_SIZE = 20;
 
   // latest estimated record message size for each stream
-  private final Map<String, Long> streamRecordSizes;
+  private final Map<String, Long> streamRecordSizeEstimation;
   // number of record messages until next real sampling for each stream
   private final Map<String, Integer> streamSampleCountdown;
   // number of record messages
@@ -30,7 +30,7 @@ public class RecordSizeEstimator {
    * The size of the batch is determined by {@code sampleBatchSize}.
    */
   public RecordSizeEstimator(final int sampleBatchSize) {
-    this.streamRecordSizes = new HashMap<>();
+    this.streamRecordSizeEstimation = new HashMap<>();
     this.streamSampleCountdown = new HashMap<>();
     this.sampleBatchSize = sampleBatchSize;
   }
@@ -46,24 +46,24 @@ public class RecordSizeEstimator {
     // this is a new stream; initialize its estimation
     if (countdown == null) {
       final long byteSize = getStringByteSize(recordMessage.getData());
-      streamRecordSizes.put(stream, byteSize);
+      streamRecordSizeEstimation.put(stream, byteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return byteSize;
     }
 
     // this stream needs update; compute a new estimation
     if (countdown <= 0) {
-      final long prevMeanByteSize = streamRecordSizes.get(stream);
+      final long prevMeanByteSize = streamRecordSizeEstimation.get(stream);
       final long currentByteSize = getStringByteSize(recordMessage.getData());
       final long newMeanByteSize = prevMeanByteSize / 2 + currentByteSize / 2;
-      streamRecordSizes.put(stream, newMeanByteSize);
+      streamRecordSizeEstimation.put(stream, newMeanByteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return newMeanByteSize;
     }
 
     // this stream does not need update; return current estimation
     streamSampleCountdown.put(stream, countdown - 1);
-    return streamRecordSizes.get(stream);
+    return streamRecordSizeEstimation.get(stream);
   }
 
   @VisibleForTesting
