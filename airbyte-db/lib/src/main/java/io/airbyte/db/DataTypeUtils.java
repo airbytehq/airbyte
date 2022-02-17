@@ -12,10 +12,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataTypeUtils {
 
@@ -24,6 +24,9 @@ public class DataTypeUtils {
 
   public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
   public static final DateFormat DATE_FORMAT_WITH_MILLISECONDS = new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
+
+  public static final String DATE_FORMAT_WITH_MICROSECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'";
+  public static final DateTimeFormatter DATE_FORMAT_WITH_MICROSECONDS = DateTimeFormatter.ofPattern(DATE_FORMAT_WITH_MICROSECONDS_PATTERN).withZone(ZoneOffset.UTC);
 
   public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer) {
     return returnNullIfInvalid(valueProducer, ignored -> true);
@@ -43,8 +46,8 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601StringWithMicroseconds(Instant instant) {
-    String dateWithMilliseconds = DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(instant));
-    return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
+    var microseconds = instant.getNano() / 1000;
+    return DATE_FORMAT_WITH_MICROSECONDS.format(instant.with(ChronoField.MICRO_OF_SECOND, microseconds));
   }
 
   public static String toISO8601StringWithMilliseconds(final long epochMillis) {
@@ -75,16 +78,4 @@ public class DataTypeUtils {
     return DATE_FORMAT.format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
   }
 
-  private static String calculateMicrosecondsString(int nano) {
-    var microSeconds = (nano / 1000) % 1000;
-    String result;
-    if (microSeconds < 10) {
-      result = "00" + microSeconds;
-    } else if (microSeconds < 100) {
-      result = "0" + microSeconds;
-    } else {
-      result = "" + microSeconds;
-    }
-    return result;
-  }
 }
