@@ -318,7 +318,7 @@ class Stream(HttpStream, ABC):
             response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state,
                                            next_page_token=next_page_token, params=params)
 
-            for record in self._transform(self.parse_response(response)):
+            for record in self._transform(self.parse_response(response, stream_state=stream_state)):
                 if record["id"] not in stream_records:
                     stream_records[record["id"]] = record
                 elif stream_records[record["id"]].get("properties"):
@@ -707,7 +707,7 @@ class Stream(HttpStream, ABC):
             return {}
 
         props = {}
-        data = self._api.get(f"/properties/v2/{self.entity}/properties")
+        data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
@@ -1167,7 +1167,7 @@ class Campaigns(Stream):
             stream_state: Mapping[str, Any] = None,
     ):
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")  # TODO how to bypass _api ?
+            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")  # TODO how to bypass _api ?
             yield {**row, **record}
 
     # def list_records(self, fields) -> Iterable:
