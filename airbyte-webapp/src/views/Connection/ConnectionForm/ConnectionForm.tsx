@@ -60,9 +60,7 @@ export const FlexRow = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
 
-  & > div:not(:last-child) {
-    margin-right: 10px;
-  }
+  gap: 10px;
 `;
 
 type ConnectionFormProps = {
