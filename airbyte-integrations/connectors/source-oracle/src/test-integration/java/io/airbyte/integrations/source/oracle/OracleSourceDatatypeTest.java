@@ -182,9 +182,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')",
-                "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
-            .addExpectedValues("4700-01-01T00:00:00.000000Z", "9999-12-31T23:59:59.000000Z", null)
+            .addInsertValues("to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
+            .addExpectedValues("9999-12-31T23:59:59.000000Z", null)
             // @TODO stream fails when gets Zero date value
             // .addInsertValues("'2021/01/00'", "'2021/00/00'", "'0000/00/00'")
             .build());
