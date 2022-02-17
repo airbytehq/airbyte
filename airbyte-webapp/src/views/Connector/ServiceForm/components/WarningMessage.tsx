@@ -22,12 +22,18 @@ const Exclamation = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.redColor};
 `;
 
-const WarningMessage: React.FC = () => {
+type WarningMessageProps = {
+  stage: string;
+};
+
+const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   return (
     <Content>
       <Exclamation icon={faExclamationCircle} />
       <div>
-        <FormattedHTMLMessage id="connector.connectorsInDevelopment" />
+        <FormattedHTMLMessage
+          id={`connector.connectorsInDevelopment.${stage}`}
+        />
       </div>
     </Content>
   );

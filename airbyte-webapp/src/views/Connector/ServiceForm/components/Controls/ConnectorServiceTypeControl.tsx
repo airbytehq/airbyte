@@ -216,8 +216,9 @@ const ConnectorServiceTypeControl: React.FC<{
         />
       )}
       {selectedService &&
-        selectedService.releaseStage === ReleaseStage.ALPHA && (
-          <WarningMessage />
+        (selectedService.releaseStage === ReleaseStage.ALPHA ||
+          selectedService.releaseStage === ReleaseStage.BETA) && (
+          <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>
   );
