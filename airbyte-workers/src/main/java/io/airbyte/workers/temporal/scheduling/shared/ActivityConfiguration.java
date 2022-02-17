@@ -32,7 +32,7 @@ public class ActivityConfiguration {
       .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName())
       .build();
 
-  private static final RetryOptions RETRY_POLICY = TemporalUtils.NO_RETRY;
+  private static final RetryOptions RETRY_POLICY = new EnvConfigs().getContainerOrchestratorEnabled() ? ORCHESTRATOR_RETRY : TemporalUtils.NO_RETRY;
 
   public static final ActivityOptions LONG_RUN_OPTIONS = ActivityOptions.newBuilder()
       .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
