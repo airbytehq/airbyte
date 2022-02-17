@@ -613,6 +613,26 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getCheckJobMainContainerCpuRequest() {
+    return null;
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuLimit() {
+    return null;
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryRequest() {
+    return null;
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryLimit() {
+    return null;
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
   }
