@@ -95,38 +95,47 @@ const connectionValidationSchema = yup
             // This is required to get rid of id fields we are using to detect stream for edition
             .strip(true),
           stream: yup.object(),
-          // @ts-ignore
-          config: yup.object().test({
-            name: "connectionSchema.config.validator",
-            // eslint-disable-next-line no-template-curly-in-string
-            message: "${path} is wrong",
-            test: function (value: AirbyteStreamConfiguration) {
-              if (!value.selected) {
-                return true;
-              }
-              if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
-                if (value.primaryKey.length === 0) {
-                  return this.createError({
-                    message: "connectionForm.primaryKey.required",
-                    path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                  });
+          config: yup
+            .object({
+              selected: yup.boolean(),
+              syncMode: yup.string(),
+              destinationSyncMode: yup.string(),
+              primaryKey: yup.array().of(yup.array().of(yup.string())),
+              cursorField: yup.array().of(yup.string()).defined(),
+            })
+            .test({
+              name: "connectionSchema.config.validator",
+              // eslint-disable-next-line no-template-curly-in-string
+              message: "${path} is wrong",
+              test: function (value) {
+                if (!value.selected) {
+                  return true;
                 }
-              }
-
-              if (SyncMode.Incremental === value.syncMode) {
                 if (
-                  !this.parent.stream.sourceDefinedCursor &&
-                  value.cursorField.length === 0
+                  DestinationSyncMode.Dedupted === value.destinationSyncMode
                 ) {
-                  return this.createError({
-                    message: "connectionForm.cursorField.required",
-                    path: `schema.streams[${this.parent.id}].config.cursorField`,
-                  });
+                  if (value.primaryKey?.length === 0) {
+                    return this.createError({
+                      message: "connectionForm.primaryKey.required",
+                      path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                    });
+                  }
                 }
-              }
-              return true;
-            },
-          }),
+
+                if (SyncMode.Incremental === value.syncMode) {
+                  if (
+                    !this.parent.stream.sourceDefinedCursor &&
+                    value.cursorField?.length === 0
+                  ) {
+                    return this.createError({
+                      message: "connectionForm.cursorField.required",
+                      path: `schema.streams[${this.parent.id}].config.cursorField`,
+                    });
+                  }
+                }
+                return true;
+              },
+            }),
         })
       ),
     }),
@@ -239,7 +248,7 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   );
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] =>
-  operations.filter(isDbtTransformation) ?? [];
+  operations.filter(isDbtTransformation);
 
 const getInitialNormalization = (
   operations: Operation[],
@@ -278,7 +287,7 @@ const useInitialValues = (
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
-    const operations = connection.operations || [];
+    const operations = connection.operations ?? [];
 
     if (destDefinition.supportsDbt) {
       initialValues.transformations = getInitialTransformations(operations);
