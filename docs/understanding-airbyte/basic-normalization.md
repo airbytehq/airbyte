@@ -350,6 +350,8 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.1.68 | 2022-02-17 | [\#10210](https://github.com/airbytehq/airbyte/pull/10210) | Fix normalization for postgres to avoid system column name collision |
+|                 | 0.1.67 | 2022-02-16 | [\#10219](https://github.com/airbytehq/airbyte/pull/10219) | Fix normalization for clickhouse when password is not provided |
 |                 | 0.1.66 | 2022-02-04 | [\#9341](https://github.com/airbytehq/airbyte/pull/9341) | Fix normalization for bigquery datasetId and tables |
 | 0.35.13-alpha   | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |
 | 0.35.12-alpha   | 0.1.64 | 2021-01-28 | [\#9793](https://github.com/airbytehq/airbyte/pull/9793) | Support PEM format for ssh-tunnel keys |
