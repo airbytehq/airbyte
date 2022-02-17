@@ -146,7 +146,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
-        throw new RuntimeException("Cannot overwrite default JDBC parameter " + key);
+        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
       }
     }
   }
@@ -162,7 +162,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
           if (split.length == 2) {
             parameters.put(split[0], split[1]);
           } else {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
                     + jdbcParams);
           }

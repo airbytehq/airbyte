@@ -101,7 +101,7 @@ public class MySQLDestinationTest {
           getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(identicalParameter)).get("jdbc_url").asText()
       );
       // Throw an exception if the values are different
-      assertThrows(RuntimeException.class, () ->
+      assertThrows(IllegalArgumentException.class, () ->
           getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(overridingParameter))
       );
     }
@@ -129,7 +129,7 @@ public class MySQLDestinationTest {
   @Test
   void testInvalidExtraParam() {
     final String extraParam = "key1=value1&sdf&";
-    assertThrows(RuntimeException.class, () -> {
+    assertThrows(IllegalArgumentException.class, () -> {
       getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     });
   }
