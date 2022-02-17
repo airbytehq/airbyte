@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -62,6 +61,7 @@ public class BufferedStreamConsumerTest {
   private static final AirbyteMessage STATE_MESSAGE2 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
+  private static final RecordSizeEstimator RECORD_SIZE_ESTIMATOR = new RecordSizeEstimator();
 
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
@@ -316,7 +316,7 @@ public class BufferedStreamConsumerTest {
     long bytesCounter = 0;
     for (int i = 0;; i++) {
       JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
-      long sizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(payload));
+      long sizeInBytes = RECORD_SIZE_ESTIMATOR.getEstimatedByteSize(payload);
       bytesCounter += sizeInBytes;
       AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)
