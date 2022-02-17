@@ -188,7 +188,6 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     
     primary_key = "id"
-    pagintation_token = 0
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -215,6 +214,41 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
             json.dump(response.json(), f, ensure_ascii=False, indent=4)
 
         return response.json().get("campaignResults")
+
+class PerformanceByCountry(OutbrainAmplifyApiStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        marketer_id = self.marketer_id
+        start_date = self.start_date
+        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?from=' + start_date + '&to=' + end_date + '&breakdown=country'
+    
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        import json
+        filename = self.__class__.__name__
+        with open(filename + '.json', 'w', encoding='utf-8') as f:
+            json.dump(response.json(), f, ensure_ascii=False, indent=4)
+
+        return response.json().get("results")
 
 
 # Basic incremental stream
@@ -244,47 +278,6 @@ class IncrementalOutbrainAmplifyApiStream(OutbrainAmplifyApiStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
-
-
-class Employees(IncrementalOutbrainAmplifyApiStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
 
 
 # Source
@@ -338,4 +331,5 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         authenticator = NoAuth()
         return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,  start_date= config['START_DATE']), 
         Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,start_date=config['START_DATE']),
-        PublisherSectionByCampaignPerformance(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE'])]
+        PublisherSectionByCampaignPerformance(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE']),
+        PerformanceByCountry(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE'])]
