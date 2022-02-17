@@ -1,6 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Content = styled.div`
   display: flex;
@@ -14,18 +16,16 @@ const Content = styled.div`
   margin-top: 16px;
 `;
 
-const Sign = styled.img`
-  height: 20px;
-  width: 20px;
-  min-width: 20px;
+const Exclamation = styled(FontAwesomeIcon)`
+  font-size: 20px;
   margin-right: 12px;
-  display: inline-block;
+  color: ${({ theme }) => theme.redColor};
 `;
 
 const WarningMessage: React.FC = () => {
   return (
     <Content>
-      <Sign src="/exclamationPoint.svg" />
+      <Exclamation icon={faExclamationCircle} />
       <div>
         <FormattedMessage
           id="connector.connectorsInDevelopment"
