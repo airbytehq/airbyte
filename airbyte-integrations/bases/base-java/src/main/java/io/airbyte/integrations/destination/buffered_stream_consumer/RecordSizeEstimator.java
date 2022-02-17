@@ -37,9 +37,9 @@ public class RecordSizeEstimator {
     final String stream = recordMessage.getStream();
     final Integer countdown = streamSampleCountdown.get(stream);
     if (countdown == null || countdown <= 0) {
-      final long byteSize = getEstimatedByteSize(recordMessage.getData());
+      final long byteSize = getStringByteSize(recordMessage.getData());
       streamRecordSizes.put(stream, byteSize);
-      streamSampleCountdown.put(stream, sampleBatchSize);
+      streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return byteSize;
     }
     streamSampleCountdown.put(stream, countdown - 1);
@@ -47,7 +47,7 @@ public class RecordSizeEstimator {
   }
 
   @VisibleForTesting
-  public long getEstimatedByteSize(final JsonNode data) {
+  static long getStringByteSize(final JsonNode data) {
     // assume UTF-8 encoding, and each char is 4 bytes long
     return Jsons.serialize(data).length() * 4L;
   }
