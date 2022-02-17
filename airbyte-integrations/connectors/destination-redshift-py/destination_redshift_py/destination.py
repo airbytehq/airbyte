@@ -3,12 +3,12 @@
 #
 import argparse
 import logging
+from copy import deepcopy
 from datetime import datetime
 from functools import reduce
 from hashlib import sha256
 from operator import iconcat
-from typing import Mapping, Any, Iterable, List
-from uuid import uuid4
+from typing import Mapping, Any, Iterable, List, Dict
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -19,17 +19,17 @@ from psycopg2.pool import ThreadedConnectionPool
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
 from destination_redshift_py.s3_writer import S3Writer
-from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME
+from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME, Table
 
 logger = logging.getLogger("airbyte")
 
 
 class DestinationRedshiftPy(Destination):
     def __init__(self):
-        self.final_tables = dict()
-        self.staging_tables = dict()
+        self.final_tables: Dict[str, Table] = dict()
+        self.staging_tables: Dict[str, Table] = dict()
 
-        self.csv_writers = dict()
+        self.csv_writers: Dict[str, CSVWriter] = dict()
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
@@ -39,7 +39,7 @@ class DestinationRedshiftPy(Destination):
             self._create_pool(config=config)
 
             if cmd == "write":
-                self._extract_tables_from_json_schema(ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
+                self._extract_tables_from_json_schema(configured_catalog=ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
                 self._create_tables()
                 self._initialize_staging_schema()
                 self._initialize_csv_writers()
@@ -94,47 +94,48 @@ class DestinationRedshiftPy(Destination):
                 self._flush()
                 yield message
             elif message.type == Type.RECORD:
-                data = DotMap({message.record.stream: message.record.data})
+                nested_record = DotMap({message.record.stream: message.record.data})
 
-                # Build a simple tree out of the dictionary and visit the leave nodes before parents to clear the leave nodes
-                # attributes. The leave nodes are the dictionary keys with the largest length after splitting the name.
-                # The return value is a list of lists. For example, if the input is:
+                # Build a simple tree out of the dictionary and visit the parent nodes before children to assign the IDs to the parents
+                # before the children so that the children can use the parent IDs in the references (foreign key).
+                # Parents key always have shorter length than the children as the children combine the parent and the child keys.
+                # The return value is a list of lists.
+                #
+                # For example, if the input is:
                 #       `['orders', 'orders.account', 'orders.accounts.address']`
                 # The output is:
-                #       `[['orders', 'accounts', 'address'], ['orders', 'account'], ['orders']]`
-                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.final_tables.keys()), key=len, reverse=True)
+                #       `[['orders'], ['orders', 'account'], ['orders', 'accounts', 'address']]`
+                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.final_tables.keys()), key=len)
+                emitted_at = message.record.emitted_at
 
                 for node in nodes:
-                    emitted_at = message.record.emitted_at
-
                     table = self.final_tables[PARENT_CHILD_SPLITTER.join(node)]
-                    parent_table = self.final_tables.get(PARENT_CHILD_SPLITTER.join(node[0:-1]))
 
-                    parent_record = reduce(getattr, [data] + node[0:-1])
-                    records = getattr(parent_record, node[-1])
+                    records = reduce(getattr, [nested_record] + node)
                     records = [records] if not isinstance(records, list) else records
 
-                    self._assign_id_and_emitted_at(records=records, primary_keys=table.primary_keys, emitted_at=emitted_at)
-
-                    if parent_table:
-                        self._assign_id_and_emitted_at(records=[parent_record], primary_keys=parent_table.primary_keys,
-                                                       emitted_at=emitted_at)
-
+                    if table.references:
+                        parent_record = reduce(getattr, [nested_record] + node[0:-1])
                         reference_id = parent_record[AIRBYTE_ID_NAME]
-                        self._assign_reference_id(records=records, reference_key=table.reference_key, reference_id=reference_id)
+                        self._assign_reference_id(records=records, reference_key=table.reference_key.name, reference_id=reference_id)
 
-                    # Delete the child after visiting
-                    delattr(parent_record, node[-1])
+                    # Choose primary keys (other than the Airbyte auto generated ID). If there are no primary keys (except the auto
+                    # generated Airbyte ID, this happens with children), then choose all the fields as hash keys to generate the ID.
+                    hashing_keys = [pk for pk in table.primary_keys if pk != AIRBYTE_ID_NAME] or table.field_names
+
+                    self._assign_id_and_emitted_at(records=records, hashing_keys=hashing_keys, emitted_at=emitted_at)
+
+                    records = [DotMap([field_name, record[field_name]] for field_name in table.field_names) for record in records]
 
                     self.csv_writers[table.name].write(records)
 
         self._flush()
 
     @staticmethod
-    def _assign_id_and_emitted_at(records: List[DotMap], emitted_at: int, primary_keys: List[str]):
+    def _assign_id_and_emitted_at(records: List[DotMap], emitted_at: int, hashing_keys: List[str]):
         for record in records:
+            DestinationRedshiftPy._assign_id(record=record, hashing_keys=hashing_keys)
             record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat(timespec="seconds")
-            DestinationRedshiftPy._assign_id(record=record, primary_keys=primary_keys)
 
     @staticmethod
     def _assign_reference_id(records: List[DotMap], reference_key: str, reference_id: str):
@@ -142,15 +143,11 @@ class DestinationRedshiftPy(Destination):
             record[reference_key] = reference_id
 
     @staticmethod
-    def _assign_id(record: DotMap, primary_keys: List[str]):
+    def _assign_id(record: DotMap, hashing_keys: List[str]):
         if AIRBYTE_ID_NAME not in record:
-            # Ignore the Airbyte ID primary key column as it is going to be set in this method
-            if AIRBYTE_ID_NAME in primary_keys: primary_keys.remove(AIRBYTE_ID_NAME)
+            data = "".join([str(record[hashing_key]) for hashing_key in hashing_keys]).encode()
 
-            if primary_keys:
-                record[AIRBYTE_ID_NAME] = sha256("".join([record[primary_key] for primary_key in primary_keys]).encode()).hexdigest()[-32:]
-            else:
-                record[AIRBYTE_ID_NAME] = uuid4().hex
+            record[AIRBYTE_ID_NAME] = sha256(data).hexdigest()[-32:]
 
     def _extract_tables_from_json_schema(self, configured_catalog: ConfiguredAirbyteCatalog):
         for stream in configured_catalog.streams:
@@ -166,20 +163,20 @@ class DestinationRedshiftPy(Destination):
     def _create_tables(self):
         cursor = self._get_connection(autocommit=True).cursor()
 
-        for _, table_def in self.final_tables.items():
-            sql = table_def.create_statement()
-            cursor.execute(sql)
+        for table in self.final_tables.values():
+            create_table_statement = table.create_statement()
+            cursor.execute(create_table_statement)
 
     def _initialize_staging_schema(self):
         cursor = self._get_connection(autocommit=True).cursor()
         random_table = list(self.final_tables.values())[0]  # All final_tables will be stored in the same schema
 
         staging_schema = f"_airbyte_{random_table.schema}"
-        sql = f"CREATE SCHEMA IF NOT EXISTS {staging_schema}"
-        cursor.execute(sql)
+        create_schema_statement = f"CREATE SCHEMA IF NOT EXISTS {staging_schema}"
+        cursor.execute(create_schema_statement)
 
         for key, table in self.final_tables.items():
-            staging_table = table
+            staging_table = deepcopy(table)
             staging_table.schema = staging_schema
 
             self.staging_tables[key] = staging_table
@@ -220,15 +217,19 @@ class DestinationRedshiftPy(Destination):
         connection = self._get_connection()
         cursor = connection.cursor()
 
-        for table in self.staging_tables.values():
-            csv_writer = self.csv_writers[table.name]
+        for key, staging_table in self.staging_tables.items():
+            csv_writer = self.csv_writers[staging_table.name]
             temporary_gzip_file = csv_writer.flush_gzipped()
 
             if temporary_gzip_file:
                 s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
                 csv_writer.delete_gzip_file(temporary_gzip_file)
-                sql = table.coy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
-                cursor.execute(sql)
+                copy_statement = staging_table.coy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                cursor.execute(copy_statement)
 
-        connection.commit()
+                final_table = self.final_tables[key]
+                upsert_statements = final_table.upsert_statements(staging_table=staging_table)
+                cursor.execute(upsert_statements)
+
+            connection.commit()
 

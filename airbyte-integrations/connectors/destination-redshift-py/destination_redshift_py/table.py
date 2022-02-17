@@ -19,26 +19,39 @@ class Table:
 
         self.references = references
 
-    def create_statement(self) -> str:
-        references = ""
+    @property
+    def full_name(self) -> str:
+        return f"{self.schema}.{self.name}"
 
+    @property
+    def reference_key(self) -> Optional[Field]:
+        if self._reference_key_name:
+            return Field(name=self._reference_key_name, data_type=AIRBYTE_KEY_DATA_TYPE)
+
+    @property
+    def field_names(self) -> List[str]:
+        return list(map(lambda field: field.name, self.fields))
+
+    def create_statement(self) -> str:
+        primary_keys = f", PRIMARY KEY({', '.join(self.primary_keys)})"
+
+        foreign_key = ""
         if self.references:
             reference_key = self.reference_key
-            references = f", FOREIGN KEY({reference_key}) REFERENCES {self.references.schema}.{self.references.name}({AIRBYTE_AB_ID.name})"
+            foreign_key = f", FOREIGN KEY({reference_key.name}) REFERENCES {self.references.full_name}({AIRBYTE_ID_NAME})"
 
-            if reference_key not in self.field_names:
-                self.fields.append(Field(name=reference_key, data_type=AIRBYTE_KEY_DATA_TYPE))
+            if reference_key.name not in self.field_names:
+                self.fields.append(reference_key)
 
-        fields = ", ".join(map(lambda field: field.__str__(), self.fields))
-        primary_keys = f", PRIMARY KEY({', '.join(self.primary_keys)})"
+        fields = ", ".join(map(lambda field: str(field), self.fields))
 
         return f"""
             CREATE TABLE IF NOT EXISTS {self.schema}.{self.name} (
-                {fields}{primary_keys}{references}, UNIQUE({AIRBYTE_AB_ID.name})  
+                {fields}{primary_keys}{foreign_key}, UNIQUE({AIRBYTE_AB_ID.name})  
             );
         """
 
-    def coy_csv_gzip_statement(self, iam_role_arn: str, s3_full_path: str):
+    def coy_csv_gzip_statement(self, iam_role_arn: str, s3_full_path: str) -> str:
         return f"""
             COPY {self.schema}.{self.name}
             FROM '{s3_full_path}'
@@ -50,11 +63,26 @@ class Table:
             GZIP
         """
 
-    @property
-    def reference_key(self) -> Optional[str]:
-        if self.references:
-            return f"_airbyte_{self.references.name}_id"
+    def upsert_statements(self, staging_table: "Table") -> str:
+        delete_condition = " AND ".join(
+            [f"staging.{column} = {self.name}.{column}" for column in self.primary_keys]
+        )
+
+        delete_from_final_table = f"""
+            DELETE FROM {self.schema}.{self.name}
+            USING {staging_table.schema}.{staging_table.name} AS staging WHERE {delete_condition}
+        """
+
+        insert_into_final_table = f"""
+            INSERT INTO {self.schema}.{self.name}
+            SELECT * FROM {staging_table.schema}.{staging_table.name}
+        """
+
+        truncate_staging_table = f"TRUNCATE TABLE {staging_table.schema}.{staging_table.name}"
+
+        return f"{delete_from_final_table};{insert_into_final_table};{truncate_staging_table};"
 
     @property
-    def field_names(self) -> List[str]:
-        return list(map(lambda field: field.name, self.fields))
+    def _reference_key_name(self) -> Optional[str]:
+        if self.references:
+            return f"_airbyte_{self.references.name}_id"
