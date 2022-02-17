@@ -742,8 +742,15 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
-        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
-        .withGitRepoBranch("main")
+        // Forked from https://github.com/dbt-labs/jaffle_shop because they made a change that would have
+        // required a dbt version upgrade
+        // https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
+        // We're actually two commits upstream of that, because the previous commit
+        // (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also
+        // breaks something
+        // TODO once we're on DBT 1.x, switch this back to using the main branch
+        .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
+        .withGitRepoBranch("pre_dbt_upgrade")
         .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft() + ":" + NORMALIZATION_VERSION);
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
@@ -784,10 +791,11 @@ public abstract class DestinationAcceptanceTest {
       throw new WorkerException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
-    dbtConfig.withDbtArguments("docs generate");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt docs generate Failed.");
-    }
+    // This step is commented out because it takes a long time, but is not vital for Airbyte
+    // dbtConfig.withDbtArguments("docs generate");
+    // if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
+    // throw new WorkerException("dbt docs generate Failed.");
+    // }
     runner.close();
   }
 
