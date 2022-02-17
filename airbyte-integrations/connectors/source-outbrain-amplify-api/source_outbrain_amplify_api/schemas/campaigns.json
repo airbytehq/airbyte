@@ -1,0 +1,237 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "count": {
+            "type": "integer"
+        },
+        "campaigns": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "marketerId": {
+                            "type": "string"
+                        },
+                        "onAirReason": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "lastModified": {
+                            "type": "string"
+                        },
+                        "creationTime": {
+                            "type": "string"
+                        },
+                        "autoArchived": {
+                            "type": "boolean"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "cpc": {
+                            "type": "number"
+                        },
+                        "minimumCpc": {
+                            "type": "number"
+                        },
+                        "amountSpent": {
+                            "type": "integer"
+                        },
+                        "targeting": {
+                            "type": "object",
+                            "properties": {
+                                "platform": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "locations": {
+                                    "type": "array",
+                                    "items": {}
+                                },
+                                "operatingSystems": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "browsers": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "feeds": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "budget": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "shared": {
+                                    "type": "boolean"
+                                },
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "currency": {
+                                    "type": "string"
+                                },
+                                "amountRemaining": {
+                                    "type": "integer"
+                                },
+                                "amountSpent": {
+                                    "type": "integer"
+                                },
+                                "creationTime": {
+                                    "type": "string"
+                                },
+                                "lastModified": {
+                                    "type": "string"
+                                },
+                                "startDate": {
+                                    "type": "string"
+                                },
+                                "runForever": {
+                                    "type": "boolean"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "pacing": {
+                                    "type": "string"
+                                },
+                                "dailyTarget": {
+                                    "type": "integer"
+                                },
+                                "maximumAmount": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "suffixTrackingCode": {
+                            "type": "string"
+                        },
+                        "prefixTrackingCode": {
+                            "type": "object",
+                            "properties": {
+                                "prefix": {
+                                    "type": "string"
+                                },
+                                "encode": {
+                                    "type": "boolean"
+                                }
+                            }
+                        },
+                        "liveStatus": {
+                            "type": "object",
+                            "properties": {
+                                "campaignOnAir": {
+                                    "type": "boolean"
+                                },
+                                "onAirReason": {
+                                    "type": "string"
+                                },
+                                "amountSpent": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "marketerBlockedSites": {
+            "type": "object",
+            "properties": {
+                "blockedPublishers": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "creationTime": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "blockedSections": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "publisher": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "creationTime": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

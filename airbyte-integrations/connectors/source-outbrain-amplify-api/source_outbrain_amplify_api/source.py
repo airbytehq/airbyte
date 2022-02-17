@@ -88,8 +88,6 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        marketer_id = self.marketer_id
-        #return {"id": marketer_id, "detachedOnly": "true"}
         return None
 
     def request_headers(
@@ -103,7 +101,7 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        return [response.json()]
+        yield {}
 
 
 class Budgets(OutbrainAmplifyApiStream):
@@ -123,6 +121,59 @@ class Budgets(OutbrainAmplifyApiStream):
         """
         marketer_id = self.marketer_id
         return 'https://api.outbrain.com/amplify/v0.1/marketers/' +marketer_id + '/budgets?detachedOnly=false'
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+
+        return response.json().get("budgets")
+
+class Campaigns(OutbrainAmplifyApiStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        marketer_id = self.marketer_id
+        return 'https://api.outbrain.com/amplify/v0.1/marketers/' +marketer_id + '/campaigns'
+    
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page_token = response.json()['count']
+
+        if next_page_token == 25:
+            return  next_page_token
+        else:
+            return None
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+  
+        return {"offset": next_page_token}
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+
+        return response.json().get("campaigns")
 
 
 # Basic incremental stream
@@ -238,10 +289,10 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         url = 'https://api.outbrain.com/amplify/v0.1/login'
-    
+         
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
         response = (requests.get(url, auth=auth))
         token = response.json()['OB-TOKEN-V1']
-        
+       
         authenticator = NoAuth()
-        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator)]
+        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator), Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator)]
