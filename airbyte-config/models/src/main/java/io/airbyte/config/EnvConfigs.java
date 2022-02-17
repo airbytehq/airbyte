@@ -89,6 +89,8 @@ public class EnvConfigs implements Configs {
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
+  private static final String AUTO_UPGRADE_CONNECTORS = "AUTO_UPGRADE_CONNECTORS";
+
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
@@ -677,6 +679,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSubmitterNumThreads() {
     return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
+  }
+
+  @Override
+  public Boolean getAutoUpgradeConnectors() {
+    return getEnvOrDefault(AUTO_UPGRADE_CONNECTORS, false, Boolean::valueOf);
   }
 
   @Override

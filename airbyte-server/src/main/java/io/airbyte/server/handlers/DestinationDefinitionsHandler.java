@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.Configs;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
@@ -16,6 +17,7 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -46,6 +48,7 @@ public class DestinationDefinitionsHandler {
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
   private final DestinationHandler destinationHandler;
+  final Configs configs = new EnvConfigs();
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -109,8 +112,29 @@ public class DestinationDefinitionsHandler {
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return toDestinationDefinitionReadList(getLatestDestinations());
+  public DestinationDefinitionReadList listLatestDestinationDefinitions() throws JsonValidationException, IOException {
+    List<StandardDestinationDefinition> latestDestDefinitions = getLatestDestinations();
+    List<StandardDestinationDefinition> currDestDefinitions = configRepository.listStandardDestinationDefinitions(false);
+
+    if (configs.getAutoUpgradeConnectors()) {
+      for (StandardDestinationDefinition latestDestDef : latestDestDefinitions) {
+        currDestDefinitions.forEach(f -> {
+          // need to create function to compare the version
+          // know the logic is applied to equal latest and current version
+          if (f.getDockerImageTag() == latestDestDef.getDockerImageTag()) {
+            final DestinationDefinitionUpdate updateDestDef = new DestinationDefinitionUpdate()
+                    .destinationDefinitionId(latestDestDef.getDestinationDefinitionId())
+                    .dockerImageTag(latestDestDef.getDockerImageTag());
+            try {
+              updateDestinationDefinition(updateDestDef);
+            } catch (ConfigNotFoundException | IOException | JsonValidationException e) {
+              throw new InternalServerKnownException("Unable to auto upgrade latest destination definition", e);
+            }
+          }
+        });
+      }
+    }
+    return toDestinationDefinitionReadList(latestDestDefinitions);
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {

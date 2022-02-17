@@ -213,6 +213,12 @@ public interface Configs {
   String getJobMainContainerCpuRequest();
 
   /**
+   * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending
+   * on the deployment. Defaults to none.
+   */
+  Boolean getAutoUpgradeConnectors();
+
+  /**
    * Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending
    * on the deployment. Defaults to none.
    */
