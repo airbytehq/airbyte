@@ -245,8 +245,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("DATETIME")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
-            .addExpectedValues(null, "9999-12-31T23:59:59.000000Z", "9999-12-31T23:59:59.123456Z")
+            .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
+            .addExpectedValues(null, "0001-01-01T00:00:00.000000Z", "9999-12-31T23:59:59.000000Z", "9999-12-31T23:59:59.123456Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
