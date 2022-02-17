@@ -102,6 +102,7 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.33 | 2022-02-21 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions |
 | 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
 | 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
 | 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
