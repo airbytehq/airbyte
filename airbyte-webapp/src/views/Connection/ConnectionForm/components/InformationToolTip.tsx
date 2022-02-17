@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ToolTip, { InfoIcon } from "components/ToolTip";
 
 const ToolTipBlock = styled(ToolTip)`
-  top: calc(100% + 0px);
+  top: calc(100%);
   background: ${({ theme }) => theme.darkBlue90};
   color: ${({ theme }) => theme.whiteColor};
   padding: 11px 19px;
