@@ -108,14 +108,14 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+    final String jdbcUrl = String.format("jdbc:mysql://%s:%s/%s",
         config.get(HOST_KEY).asText(),
         config.get(PORT_KEY).asText(),
-        config.get(DATABASE_KEY).asText()));
+        config.get(DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl.toString());
+        .put(JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(PASSWORD_KEY)) {
       configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
