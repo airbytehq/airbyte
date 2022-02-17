@@ -12,7 +12,8 @@ import {
 } from "core/domain/catalog";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import {
-  Normalization,
+  isDbtTransformation,
+  isNormalizationTransformation,
   NormalizationType,
   Operation,
   OperatorType,
@@ -156,8 +157,7 @@ function mapFormPropsToOperation(
   if (values.normalization) {
     if (values.normalization !== NormalizationType.RAW) {
       const normalizationOperation = initialOperations.find(
-        (op) =>
-          op.operatorConfiguration.operatorType === OperatorType.Normalization
+        isNormalizationTransformation
       );
 
       if (normalizationOperation) {
@@ -239,17 +239,14 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   );
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] =>
-  (operations.filter(
-    (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-  ) as Transformation[]) ?? [];
+  operations.filter(isDbtTransformation) ?? [];
 
 const getInitialNormalization = (
   operations: Operation[],
   isEditMode?: boolean
 ): NormalizationType => {
-  let initialNormalization = (operations.find(
-    (op) => op.operatorConfiguration.operatorType === OperatorType.Normalization
-  ) as Normalization)?.operatorConfiguration?.normalization?.option;
+  let initialNormalization = operations.find(isNormalizationTransformation)
+    ?.operatorConfiguration?.normalization?.option;
 
   // If no normalization was selected for already present normalization -> select Raw one
   if (!initialNormalization && isEditMode) {
