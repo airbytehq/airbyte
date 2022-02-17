@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -173,26 +172,6 @@ public class TemporalUtilsTest {
     assertEquals(0, timesReachedEnd.get());
   }
 
-  @Test
-  public void testHeartbeatFailureOnHeartbeatWrapper() {
-    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
-    final Worker worker = testEnv.newWorker(TASK_QUEUE);
-    worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
-    final WorkflowClient client = testEnv.getWorkflowClient();
-    final AtomicInteger timesReachedEnd = new AtomicInteger(0);
-    worker.registerActivitiesImplementations(new TestFailingWorkflow.Activity1Impl(timesReachedEnd));
-    testEnv.start();
-
-    final TestFailingWorkflow workflowStub =
-        client.newWorkflowStub(TestFailingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
-
-    // test timeout on first attempt only
-    workflowStub.run("timeout");
-
-    // we should be able to retry in this case because we only timeout in first run
-    assertEquals(1, timesReachedEnd.get());
-  }
-
   @WorkflowInterface
   public interface TestWorkflow {
 
@@ -273,7 +252,7 @@ public class TemporalUtilsTest {
           .setStartToCloseTimeout(Duration.ofMinutes(30))
           .setScheduleToStartTimeout(Duration.ofMinutes(30))
           .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
-          .setRetryOptions(ActivityConfiguration.ORCHESTRATOR_RETRY)
+          .setRetryOptions(TemporalUtils.NO_RETRY)
           .setHeartbeatTimeout(Duration.ofSeconds(1))
           .build();
 
