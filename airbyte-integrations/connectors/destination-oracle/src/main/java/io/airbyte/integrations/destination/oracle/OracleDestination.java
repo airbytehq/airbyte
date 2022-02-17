@@ -15,7 +15,9 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -54,6 +56,11 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   @Override
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    return new HashMap<>();
+  }
+
+  @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
@@ -84,7 +91,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   private Protocol obtainConnectionProtocol(final JsonNode encryption,
-                                            final List<String> additionalParameters) {
+      final List<String> additionalParameters) {
     final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {

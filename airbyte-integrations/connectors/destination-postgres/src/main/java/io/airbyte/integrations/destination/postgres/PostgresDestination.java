@@ -12,7 +12,9 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
+  }
+
+  @Override
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    return new HashMap<>();
   }
 
   @Override

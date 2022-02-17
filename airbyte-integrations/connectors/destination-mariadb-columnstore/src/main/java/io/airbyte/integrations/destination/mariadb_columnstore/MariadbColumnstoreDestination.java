@@ -7,9 +7,7 @@ package io.airbyte.integrations.destination.mariadb_columnstore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -18,6 +16,7 @@ import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstor
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +26,10 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   public static final String DRIVER_CLASS = "org.mariadb.jdbc.Driver";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+
+  static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
+      "allowLoadLocalInfile", "true"
+  );
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MariadbColumnstoreDestination(), HOST_KEY, PORT_KEY);
@@ -67,15 +70,8 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final JsonNode config) {
-    final JsonNode jdbcConfig = toJdbcConfig(config);
-
-    return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass(),
-        JdbcUtils.parseJdbcParameters("allowLoadLocalInfile=true"));
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    return DEFAULT_JDBC_PARAMETERS;
   }
 
   @Override

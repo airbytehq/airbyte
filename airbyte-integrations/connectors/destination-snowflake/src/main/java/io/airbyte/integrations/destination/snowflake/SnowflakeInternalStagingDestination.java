@@ -14,6 +14,8 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -47,14 +49,15 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   private static void attemptSQLCreateAndDropStages(final String outputSchema,
-                                                    final JdbcDatabase database,
-                                                    final SnowflakeSQLNameTransformer namingResolver,
-                                                    final SnowflakeStagingSqlOperations sqlOperations)
+      final JdbcDatabase database,
+      final SnowflakeSQLNameTransformer namingResolver,
+      final SnowflakeStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
+    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);
+    ;
     sqlOperations.createStageIfNotExists(database, stageName);
     sqlOperations.dropStageIfExists(database, stageName);
   }
@@ -62,6 +65,11 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   @Override
   protected JdbcDatabase getDatabase(final JsonNode config) {
     return SnowflakeDatabase.getDatabase(config);
+  }
+
+  @Override
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    return new HashMap<>();
   }
 
   // this is a no op since we override getDatabase.
@@ -72,8 +80,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new SnowflakeInternalStagingConsumerFactory().create(outputRecordCollector, getDatabase(config),
         new SnowflakeStagingSqlOperations(), new SnowflakeSQLNameTransformer(), config, catalog);
   }

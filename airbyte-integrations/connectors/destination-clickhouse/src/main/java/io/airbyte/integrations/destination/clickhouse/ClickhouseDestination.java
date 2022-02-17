@@ -16,7 +16,9 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +85,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  @Override
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    return new HashMap<>();
+  }
+
+  public static void main(final String[] args) throws Exception {
     final Destination destination = ClickhouseDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", ClickhouseDestination.class);
     new IntegrationRunner(destination).run(args);

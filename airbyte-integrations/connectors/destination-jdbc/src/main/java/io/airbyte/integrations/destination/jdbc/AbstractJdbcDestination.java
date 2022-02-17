@@ -33,10 +33,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
 
-  protected String getDriverClass() {
-    return driverClass;
-  }
-
   protected NamingConventionTransformer getNamingResolver() {
     return namingResolver;
   }
