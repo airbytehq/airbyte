@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -85,6 +84,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final long maxQueueSizeInBytes;
+  private final RecordSizeEstimator recordSizeEstimator;
   private long bufferSizeInBytes;
   private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer;
   private String fileName;
@@ -128,6 +128,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.bufferSizeInBytes = 0;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.streamBuffer = new HashMap<>();
+    this.recordSizeEstimator = new RecordSizeEstimator();
   }
 
   @Override
@@ -158,13 +159,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
-      // are serialized again when writing to
-      // the destination
-      final long messageSizeInBytes = ByteUtils.getSizeInBytesForUTF8CharSet(Jsons.serialize(recordMessage.getData()));
+      final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(recordMessage);
       if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-        LOGGER.info("Flushing buffer...");
-        flushQueueToDestination(bufferSizeInBytes);
+        flushQueueToDestination();
         bufferSizeInBytes = 0;
       }
 
@@ -180,9 +177,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void flushQueueToDestination(long bufferSizeInBytes) throws Exception {
+  private void flushQueueToDestination() throws Exception {
+    LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
+
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+        LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
         recordWriter.accept(entry.getKey(), entry.getValue());
         if (checkAndRemoveRecordWriter != null) {
           fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
@@ -215,7 +215,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
-      flushQueueToDestination(bufferSizeInBytes);
+      flushQueueToDestination();
     }
 
     try {
