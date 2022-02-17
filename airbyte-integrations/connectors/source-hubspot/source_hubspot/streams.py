@@ -1096,8 +1096,8 @@ class CRMObjectStream(Stream):
         self, entity: Optional[str] = None, associations: Optional[List[str]] = None, include_archived_only: bool = False, **kwargs
     ):
         super().__init__(**kwargs)
-        self.entity = entity or self.entity
-        self.associations = associations or self.associations
+        # self.entity = entity or self.entity
+        # self.associations = associations or self.associations
         self._include_archived_only = include_archived_only
 
         if not self.entity:
@@ -1269,8 +1269,16 @@ class DealStageHistoryStream(Stream):
 class Deals(CRMSearchStream):
     """Deals, API v3"""
 
+    entity = "deal"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts"]
+
     def __init__(self, **kwargs):
-        super().__init__(entity="deal", last_modified_field="hs_lastmodifieddate", **kwargs)
+        super().__init__(
+            # entity="deal",
+            # last_modified_field="hs_lastmodifieddate",
+            **kwargs
+        )
         self._stage_history = DealStageHistoryStream(**kwargs)
 
     def read_records(

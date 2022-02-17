@@ -53,9 +53,7 @@ class SourceHubspot(AbstractSource):
         error_msg = None
         common_params = self.get_common_params(config=config)
         try:
-            contacts = CRMSearchStream(
-                entity="contact", last_modified_field="lastmodifieddate", associations=["contacts"], name="contacts", **common_params
-            )
+            contacts = Contacts(**common_params)
             _ = contacts.properties
         except HTTPError as error:
             alive = False
@@ -88,7 +86,7 @@ class SourceHubspot(AbstractSource):
             Contacts(**common_params),
             ContactsListMemberships(**common_params),
             DealPipelines(**common_params),
-            Deals(associations=["contacts"], **common_params),
+            Deals(**common_params),
             EmailEvents(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
