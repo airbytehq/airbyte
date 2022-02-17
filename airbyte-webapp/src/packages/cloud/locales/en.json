@@ -103,6 +103,7 @@
   "credits.creditsProblem.negative_within_grace_period": "Your workspace is out of credits! Please add more credits to make sure your syncs keep running!",
   "credits.creditsProblem.negative_beyond_grace_period": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
   "credits.creditsProblem.negative_max_threshold": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
+  "credits.creditsProblem.link": "Visit credits page",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",
