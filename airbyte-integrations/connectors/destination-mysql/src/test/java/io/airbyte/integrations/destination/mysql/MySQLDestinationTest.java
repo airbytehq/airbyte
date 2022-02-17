@@ -3,20 +3,26 @@ package io.airbyte.integrations.destination.mysql;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.spy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.times;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.Databases;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 public class MySQLDestinationTest {
 
   private MySQLDestination getDestination() {
-    final MySQLDestination result = spy(MySQLDestination.class);
+    final MySQLDestination result = new MySQLDestination();
     return result;
   }
 
@@ -132,5 +138,21 @@ public class MySQLDestinationTest {
     assertThrows(IllegalArgumentException.class, () -> {
       getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     });
+  }
+
+  @Test
+  void test() throws SQLException {
+    final ImmutableMap<String, String> connectionProperties = ImmutableMap.of("allowLoadLocalInfile", "true");
+    verifyJdbcDatabaseIsCreatedWithConnectionProperties(() -> getDestination().getDatabase(buildConfigNoExtraJdbcParametersWithoutSsl()),
+        connectionProperties);
+  }
+
+  void verifyJdbcDatabaseIsCreatedWithConnectionProperties(final Runnable runnable, final Map<String, String> connectionProperties) {
+    try (final MockedStatic<Databases> databases = Mockito.mockStatic(Databases.class)) {
+      runnable.run();
+      databases.verify(() -> Databases.createJdbcDatabase(
+              anyString(), nullable(String.class), anyString(), anyString(), Mockito.eq(connectionProperties)),
+          times(1));
+    }
   }
 }

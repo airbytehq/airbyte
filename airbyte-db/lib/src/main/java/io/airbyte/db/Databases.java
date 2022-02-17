@@ -4,6 +4,8 @@
 
 package io.airbyte.db;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -14,8 +16,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.mongodb.MongoDatabase;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import lombok.val;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -33,15 +35,15 @@ public class Databases {
   }
 
   public static Database createPostgresDatabaseWithRetry(final String username,
-                                                         final String password,
-                                                         final String jdbcConnectionString,
-                                                         final Function<Database, Boolean> isDbReady) {
+      final String password,
+      final String jdbcConnectionString,
+      final Function<Database, Boolean> isDbReady) {
     Database database = null;
     while (database == null) {
       try {
         val infinity = Integer.MAX_VALUE;
         database = createPostgresDatabaseWithRetryTimeout(username, password, jdbcConnectionString, isDbReady, infinity);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         // This should theoretically never happen since we set the timeout to be a very high number.
       }
     }
@@ -51,10 +53,10 @@ public class Databases {
   }
 
   public static Database createPostgresDatabaseWithRetryTimeout(final String username,
-                                                                final String password,
-                                                                final String jdbcConnectionString,
-                                                                final Function<Database, Boolean> isDbReady,
-                                                                final long timeoutMs)
+      final String password,
+      final String jdbcConnectionString,
+      final Function<Database, Boolean> isDbReady,
+      final long timeoutMs)
       throws IOException {
     Database database = null;
     if (jdbcConnectionString == null || jdbcConnectionString.trim().equals("")) {
@@ -117,111 +119,91 @@ public class Databases {
   }
 
   public static Database createDatabase(final String username,
-                                        final String password,
-                                        final String jdbcConnectionString,
-                                        final String driverClassName,
-                                        final SQLDialect dialect) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final SQLDialect dialect) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
     return new Database(connectionPool, dialect);
   }
 
   public static Database createDatabase(final String username,
-                                        final String password,
-                                        final String jdbcConnectionString,
-                                        final String driverClassName,
-                                        final SQLDialect dialect,
-                                        final String connectionProperties) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final SQLDialect dialect,
+      final Map<String, String> connectionProperties) {
     final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
     return new Database(connectionPool, dialect);
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName) {
     return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, JdbcUtils.getDefaultSourceOperations());
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
-                                                final JdbcSourceOperations sourceOperations) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final JdbcSourceOperations sourceOperations) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
     return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
-                                                final String connectionProperties) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final Map<String, String> connectionProperties) {
     return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties,
         JdbcUtils.getDefaultSourceOperations());
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
-                                                final String connectionProperties,
-                                                final JdbcCompatibleSourceOperations<?> sourceOperations) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final Map<String, String> connectionProperties,
+      final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
     return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
 
   public static JdbcDatabase createStreamingJdbcDatabase(final String username,
-                                                         final String password,
-                                                         final String jdbcConnectionString,
-                                                         final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
-                                                         final String connectionProperties,
-                                                         final JdbcCompatibleSourceOperations<?> sourceOperations) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+      final Map<String, String> connectionProperties,
+      final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
     return new StreamingJdbcDatabase(connectionPool, sourceOperations, jdbcStreamingQuery);
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
-                                                       final String password,
-                                                       final String jdbcConnectionString,
-                                                       final String driverClassName) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName) {
     return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
-        Optional.empty());
-  }
-
-  /**
-   * Prefer to use the method that takes in the connection properties as a map.
-   */
-  @Deprecated
-  private static BasicDataSource createBasicDataSource(final String username,
-                                                       final String password,
-                                                       final String jdbcConnectionString,
-                                                       final String driverClassName,
-                                                       final Optional<String> connectionProperties) {
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName(driverClassName);
-    connectionPool.setUsername(username);
-    connectionPool.setPassword(password);
-    connectionPool.setInitialSize(0);
-    connectionPool.setMaxTotal(5);
-    connectionPool.setUrl(jdbcConnectionString);
-    connectionProperties.ifPresent(connectionPool::setConnectionProperties);
-    return connectionPool;
+        Maps.newHashMap());
   }
 
   public static BasicDataSource createBasicDataSource(final String username,
-                                                      final String password,
-                                                      final String jdbcConnectionString,
-                                                      final String driverClassName,
-                                                      final Map<String, String> connectionProperties) {
+      final String password,
+      final String jdbcConnectionString,
+      final String driverClassName,
+      final Map<String, String> connectionProperties) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
@@ -239,6 +221,32 @@ public class Databases {
 
   public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
     return new MongoDatabase(connectionString, databaseName);
+  }
+
+  public static Map<String, String> parseJdbcParameters(final JsonNode config, final String jdbcParametersKey) {
+    if (config.has(jdbcParametersKey)) {
+      return parseJdbcParameters(config.get(jdbcParametersKey).asText());
+    } else {
+      return Maps.newHashMap();
+    }
+  }
+
+  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
+    final Map<String, String> parameters = new HashMap<>();
+    if (!jdbcPropertiesString.isBlank()) {
+      final String[] keyValuePairs = jdbcPropertiesString.split("&");
+      for (final String kv : keyValuePairs) {
+        final String[] split = kv.split("=");
+        if (split.length == 2) {
+          parameters.put(split[0], split[1]);
+        } else {
+          throw new IllegalArgumentException(
+              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+                  + jdbcPropertiesString);
+        }
+      }
+    }
+    return parameters;
   }
 
 }

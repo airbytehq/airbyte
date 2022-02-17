@@ -36,7 +36,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
       final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
       final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
@@ -74,7 +74,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         getDriverClass(),
-        "allowLoadLocalInfile=true");
+        Databases.parseJdbcParameters("allowLoadLocalInfile=true"));
   }
 
   @Override
@@ -95,7 +95,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = MariadbColumnstoreDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MariadbColumnstoreDestination.class);
     new IntegrationRunner(destination).run(args);

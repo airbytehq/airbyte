@@ -19,7 +19,6 @@ import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompa
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +41,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String USERNAME_KEY = "username";
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-  
+
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "useSSL", "true",
       "requireSSL", "true",
@@ -91,12 +90,14 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   protected JdbcDatabase getDatabase(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
+    final Map<String, String> connectionProperties = ImmutableMap.of("allowLoadLocalInfile", "true");
+
     return Databases.createJdbcDatabase(
         jdbcConfig.get(USERNAME_KEY).asText(),
         jdbcConfig.has(PASSWORD_KEY) ? jdbcConfig.get(PASSWORD_KEY).asText() : null,
         jdbcConfig.get(JDBC_URL_KEY).asText(),
         getDriverClass(),
-        "allowLoadLocalInfile=true");
+        connectionProperties);
   }
 
   @Override
@@ -129,7 +130,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private List<String> getAdditionalParameters(final JsonNode config) {
-    final Map<String, String> customParameters = getCustomJdbcParameters(config);
+    final Map<String, String> customParameters = Databases.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
 
     if (useSSL(config)) {
       return convertToJdbcStrings(customParameters, MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS));
@@ -154,27 +155,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
       }
     }
-  }
-
-  private Map<String, String> getCustomJdbcParameters(final JsonNode config) {
-    final Map<String, String> parameters = new HashMap<>();
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      final String jdbcParams = config.get(JDBC_URL_PARAMS_KEY).asText();
-      if (!jdbcParams.isBlank()) {
-        final String[] keyValuePairs = jdbcParams.split("&");
-        for (final String kv : keyValuePairs) {
-          final String[] split = kv.split("=");
-          if (split.length == 2) {
-            parameters.put(split[0], split[1]);
-          } else {
-            throw new IllegalArgumentException(
-                "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
-                    + jdbcParams);
-          }
-        }
-      }
-    }
-    return parameters;
   }
 
   private boolean useSSL(final JsonNode config) {

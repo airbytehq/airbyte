@@ -55,9 +55,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains helper functions and boilerplate for implementing a source connector for a
- * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
- * for a relational DB which has a JDBC driver, make an effort to use this class.
+ * This class contains helper functions and boilerplate for implementing a source connector for a relational DB source which can be accessed via JDBC
+ * driver. If you are implementing a connector for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
 
@@ -69,9 +68,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   protected String quoteString;
 
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
   public AbstractJdbcSource(final String driverClass,
-                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-                            final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
+      final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+      final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
     this.sourceOperations = sourceOperations;
@@ -114,10 +115,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
-        // retrieve column metadata from the database
-        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
-        // store essential column metadata to a Json object from the result set about each column
-        this::getColumnMetadata)
+            // retrieve column metadata from the database
+            conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
+            // store essential column metadata to a Json object from the result set about each column
+            this::getColumnMetadata)
         .stream()
         .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
@@ -139,7 +140,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
                       jsonType);
-                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
+                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {
+                  };
                 })
                 .collect(Collectors.toList()))
             .build())
@@ -147,7 +149,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   protected Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
-                                                         final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+      final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return isNotInternalSchema(jsonNode, internalSchemas);
@@ -155,13 +157,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
 
   // needs to override isNotInternalSchema for connectors that override getPrivilegesTableForCurrentUser()
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
   }
 
@@ -184,8 +186,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   /**
-   * @param field Essential column information returned from
-   *        {@link AbstractJdbcSource#getColumnMetadata}.
+   * @param field Essential column information returned from {@link AbstractJdbcSource#getColumnMetadata}.
    */
   public Datatype getFieldType(final JsonNode field) {
     return sourceOperations.getFieldType(field);
@@ -204,7 +205,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-                                                          final List<TableInfo<CommonField<Datatype>>> tableInfos) {
+      final List<TableInfo<CommonField<Datatype>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(TableInfo::getName).collect(
         Collectors.toSet()));
     try {
@@ -251,12 +252,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final String cursorField,
-                                                               final Datatype cursorFieldType,
-                                                               final String cursor) {
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final String cursorField,
+      final Datatype cursorFieldType,
+      final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -292,12 +293,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
+        Databases.parseJdbcParameters(config.get("connection_properties").asText()),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
   }
-
 }
