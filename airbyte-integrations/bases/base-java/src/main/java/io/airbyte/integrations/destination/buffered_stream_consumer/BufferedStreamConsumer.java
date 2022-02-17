@@ -182,10 +182,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private void flushQueueToDestination() throws Exception {
     LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
 
-    // TODO: remove this before merging:
-    final Runtime runtime = Runtime.getRuntime();
-    LOGGER.info("Memory usage: total {}, max {}, free {}", runtime.totalMemory(), runtime.maxMemory(), runtime.freeMemory());
-
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
         LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
