@@ -108,8 +108,6 @@ public class DockerProcessFactory implements ProcessFactory {
           "--rm",
           "--init",
           "-i",
-          "-p",
-          "9010:9010",
           "-w",
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
