@@ -33,11 +33,8 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
   const isCursor = (field: SyncSchemaField): boolean =>
     equal(config.cursorField, field.path);
 
-  const isPrimaryKey = (field: SyncSchemaField): boolean => {
-    const existIndex = config.primaryKey.findIndex((p) => equal(p, field.path));
-
-    return existIndex !== -1;
-  };
+  const isPrimaryKey = (field: SyncSchemaField): boolean =>
+    config.primaryKey.some((p) => equal(p, field.path));
 
   return (
     <>

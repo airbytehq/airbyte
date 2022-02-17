@@ -15,7 +15,7 @@ export const H1 = styled.h1<IProps>`
   display: block;
   text-align: ${(props) => (props.center ? "center" : "left")};
   color: ${({ theme, parentColor, highlighted }) =>
-    parentColor ? "inherid" : highlighted ? theme.redColor : theme.textColor};
+    parentColor ? "inherit" : highlighted ? theme.redColor : theme.textColor};
   margin: 0;
 `;
 
