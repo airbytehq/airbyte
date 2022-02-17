@@ -31,13 +31,18 @@ import org.slf4j.LoggerFactory;
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
+
+  public static final String DATABASE_KEY = "database";
+  public static final String HOST_KEY = "host";
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String PASSWORD_KEY = "password";
+  public static final String PORT_KEY = "port";
+  public static final String SSL_KEY = "ssl";
+  public static final String USERNAME_KEY = "username";
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-
+  
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "useSSL", "true",
       "requireSSL", "true",
@@ -48,7 +53,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   );
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MySQLDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new MySQLDestination(), List.of(HOST_KEY), List.of(PORT_KEY));
   }
 
   @Override
@@ -56,7 +61,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     try (final JdbcDatabase database = getDatabase(config)) {
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
           mySQLSqlOperations);
 
@@ -87,9 +92,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(USERNAME_KEY).asText(),
+        jdbcConfig.has(PASSWORD_KEY) ? jdbcConfig.get(PASSWORD_KEY).asText() : null,
+        jdbcConfig.get(JDBC_URL_KEY).asText(),
         getDriverClass(),
         "allowLoadLocalInfile=true");
   }
@@ -99,9 +104,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final List<String> additionalParameters = getAdditionalParameters(config);
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(HOST_KEY).asText(),
+        config.get(PORT_KEY).asText(),
+        config.get(DATABASE_KEY).asText()));
     // zero dates by default cannot be parsed into java date objects (they will throw an error)
     // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
     // and can't
@@ -113,11 +118,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JDBC_URL_KEY, jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(PASSWORD_KEY)) {
+      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -173,7 +178,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private boolean useSSL(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
   static String formatParameter(final String key, final String value) {
