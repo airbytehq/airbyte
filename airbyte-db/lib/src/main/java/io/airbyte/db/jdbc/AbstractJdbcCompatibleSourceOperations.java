@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
-
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
@@ -147,8 +145,14 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
     // value in the following format
     try {
-      preparedStatement.setTimestamp(parameterIndex, Timestamp
-          .from(DataTypeUtils.DATE_FORMAT_WITH_MILLISECONDS.parse(value).toInstant()));
+      var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+      var nanos = micro + "000";
+      var valueWithoutMicros = value.replace("." + micro, "");
+
+      var timestamp = Timestamp
+              .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
+      timestamp.setNanos(Integer.parseInt(nanos));
+      preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
       throw new RuntimeException(e);
     }

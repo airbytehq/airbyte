@@ -19,8 +19,6 @@ import org.slf4j.LoggerFactory;
 
 public class DataTypeUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeUtils.class);
-
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
 
@@ -45,9 +43,8 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601StringWithMicroseconds(Instant instant) {
-    var microSeconds = (instant.getNano() / 1000) % 1000;
     String dateWithMilliseconds = DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(instant));
-    return dateWithMilliseconds.substring(0, 23) + microSeconds + dateWithMilliseconds.substring(23);
+    return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
   }
 
   public static String toISO8601StringWithMilliseconds(final long epochMillis) {
@@ -78,4 +75,16 @@ public class DataTypeUtils {
     return DATE_FORMAT.format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
   }
 
+  private static String calculateMicrosecondsString(int nano) {
+    var microSeconds = (nano / 1000) % 1000;
+    String result;
+    if (microSeconds < 10) {
+      result = "00" + microSeconds;
+    } else if (microSeconds < 100) {
+      result = "0" + microSeconds;
+    } else {
+      result = "" + microSeconds;
+    }
+    return result;
+  }
 }
