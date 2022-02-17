@@ -77,6 +77,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
+  private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
@@ -86,6 +87,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
   private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer;
+  private String fileName;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -100,12 +102,25 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                                 final long maxQueueSizeInBytes) {
+    this(outputRecordCollector, onStart, recordWriter, null, onClose, catalog,
+        isValidRecord, maxQueueSizeInBytes);
+  }
+
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final VoidCallable onStart,
+                                final RecordWriter recordWriter,
+                                final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
+                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final long maxQueueSizeInBytes) {
     this.outputRecordCollector = outputRecordCollector;
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
+    this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
@@ -169,6 +184,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
         recordWriter.accept(entry.getKey(), entry.getValue());
+        if (checkAndRemoveRecordWriter != null) {
+          fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
+        }
       }
     }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
     streamBuffer = new HashMap<>();
