@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Outbrain Amplify Api Spec",
     "type": "object",
-    "required": ["USERNAME", "PASSWORD", "MARKETER_ID"],
+    "required": ["USERNAME", "PASSWORD", "MARKETER_ID","START_DATE"],
     "additionalProperties": false,
     "properties": {
       "USERNAME": {
@@ -18,6 +18,14 @@
       "MARKETER_ID": {
         "type": "string",
         "description": "Outbrain Marketer ID"
+      },
+      "START_DATE": {
+        "type": "string",
+        "description": "Start Data for data retrieval"
+      },
+      "END_DATE": {
+        "type": "string",
+        "description": "End Date for data retrieval"
       }
     }
   }

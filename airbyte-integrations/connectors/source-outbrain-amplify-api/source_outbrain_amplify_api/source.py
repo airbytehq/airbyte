@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 import logging
+import datetime
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -58,10 +59,11 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
 
     url_base = "https://api.outbrain.com/amplify/v0.1/"
 
-    def __init__(self,  marketer_id, ob_token_v1, authenticator, **kwargs):
+    def __init__(self,  marketer_id, ob_token_v1, authenticator, start_date, **kwargs):
         super().__init__(authenticator, **kwargs)
         self.marketer_id = marketer_id
         self.token = ob_token_v1
+        self.start_date = start_date
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -177,6 +179,42 @@ class Campaigns(OutbrainAmplifyApiStream):
         """
 
         return response.json().get("campaigns")
+    
+class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    
+    primary_key = "id"
+    pagintation_token = 0
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        marketer_id = self.marketer_id
+        start_date = self.start_date
+        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections?from=' + start_date + '&to=' + end_date
+    
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        import json
+        filename = self.__class__.__name__
+        with open(filename + '.json', 'w', encoding='utf-8') as f:
+            json.dump(response.json(), f, ensure_ascii=False, indent=4)
+
+        return response.json().get("campaignResults")
 
 
 # Basic incremental stream
@@ -296,6 +334,8 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
         response = (requests.get(url, auth=auth))
         token = response.json()['OB-TOKEN-V1']
-       
+        
         authenticator = NoAuth()
-        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator), Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator)]
+        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,  start_date= config['START_DATE']), 
+        Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,start_date=config['START_DATE']),
+        PublisherSectionByCampaignPerformance(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE'])]
