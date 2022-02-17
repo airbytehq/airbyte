@@ -4,7 +4,7 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
-import WarningMessage from "../WarningMessage";
+import { WarningMessage } from "../WarningMessage";
 
 import {
   ControlLabels,

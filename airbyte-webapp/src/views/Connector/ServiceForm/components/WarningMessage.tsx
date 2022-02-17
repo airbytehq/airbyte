@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 
+import { ReleaseStage } from "core/domain/connector";
+
 const Content = styled.div`
   display: flex;
   flex-direction: row;
@@ -23,7 +25,7 @@ const Exclamation = styled(FontAwesomeIcon)`
 `;
 
 type WarningMessageProps = {
-  stage: string;
+  stage: ReleaseStage.ALPHA | ReleaseStage.BETA;
 };
 
 const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
@@ -39,4 +41,4 @@ const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   );
 };
 
-export default WarningMessage;
+export { WarningMessage };
