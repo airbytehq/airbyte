@@ -137,6 +137,7 @@ class Campaigns(OutbrainAmplifyApiStream):
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
+    pagintation_token = 0
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -150,9 +151,11 @@ class Campaigns(OutbrainAmplifyApiStream):
     
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page_token = response.json()['count']
-
-        if next_page_token == 25:
+        count = int(response.json()['count'])
+        Campaigns.pagintation_token = Campaigns.pagintation_token + count
+        next_page_token =  Campaigns.pagintation_token
+        # return next pagination token until count of records in call is != 25 (limit of records per call)
+        if count  == 25 :
             return  next_page_token
         else:
             return None
