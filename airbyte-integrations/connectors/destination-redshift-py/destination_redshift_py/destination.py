@@ -5,8 +5,9 @@ import argparse
 import logging
 from datetime import datetime
 from functools import reduce
+from hashlib import sha256
 from operator import iconcat
-from typing import Mapping, Any, Iterable
+from typing import Mapping, Any, Iterable, List
 from uuid import uuid4
 
 from airbyte_cdk import AirbyteLogger
@@ -18,7 +19,7 @@ from psycopg2.pool import ThreadedConnectionPool
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
 from destination_redshift_py.s3_writer import S3Writer
-from destination_redshift_py.table import AIRBYTE_AB_ID, AIRBYTE_EMITTED_AT, Table
+from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME
 
 logger = logging.getLogger("airbyte")
 
@@ -96,39 +97,60 @@ class DestinationRedshiftPy(Destination):
                 data = DotMap({message.record.stream: message.record.data})
 
                 # Build a simple tree out of the dictionary and visit the leave nodes before parents to clear the leave nodes
-                # attributes. The leave nodes are the dictionary keys with the largest length after splitting the name
+                # attributes. The leave nodes are the dictionary keys with the largest length after splitting the name.
+                # The return value is a list of lists. For example, if the input is:
+                #       `['orders', 'orders.account', 'orders.accounts.address']`
+                # The output is:
+                #       `[['orders', 'accounts', 'address'], ['orders', 'account'], ['orders']]`
                 nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.final_tables.keys()), key=len, reverse=True)
 
                 for node in nodes:
-                    table = self.final_tables[PARENT_CHILD_SPLITTER.join(node)]
-
-                    parent = reduce(self._visit_node, [data] + node[0:-1])
-                    records = getattr(parent, node[-1])
-
-                    parent_id = parent[AIRBYTE_AB_ID.name]
-                    reference_key = table.reference_key
                     emitted_at = message.record.emitted_at
 
-                    if isinstance(records, list):
-                        for record in records:
-                            self._add_columns(record=record, emitted_at=emitted_at, parent_id=parent_id, reference_key=reference_key)
-                    else:
-                        self._add_columns(record=records, emitted_at=emitted_at, parent_id=parent_id, reference_key=reference_key)
+                    table = self.final_tables[PARENT_CHILD_SPLITTER.join(node)]
+                    parent_table = self.final_tables.get(PARENT_CHILD_SPLITTER.join(node[0:-1]))
+
+                    parent_record = reduce(getattr, [data] + node[0:-1])
+                    records = getattr(parent_record, node[-1])
+                    records = [records] if not isinstance(records, list) else records
+
+                    self._assign_id_and_emitted_at(records=records, primary_keys=table.primary_keys, emitted_at=emitted_at)
+
+                    if parent_table:
+                        self._assign_id_and_emitted_at(records=[parent_record], primary_keys=parent_table.primary_keys,
+                                                       emitted_at=emitted_at)
+
+                        reference_id = parent_record[AIRBYTE_ID_NAME]
+                        self._assign_reference_id(records=records, reference_key=table.reference_key, reference_id=reference_id)
 
                     # Delete the child after visiting
-                    delattr(parent, node[-1])
+                    delattr(parent_record, node[-1])
 
                     self.csv_writers[table.name].write(records)
 
         self._flush()
 
-    def _add_columns(self, record: DotMap, emitted_at: int, parent_id: str = None, reference_key: str = None):
-        record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat(timespec="seconds")
+    @staticmethod
+    def _assign_id_and_emitted_at(records: List[DotMap], emitted_at: int, primary_keys: List[str]):
+        for record in records:
+            record[AIRBYTE_EMITTED_AT.name] = datetime.utcfromtimestamp(emitted_at / 1000).isoformat(timespec="seconds")
+            DestinationRedshiftPy._assign_id(record=record, primary_keys=primary_keys)
 
-        self._assign_unique_id(record=record)
+    @staticmethod
+    def _assign_reference_id(records: List[DotMap], reference_key: str, reference_id: str):
+        for record in records:
+            record[reference_key] = reference_id
 
-        if reference_key:
-            record[reference_key] = parent_id
+    @staticmethod
+    def _assign_id(record: DotMap, primary_keys: List[str]):
+        if AIRBYTE_ID_NAME not in record:
+            # Ignore the Airbyte ID primary key column as it is going to be set in this method
+            if AIRBYTE_ID_NAME in primary_keys: primary_keys.remove(AIRBYTE_ID_NAME)
+
+            if primary_keys:
+                record[AIRBYTE_ID_NAME] = sha256("".join([record[primary_key] for primary_key in primary_keys]).encode()).hexdigest()[-32:]
+            else:
+                record[AIRBYTE_ID_NAME] = uuid4().hex
 
     def _extract_tables_from_json_schema(self, configured_catalog: ConfiguredAirbyteCatalog):
         for stream in configured_catalog.streams:
@@ -193,19 +215,6 @@ class DestinationRedshiftPy(Destination):
 
     def _initialize_iam_role_arn(self, iam_role_arn: str):
         self.iam_role_arn = iam_role_arn
-
-    @staticmethod
-    def _visit_node(parent: DotMap, key: str) -> DotMap:
-        node = getattr(parent, key)
-
-        DestinationRedshiftPy._assign_unique_id(record=node)
-
-        return node
-
-    @staticmethod
-    def _assign_unique_id(record: DotMap):
-        if AIRBYTE_AB_ID.name not in record:
-            record[AIRBYTE_AB_ID.name] = uuid4().hex
 
     def _flush(self):
         connection = self._get_connection()

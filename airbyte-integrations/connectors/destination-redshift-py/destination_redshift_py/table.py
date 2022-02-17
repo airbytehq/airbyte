@@ -3,8 +3,9 @@ from typing import List, Optional
 from destination_redshift_py.data_type_converter import VARCHAR, TIMESTAMP_WITHOUT_TIME_ZONE
 from destination_redshift_py.field import Field, DataType
 
+AIRBYTE_ID_NAME = "_airbyte_ab_id"
 AIRBYTE_KEY_DATA_TYPE = DataType(name=VARCHAR, length="32")
-AIRBYTE_AB_ID = Field(name="_airbyte_ab_id", data_type=AIRBYTE_KEY_DATA_TYPE)
+AIRBYTE_AB_ID = Field(name=AIRBYTE_ID_NAME, data_type=AIRBYTE_KEY_DATA_TYPE)
 AIRBYTE_EMITTED_AT = Field(name="_airbyte_emitted_at", data_type=DataType(name=TIMESTAMP_WITHOUT_TIME_ZONE))
 
 
