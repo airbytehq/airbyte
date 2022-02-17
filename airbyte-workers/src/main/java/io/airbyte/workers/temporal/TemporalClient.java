@@ -65,6 +65,8 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
+  private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
+
   public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
     return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
@@ -454,14 +456,15 @@ public class TemporalClient {
     ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
         ListOpenWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
+            .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
             .build();
     do {
       final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
           service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
-      final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+      final long matchingWorkflowCoumt = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
-          .collect(Collectors.toList());
-      if (!workflowExecutionInfos.isEmpty()) {
+          .count();
+      if (matchingWorkflowCoumt != 0) {
         return true;
       }
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
@@ -470,6 +473,7 @@ public class TemporalClient {
           ListOpenWorkflowExecutionsRequest.newBuilder()
               .setNamespace(client.getOptions().getNamespace())
               .setNextPageToken(token)
+              .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
               .build();
 
     } while (token != null && token.size() > 0);
