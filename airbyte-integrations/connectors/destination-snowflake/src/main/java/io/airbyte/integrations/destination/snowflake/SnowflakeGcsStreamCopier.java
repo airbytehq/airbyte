@@ -19,15 +19,12 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SnowflakeGcsStreamCopier extends GcsStreamCopier implements SnowflakeParallelCopyStreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStreamCopier.class);
-  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
   public SnowflakeGcsStreamCopier(final String stagingFolder,
                                   final DestinationSyncMode destSyncMode,
@@ -49,7 +46,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier implements Snowfla
     LOGGER.info("Starting parallel copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
         schemaName, partitions.size());
 
-    copyFilesInParallel(partitions, executorService);
+    copyFilesInParallel(partitions);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 

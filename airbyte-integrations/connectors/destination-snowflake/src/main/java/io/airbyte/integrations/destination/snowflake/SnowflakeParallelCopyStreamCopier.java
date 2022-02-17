@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.IntStream;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 interface SnowflakeParallelCopyStreamCopier {
 
@@ -19,16 +19,15 @@ interface SnowflakeParallelCopyStreamCopier {
     return joiner.toString();
   }
 
-  default void copyFilesInParallel(List<List<String>> partitions, ExecutorService executorService) {
+  default void copyFilesInParallel(List<List<String>> partitions) {
+    ExecutorService executorService = Executors.newFixedThreadPool(5);
+    List<CompletableFuture<Void>> futures = partitions.stream()
+        .map(partition -> CompletableFuture.runAsync(() -> copyIntoStage(partition), executorService))
+        .collect(Collectors.toList());
 
-    CompletableFuture[] futures = new CompletableFuture[partitions.size()];
-    IntStream.range(0, partitions.size()).forEach(i -> {
-      List<String> partition = partitions.get(i);
-      futures[i] = CompletableFuture.runAsync(() -> copyIntoStage(partition), executorService);
-    });
     try {
         // This will wait until all futures ready.
-        CompletableFuture.allOf(futures).join();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
       } catch (Exception e) {
         throw new RuntimeException("Failed to copy files from stage to tmp table {}" + e);
       } finally {

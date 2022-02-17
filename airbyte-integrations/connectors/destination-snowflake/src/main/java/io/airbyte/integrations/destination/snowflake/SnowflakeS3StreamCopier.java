@@ -21,8 +21,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +33,6 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
   // compression"
   public static final int MAX_PARTS_PER_FILE = 4;
   public static final int MAX_FILES_PER_COPY = 1000;
-  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
   public SnowflakeS3StreamCopier(final String stagingFolder,
                                  final String schema,
@@ -86,7 +83,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
     LOGGER.info("Starting parallel copy to tmp table: {} in destination for stream: {}, schema: {}. Chunks count {}", tmpTableName, streamName,
         schemaName, partitions.size());
 
-    copyFilesInParallel(partitions, executorService);
+    copyFilesInParallel(partitions);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
