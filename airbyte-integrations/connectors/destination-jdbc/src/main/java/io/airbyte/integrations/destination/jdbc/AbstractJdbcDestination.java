@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Maps;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -19,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -97,36 +95,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = parseJdbcParameters(config);
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
-  }
-
-  private Map<String, String> parseJdbcParameters(final JsonNode config) {
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      return parseJdbcParameters(config.get(JDBC_URL_PARAMS_KEY).asText());
-    } else {
-      return Maps.newHashMap();
-    }
-  }
-
-  private Map<String, String> parseJdbcParameters(final String jdbcPropertiesString) {
-    final Map<String, String> parameters = new HashMap<>();
-    if (!jdbcPropertiesString.isBlank()) {
-      final String[] keyValuePairs = jdbcPropertiesString.split("&");
-      for (final String kv : keyValuePairs) {
-        final String[] split = kv.split("=");
-        if (split.length == 2) {
-          parameters.put(split[0], split[1]);
-        } else {
-          throw new IllegalArgumentException(
-              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
-                  + jdbcPropertiesString);
-        }
-      }
-    }
-    return parameters;
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,

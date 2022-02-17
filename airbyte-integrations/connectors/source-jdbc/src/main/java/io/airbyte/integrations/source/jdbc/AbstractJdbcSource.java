@@ -69,8 +69,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   protected String quoteString;
 
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-
   public AbstractJdbcSource(final String driverClass,
       final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
       final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
@@ -294,11 +292,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        JdbcUtils.parseJdbcParameters(config.get("connection_properties").asText()),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
   }
+
 }
