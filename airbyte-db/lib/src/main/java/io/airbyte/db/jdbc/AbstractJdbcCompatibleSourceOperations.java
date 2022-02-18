@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
@@ -150,7 +148,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       var valueWithoutMicros = value.replace("." + micro, "");
 
       var timestamp = Timestamp
-              .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
+          .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
       timestamp.setNanos(Integer.parseInt(nanos));
       preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
