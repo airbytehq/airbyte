@@ -165,8 +165,8 @@ class TestBackoff:
 
         responses = [{"json": {"error": {"code": 104}}}]
 
-        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/insights", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/insights", responses)
 
         with pytest.raises(FacebookRequestError):
-            stream = AdsInsights(api=api, start_date=datetime.now(), end_date=datetime.now(), buffer_days=28, days_per_job=7)
-            list(stream.stream_slices(stream_state={}))
+            stream = AdsInsights(api=api, start_date=datetime.now(), end_date=datetime.now())
+            list(stream.stream_slices(stream_state={}, sync_mode=None))
