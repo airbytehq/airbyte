@@ -21,35 +21,32 @@ public class MySQLDestinationTest {
   private MySQLDestination destination;
 
   private JsonNode buildConfigNoJdbcParameters() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+    return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
         "username", "user",
         "database", "db"
     ));
-    return config;
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+    return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
         "username", "user",
         "database", "db",
         "jdbc_url_params", extraParam
     ));
-    return config;
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(
+    return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
         "username", "user",
         "database", "db",
         "ssl", false
     ));
-    return config;
   }
 
   @Before
