@@ -18,7 +18,7 @@ public class GithubOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected String getExpectedConsentUrl() {
-    return "https://github.com/login/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&scope=repo&state=state";
+    return "https://github.com/login/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&scope=repo%20read:org%20read:repo_hook%20read:user%20read:discussion%20workflow&state=state";
   }
 
   @Override

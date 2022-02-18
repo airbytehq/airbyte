@@ -665,7 +665,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.4"
+- dockerImage: "airbyte/source-bigcommerce:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigcommerce"
     connectionSpecification:
@@ -698,7 +698,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.1.5"
+- dockerImage: "airbyte/source-bigquery:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -952,7 +952,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.5"
+- dockerImage: "airbyte/source-chargebee:0.1.7"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -1027,7 +1027,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.7"
+- dockerImage: "airbyte/source-clickhouse:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1205,7 +1205,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.5"
+- dockerImage: "airbyte/source-cockroachdb:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -1304,6 +1304,37 @@
           type: "string"
           description: "The password of secret of API Client."
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-confluence:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/confluence"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Confluence Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "domain_name"
+      - "email"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "Please follow the Jira confluence for generating an API token:\
+            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+          airbyte_secret: true
+        domain_name:
+          type: "string"
+          description: "Your Confluence domain name"
+          examples:
+          - "example.atlassian.net"
+        email:
+          type: "string"
+          description: "Your Confluence login email"
+          examples:
+          - "abc@example.com"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1448,7 +1479,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-e2e-test:2.0.0"
+- dockerImage: "airbyte/source-e2e-test:2.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/e2e-test"
     connectionSpecification:
@@ -1498,8 +1529,9 @@
           type: "object"
           order: 50
           oneOf:
-          - title: "Single Stream"
-            description: "A catalog with one stream."
+          - title: "Single Schema"
+            description: "A catalog with one or multiple streams that share the same\
+              \ schema."
             required:
             - "type"
             - "stream_name"
@@ -1523,8 +1555,19 @@
                 type: "string"
                 default: "{ \"type\": \"object\", \"properties\": { \"column1\": {\
                   \ \"type\": \"string\" } } }"
-          - title: "Multi-Stream"
-            description: "A catalog with multiple data streams."
+              stream_duplication:
+                title: "Duplicate the stream N times"
+                description: "Duplicate the stream for easy load testing. Each stream\
+                  \ name will have a number suffix. For example, if the stream name\
+                  \ is \"ds\", the duplicated streams will be \"ds_0\", \"ds_1\",\
+                  \ etc."
+                type: "integer"
+                default: 1
+                min: 1
+                max: 10000
+          - title: "Multi Schema"
+            description: "A catalog with multiple data streams, each with a different\
+              \ schema."
             required:
             - "type"
             - "stream_schemas"
@@ -1587,7 +1630,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.31"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.34"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2113,7 +2156,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.15"
+- dockerImage: "airbyte/source-github:0.2.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -2166,12 +2209,14 @@
         repository:
           type: "string"
           examples:
-          - "airbytehq/airbyte"
+          - "airbytehq/airbyte airbytehq/another-repo"
           - "airbytehq/*"
+          - "airbytehq/airbyte"
           title: "GitHub Repositories"
-          description: "Space-delimited list of GitHub repositories/organizations,\
-            \ e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for\
-            \ get all repositories from organization"
+          description: "Space-delimited list of GitHub organizations/repositories,\
+            \ e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get\
+            \ all repositories from organization and `airbytehq/airbyte airbytehq/another-repo`\
+            \ for multiple repositories."
         start_date:
           type: "string"
           title: "Start Date"
@@ -2186,7 +2231,7 @@
           type: "string"
           title: "Branch"
           examples:
-          - "airbytehq/airbyte/master"
+          - "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
           description: "Space-delimited list of GitHub repository branches to pull\
             \ commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified\
             \ for a repository, the default branch will be pulled."
@@ -2261,7 +2306,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.23"
+- dockerImage: "airbyte/source-google-ads:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2319,13 +2364,16 @@
                 >docs</a>"
               airbyte_secret: true
         customer_id:
-          title: "Customer ID"
+          title: "Customer ID(s)"
           type: "string"
-          description: "Customer ID must be specified as a 10-digit number without\
-            \ dashes. More instruction on how to find this value in our <a href=\"\
-            https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
+          description: "Comma separated list of (client) customer IDs. Each customer\
+            \ ID must be specified as a 10-digit number without dashes. More instruction\
+            \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
             >docs</a>. Metrics streams like AdGroupAdReport cannot be requested for\
             \ a manager account."
+          pattern: "^[0-9]{10}(,[0-9]{10})*$"
+          examples:
+          - "6783948572,5839201945"
           order: 1
         start_date:
           type: "string"
@@ -2374,6 +2422,9 @@
             \ the manager account (10-digit number without dashes). More information\
             \ about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\"\
             >here</a>"
+          pattern: "^([0-9]{10})?$"
+          examples:
+          - "7349206847"
           order: 4
         conversion_window_days:
           title: "Conversion Window (Optional)"
@@ -3035,7 +3086,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.37"
+- dockerImage: "airbyte/source-hubspot:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3138,7 +3189,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.5"
+- dockerImage: "airbyte/source-db2:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -3336,6 +3387,52 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "farosai/airbyte-jenkins-source:0.1.23"
+  spec:
+    documentationUrl: "https://docs.faros.ai"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Jenkins Spec"
+      type: "object"
+      required:
+      - "server_url"
+      - "user"
+      - "token"
+      additionalProperties: false
+      properties:
+        server_url:
+          type: "string"
+          title: "Jenkins Server URL"
+          examples:
+          - "https://my-jenkins-server.example.com"
+        user:
+          type: "string"
+          description: "Jenkins User"
+        token:
+          type: "string"
+          title: "Jenkins Token"
+          airbyte_secret: true
+        depth:
+          type: "number"
+          title: "Depth"
+          description: "Jenkins JSON API does not support deep scan, it is required\
+            \ to generate a suitable tree for the corresponding depth. Job in some\
+            \ cases have many sub jobs, depth needs to quantify how many sub jobs\
+            \ are showed. If depth is not provided we will try to compute it automatically"
+        pageSize:
+          type: "integer"
+          minimum: 1
+          default: 10
+          title: "Page Size"
+          description: "Quantity of jobs on a single page fetched from Jenkins"
+        last100Builds:
+          type: "boolean"
+          default: false
+          title: "Last 100 Builds Only"
+          description: "Fetch only 100 last builds from Jenkins server"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-jira:0.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
@@ -3417,7 +3514,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.1.2"
+- dockerImage: "airbyte/source-kafka:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
     connectionSpecification:
@@ -3569,6 +3666,7 @@
                 - "GSSAPI"
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
+                - "SCRAM-SHA-512"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
@@ -4185,7 +4283,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.14"
+- dockerImage: "airbyte/source-mssql:0.3.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4884,7 +4982,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.1"
+- dockerImage: "airbyte/source-mysql:0.5.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5273,7 +5371,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.11"
+- dockerImage: "airbyte/source-oracle:0.3.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -5863,7 +5961,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.4"
+- dockerImage: "airbyte/source-postgres:0.4.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6168,12 +6266,12 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-quickbooks-singer:0.1.4"
+- dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source Quickbooks Singer Spec"
+      title: "Source QuickBooks Singer Spec"
       type: "object"
       required:
       - "client_id"
@@ -6231,9 +6329,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.4"
+- dockerImage: "airbyte/source-recharge:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/recharge"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Recharge Spec"
@@ -6245,16 +6343,19 @@
       properties:
         start_date:
           type: "string"
+          title: "Start Date"
           description: "The date from which you'd like to replicate data for Recharge\
-            \ API, in the format YYYY-MM-DDT00:00:00Z."
+            \ API, in the format YYYY-MM-DDT00:00:00Z. Any data before this date will\
+            \ not be replicated."
           examples:
           - "2021-05-14T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         access_token:
           type: "string"
+          title: "Access Token"
           description: "The value of the Access Token generated. See the <a href=\"\
-            https://docs.airbyte.io/integrations/sources/recharge\">docs</a> for more\
-            \ information"
+            https://docs.airbyte.com/integrations/sources/recharge\">docs</a> for\
+            \ more information."
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -6286,7 +6387,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.7"
+- dockerImage: "airbyte/source-redshift:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -6719,7 +6820,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.21"
+- dockerImage: "airbyte/source-salesforce:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -6797,16 +6898,6 @@
           title: "Streams filter criteria"
           description: "Add selection criteria for streams to get only streams that\
             \ are relevant to you"
-        wait_timeout:
-          title: "Response Waiting Time"
-          description: "Maximum wait time of Salesforce responses in minutes. This\
-            \ option is used for the BULK mode only. The default wait time of the\
-            \ Parent Batch in the Bulk Mode to wait for all the batches to finish\
-            \ processing is 20 minutes."
-          type: "integer"
-          minimum: 5
-          maximum: 60
-          default: 10
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6950,7 +7041,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.30"
+- dockerImage: "airbyte/source-shopify:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -6960,7 +7051,6 @@
       required:
       - "shop"
       - "start_date"
-      - "credentials"
       additionalProperties: true
       properties:
         shop:
@@ -7221,7 +7311,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-smartsheets:0.1.7"
+- dockerImage: "airbyte/source-smartsheets:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
     connectionSpecification:
@@ -7231,7 +7321,7 @@
       required:
       - "access_token"
       - "spreadsheet_id"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         access_token:
           title: "Access Token"
@@ -7246,6 +7336,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key: []
+      predicate_value: ""
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "access_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
@@ -7295,7 +7410,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.6"
+- dockerImage: "airbyte/source-snowflake:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -7607,7 +7722,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.27"
+- dockerImage: "airbyte/source-stripe:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -8361,7 +8476,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.1.11"
+- dockerImage: "airbyte/source-zendesk-support:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:

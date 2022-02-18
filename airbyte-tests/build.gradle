@@ -36,7 +36,9 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-api')
+    implementation project(':airbyte-container-orchestrator')
 
+    implementation 'io.fabric8:kubernetes-client:5.3.1'
     implementation 'org.testcontainers:testcontainers:1.15.3'
 
     acceptanceTestsImplementation project(':airbyte-api')
