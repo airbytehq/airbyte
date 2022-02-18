@@ -631,7 +631,11 @@ class IncrementalStream(Stream, ABC):
     @state.setter
     def state(self, value):
         state_value = value[self.updated_at_field]
-        self._state = pendulum.parse(str(pendulum.from_timestamp(state_value / 1000))) if isinstance(state_value, int) else pendulum.parse(state_value)
+        self._state = (
+            pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
+            if isinstance(state_value, int)
+            else pendulum.parse(state_value)
+        )
         self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
@@ -827,11 +831,7 @@ class CRMObjectStream(Stream):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(
-        self,
-        include_archived_only: bool = False,
-        **kwargs
-    ):
+    def __init__(self, include_archived_only: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._include_archived_only = include_archived_only
 
@@ -994,9 +994,7 @@ class Deals(CRMSearchStream):
     associations = ["contacts"]
 
     def __init__(self, **kwargs):
-        super().__init__(
-            **kwargs
-        )
+        super().__init__(**kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
 
     def read_records(

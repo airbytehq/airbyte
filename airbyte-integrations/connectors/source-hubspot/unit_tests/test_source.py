@@ -6,17 +6,9 @@
 import logging
 
 import pytest
-from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import (
-    API,
-    PROPERTIES_PARAM_MAX_LENGTH,
-    Deals,
-    Workflows,
-    split_properties,
-    Companies,
-    Products,
-)
+from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Workflows, split_properties
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -130,7 +122,7 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
-    assert expected_warining_message['log']['message'] in caplog.text
+    assert expected_warining_message["log"]["message"] in caplog.text
 
 
 class TestSplittingPropertiesFunctionality:
@@ -253,61 +245,61 @@ class TestSplittingPropertiesFunctionality:
         test_stream = Deals(**common_params)
 
         deal_stage_history_response = {
-                'deals': [
-                    {
-                        'portalId': 123,
-                        'dealId': 111,
-                        'isDeleted': False,
-                        'associations': None,
-                        'properties': {
-                            'dealstage': {
-                                'value': 'appointmentscheduled',
-                                'timestamp': 1610533842221,
-                                'source': 'API',
-                                'sourceId': None,
-                                'updatedByUserId': None,
-                                'versions': [
-                                    {
-                                        'name': 'dealstage',
-                                        'value': 'appointmentscheduled',
-                                        'timestamp': 1610533842221,
-                                        'source': 'API',
-                                        'sourceVid': [],
-                                        'requestId': '19f07c43-b187-4ab6-9fab-4a0f261f0a8c'
-                                    }
-                                ]
-                            }
-                        },
-                        'stateChanges': []
+            "deals": [
+                {
+                    "portalId": 123,
+                    "dealId": 111,
+                    "isDeleted": False,
+                    "associations": None,
+                    "properties": {
+                        "dealstage": {
+                            "value": "appointmentscheduled",
+                            "timestamp": 1610533842221,
+                            "source": "API",
+                            "sourceId": None,
+                            "updatedByUserId": None,
+                            "versions": [
+                                {
+                                    "name": "dealstage",
+                                    "value": "appointmentscheduled",
+                                    "timestamp": 1610533842221,
+                                    "source": "API",
+                                    "sourceVid": [],
+                                    "requestId": "19f07c43-b187-4ab6-9fab-4a0f261f0a8c",
+                                }
+                            ],
+                        }
                     },
-                    {
-                        'portalId': 123,
-                        'dealId': 112,
-                        'isDeleted': False,
-                        'associations': None,
-                        'properties': {
-                            'dealstage': {
-                                'value': 'appointmentscheduled',
-                                'timestamp': 1610533911154,
-                                'source': 'API',
-                                'sourceId': None,
-                                'updatedByUserId': None,
-                                'versions': [
-                                    {
-                                        'name': 'dealstage',
-                                        'value': 'appointmentscheduled',
-                                        'timestamp': 1610533911154,
-                                        'source': 'API',
-                                        'sourceVid': [],
-                                        'requestId': '41a1eeff-569b-4193-ba80-238d3bd13f56'
-                                    }
-                                ]
-                            }
-                        },
-                        'stateChanges': []
-                    }
-                ]
-            }
+                    "stateChanges": [],
+                },
+                {
+                    "portalId": 123,
+                    "dealId": 112,
+                    "isDeleted": False,
+                    "associations": None,
+                    "properties": {
+                        "dealstage": {
+                            "value": "appointmentscheduled",
+                            "timestamp": 1610533911154,
+                            "source": "API",
+                            "sourceId": None,
+                            "updatedByUserId": None,
+                            "versions": [
+                                {
+                                    "name": "dealstage",
+                                    "value": "appointmentscheduled",
+                                    "timestamp": 1610533911154,
+                                    "source": "API",
+                                    "sourceVid": [],
+                                    "requestId": "41a1eeff-569b-4193-ba80-238d3bd13f56",
+                                }
+                            ],
+                        }
+                    },
+                    "stateChanges": [],
+                },
+            ]
+        }
 
         requests_mock.register_uri(
             "GET",
@@ -317,7 +309,7 @@ class TestSplittingPropertiesFunctionality:
                     "json": deal_stage_history_response,
                     "status_code": 200,
                 }
-            ]
+            ],
         )
 
         ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
