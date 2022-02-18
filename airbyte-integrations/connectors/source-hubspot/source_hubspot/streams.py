@@ -652,7 +652,9 @@ class IncrementalStream(Stream, ABC):
                 self._state = new_state
                 self._start_date = self._state
 
-    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         chunk_size = pendulum.duration(days=30)
         slices = []
 
@@ -1130,7 +1132,9 @@ class FormSubmissions(Stream):
 
             yield record
 
-    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         seen = set()
         # To get submissions for all forms date filtering has to be disabled
