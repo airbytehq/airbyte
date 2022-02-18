@@ -155,10 +155,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (workflowState.isFailed()) {
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-        } else {
-          reportSuccess(connectionUpdaterInput, standardSyncOutput);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
+
+        // If we don't fail, it's a success.
+        reportSuccess(connectionUpdaterInput, standardSyncOutput);
+        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
@@ -166,7 +168,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
 
-        } else if (childWorkflowFailure.getCause() instanceof final ActivityFailure af) {
+        } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
           // example, this lets us set the failureOrigin to normalization.
@@ -474,7 +476,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return true;
     }
 
-    // For testing purpose we simulate a failure using a signal method to avoid having to do a static mock.
+    // For testing purpose we simulate a failure using a signal method to avoid having to do a static
+    // mock.
     // We do override failure reason in this case.
     return false || workflowState.isFailed();
   }
