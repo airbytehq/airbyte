@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -18,8 +19,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -27,7 +26,6 @@ import org.jooq.JSONFormat.RecordFormat;
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
@@ -111,7 +109,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)
             .collect(Collectors.toList()));
   }

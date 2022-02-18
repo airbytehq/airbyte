@@ -96,6 +96,11 @@
   "credits.date": "Date",
   "credits.amount": "Credits",
 
+  "credits.usagePerConnection": "Usage per connection",
+  "credits.connection": "Connection",
+  "credits.usage": "Usage",
+  "credits.noData": "Data is empty",
+
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",
   "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",

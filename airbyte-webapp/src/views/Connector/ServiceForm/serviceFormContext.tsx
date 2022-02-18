@@ -1,62 +1,114 @@
 import React, { useContext, useMemo } from "react";
+import { getIn, useFormikContext } from "formik";
 
 import { WidgetConfigMap } from "core/form/types";
 import {
+  Connector,
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import {
+  makeConnectionConfigurationPath,
+  serverProvidedOauthPaths,
+} from "./utils";
+import { ServiceFormValues } from "./types";
 
 type Context = {
   formType: "source" | "destination";
-  selectedService?: ConnectorDefinition;
-  selectedConnector?: ConnectorDefinitionSpecification;
-  isLoadingSchema?: boolean;
-  isEditMode?: boolean;
-  isRequestConnectorModalOpen: boolean;
+  getValues: (values: ServiceFormValues) => ServiceFormValues;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   resetUiFormProgress: () => void;
+  selectedService?: ConnectorDefinition;
+  selectedConnector?: ConnectorDefinitionSpecification;
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  isAuthFlowSelected?: boolean;
+  authFieldsToHide: string[];
 };
 
-const context: Context = {
-  formType: "source",
-  isRequestConnectorModalOpen: false,
-  widgetsInfo: {},
-  setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
-  unfinishedFlows: {},
-  addUnfinishedFlow: (_key: string, _info?: Record<string, unknown>) => ({}),
-  removeUnfinishedFlow: (_key: string) => ({}),
-  resetUiFormProgress: () => ({}),
+const FormWidgetContext = React.createContext<Context | null>(null);
+
+const useServiceForm = (): Context => {
+  const serviceFormHelpers = useContext(FormWidgetContext);
+  if (!serviceFormHelpers) {
+    throw new Error(
+      "useServiceForm should be used within ServiceFormContextProvider"
+    );
+  }
+  return serviceFormHelpers;
 };
-
-const FormWidgetContext = React.createContext<Context>(context);
-
-const useServiceForm = (): Context => useContext(FormWidgetContext);
 
 const ServiceFormContextProvider: React.FC<{
   widgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
-  selectedService?: ConnectorDefinition;
-  selectedConnector?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
-  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-}> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
+  serviceType?: string;
+  availableServices: ConnectorDefinition[];
+  getValues: (values: ServiceFormValues) => ServiceFormValues;
+  selectedConnector?: ConnectorDefinitionSpecification;
+}> = ({
+  availableServices,
+  serviceType,
+  children,
+  widgetsInfo,
+  setUiWidgetsInfo,
+  selectedConnector,
+  getValues,
+  formType,
+  isLoadingSchema,
+  isEditMode,
+}) => {
+  const { values } = useFormikContext<ServiceFormValues>();
+  const { hasFeature } = useFeatureService();
+
+  const selectedService = useMemo(
+    () => availableServices.find((s) => Connector.id(s) === serviceType),
+    [availableServices, serviceType]
+  );
+
+  const isAuthFlowSelected = useMemo(
+    () =>
+      hasFeature(FeatureItem.AllowOAuthConnector) &&
+      selectedConnector?.advancedAuth &&
+      selectedConnector?.advancedAuth.predicateValue ===
+        getIn(
+          getValues(values),
+          makeConnectionConfigurationPath(
+            selectedConnector?.advancedAuth.predicateKey
+          )
+        ),
+    [selectedConnector, hasFeature, values, getValues]
+  );
+
+  const authFieldsToHide = useMemo(
+    () =>
+      Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
+        makeConnectionConfigurationPath(f.path_in_connector_config)
+      ),
+    [selectedConnector]
+  );
+
   const ctx = useMemo<Context>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
+      isAuthFlowSelected,
+      authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
+      getValues,
       setUiWidgetsInfo,
-      selectedService: props.selectedService,
-      selectedConnector: props.selectedConnector,
-      formType: props.formType,
-      isLoadingSchema: props.isLoadingSchema,
-      isEditMode: props.isEditMode,
-      unfinishedFlows: unfinishedFlows,
-      isRequestConnectorModalOpen: false,
+      selectedService,
+      selectedConnector,
+      formType,
+      isLoadingSchema,
+      isEditMode,
+      unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {
           ...unfinishedFlows,
@@ -69,11 +121,21 @@ const ServiceFormContextProvider: React.FC<{
             Object.entries(unfinishedFlows).filter(([key]) => key !== path)
           )
         ),
-      resetUiFormProgress: () => {
-        setUiWidgetsInfo("_common.unfinishedFlows", {});
-      },
+      resetUiFormProgress: () =>
+        setUiWidgetsInfo("_common.unfinishedFlows", {}),
     };
-  }, [props, widgetsInfo, setUiWidgetsInfo]);
+  }, [
+    widgetsInfo,
+    isAuthFlowSelected,
+    authFieldsToHide,
+    getValues,
+    setUiWidgetsInfo,
+    selectedService,
+    selectedConnector,
+    formType,
+    isLoadingSchema,
+    isEditMode,
+  ]);
 
   return (
     <FormWidgetContext.Provider value={ctx}>
@@ -82,14 +144,4 @@ const ServiceFormContextProvider: React.FC<{
   );
 };
 
-const ServiceFormInfo = ({
-  children,
-}: {
-  children: (widgetInfo: Context) => React.ReactElement;
-}): React.ReactElement => {
-  const widgetInfo = useServiceForm();
-
-  return children(widgetInfo);
-};
-
-export { useServiceForm, ServiceFormContextProvider, ServiceFormInfo };
+export { useServiceForm, ServiceFormContextProvider };

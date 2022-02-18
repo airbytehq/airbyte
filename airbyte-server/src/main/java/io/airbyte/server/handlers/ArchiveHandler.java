@@ -18,7 +18,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -43,13 +42,12 @@ public class ArchiveHandler {
                         final ConfigPersistence seed,
                         final WorkspaceHelper workspaceHelper,
                         final FileTtlManager fileTtlManager,
-                        final SpecFetcher specFetcher,
                         final boolean importDefinitions) {
     this(
         version,
         fileTtlManager,
         new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper),
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, specFetcher, importDefinitions),
+        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, importDefinitions),
         seed);
   }
 

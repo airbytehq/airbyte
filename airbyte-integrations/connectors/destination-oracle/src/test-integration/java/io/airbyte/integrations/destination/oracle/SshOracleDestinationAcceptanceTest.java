@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -21,12 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
 import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
 
@@ -116,7 +114,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
                 ctx -> ctx
                     .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT)))
             .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)
             .collect(Collectors.toList()));
   }

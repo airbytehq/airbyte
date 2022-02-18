@@ -26,8 +26,8 @@ import org.apache.commons.io.FileUtils;
  * The purpose of this class is : to , 1. Read the contents of the file {@link #path} which contains
  * the schema history at the end of the sync so that it can be saved in state for future syncs.
  * Check {@link #read()} 2. Write the saved content back to the file {@link #path} at the beginning
- * of the sync so that debezium can function smoothly. Check {@link #persist(Optional<JsonNode>)}.
- * To understand more about file, please refer {@link FilteredFileDatabaseHistory}
+ * of the sync so that debezium can function smoothly. Check persist(Optional&lt;JsonNode&gt;). To
+ * understand more about file, please refer {@link FilteredFileDatabaseHistory}
  */
 public class AirbyteSchemaHistoryStorage {
 

@@ -14,19 +14,16 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.junit.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
@@ -120,7 +117,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
             .collect(Collectors.toList()));
     return result
         .stream()
-        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }

@@ -5,7 +5,7 @@ import { useResource } from "rest-hooks";
 import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
 import ConnectionResource from "core/resources/Connection";
 import ConnectionsTable from "./components/ConnectionsTable";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
@@ -19,7 +19,7 @@ const AllConnectionsPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);
+  const onClick = () => push(`${RoutePaths.ConnectionNew}`);
 
   return (
     <MainPageWithScroll

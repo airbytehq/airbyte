@@ -42,16 +42,6 @@
     },
     {
       "stream": {
-        "name": "sponsored_display_product_ads",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "source_defined_cursor": false
-    },
-    {
-      "stream": {
         "name": "sponsored_display_targetings",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -93,16 +83,6 @@
     {
       "stream": {
         "name": "sponsored_product_negative_keywords",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "source_defined_cursor": false
-    },
-    {
-      "stream": {
-        "name": "sponsored_product_ads",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

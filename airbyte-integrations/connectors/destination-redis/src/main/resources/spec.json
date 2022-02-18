@@ -1,0 +1,53 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redis",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Redis Destination Spec",
+    "type": "object",
+    "required": ["host", "port", "username", "password", "cache_type"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Redis host to connect to.",
+        "type": "string",
+        "examples": ["localhost,127.0.0.1"],
+        "order": 1
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of Redis.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 6379,
+        "order": 2
+      },
+      "username": {
+        "title": "Username",
+        "description": "Username associated with Redis.",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with Redis.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "cache_type": {
+        "title": "Cache type",
+        "type": "string",
+        "default": "hash",
+        "description": "Redis cache type to store data in.",
+        "enum": ["hash"],
+        "order": 5
+      }
+    }
+  }
+}

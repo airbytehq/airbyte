@@ -14,10 +14,13 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
+import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
-import io.temporal.internal.common.CheckedExceptionWrapper;
+import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,16 +57,14 @@ class TemporalAttemptExecutionTest {
         .withPassword(SOURCE_PASSWORD);
     container.start();
     configs = mock(Configs.class);
-    when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
-    when(configs.getDatabaseUser()).thenReturn(SOURCE_USERNAME);
-    when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
   }
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException {
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
-    databaseProviders.createNewJobsDatabase();
+    final Database jobDatabase = databaseProviders.createNewJobsDatabase();
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
@@ -73,12 +74,13 @@ class TemporalAttemptExecutionTest {
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
+        configs.getWorkerEnvironment(), configs.getLogConfigs(),
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
+        jobPersistence,
+        () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
   @AfterAll

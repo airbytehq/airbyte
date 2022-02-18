@@ -45,13 +45,30 @@ from source_harvest.streams import (
     Users,
 )
 
-from .auth import HarvestTokenAuthenticator
+from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
 
 
 class SourceHarvest(AbstractSource):
+    @staticmethod
+    def get_authenticator(config):
+        credentials = config.get("credentials", {})
+        if credentials and "client_id" in credentials:
+            return HarvestOauth2Authenticator(
+                token_refresh_endpoint="https://id.getharvest.com/api/v2/oauth2/token",
+                client_id=credentials.get("client_id"),
+                client_secret=credentials.get("client_secret"),
+                refresh_token=credentials.get("refresh_token"),
+                account_id=config["account_id"],
+            )
+
+        api_token = credentials.get("api_token", config.get("api_token"))
+        if not api_token:
+            raise Exception("Config validation error: 'api_token' is a required property")
+        return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
+            auth = self.get_authenticator(config)
             replication_start_date = pendulum.parse(config["replication_start_date"])
             users_gen = Users(authenticator=auth, replication_start_date=replication_start_date).read_records(
                 sync_mode=SyncMode.full_refresh
@@ -65,7 +82,7 @@ class SourceHarvest(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
+        auth = self.get_authenticator(config)
         replication_start_date = pendulum.parse(config["replication_start_date"])
         from_date = replication_start_date.date()
 

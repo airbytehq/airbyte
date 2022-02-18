@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -18,6 +17,7 @@ import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +38,10 @@ class AutoCloseableIteratorsTest {
 
   @Test
   void testFromStream() throws Exception {
-    final Stream<String> stream = spy(Stream.of("a", "b", "c"));
+    final AtomicBoolean isClosed = new AtomicBoolean(false);
+    final Stream<String> stream = Stream.of("a", "b", "c");
+    stream.onClose(() -> isClosed.set(true));
+
     final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromStream(stream);
 
     assertNext(iterator, "a");
@@ -46,7 +49,7 @@ class AutoCloseableIteratorsTest {
     assertNext(iterator, "c");
     iterator.close();
 
-    verify(stream).close();
+    assertTrue(isClosed.get());
   }
 
   private void assertNext(final Iterator<String> iterator, final String value) {

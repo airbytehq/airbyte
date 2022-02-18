@@ -162,7 +162,9 @@ test("should select correct key for enum", () => {
     },
     "key.provider.reader_impl": {},
     "key.provider.service_account_json": {},
-    "key.provider.storage": {},
+    "key.provider.storage": {
+      const: "GCS",
+    },
     "key.reader_options": {},
     "key.url": {},
   });

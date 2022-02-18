@@ -20,18 +20,18 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class AmplitudeStream(HttpStream, ABC):
 
-    url_base = "https://amplitude.com/api"
+    url_base = "https://amplitude.com/api/"
     api_version = 2
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get(self.name, [])
+        response_data = response.json()
+        yield from response_data.get(self.name, [])
 
     def path(self, **kwargs) -> str:
-        return f"/{self.api_version}/{self.name}"
+        return f"{self.api_version}/{self.name}"
 
 
 class Cohorts(AmplitudeStream):
@@ -43,8 +43,8 @@ class Annotations(AmplitudeStream):
     primary_key = "id"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        respose_data = response.json()
-        yield from respose_data.get("data", [])
+        response_data = response.json()
+        yield from response_data.get("data", [])
 
 
 class IncrementalAmplitudeStream(AmplitudeStream, ABC):
@@ -160,7 +160,7 @@ class Events(IncrementalAmplitudeStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"/{self.api_version}/export"
+        return f"{self.api_version}/export"
 
 
 class ActiveUsers(IncrementalAmplitudeStream):
@@ -177,7 +177,7 @@ class ActiveUsers(IncrementalAmplitudeStream):
                 yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
 
     def path(self, **kwargs) -> str:
-        return f"/{self.api_version}/users"
+        return f"{self.api_version}/users"
 
 
 class AverageSessionLength(IncrementalAmplitudeStream):
@@ -196,4 +196,4 @@ class AverageSessionLength(IncrementalAmplitudeStream):
                 yield {"date": date, "length": series[i]}
 
     def path(self, **kwargs) -> str:
-        return f"/{self.api_version}/sessions/average"
+        return f"{self.api_version}/sessions/average"

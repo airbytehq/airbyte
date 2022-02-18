@@ -4,10 +4,9 @@
 
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
-import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -74,28 +73,6 @@ class OnesignalStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
         yield from data
-
-
-T = TypeVar("T")
-
-
-class StateValueWrapper(pydantic.BaseModel):
-    stream: T
-    state_value: int
-    max_cursor_time = 0
-
-    def __repr__(self):
-        """Overrides print view"""
-        return str(self.value)
-
-    @property
-    def value(self):
-        """Return max cursor time after stream sync is finished."""
-        return self.max_cursor_time if self.stream.is_finished else self.state_value
-
-    def dict(self, **kwargs):
-        """Overrides default logic to return current value only."""
-        return {pydantic.utils.ROOT_KEY: self.value}
 
 
 class ChildStreamMixin(HttpSubStream):
@@ -176,14 +153,11 @@ class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        state_value = (current_stream_state or {}).get(self.cursor_field, 0)
-        if not isinstance(state_value, StateValueWrapper):
-            state_value = StateValueWrapper(stream=self, state_value=state_value)
+        current_stream_state = current_stream_state or {}
+        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
+        latest_record_date = latest_record.get(self.cursor_field, self.start_date)
 
-        record_time = latest_record.get(self.cursor_field, self.start_date)
-        state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
-
-        return {self.cursor_field: state_value}
+        return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
 
 class Apps(OnesignalStream):

@@ -79,9 +79,7 @@ const TableItemTitle: React.FC<IProps> = ({
             // TODO: hack to position select
             menuPortal: (base) => ({
               ...base,
-              "margin-left": "-160px",
-              transform: "translateY(-36px)",
-              zIndex: 9999,
+              "margin-left": "-130px",
             }),
           }}
           onChange={onSelect}

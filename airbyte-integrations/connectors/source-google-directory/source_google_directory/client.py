@@ -5,14 +5,17 @@
 
 from typing import Any, Mapping, Tuple
 
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
 
 class Client(BaseClient):
-    def __init__(self, credentials_json: str, email: str):
-        self._api = API(credentials_json, email)
+    def __init__(self, credentials: Mapping[str, Any] = None, credentials_json: str = None, email: str = None):
+        # supporting old config format
+        if not credentials:
+            credentials = {"credentials_json": credentials_json, "email": email}
+        self._api = API(credentials)
         self._apis = {"users": UsersAPI(self._api), "groups": GroupsAPI(self._api), "group_members": GroupMembersAPI(self._api)}
         super().__init__()
 

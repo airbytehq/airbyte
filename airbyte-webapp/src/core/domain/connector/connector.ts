@@ -1,5 +1,6 @@
 import { isSourceDefinition, isSourceDefinitionSpecification } from "./source";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "./types";
+import { DEV_IMAGE_TAG } from "./constants";
 
 export class Connector {
   static id(connector: ConnectorDefinition): string {
@@ -14,8 +15,9 @@ export class Connector {
 
   static hasNewerVersion(connector: ConnectorDefinition): boolean {
     return (
-      !Connector.isDeprecated(connector) &&
-      connector.latestDockerImageTag !== connector.dockerImageTag
+      (!Connector.isDeprecated(connector) &&
+        connector.latestDockerImageTag !== connector.dockerImageTag) ||
+      connector.dockerImageTag === DEV_IMAGE_TAG
     );
   }
 }

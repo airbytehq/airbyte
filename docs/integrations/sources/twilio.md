@@ -43,7 +43,7 @@ Several output streams are available from this source:
 
 ### Performance considerations
 
-The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
 
 Get in touch with [Twilio Sales](https://twilio.com/help/sales) to talk to them about your use case and request an increased concurrency limit.
 
@@ -66,6 +66,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-12-23 | [9092](https://github.com/airbytehq/airbyte/pull/9092) | Correct specification doc URL |
 | 0.1.1 | 2021-10-18 | [7034](https://github.com/airbytehq/airbyte/pull/7034) | Update schemas and transform data types according to the API schema |
 | 0.1.0 | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
 

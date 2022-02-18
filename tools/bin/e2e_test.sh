@@ -23,4 +23,4 @@ echo "Waiting for services to begin"
 sleep 30 # TODO need a better way to wait
 
 echo "Running e2e tests via gradle"
-SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-e2e-testing:e2etest
+SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest

@@ -11,7 +11,7 @@ from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
-    """ Base Error class for other exceptions """
+    """Base Error class for other exceptions"""
 
     # Define the instance of the Native Airbyte Logger
     logger = AirbyteLogger()
@@ -26,7 +26,7 @@ class QueryWindowError(Error):
 
 
 class ZOQLQueryError(Error):
-    """ Base class for  ZOQL EXPORT query errors """
+    """Base class for  ZOQL EXPORT query errors"""
 
     def __init__(self, response: requests.Response = None):
         if response:
@@ -39,7 +39,7 @@ class ZOQLQueryError(Error):
 
 
 class ZOQLQueryFailed(ZOQLQueryError):
-    """ Failed to execute query on the server side """
+    """Failed to execute query on the server side"""
 
 
 class ZOQLQueryFieldCannotResolveCursor(Error):

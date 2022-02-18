@@ -19,12 +19,8 @@ const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({
 
   useEffect(() => {
     setLongLoading(false);
-    const timer = setTimeout(() => {
-      setLongLoading(true);
-    }, TIMEOUT_MS);
-    return () => {
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(() => setLongLoading(true), TIMEOUT_MS);
+    return () => clearTimeout(timer);
   }, [connector]);
 
   return longLoading ? (

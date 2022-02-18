@@ -54,7 +54,9 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable (MYSQL is also skipped)")
     if destination_type.value == DestinationType.ORACLE.value:
         # Airbyte uses a few columns for metadata and Oracle limits are right at 1000
-        column_count = 995
+        column_count = 993
+    if destination_type.value == DestinationType.MSSQL.value:
+        column_count = 999
     run_test(destination_type, column_count)
 
 
@@ -62,7 +64,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
     "integration_type, column_count, expected_exception_message",
     [
         ("Postgres", 1665, "target lists can have at most 1664 entries"),
-        ("BigQuery", 2500, "The view is too large."),
+        ("BigQuery", 3000, "The view is too large."),
         ("Snowflake", 2000, "Operation failed because soft limit on objects of type 'Column' per table was exceeded."),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
         ("MySQL", 250, "Row size too large"),
@@ -129,11 +131,13 @@ def setup_test_dir(integration_type: str) -> str:
     print(f"Setting up test folder {test_root_dir}")
     copy_tree("../dbt-project-template", test_root_dir)
     if integration_type == DestinationType.MSSQL.value:
-        copy_tree("../dbt-project-template-mysql", test_root_dir)
+        copy_tree("../dbt-project-template-mssql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
     elif integration_type == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
+    elif integration_type == DestinationType.SNOWFLAKE.value:
+        copy_tree("../dbt-project-template-snowflake", test_root_dir)
     return test_root_dir
 
 

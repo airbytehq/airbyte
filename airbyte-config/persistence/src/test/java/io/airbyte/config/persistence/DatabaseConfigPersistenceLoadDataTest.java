@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -13,12 +14,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -43,7 +49,11 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    truncateAllTables();
   }
 
   @AfterAll
@@ -69,7 +79,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     configPersistence.loadData(seedPersistence);
 
     // the new destination is added
-    assertRecordCount(3);
+    assertRecordCount(3, ACTOR_DEFINITION);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
@@ -80,24 +90,30 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination and github source
-    final StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.getDefault()
-        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "4816b78f-1489-44c1-9060-4b19d5fa9362", StandardDestinationDefinition.class)
-        .withDockerImageTag("10000.1.0");
+    final StandardDestinationDefinition destinationS3V2 = Jsons.clone(DESTINATION_S3).withDockerImageTag("10000.1.0");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(destinationS3V2));
-    final StandardSourceDefinition sourceGithubV2 = YamlSeedConfigPersistence.getDefault()
-        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "ef69ef6e-aa7f-4af1-a01d-ef775033524e", StandardSourceDefinition.class)
-        .withDockerImageTag("10000.15.3");
+    final StandardSourceDefinition sourceGithubV2 = Jsons.clone(SOURCE_GITHUB).withDockerImageTag("10000.15.3");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(Collections.singletonList(sourceGithubV2));
 
     // create connections to mark the source and destination as in use
     final DestinationConnection s3Connection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
+        .withWorkspaceId(UUID.randomUUID())
+        .withName("s3Connection")
         .withDestinationDefinitionId(destinationS3V2.getDestinationDefinitionId());
+    final StandardWorkspace standardWorkspace = new StandardWorkspace()
+        .withWorkspaceId(s3Connection.getWorkspaceId())
+        .withName("workspace")
+        .withSlug("slug")
+        .withInitialSetupComplete(true);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, s3Connection.getDestinationId().toString(), s3Connection);
     final SourceConnection githubConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
+        .withWorkspaceId(standardWorkspace.getWorkspaceId())
+        .withName("githubConnection")
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
@@ -112,9 +128,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
-    final StandardDestinationDefinition snowflakeV2 = YamlSeedConfigPersistence.getDefault()
-        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "424892c4-daac-4491-b35d-c6688ba547ba", StandardDestinationDefinition.class)
-        .withDockerImageTag("10000.2.0");
+    final StandardDestinationDefinition snowflakeV2 = Jsons.clone(DESTINATION_SNOWFLAKE).withDockerImageTag("10000.2.0");
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 

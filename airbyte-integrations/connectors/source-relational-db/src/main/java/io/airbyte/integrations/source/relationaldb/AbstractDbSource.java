@@ -15,6 +15,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
@@ -32,7 +33,9 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -357,6 +360,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
+   * @param database - The database where from privileges for tables will be consumed
+   * @param schema - The schema where from privileges for tables will be consumed
+   * @return Set with privileges for tables for current DB-session user The method is responsible for
+   *         SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
+   *         Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
+   *         owner).
+   */
+  public <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return Collections.emptySet();
+  }
+
+  /**
    * Map a database implementation-specific configuration to json object that adheres to the database
    * config spec. See resources/spec.json.
    *
@@ -388,7 +403,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param columnType source data type
    * @return airbyte data type
    */
-  protected abstract JsonSchemaPrimitive getType(DataType columnType);
+  protected abstract JsonSchemaType getType(DataType columnType);
 
   /**
    * Get list of system namespaces(schemas) in order to exclude them from the discover result list.

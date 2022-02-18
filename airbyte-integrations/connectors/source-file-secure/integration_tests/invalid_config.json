@@ -4,7 +4,7 @@
   "reader_options": "{\"bla\": \",\", \"nrows\": 20}",
   "url": "https://fake-fake.com",
   "provider": {
-    "storage": "fake",
+    "storage": "HTTPS",
     "reader_impl": "fake"
   }
 }

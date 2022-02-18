@@ -17,8 +17,9 @@ public class S3OutputPathHelper {
   }
 
   /**
-   * Prefix: <bucket-path>/<source-namespace-if-present>/<stream-name>
+   * Prefix: &lt;bucket-path&gt;/&lt;source-namespace-if-present&gt;/&lt;stream-name&gt;
    */
+  // Prefix: <bucket-path>/<source-namespace-if-present>/<stream-name>
   public static String getOutputPrefix(final String bucketPath, final String namespace, final String streamName) {
     final List<String> paths = new LinkedList<>();
 
@@ -29,8 +30,7 @@ public class S3OutputPathHelper {
       paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
     paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
-
-    return String.join("/", paths);
+    return String.join("/", paths).replaceAll("/+", "/");
   }
 
 }

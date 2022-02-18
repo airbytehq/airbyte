@@ -1,11 +1,10 @@
 import React from "react";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 import TitlesBlock from "./TitlesBlock";
 import { FormattedMessage } from "react-intl";
 import HighlightedText from "./HighlightedText";
+import { Destination, Source } from "core/domain/connector";
 
 type IProps = {
   errorStatus?: number;

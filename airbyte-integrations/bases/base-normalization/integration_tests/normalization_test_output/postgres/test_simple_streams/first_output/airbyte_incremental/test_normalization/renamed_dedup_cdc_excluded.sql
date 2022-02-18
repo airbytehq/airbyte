@@ -5,9 +5,11 @@
   as (
     
 -- Final base SQL model
+-- depends_on: "postgres".test_normalization."renamed_dedup_cdc_excluded_scd"
 select
     _airbyte_unique_key,
     "id",
+    _ab_cdc_updated_at,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at,

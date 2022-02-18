@@ -23,10 +23,12 @@ import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.WorkspaceUpdateName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
@@ -43,6 +45,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -202,7 +205,7 @@ class WorkspacesHandlerTest {
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
-    verify(connectionsHandler).deleteConnection(connection);
+    verify(connectionsHandler).deleteConnection(connection.getConnectionId());
     verify(destinationHandler).deleteDestination(destination);
     verify(sourceHandler).deleteSource(source);
   }
@@ -341,6 +344,61 @@ class WorkspacesHandlerTest {
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  @DisplayName("Updating workspace name should update name and slug")
+  void testUpdateWorkspaceNoNameUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceUpdateName workspaceUpdate = new WorkspaceUpdateName()
+        .workspaceId(workspace.getWorkspaceId())
+        .name("New Workspace Name");
+
+    final StandardWorkspace expectedWorkspace = new StandardWorkspace()
+        .withWorkspaceId(workspace.getWorkspaceId())
+        .withCustomerId(workspace.getCustomerId())
+        .withEmail("test@airbyte.io")
+        .withName("New Workspace Name")
+        .withSlug("new-workspace-name")
+        .withAnonymousDataCollection(workspace.getAnonymousDataCollection())
+        .withSecurityUpdates(workspace.getSecurityUpdates())
+        .withNews(workspace.getNews())
+        .withInitialSetupComplete(workspace.getInitialSetupComplete())
+        .withDisplaySetupWizard(workspace.getDisplaySetupWizard())
+        .withTombstone(false)
+        .withNotifications(workspace.getNotifications());
+
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace)
+        .thenReturn(expectedWorkspace);
+
+    final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspaceName(workspaceUpdate);
+
+    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
+        .name("New Workspace Name")
+        .slug("new-workspace-name")
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(List.of(generateApiNotification()));
+
+    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+
+    assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
+        .workspaceId(UUID.randomUUID());
+
+    workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+
+    verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
 }

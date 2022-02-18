@@ -29,7 +29,6 @@ class JsonFieldNameUpdaterTest {
       final JsonNode original = testCase.get("original");
       final JsonNode updated = testCase.get("updated");
 
-      assertEquals(updated, nameUpdater.getJsonWithStandardizedFieldNames(original));
       assertEquals(original, nameUpdater.getJsonWithOriginalFieldNames(updated));
     }
   }
