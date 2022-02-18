@@ -65,7 +65,7 @@ services:
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   metric-reporter:
-    image: airbyte/metric-reporter:${VERSION}
+    image: airbyte/metrics-reporter:${VERSION}
     build:
       dockerfile: Dockerfile
       context: airbyte-metrics/reporter
