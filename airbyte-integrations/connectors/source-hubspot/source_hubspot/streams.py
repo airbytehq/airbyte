@@ -151,7 +151,7 @@ class API:
             "User-Agent": self.USER_AGENT,
         }
 
-    @staticmethod  # TODO call it inside self._parse_response
+    @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
@@ -235,6 +235,9 @@ class Stream(HttpStream, ABC):
 
         if credentials["credentials_title"] == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return float(response.headers.get("Retry-After", 3))
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
