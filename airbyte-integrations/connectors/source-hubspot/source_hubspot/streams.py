@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping,
 import backoff
 import pendulum as pendulum
 import requests
+from requests import codes
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -237,7 +238,7 @@ class Stream(HttpStream, ABC):
             self._session.params["hapikey"] = credentials.get("api_key")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+        if response.status_code == codes.too_many_requests:
             return float(response.headers.get("Retry-After", 3))
 
     def request_headers(
