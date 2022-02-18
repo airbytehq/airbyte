@@ -776,7 +776,6 @@ class CRMSearchStream(IncrementalStream, ABC):
                     cursor = self._field_to_datetime(record[self.updated_at_field])
                     latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                     yield record
-                # self._update_state(latest_cursor=latest_cursor)
 
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
