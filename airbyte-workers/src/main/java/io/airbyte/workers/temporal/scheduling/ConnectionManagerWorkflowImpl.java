@@ -441,8 +441,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Start the child {@link SyncWorkflow}. We are
-   * using a child workflow here for two main reason:
+   * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
    * <p>
    * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
    * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
