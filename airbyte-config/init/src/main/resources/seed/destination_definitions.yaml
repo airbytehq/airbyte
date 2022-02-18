@@ -126,7 +126,7 @@
 - name: MySQL
   destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
   icon: mysql.svg
 - name: Oracle
@@ -185,7 +185,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.12
+  dockerImageTag: 0.4.14
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore
