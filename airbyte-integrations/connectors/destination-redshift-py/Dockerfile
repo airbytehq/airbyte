@@ -7,7 +7,8 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+    && apk --no-cache add tzdata build-base \
+    && apk add --no-cache postgresql-dev gcc python3-dev musl-dev
 
 
 COPY setup.py ./
@@ -25,7 +26,8 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+RUN apk --no-cache add bash \
+    && apk add --no-cache postgresql-dev gcc python3-dev musl-dev
 
 # copy payload code only
 COPY main.py ./
