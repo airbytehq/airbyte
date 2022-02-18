@@ -70,8 +70,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected String quoteString;
 
   public AbstractJdbcSource(final String driverClass,
-      final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-      final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
+                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
     this.sourceOperations = sourceOperations;
@@ -148,7 +148,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   protected Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
-      final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+                                                           final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return isNotInternalSchema(jsonNode, internalSchemas);
@@ -204,7 +204,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-      final List<TableInfo<CommonField<Datatype>>> tableInfos) {
+                                                          final List<TableInfo<CommonField<Datatype>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(TableInfo::getName).collect(
         Collectors.toSet()));
     try {
@@ -251,12 +251,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final String cursorField,
-      final Datatype cursorFieldType,
-      final String cursor) {
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField,
+                                                               final Datatype cursorFieldType,
+                                                               final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
