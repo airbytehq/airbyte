@@ -14,12 +14,12 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping,
 import backoff
 import pendulum as pendulum
 import requests
-from requests import codes
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
+from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
 # The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
