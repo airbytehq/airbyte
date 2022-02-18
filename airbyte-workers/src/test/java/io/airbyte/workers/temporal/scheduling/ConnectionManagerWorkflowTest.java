@@ -393,7 +393,7 @@ public class ConnectionManagerWorkflowTest {
                   && changedStateEvent.isValue())
           .isEmpty();
 
-      Mockito.verify(mConnectionDeletionActivity).deleteConnection(Mockito.any());
+      Mockito.verify(mConnectionDeletionActivity, Mockito.atLeast(1)).deleteConnection(Mockito.any());
 
       testEnv.shutdown();
     }
@@ -964,9 +964,6 @@ public class ConnectionManagerWorkflowTest {
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.deleteConnection()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
                   .when(mConnectionDeletionActivity).deleteConnection(Mockito.any()))),
-          Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
-              new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
                   .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))));

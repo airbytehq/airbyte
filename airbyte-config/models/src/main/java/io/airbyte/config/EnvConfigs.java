@@ -15,6 +15,7 @@ import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -117,6 +118,17 @@ public class EnvConfigs implements Configs {
   private static final String REPLICATION_ORCHESTRATOR_MEMORY_REQUEST = "REPLICATION_ORCHESTRATOR_MEMORY_REQUEST";
   private static final String REPLICATION_ORCHESTRATOR_MEMORY_LIMIT = "REPLICATION_ORCHESTRATOR_MEMORY_LIMIT";
 
+  private static final String DEFAULT_WORKER_STATUS_CHECK_INTERVAL = "DEFAULT_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String SPEC_WORKER_STATUS_CHECK_INTERVAL = "SPEC_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String CHECK_WORKER_STATUS_CHECK_INTERVAL = "CHECK_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String DISCOVER_WORKER_STATUS_CHECK_INTERVAL = "DISCOVER_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String REPLICATION_WORKER_STATUS_CHECK_INTERVAL = "REPLICATION_WORKER_STATUS_CHECK_INTERVAL";
+
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST = "CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
@@ -132,6 +144,12 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
+
+  private static final Duration DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
+  private static final Duration DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -533,6 +551,46 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Duration getDefaultWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getSpecWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        SPEC_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getCheckWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        CHECK_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getDiscoverWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getReplicationWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
   public String getJobMainContainerCpuRequest() {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_CPU_REQUEST, DEFAULT_JOB_CPU_REQUIREMENT);
   }
@@ -557,6 +615,26 @@ public class EnvConfigs implements Configs {
     return getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
   }
 
   @Override
