@@ -596,10 +596,10 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/qualaroo
   icon: qualaroo.svg
   sourceType: api
-- name: Quickbooks
+- name: QuickBooks
   sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   dockerRepository: airbyte/source-quickbooks-singer
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/quickbooks
   icon: qb.svg
   sourceType: api
