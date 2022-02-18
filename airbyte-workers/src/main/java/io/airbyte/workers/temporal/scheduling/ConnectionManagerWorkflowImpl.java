@@ -42,13 +42,11 @@ import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 @Slf4j
 public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow {
@@ -179,7 +177,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           reportFailure(connectionUpdaterInput, standardSyncOutput);
         } else {
           workflowInternalState.getFailures().add(
-              FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(), workflowInternalState.getAttemptId()));
+              FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
+                  workflowInternalState.getAttemptId()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
         }
       }
@@ -442,10 +441,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-<<<<<<< HEAD
-   * Start the child SyncWorkflow
-=======
-   * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
+   * Start the child {@link SyncWorkflow}. We are
+   * using a child workflow here for two main reason:
    * <p>
    * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
    * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
@@ -454,7 +451,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow}
    * since the latter is a long running workflow, in the future, using a different Node pool would
    * make sense.
->>>>>>> eb728c8dc40299ee011050d26f357296ca5fdf04
    */
   private StandardSyncOutput runChildWorkflow(GeneratedJobInput jobInputs) {
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
