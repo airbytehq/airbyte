@@ -1571,7 +1571,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kafka:0.1.5"
+- dockerImage: "airbyte/destination-kafka:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
@@ -1697,6 +1697,7 @@
                 - "GSSAPI"
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
+                - "SCRAM-SHA-512"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "JAAS login context parameters for SASL connections in\
@@ -2463,7 +2464,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mysql:0.1.16"
+- dockerImage: "airbyte/destination-mysql:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mysql"
     connectionSpecification:
@@ -2514,6 +2515,13 @@
           type: "boolean"
           default: true
           order: 5
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -3817,7 +3825,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.12"
+- dockerImage: "airbyte/destination-snowflake:0.4.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:

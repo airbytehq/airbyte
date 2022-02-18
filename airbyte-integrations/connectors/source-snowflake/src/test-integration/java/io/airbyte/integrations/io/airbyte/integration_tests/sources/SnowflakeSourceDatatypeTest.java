@@ -15,11 +15,13 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  private static final String SCHEMA_NAME = "TEST";
+  private static final String SCHEMA_NAME = "SOURCE_DATA_TYPE_TEST_"
+      + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
   private static final String INSERT_SEMI_STRUCTURED_SQL = "INSERT INTO %1$s (ID, TEST_COLUMN) SELECT %2$s, %3$s";
 
   private JsonNode config;
@@ -41,7 +43,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
     database = getDatabase();
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+    final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     database.query(ctx -> ctx.fetch(createSchemaQuery));
     return database;
   }

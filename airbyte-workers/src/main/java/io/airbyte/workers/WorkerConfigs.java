@@ -16,12 +16,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class WorkerConfigs {
 
-  private static final Duration DEFAULT_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final Duration SPEC_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration CHECK_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration DISCOVER_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration REPLICATION_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-
   private final Configs.WorkerEnvironment workerEnvironment;
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
@@ -54,7 +48,7 @@ public class WorkerConfigs {
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
         configs.getJobDefaultEnvMap(),
-        DEFAULT_WORKER_STATUS_CHECK_INTERVAL);
+        configs.getDefaultWorkerStatusCheckInterval());
   }
 
   /**
@@ -80,7 +74,7 @@ public class WorkerConfigs {
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
         configs.getJobDefaultEnvMap(),
-        SPEC_WORKER_STATUS_CHECK_INTERVAL);
+        configs.getSpecWorkerStatusCheckInterval());
   }
 
   /**
@@ -94,10 +88,10 @@ public class WorkerConfigs {
     return new WorkerConfigs(
         configs.getWorkerEnvironment(),
         new ResourceRequirements()
-            .withCpuRequest(configs.getJobMainContainerCpuRequest())
-            .withCpuLimit(configs.getJobMainContainerCpuLimit())
-            .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
-            .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
+            .withCpuRequest(configs.getCheckJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getCheckJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getCheckJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
         configs.getJobKubeMainContainerImagePullSecret(),
@@ -106,7 +100,7 @@ public class WorkerConfigs {
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
         configs.getJobDefaultEnvMap(),
-        CHECK_WORKER_STATUS_CHECK_INTERVAL);
+        configs.getCheckWorkerStatusCheckInterval());
   }
 
   /**
@@ -132,7 +126,7 @@ public class WorkerConfigs {
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
         configs.getJobDefaultEnvMap(),
-        DISCOVER_WORKER_STATUS_CHECK_INTERVAL);
+        configs.getDiscoverWorkerStatusCheckInterval());
   }
 
   public static WorkerConfigs buildReplicationWorkerConfigs(final Configs configs) {
@@ -151,7 +145,7 @@ public class WorkerConfigs {
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
         configs.getJobDefaultEnvMap(),
-        REPLICATION_WORKER_STATUS_CHECK_INTERVAL);
+        configs.getReplicationWorkerStatusCheckInterval());
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
