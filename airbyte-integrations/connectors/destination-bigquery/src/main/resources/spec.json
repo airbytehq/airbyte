@@ -3,37 +3,98 @@
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append",
+    "append_dedup"
+  ],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id"],
+    "required": [
+      "project_id",
+      "dataset_id"
+    ],
     "additionalProperties": true,
     "properties": {
-      "big_query_client_buffer_size_mb": {
-        "title": "Google BigQuery client chunk size",
-        "description": "Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html",
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 15,
-        "default": 15,
-        "examples": ["15"]
-      },
-      "service_account": {
-        "type": "string",
-        "description": "Service Account User (roles/iam.serviceAccountUser): Includes the permission iam.serviceAccounts.actAs, which allows principals to indirectly access all the resources that the service account can access. For example, if a principal has the Service Account User role on a service account, and the service account has the Cloud SQL Admin role (roles/cloudsql.admin) on the project, then the principal can impersonate the service account to create a Cloud SQL instance.",
-        "title": "Service Account"
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Service Account",
+            "order": 0,
+            "properties": {
+              "credentials_json": {
+                "type": "string",
+                "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
+                "title": "Credentials JSON",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "order": 1,
+            "required": [
+              "client_id",
+              "client_secret"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": [
+                  "Client"
+                ],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your Drift developer application.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your Drift developer application.",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 3
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Refresh Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 4
+              },
+              "username": {
+                "type": "string",
+                "title": "username Token",
+                "description": "Refresh Token for making authenticated requests.",
+                "order": 5
+              }
+            }
+          }
+        ]
       },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset.",
         "title": "Project ID"
-      },
-      "dataset_id": {
-        "type": "string",
-        "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
-        "title": "Default Dataset ID"
       },
       "dataset_location": {
         "type": "string",
@@ -74,18 +135,31 @@
           "us-west4"
         ]
       },
-      "credentials_json": {
+      "big_query_client_buffer_size_mb": {
+        "title": "Google BigQuery client chunk size",
+        "description": "Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 15,
+        "default": 15,
+        "examples": [
+          "15"
+        ]
+      },
+      "dataset_id": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
-        "title": "Credentials JSON",
-        "airbyte_secret": true
+        "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
+        "title": "Default Dataset ID"
       },
       "transformation_priority": {
         "type": "string",
         "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit.",
         "title": "Transformation Query Run Type",
         "default": "interactive",
-        "enum": ["interactive", "batch"]
+        "enum": [
+          "interactive",
+          "batch"
+        ]
       },
       "loading_method": {
         "type": "object",
@@ -96,7 +170,9 @@
             "title": "Standard Inserts",
             "additionalProperties": false,
             "description": "Direct uploading using streams.",
-            "required": ["method"],
+            "required": [
+              "method"
+            ],
             "properties": {
               "method": {
                 "type": "string",
@@ -123,12 +199,16 @@
                 "title": "GCS Bucket Name",
                 "type": "string",
                 "description": "The name of the GCS bucket.",
-                "examples": ["airbyte_sync"]
+                "examples": [
+                  "airbyte_sync"
+                ]
               },
               "gcs_bucket_path": {
                 "description": "Directory under the GCS bucket where data will be written.",
                 "type": "string",
-                "examples": ["data_sync/test"]
+                "examples": [
+                  "data_sync/test"
+                ]
               },
               "part_size_mb": {
                 "title": "Block Size (MB) for GCS multipart upload",
@@ -137,7 +217,9 @@
                 "default": 5,
                 "minimum": 5,
                 "maximum": 525,
-                "examples": [5]
+                "examples": [
+                  5
+                ]
               },
               "keep_files_in_gcs-bucket": {
                 "type": "string",
@@ -170,14 +252,18 @@
                         "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
                         "title": "HMAC Key Access ID",
                         "airbyte_secret": true,
-                        "examples": ["1234567890abcdefghij1234"]
+                        "examples": [
+                          "1234567890abcdefghij1234"
+                        ]
                       },
                       "hmac_key_secret": {
                         "type": "string",
                         "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
                         "title": "HMAC Key Secret",
                         "airbyte_secret": true,
-                        "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"]
+                        "examples": [
+                          "1234567890abcdefghij1234567890ABCDEFGHIJ"
+                        ]
                       }
                     }
                   }
@@ -188,5 +274,87 @@
         ]
       }
     }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": [
+      "credentials",
+      "auth_type"
+    ],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "host": {
+            "type": "string",
+            "path_in_connector_config": [
+              "host"
+            ]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "access_token"
+            ]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "refresh_token"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "username"
+            ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "client_id"
+            ]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": [
+              "credentials",
+              "client_secret"
+            ]
+          }
+        }
+      }
+    }
   }
 }
+

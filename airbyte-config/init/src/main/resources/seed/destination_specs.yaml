@@ -200,6 +200,65 @@
       - "dataset_id"
       additionalProperties: true
       properties:
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "Service Account"
+            order: 0
+            properties:
+              credentials_json:
+                type: "string"
+                description: "The contents of the JSON service account key. Check\
+                  \ out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\"\
+                  >docs</a> if you need help generating this key. Default credentials\
+                  \ will be used if this field is left empty."
+                title: "Credentials JSON"
+                airbyte_secret: true
+          - type: "object"
+            title: "OAuth2.0"
+            order: 0
+            required:
+            - "client_id"
+            - "client_secret"
+            properties:
+              auth_type:
+                type: "string"
+                const: "Client"
+                enum:
+                - "Client"
+                default: "Client"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Drift developer application."
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of your Drift developer application."
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+                order: 3
+              refresh_token:
+                type: "string"
+                title: "Refresh Token"
+                description: "Refresh Token for making authenticated requests."
+                airbyte_secret: true
+                order: 4
+              username:
+                type: "string"
+                title: "username Token"
+                description: "Refresh Token for making authenticated requests."
+                order: 5
         big_query_client_buffer_size_mb:
           title: "Google BigQuery client chunk size"
           description: "Google BigQuery client's chunk(buffer) size (MIN=1, MAX =\
@@ -215,16 +274,6 @@
           default: 15
           examples:
           - "15"
-        service_account:
-          type: "string"
-          description: "Service Account User (roles/iam.serviceAccountUser): Includes\
-            \ the permissioniam.serviceAccounts.actAs, which allows principals to\
-            \ indirectly access allthe resources that the service account can access.\
-            \ For example, if aprincipal has the Service Account User role on a service\
-            \ account, and theservice account has the Cloud SQL Admin role (roles/cloudsql.admin)\
-            \ on theproject, then the principal can impersonate the service account\
-            \ to create a Cloud SQL instance."
-          title: "Service Account"
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
@@ -273,14 +322,6 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
-        credentials_json:
-          type: "string"
-          description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\"\
-            >docs</a> if you need help generating this key. Default credentials will\
-            \ be used if this field is left empty."
-          title: "Credentials JSON"
-          airbyte_secret: true
         transformation_priority:
           type: "string"
           description: "Interactive run type means that the query is executed as soon\
@@ -468,14 +509,6 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
-        credentials_json:
-          type: "string"
-          description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\"\
-            >docs</a> if you need help generating this key. Default credentials will\
-            \ be used if this field is left empty."
-          title: "Credentials JSON"
-          airbyte_secret: true
         loading_method:
           type: "object"
           title: "Loading Method"

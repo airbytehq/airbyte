@@ -14,6 +14,7 @@ import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
+import io.airbyte.oauth.flows.google.GoogleBigQueryOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
 import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
@@ -60,6 +61,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-bigquery", new GoogleBigQueryOAuthFlow(configRepository, httpClient))
         .build();
   }
 
