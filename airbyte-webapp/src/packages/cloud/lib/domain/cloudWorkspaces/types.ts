@@ -10,7 +10,7 @@ export interface CloudWorkspace {
   workspaceId: string;
   billingUserId: string;
   remainingCredits: number;
-  creditStatus: CreditStatus;
+  creditStatus?: CreditStatus;
 }
 
 export interface CreditConsumptionByConnector {

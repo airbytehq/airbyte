@@ -10,7 +10,7 @@ const Container = styled.div`
   height: 30px;
   width: 100%;
   background: ${({ theme }) => theme.redColor};
-  color: ${({ theme }) => theme.whiteColor};
+  color: ${({ theme }) => theme.blackColor};
   text-align: center;
   position: fixed;
   z-index: 3;
@@ -18,7 +18,7 @@ const Container = styled.div`
   line-height: 30px;
 `;
 const CreditsLink = styled(Link)`
-  color: ${({ theme }) => theme.whiteColor};
+  color: ${({ theme }) => theme.blackColor};
   margin-left: 8px;
 `;
 

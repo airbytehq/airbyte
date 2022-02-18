@@ -37,11 +37,13 @@ const DataBlock = styled.div<{ hasBanner?: boolean }>`
 const MainView: React.FC = (props) => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  const showBanner = [
-    CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD,
-    CreditStatus.NEGATIVE_MAX_THRESHOLD,
-    CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
-  ].includes(cloudWorkspace.creditStatus);
+  const showBanner =
+    cloudWorkspace.creditStatus &&
+    [
+      CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD,
+      CreditStatus.NEGATIVE_MAX_THRESHOLD,
+      CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
+    ].includes(cloudWorkspace.creditStatus);
 
   return (
     <MainContainer>
@@ -50,7 +52,7 @@ const MainView: React.FC = (props) => {
       >
         <SideBar />
         <Content>
-          {showBanner && (
+          {cloudWorkspace.creditStatus && showBanner && (
             <CreditsProblemBanner status={cloudWorkspace.creditStatus} />
           )}
           <DataBlock hasBanner={showBanner}>
