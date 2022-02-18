@@ -19,13 +19,17 @@ from .spec import (
 )
 from .streams import (
     DEFAULT_START_DATE,
+    AdGroupAudienceReports,
     AdGroups,
     AdGroupsReports,
     Ads,
+    AdsAudienceReports,
     AdsReports,
     Advertisers,
+    AdvertisersAudienceReports,
     AdvertisersReports,
     Campaigns,
+    CampaignsAudienceReportsByCountry,
     CampaignsReports,
     ReportGranularity,
 )
@@ -116,5 +120,9 @@ class SourceTiktokMarketing(AbstractSource):
             AdGroupsReports(**report_args),
             Campaigns(**args),
             CampaignsReports(**report_args),
+            CampaignsAudienceReportsByCountry(**report_args),
+            AdGroupAudienceReports(**report_args),
+            AdsAudienceReports(**report_args),
+            AdvertisersAudienceReports(**report_args),
         ]
         return [stream for stream in streams if stream]
