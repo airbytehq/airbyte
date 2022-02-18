@@ -56,6 +56,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
@@ -635,10 +636,10 @@ public class ConfigRepository {
     return actorCatalogs;
   }
 
-  public Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash) throws IOException {
-    final Result<Record2<UUID, JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
+  private Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash, final DSLContext context) {
+    final Result<Record2<UUID, JSONB>> records = context.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
         .from(ACTOR_CATALOG)
-        .where(ACTOR_CATALOG.CATALOG_HASH.eq(catalogHash))).fetch();
+        .where(ACTOR_CATALOG.CATALOG_HASH.eq(catalogHash)).fetch();
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
@@ -647,6 +648,30 @@ public class ConfigRepository {
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
+  }
+
+  private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
+                                       final DSLContext context) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
+    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
+        Charsets.UTF_8)).toString();
+    final Map<UUID, AirbyteCatalog> catalogs = findCatalogByHash(catalogHash, context);
+
+    for (final Map.Entry<UUID, AirbyteCatalog> entry : catalogs.entrySet()) {
+      if (entry.getValue().equals(airbyteCatalog)) {
+        return entry.getKey();
+      }
+    }
+
+    final UUID catalogId = UUID.randomUUID();
+    context.insertInto(ACTOR_CATALOG)
+        .set(ACTOR_CATALOG.ID, catalogId)
+        .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(airbyteCatalog)))
+        .set(ACTOR_CATALOG.CATALOG_HASH, catalogHash)
+        .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp)
+        .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp).execute();
+    return catalogId;
   }
 
   public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
@@ -671,48 +696,24 @@ public class ConfigRepository {
 
   }
 
-  public UUID writeActorCatalog(final AirbyteCatalog airbyteCatalog) throws IOException {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
-    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
-    final UUID catalogId = UUID.randomUUID();
-    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
-        Charsets.UTF_8)).toString();
-    database.transaction(ctx -> ctx.insertInto(ACTOR_CATALOG)
-        .set(ACTOR_CATALOG.ID, catalogId)
-        .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(airbyteCatalog)))
-        .set(ACTOR_CATALOG.CATALOG_HASH, catalogHash)
-        .set(ACTOR_CATALOG.CREATED_AT, timestamp)
-        .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)).execute();
-    return catalogId;
-  }
-
   public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
                                           final UUID sourceId,
                                           final String connectorVersion,
                                           final String configurationHash)
       throws IOException {
     final OffsetDateTime timestamp = OffsetDateTime.now();
-    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
-    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(catalog).getBytes(
-        Charsets.UTF_8)).toString();
-    final Map<UUID, AirbyteCatalog> catalogs = findCatalogByHash(catalogHash);
-    UUID existingCatalogId = null;
-    for (final Map.Entry<UUID, AirbyteCatalog> entry : catalogs.entrySet()) {
-      if (entry.getValue().equals(catalog)) {
-        existingCatalogId = entry.getKey();
-      }
-    }
-
-    final UUID catalogId = existingCatalogId != null ? existingCatalogId : writeActorCatalog(catalog);
     final UUID fetchEventID = UUID.randomUUID();
-    database.transaction(ctx -> ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
-        .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
-        .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, sourceId)
-        .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
-        .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, configurationHash)
-        .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
-        .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
-        .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp)).execute();
+    database.transaction(ctx -> {
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, sourceId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, configurationHash)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
+          .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp).execute();
+    });
 
     return fetchEventID;
   }
