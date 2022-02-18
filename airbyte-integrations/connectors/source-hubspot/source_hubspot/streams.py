@@ -485,7 +485,7 @@ class Stream(HttpStream, ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+                self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
@@ -1320,6 +1320,7 @@ class Products(CRMObjectIncrementalStream):
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
+    associations = ["contacts", "deals"]
 
 
 class Quotes(CRMObjectIncrementalStream):

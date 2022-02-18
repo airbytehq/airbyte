@@ -4,19 +4,18 @@
 
 
 import logging
-from functools import partial
 
 import pytest
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog, Type
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import (
     API,
     PROPERTIES_PARAM_MAX_LENGTH,
-    CRMObjectIncrementalStream,
-    CRMSearchStream,
     Deals,
     Workflows,
     split_properties,
+    Companies,
+    Products,
 )
 
 NUMBER_OF_PROPERTIES = 2000
@@ -96,7 +95,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params):
+def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params, caplog):
     """
     Error with API Key Permissions to particular stream,
     typically this issue raises along with calling `workflows` stream with API Key
@@ -123,27 +122,15 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
         },
     }
 
-    api = API(creds_with_wrong_permissions)
-
     # Create test_stream instance
     test_stream = Workflows(**common_params)
 
     # Mocking Request
     requests_mock.register_uri("GET", test_stream.url, responses)
-
-    # Mock the getter method that handles requests.
-    def get(url=test_stream.url, params=None):
-        response = api._session.get(api.BASE_URL + url, params=params)
-        return api._parse_and_handle_errors(response)
-
-    # Define request params value
-    params = {"limit": 100, "properties": ""}
-
-    # Read preudo-output from generator object _read(), based on real scenario
-    list(test_stream._read(getter=get, params=params))
+    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
-    assert expected_warining_message
+    assert expected_warining_message['log']['message'] in caplog.text
 
 
 class TestSplittingPropertiesFunctionality:
@@ -187,9 +174,8 @@ class TestSplittingPropertiesFunctionality:
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
-        test_stream = CRMSearchStream(
-            entity="company", last_modified_field="hs_lastmodifieddate", associations=["contacts"], name="companies", **common_params
-        )
+        test_stream = Companies(**common_params)
+
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
@@ -217,8 +203,8 @@ class TestSplittingPropertiesFunctionality:
                 )
             after_id = id_list[-1]
 
-        # Read preudo-output from generator object read(), based on real scenario
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        # Read preudo-output from generator object
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
@@ -233,7 +219,8 @@ class TestSplittingPropertiesFunctionality:
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
-        test_stream = CRMObjectIncrementalStream(entity="product", name="products", **common_params)
+        test_stream = Products(**common_params)
+
         for property_slice in parsed_properties:
             record_responses = [
                 {
@@ -249,7 +236,7 @@ class TestSplittingPropertiesFunctionality:
             ]
             requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
 
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         assert len(stream_records) == 5
         for record in stream_records:
@@ -263,7 +250,75 @@ class TestSplittingPropertiesFunctionality:
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
-        test_stream = Deals(associations=["contacts"], **common_params)
+        test_stream = Deals(**common_params)
+
+        deal_stage_history_response = {
+                'deals': [
+                    {
+                        'portalId': 123,
+                        'dealId': 111,
+                        'isDeleted': False,
+                        'associations': None,
+                        'properties': {
+                            'dealstage': {
+                                'value': 'appointmentscheduled',
+                                'timestamp': 1610533842221,
+                                'source': 'API',
+                                'sourceId': None,
+                                'updatedByUserId': None,
+                                'versions': [
+                                    {
+                                        'name': 'dealstage',
+                                        'value': 'appointmentscheduled',
+                                        'timestamp': 1610533842221,
+                                        'source': 'API',
+                                        'sourceVid': [],
+                                        'requestId': '19f07c43-b187-4ab6-9fab-4a0f261f0a8c'
+                                    }
+                                ]
+                            }
+                        },
+                        'stateChanges': []
+                    },
+                    {
+                        'portalId': 123,
+                        'dealId': 112,
+                        'isDeleted': False,
+                        'associations': None,
+                        'properties': {
+                            'dealstage': {
+                                'value': 'appointmentscheduled',
+                                'timestamp': 1610533911154,
+                                'source': 'API',
+                                'sourceId': None,
+                                'updatedByUserId': None,
+                                'versions': [
+                                    {
+                                        'name': 'dealstage',
+                                        'value': 'appointmentscheduled',
+                                        'timestamp': 1610533911154,
+                                        'source': 'API',
+                                        'sourceVid': [],
+                                        'requestId': '41a1eeff-569b-4193-ba80-238d3bd13f56'
+                                    }
+                                ]
+                            }
+                        },
+                        'stateChanges': []
+                    }
+                ]
+            }
+
+        requests_mock.register_uri(
+            "GET",
+            test_stream._stage_history.path(),
+            [
+                {
+                    "json": deal_stage_history_response,
+                    "status_code": 200,
+                }
+            ]
+        )
 
         ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
         for property_slice in parsed_properties:
@@ -282,7 +337,7 @@ class TestSplittingPropertiesFunctionality:
             requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
             ids_list.append("1092593513")
 
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         assert len(stream_records) == 6
 
