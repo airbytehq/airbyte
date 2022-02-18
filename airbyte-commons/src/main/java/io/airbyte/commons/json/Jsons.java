@@ -4,6 +4,9 @@
 
 package io.airbyte.commons.json;
 
+import static java.util.Collections.singletonMap;
+import static java.util.stream.Collectors.toMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -19,9 +22,12 @@ import io.airbyte.commons.stream.MoreStreams;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -195,6 +201,58 @@ public class Jsons {
   public static int getIntOrZero(final JsonNode json, final List<String> keys) {
     final Optional<JsonNode> optional = getOptional(json, keys);
     return optional.map(JsonNode::asInt).orElse(0);
+  }
+
+  /**
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
+   */
+  public static Map<String, Object> flatten(final JsonNode node) {
+    if (node.isObject()) {
+      final Map<String, Object> output = new HashMap<>();
+      for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+        final Entry<String, JsonNode> entry = it.next();
+        final String field = entry.getKey();
+        final JsonNode value = entry.getValue();
+        mergeMaps(output, field, flatten(value));
+      }
+      return output;
+    } else {
+      final Object value;
+      if (node.isBoolean()) {
+        value = node.asBoolean();
+      } else if (node.isLong()) {
+        value = node.asLong();
+      } else if (node.isInt()) {
+        value = node.asInt();
+      } else if (node.isDouble()) {
+        value = node.asDouble();
+      } else if (node.isValueNode() && !node.isNull()) {
+        value = node.asText();
+      } else {
+        // Fallback handling for e.g. arrays
+        value = node.toString();
+      }
+      return singletonMap(null, value);
+    }
+  }
+
+  /**
+   * Prepend all keys in subMap with prefix, then merge that map into originalMap.
+   * <p>
+   * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
+   * treated as {prefix: value} when merging into originalMap.
+   */
+  public static void mergeMaps(final Map<String, Object> originalMap, final String prefix, final Map<String, Object> subMap) {
+    originalMap.putAll(subMap.entrySet().stream().collect(toMap(
+        e -> {
+          final String key = e.getKey();
+          if (key != null) {
+            return prefix + "." + key;
+          } else {
+            return prefix;
+          }
+        },
+        Entry::getValue)));
   }
 
   /**

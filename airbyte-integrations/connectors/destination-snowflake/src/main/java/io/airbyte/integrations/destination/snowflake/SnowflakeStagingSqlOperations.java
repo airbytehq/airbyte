@@ -5,9 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
@@ -19,16 +17,16 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements SqlOperations {
+public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   @Override
-  protected void insertRecordsInternal(final JdbcDatabase database,
-                                       final List<AirbyteRecordMessage> records,
-                                       final String schemaName,
-                                       final String stage) {
-    LOGGER.info("actual size of batch for staging: {}", records.size());
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String stage) {
+    LOGGER.info("Writing {} records to {}", records.size(), stage);
 
     if (records.isEmpty()) {
       return;
@@ -70,33 +68,10 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
         Map.of("stage", stageName));
   }
 
-  @Override
-  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    AirbyteSentry.executeWithTracing("CreateTableIfNotExists",
-        () -> database.execute(createTableQuery(database, schemaName, tableName)),
-        Map.of("schema", schemaName, "table", tableName));
-  }
-
-  @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s VARIANT,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
-            + ") data_retention_time_in_days = 0;",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-  }
-
   public void cleanUpStage(final JdbcDatabase database, final String path) throws SQLException {
     AirbyteSentry.executeWithTracing("CleanStage",
         () -> database.execute(String.format("REMOVE @%s;", path)),
         Map.of("path", path));
-  }
-
-  @Override
-  public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
-    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
   }
 
 }
