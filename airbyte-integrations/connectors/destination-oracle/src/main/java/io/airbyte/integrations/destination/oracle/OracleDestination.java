@@ -91,7 +91,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   private Protocol obtainConnectionProtocol(final JsonNode encryption,
-      final List<String> additionalParameters) {
+                                            final List<String> additionalParameters) {
     final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
