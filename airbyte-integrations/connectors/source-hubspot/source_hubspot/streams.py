@@ -618,9 +618,9 @@ class IncrementalStream(Stream, ABC):
         if self.state:
             return self.state
         return (
-            {self.state_pk: int(self._start_date.timestamp() * 1000)}
+            {self.updated_at_field: int(self._start_date.timestamp() * 1000)}
             if self.state_pk == "timestamp"
-            else {self.state_pk: str(self._start_date)}
+            else {self.updated_at_field: str(self._start_date)}
         )
 
     @property
@@ -628,14 +628,16 @@ class IncrementalStream(Stream, ABC):
         """Current state, if wasn't set return None"""
         if self._state:
             return (
-                {self.state_pk: int(self._state.timestamp() * 1000)} if self.state_pk == "timestamp" else {self.state_pk: str(self._state)}
+                {self.updated_at_field: int(self._state.timestamp() * 1000)}
+                if self.state_pk == "timestamp"
+                else {self.updated_at_field: str(self._state)}
             )
         return None
 
     @state.setter
     def state(self, value):
-        state = value[self.state_pk]
-        self._state = pendulum.parse(str(pendulum.from_timestamp(state / 1000))) if isinstance(state, int) else pendulum.parse(state)
+        state_value = value[self.updated_at_field]
+        self._state = pendulum.parse(str(pendulum.from_timestamp(state_value / 1000))) if isinstance(state_value, int) else pendulum.parse(state_value)
         self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
@@ -1075,7 +1077,7 @@ class Engagements(IncrementalStream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
-    state_pk = "lastUpdated"
+    # state_pk = "lastUpdated"
 
     @property
     def url(self):

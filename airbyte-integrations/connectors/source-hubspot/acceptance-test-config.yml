@@ -34,8 +34,8 @@ tests:
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         subscription_changes: ["timestamp"]
-        email_events: ["timestamp"]
-        contact_lists: ["timestamp"]
+        email_events: ["created"]
+        contact_lists: ["updatedAt"]
         property_history: ["timestamp"]
   full_refresh:
     - config_path: "secrets/config.json"
