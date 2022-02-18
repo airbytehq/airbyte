@@ -141,8 +141,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
       jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
 
-      final JobOutput jobOutput = input.getStandardSyncOutput() != null ? new JobOutput().withSync(input.getStandardSyncOutput()) : null;
-      jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+      if (input.getStandardSyncOutput() != null) {
+        final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
+        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+      }
 
     } catch (final IOException e) {
       throw new RetryableException(e);

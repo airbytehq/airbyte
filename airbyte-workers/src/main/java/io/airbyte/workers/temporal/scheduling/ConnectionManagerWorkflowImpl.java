@@ -73,7 +73,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private final ConnectionDeletionActivity connectionDeletionActivity =
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
-  private CancellationScope scopedForCancellationSyncWorkflow;
+  private CancellationScope cancellableSyncWorkflow;
 
   private UUID connectionId;
 
@@ -83,8 +83,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       try {
-        generateSyncWorkflowRunnable(connectionUpdaterInput);
-        scopedForCancellationSyncWorkflow.run();
+        cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
+        cancellableSyncWorkflow.run();
       } catch (final CanceledFailure cf) {
         // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
@@ -111,8 +111,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
-  private void generateSyncWorkflowRunnable(ConnectionUpdaterInput connectionUpdaterInput) {
-    scopedForCancellationSyncWorkflow = Workflow.newCancellationScope(() -> {
+  private CancellationScope generateSyncWorkflowRunnable(ConnectionUpdaterInput connectionUpdaterInput) {
+    return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
 
       if (connectionUpdaterInput.getWorkflowState() != null) {
@@ -140,7 +140,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         try {
           standardSyncOutput = runChildWorkflow(jobInputs);
 
-          checkifFailedAndSetFailStatus(standardSyncOutput);
+          workflowState.setFailed(getFailStatus(standardSyncOutput));
 
           if (workflowState.isFailed()) {
             reportFailure(connectionUpdaterInput, standardSyncOutput);
@@ -231,7 +231,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return;
     }
     workflowState.setCancelled(true);
-    scopedForCancellationSyncWorkflow.cancel();
+    cancellableSyncWorkflow.cancel();
   }
 
   @Override
@@ -250,7 +250,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowState.setResetConnection(true);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
-      scopedForCancellationSyncWorkflow.cancel();
+      cancellableSyncWorkflow.cancel();
     }
   }
 
@@ -436,14 +436,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   /**
    * Set the internal status as failed and save the failures reasons
    */
-  private void checkifFailedAndSetFailStatus(StandardSyncOutput standardSyncOutput) {
+  private boolean getFailStatus(StandardSyncOutput standardSyncOutput) {
     StandardSyncSummary standardSyncSummary = standardSyncOutput.getStandardSyncSummary();
 
     if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
       failures.addAll(standardSyncOutput.getFailures());
       partialSuccess = standardSyncSummary.getTotalStats().getRecordsCommitted() > 0;
-      workflowState.setFailed(true);
+      return true;
     }
+    return false;
   }
 
   /**
