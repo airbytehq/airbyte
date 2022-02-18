@@ -15,7 +15,7 @@ describe("Connection main actions", () => {
     cy.get("div").contains("Test update connection source cypress").click();
     cy.get("div").contains("Test update connection destination cypress").click();
 
-    cy.get("div[data-id='settings-step']").click();
+    cy.get("div[data-id='replication-step']").click();
 
     cy.get("div[data-testid='schedule']").click();
     cy.get("div[data-testid='Every 5 min']").click();
