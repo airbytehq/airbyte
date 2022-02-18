@@ -36,6 +36,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
       AirbyteSentry.executeWithTracing("StartConsumer", this::startTracked,
           Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
     } catch (final Exception e) {
+      LOGGER.error("Exception while starting consumer", e);
       hasFailed = true;
       throw e;
     }
@@ -48,6 +49,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     try {
       acceptTracked(msg);
     } catch (final Exception e) {
+      LOGGER.error("Exception while accepting message", e);
       hasFailed = true;
       throw e;
     }
