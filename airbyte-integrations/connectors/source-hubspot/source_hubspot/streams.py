@@ -601,9 +601,6 @@ class IncrementalStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ):
-        # if stream_state:
-        #     self.state = stream_state
-
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         latest_cursor = None
         for record in records:
@@ -752,9 +749,6 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
-
-        # if stream_state:
-        #     self.state = stream_state
 
         latest_cursor = None
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
