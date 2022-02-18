@@ -124,6 +124,11 @@ public class EnvConfigs implements Configs {
   private static final String DISCOVER_WORKER_STATUS_CHECK_INTERVAL = "DISCOVER_WORKER_STATUS_CHECK_INTERVAL";
   private static final String REPLICATION_WORKER_STATUS_CHECK_INTERVAL = "REPLICATION_WORKER_STATUS_CHECK_INTERVAL";
 
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST = "CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
   public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
@@ -610,6 +615,26 @@ public class EnvConfigs implements Configs {
     return getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
   }
 
   @Override

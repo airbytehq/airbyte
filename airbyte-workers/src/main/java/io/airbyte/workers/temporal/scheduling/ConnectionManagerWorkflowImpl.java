@@ -139,8 +139,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
                 ChildWorkflowOptions.newBuilder()
                     .setWorkflowId("sync_" + maybeJobId.get())
                     .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                    // This will cancel the child workflow when the parent is terminated
-                    .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
+                    // we want to send a signal to the child workflow, not kill it, so we can choose how to handle it.
+                    // this is necessary to be able to retry (think "resume") the orchestrator run in an activity and
+                    // propagate cancellation to that level.
+                    .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
                     .build());
 
             final UUID connectionId = connectionUpdaterInput.getConnectionId();
