@@ -56,6 +56,7 @@ public class PostgresDestinationTest {
       "username", "user",
       "database", "db"
   );
+  
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
       CONFIG_WITH_SSL,
       ImmutableMap.of(
