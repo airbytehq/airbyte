@@ -42,7 +42,7 @@ runs:
       run: |
         # all CI python packages have the prefix "ci_"
         pip install --quiet tox==3.24.4
-        pip install -e ./tools/ci_*
+        pip install --quiet -e ./tools/ci_*
         tox -r -c ./tools/tox_ci.ini
         echo "::echo::off"
 
