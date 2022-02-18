@@ -322,6 +322,15 @@ class Transactions(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
+class TenderTransactions(IncrementalShopifyStream):
+    data_field = "tender_transactions"
+    cursor_field = "processed_at"
+    filter_field = "processed_at_min"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class Pages(IncrementalShopifyStream):
     data_field = "pages"
 
@@ -474,6 +483,7 @@ class SourceShopify(AbstractSource):
             OrderRefunds(config),
             OrderRisks(config),
             Transactions(config),
+            TenderTransactions(config),
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
