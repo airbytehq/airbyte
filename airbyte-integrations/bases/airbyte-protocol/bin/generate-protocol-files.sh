@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 [ -z "$ROOT_DIR" ] && exit 1
 
