@@ -250,10 +250,6 @@ class Stream(HttpStream, ABC):
             json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
-    def get_fields(self) -> List[str]:
-        json_schema = self.get_json_schema()
-        return list(json_schema.get("properties", {}).keys())
-
     def handle_request(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -306,7 +302,7 @@ class Stream(HttpStream, ABC):
 
         for properties in split_properties(properties_list):
             params = {"properties": ",".join(properties)}
-            # response = getter(params=params)
+
             response = self.handle_request(
                 stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
             )
@@ -609,8 +605,6 @@ class IncrementalStream(Stream, ABC):
             yield record
         self._update_state(latest_cursor=latest_cursor)
 
-        # yield from self.list_records(fields=self.get_fields())
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if self.state:
             return self.state
@@ -730,7 +724,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             if self.state
             else {}
         )
-        if next_page_token:  # TODO got 400 status if update payload with key 'after'
+        if next_page_token:
             payload.update(next_page_token["payload"])
 
         response, raw_response = self.search(url=self.url, data=payload)
@@ -763,7 +757,6 @@ class CRMSearchStream(IncrementalStream, ABC):
                         stream_slice=stream_slice,
                     )
 
-                # if properties_list:
                 else:
                     stream_records, raw_response = self._read_stream_records(
                         properties_list=properties_list,
@@ -773,7 +766,6 @@ class CRMSearchStream(IncrementalStream, ABC):
                     )
 
                 records = [value for key, value in stream_records.items()]
-                # if self.filter_old_records:
                 records = self._filter_old_records(records)
                 records = self._flat_associations(records)
 
@@ -908,7 +900,7 @@ class Campaigns(Stream):
         stream_state: Mapping[str, Any] = None,
     ):
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")  # TODO how to bypass _api ?
+            record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield {**row, **record}
 
 
@@ -1071,7 +1063,6 @@ class Engagements(IncrementalStream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
-    # state_pk = "lastUpdated"
 
     @property
     def url(self):
@@ -1090,7 +1081,6 @@ class Engagements(IncrementalStream):
     ):
         params = {self.limit_field: self.limit}
         if self.state:
-            # params["since"] = self._state
             params["since"] = int(self._state.timestamp() * 1000)
         return params
 
@@ -1145,16 +1135,11 @@ class FormSubmissions(Stream):
         slices = []
         seen = set()
         # To get submissions for all forms date filtering has to be disabled
-        self.forms.filter_old_records = False  # TODO make it object attribute
+        self.forms.filter_old_records = False
         for form in self.forms.read_records(sync_mode):
             if form["id"] not in seen:
                 seen.add(form["id"])
                 slices.append({"form_id": form["id"]})
-
-                # for submission in self.read_records(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
-                # submission["formId"] = form["id"]
-                # yield submission
-
         return slices
 
     def read_records(
