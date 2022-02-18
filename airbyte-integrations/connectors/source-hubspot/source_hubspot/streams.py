@@ -237,7 +237,8 @@ class Stream(HttpStream, ABC):
             self._session.params["hapikey"] = credentials.get("api_key")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return float(response.headers.get("Retry-After", 3))
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            return float(response.headers.get("Retry-After", 3))
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
