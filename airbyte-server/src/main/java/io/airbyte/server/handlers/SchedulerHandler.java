@@ -115,7 +115,8 @@ public class SchedulerHandler {
         workerEnvironment,
         logConfigs,
         temporalWorkerRunFactory,
-        featureFlags);
+        featureFlags,
+        new JobConverter(workerEnvironment, logConfigs));
   }
 
   @VisibleForTesting
@@ -131,7 +132,8 @@ public class SchedulerHandler {
                    final WorkerEnvironment workerEnvironment,
                    final LogConfigs logConfigs,
                    final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                   final FeatureFlags featureFlags) {
+                   final FeatureFlags featureFlags,
+                   final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -143,9 +145,9 @@ public class SchedulerHandler {
     this.oAuthConfigSupplier = oAuthConfigSupplier;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobConverter = new JobConverter(workerEnvironment, logConfigs);
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.featureFlags = featureFlags;
+    this.jobConverter = jobConverter;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)

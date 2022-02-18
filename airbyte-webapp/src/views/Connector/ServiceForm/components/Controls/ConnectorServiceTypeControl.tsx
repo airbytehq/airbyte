@@ -4,6 +4,7 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
+import { WarningMessage } from "../WarningMessage";
 
 import {
   ControlLabels,
@@ -214,6 +215,11 @@ const ConnectorServiceTypeControl: React.FC<{
           documentationUrl={documentationUrl}
         />
       )}
+      {selectedService &&
+        (selectedService.releaseStage === ReleaseStage.ALPHA ||
+          selectedService.releaseStage === ReleaseStage.BETA) && (
+          <WarningMessage stage={selectedService.releaseStage} />
+        )}
     </>
   );
 };

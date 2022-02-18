@@ -45,13 +45,9 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     if (!isSchemaExists(database, schemaName)) {
       AirbyteSentry.executeWithTracing("CreateSchema",
-          () -> database.execute(createSchemaQuery(schemaName)),
+          () -> database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName)),
           Map.of("schema", schemaName));
     }
-  }
-
-  private String createSchemaQuery(final String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
   @Override

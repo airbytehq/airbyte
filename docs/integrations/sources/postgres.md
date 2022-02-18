@@ -270,6 +270,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.7   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
 | 0.4.6   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                                       |
 | 0.4.4   | 2022-01-26 | [9807](https://github.com/airbytehq/airbyte/pull/9807) | Update connector fields title/description                                                                       |

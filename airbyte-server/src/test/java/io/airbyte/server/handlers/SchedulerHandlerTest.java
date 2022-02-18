@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -70,6 +71,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
@@ -132,6 +134,7 @@ class SchedulerHandlerTest {
   private JobPersistence jobPersistence;
   private TemporalWorkerRunFactory temporalWorkerRunFactory;
   private FeatureFlags featureFlags;
+  private JobConverter jobConverter;
 
   @BeforeEach
   void setup() {
@@ -153,6 +156,8 @@ class SchedulerHandlerTest {
     featureFlags = mock(FeatureFlags.class);
     when(featureFlags.usesNewScheduler()).thenReturn(false);
 
+    jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
+
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,
@@ -166,7 +171,8 @@ class SchedulerHandlerTest {
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
         temporalWorkerRunFactory,
-        featureFlags);
+        featureFlags,
+        jobConverter);
   }
 
   @Test
@@ -603,6 +609,9 @@ class SchedulerHandlerTest {
 
     when(temporalWorkerRunFactory.startNewManualSync(connectionId))
         .thenReturn(manualSyncSubmissionResult);
+
+    doReturn(new JobInfoRead())
+        .when(jobConverter).getJobInfoRead(any());
 
     schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
