@@ -9,14 +9,17 @@ const StreamOptions = [
   {
     value: ConnectionNamespaceDefinition.Source,
     label: <FormattedMessage id="connectionForm.sourceFormat" />,
+    testId: "namespaceDefinition-source",
   },
   {
     value: ConnectionNamespaceDefinition.Destination,
     label: <FormattedMessage id="connectionForm.destinationFormat" />,
+    testId: "namespaceDefinition-destination",
   },
   {
     value: ConnectionNamespaceDefinition.CustomFormat,
     label: <FormattedMessage id="connectionForm.customFormat" />,
+    testId: "namespaceDefinition-customformat",
   },
 ];
 
@@ -37,6 +40,7 @@ const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({
       }
     >
       <DropDown
+        name="namespaceDefinition"
         error={!!meta.error && meta.touched}
         options={StreamOptions}
         value={field.value}

@@ -189,10 +189,10 @@ const CreationFormPage: React.FC = () => {
 
     const afterSubmitConnection = (connection: Connection) => {
       switch (type) {
-        case "destination":
+        case EntityStepsTypes.DESTINATION:
           push(`../${source?.sourceId}`);
           break;
-        case "source":
+        case EntityStepsTypes.SOURCE:
           push(`../${destination?.destinationId}`);
           break;
         default:
