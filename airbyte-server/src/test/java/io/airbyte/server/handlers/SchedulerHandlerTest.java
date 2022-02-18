@@ -35,6 +35,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -74,6 +75,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
@@ -129,6 +131,7 @@ class SchedulerHandlerTest {
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
   private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private FeatureFlags featureFlags;
 
   @BeforeEach
   void setup() {
@@ -147,6 +150,9 @@ class SchedulerHandlerTest {
     final JobNotifier jobNotifier = mock(JobNotifier.class);
     temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
 
+    featureFlags = mock(FeatureFlags.class);
+    when(featureFlags.usesNewScheduler()).thenReturn(false);
+
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,
@@ -159,7 +165,8 @@ class SchedulerHandlerTest {
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
-        temporalWorkerRunFactory);
+        temporalWorkerRunFactory,
+        featureFlags);
   }
 
   @Test
@@ -579,6 +586,27 @@ class SchedulerHandlerTest {
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+  }
+
+  @Test
+  void testNewSchedulerSync() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(featureFlags.usesNewScheduler()).thenReturn(true);
+
+    UUID connectionId = UUID.randomUUID();
+
+    long jobId = 123L;
+    ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+        .builder()
+        .failingReason(Optional.empty())
+        .jobId(Optional.of(jobId))
+        .build();
+
+    when(temporalWorkerRunFactory.startNewManualSync(connectionId))
+        .thenReturn(manualSyncSubmissionResult);
+
+    schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    verify(temporalWorkerRunFactory).startNewManualSync(connectionId);
   }
 
   private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {
