@@ -15,6 +15,7 @@ from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Coupon as CouponModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Event as EventModel
+from chargebee.models import Transactions as TransactionModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
@@ -289,12 +290,11 @@ class Event(IncrementalChargebeeStream):
 
     api = EventModel
 
-
-class Coupon(IncrementalChargebeeStream):
+class Transactions(IncrementalChargebeeStream):
     """
-    API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
+    API docs: https://apidocs.eu.chargebee.com/docs/api/transaction?prod_cat_ver=2#list_transactions
     """
 
-    cursor_field = "updated_at"
+    cursor_field = "occurred_at"
 
-    api = CouponModel
+    api = TransactionModel

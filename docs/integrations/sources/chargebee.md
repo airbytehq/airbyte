@@ -31,6 +31,7 @@ Some streams may depend on Product Catalog version and be accessible only on sit
    * Orders
    * Coupons
    * Subscriptions
+   * Transactions
 2. presented only in `Product Catalog 1.0`:
    * Plans
    * Addons
