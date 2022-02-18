@@ -881,11 +881,12 @@ class ProjectColumns(GithubStream):
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        repository = stream_slice["repository"]
-        project_id = stream_slice["project_id"]
-        stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            return max(self._start_date, stream_state_value)
+        if stream_state:
+            repository = stream_slice["repository"]
+            project_id = stream_slice["project_id"]
+            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
         return self._start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):

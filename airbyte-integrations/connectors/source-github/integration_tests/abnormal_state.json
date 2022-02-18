@@ -39,6 +39,16 @@
       "updated_at": "2121-06-30T06:44:42Z"
     }
   },
+  "project_columns": {
+    "airbytehq/integration-test": {
+      "13167122": {
+        "updated_at": "2121-06-29T02:04:57Z"
+      },
+      "13167124": {
+        "updated_at": "2121-06-29T02:04:57Z"
+      }
+    }
+  },
   "projects": {
     "airbytehq/integration-test": {
       "updated_at": "2121-06-28T17:24:51Z"

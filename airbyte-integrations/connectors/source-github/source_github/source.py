@@ -151,15 +151,15 @@ class SourceGithub(AbstractSource):
 
         except Exception as e:
             message = repr(e)
-            if '404 Client Error: Not Found for url: https://api.github.com/repos/' in message:
+            if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
                 # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')"
-                full_repo_name = message.split('https://api.github.com/repos/')[1]
-                full_repo_name = full_repo_name.split('?')[0]
+                full_repo_name = message.split("https://api.github.com/repos/")[1]
+                full_repo_name = full_repo_name.split("?")[0]
                 message = f'Unknown repo name: "{full_repo_name}", use existing full repo name <organization>/<repository>'
-            elif '404 Client Error: Not Found for url: https://api.github.com/orgs/' in message:
+            elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
                 # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')"
-                org_name = message.split('https://api.github.com/orgs/')[1]
-                org_name = org_name.split('/')[0]
+                org_name = message.split("https://api.github.com/orgs/")[1]
+                org_name = org_name.split("/")[0]
                 message = f'Unknown organization name: "{org_name}"'
 
             return False, message
@@ -178,6 +178,7 @@ class SourceGithub(AbstractSource):
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
+        projects_stream = Projects(**repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
@@ -196,8 +197,8 @@ class SourceGithub(AbstractSource):
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date),
-            Projects(**repository_args_with_start_date),
+            ProjectColumns(projects_stream, **repository_args_with_start_date),
+            projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
             PullRequests(**repository_args_with_start_date),
