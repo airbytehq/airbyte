@@ -51,7 +51,10 @@ class Table:
             );
         """
 
-    def coy_csv_gzip_statement(self, iam_role_arn: str, s3_full_path: str) -> str:
+    def truncate_statement(self) -> str:
+        return f"TRUNCATE TABLE {self.full_name}"
+
+    def copy_csv_gzip_statement(self, iam_role_arn: str, s3_full_path: str) -> str:
         return f"""
             COPY {self.schema}.{self.name}
             FROM '{s3_full_path}'

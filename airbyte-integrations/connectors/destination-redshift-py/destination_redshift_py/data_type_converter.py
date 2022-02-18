@@ -1,3 +1,5 @@
+from typing import List, Union
+
 from destination_redshift_py.field import DataType
 
 VARCHAR = "VARCHAR"
@@ -8,13 +10,17 @@ FALLBACK_DATATYPE = DataType(name=VARCHAR, length=MAX_LENGTH)
 
 class DataTypeConverter:
     @staticmethod
-    def convert(json_schema_type: str, json_schema_format: str = None, json_schema_max_length: str = None) -> DataType:
+    def convert(json_type: Union[str, List[str]], json_schema_format: str = None, json_schema_max_length: str = None) -> DataType:
+        # If the field accepts more than one type (for example ["null", "string"]) then fallback to string.
+        json_type = [json_type] if not isinstance(json_type, list) else json_type
+        json_type = next(iter(set(json_type) - {"null"}), "string")
+
         return {
             "string": DataTypeConverter._convert_string(json_schema_format, json_schema_max_length),
-            "number": DataType(name="DOUBLE"),
+            "number": DataType(name="DOUBLE PRECISION"),
             "integer": DataType(name="INTEGER"),
             "boolean": DataType(name="BOOLEAN")
-        }.get(json_schema_type, FALLBACK_DATATYPE)
+        }.get(json_type, FALLBACK_DATATYPE)
 
     @staticmethod
     def _convert_string(json_schema_format: str = None, json_schema_max_length: str = None) -> DataType:

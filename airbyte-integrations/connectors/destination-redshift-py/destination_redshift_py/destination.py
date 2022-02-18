@@ -12,22 +12,23 @@ from typing import Mapping, Any, Iterable, List, Dict
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type, \
+    DestinationSyncMode
 from dotmap import DotMap
 from psycopg2.pool import ThreadedConnectionPool
 
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
 from destination_redshift_py.s3_writer import S3Writer
-from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME, Table
+from destination_redshift_py.stream import Stream
+from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME
 
 logger = logging.getLogger("airbyte")
 
 
 class DestinationRedshiftPy(Destination):
     def __init__(self):
-        self.final_tables: Dict[str, Table] = dict()
-        self.staging_tables: Dict[str, Table] = dict()
+        self.streams: Dict[str, Stream] = dict()
 
         self.csv_writers: Dict[str, CSVWriter] = dict()
 
@@ -39,8 +40,8 @@ class DestinationRedshiftPy(Destination):
             self._create_pool(config=config)
 
             if cmd == "write":
-                self._extract_tables_from_json_schema(configured_catalog=ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
-                self._create_tables()
+                self._initialize_streams(configured_catalog=ConfiguredAirbyteCatalog.parse_file(parsed_args.catalog))
+                self._create_final_tables()
                 self._initialize_staging_schema()
                 self._initialize_csv_writers()
                 self._initialize_s3_writer(config=config)
@@ -105,29 +106,32 @@ class DestinationRedshiftPy(Destination):
                 #       `['orders', 'orders.account', 'orders.accounts.address']`
                 # The output is:
                 #       `[['orders'], ['orders', 'account'], ['orders', 'accounts', 'address']]`
-                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), self.final_tables.keys()), key=len)
+                stream = self.streams[message.record.stream]
+
+                nodes = sorted(map(lambda k: k.split(PARENT_CHILD_SPLITTER), stream.final_tables.keys()), key=len)
                 emitted_at = message.record.emitted_at
 
                 for node in nodes:
-                    table = self.final_tables[PARENT_CHILD_SPLITTER.join(node)]
+                    table = stream.final_tables[PARENT_CHILD_SPLITTER.join(node)]
 
                     records = reduce(getattr, [nested_record] + node)
-                    records = [records] if not isinstance(records, list) else records
+                    records = list(filter(None.__ne__, [records] if not isinstance(records, list) else records))
 
-                    if table.references:
-                        parent_record = reduce(getattr, [nested_record] + node[0:-1])
-                        reference_id = parent_record[AIRBYTE_ID_NAME]
-                        self._assign_reference_id(records=records, reference_key=table.reference_key.name, reference_id=reference_id)
+                    if records:
+                        if table.references:
+                            parent_record = reduce(getattr, [nested_record] + node[0:-1])
+                            reference_id = parent_record[AIRBYTE_ID_NAME]
+                            self._assign_reference_id(records=records, reference_key=table.reference_key.name, reference_id=reference_id)
 
-                    # Choose primary keys (other than the Airbyte auto generated ID). If there are no primary keys (except the auto
-                    # generated Airbyte ID, this happens with children), then choose all the fields as hash keys to generate the ID.
-                    hashing_keys = [pk for pk in table.primary_keys if pk != AIRBYTE_ID_NAME] or table.field_names
+                        # Choose primary keys (other than the Airbyte auto generated ID). If there are no primary keys (except the auto
+                        # generated Airbyte ID, this happens with children), then choose all the fields as hash keys to generate the ID.
+                        hashing_keys = [pk for pk in table.primary_keys if pk != AIRBYTE_ID_NAME] or table.field_names
 
-                    self._assign_id_and_emitted_at(records=records, hashing_keys=hashing_keys, emitted_at=emitted_at)
+                        self._assign_id_and_emitted_at(records=records, hashing_keys=hashing_keys, emitted_at=emitted_at)
 
-                    records = [DotMap([field_name, record[field_name]] for field_name in table.field_names) for record in records]
+                        records = [DotMap([field_name, record[field_name] or None] for field_name in table.field_names) for record in records]
 
-                    self.csv_writers[table.name].write(records)
+                        self.csv_writers[table.name].write(records)
 
         self._flush()
 
@@ -149,39 +153,45 @@ class DestinationRedshiftPy(Destination):
 
             record[AIRBYTE_ID_NAME] = sha256(data).hexdigest()[-32:]
 
-    def _extract_tables_from_json_schema(self, configured_catalog: ConfiguredAirbyteCatalog):
+    def _initialize_streams(self, configured_catalog: ConfiguredAirbyteCatalog):
         for stream in configured_catalog.streams:
             schema = stream.stream.namespace
-            root_table = stream.stream.name
+            stream_name = stream.stream.name
             primary_keys = reduce(iconcat, stream.primary_key, [])
 
-            converter = JsonToTables(stream.stream.json_schema, schema=schema, root_table=root_table, primary_keys=primary_keys)
+            converter = JsonToTables(stream.stream.json_schema, schema=schema, root_table=stream_name, primary_keys=primary_keys)
             converter.convert()
 
-            self.final_tables = dict(**self.final_tables, **converter.tables)
+            self.streams[stream_name] = Stream(name=stream_name, destination_sync_mode=stream.destination_sync_mode, final_tables=converter.tables)
 
-    def _create_tables(self):
+    def _create_final_tables(self):
         cursor = self._get_connection(autocommit=True).cursor()
 
-        for table in self.final_tables.values():
-            create_table_statement = table.create_statement()
-            cursor.execute(create_table_statement)
+        for stream in self.streams.values():
+            for table in stream.final_tables.values():
+                cursor.execute(table.create_statement())
+
+                if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                    cursor.execute(table.truncate_statement())
 
     def _initialize_staging_schema(self):
         cursor = self._get_connection(autocommit=True).cursor()
-        random_table = list(self.final_tables.values())[0]  # All final_tables will be stored in the same schema
 
-        staging_schema = f"_airbyte_{random_table.schema}"
-        create_schema_statement = f"CREATE SCHEMA IF NOT EXISTS {staging_schema}"
-        cursor.execute(create_schema_statement)
+        for stream in self.streams.values():
+            if stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+                random_table = list(stream.final_tables.values())[0]  # All final_tables will be stored in the same schema
 
-        for key, table in self.final_tables.items():
-            staging_table = deepcopy(table)
-            staging_table.schema = staging_schema
+                staging_schema = f"_airbyte_{random_table.schema}"
+                create_schema_statement = f"CREATE SCHEMA IF NOT EXISTS {staging_schema}"
+                cursor.execute(create_schema_statement)
 
-            self.staging_tables[key] = staging_table
+                for key, table in stream.final_tables.items():
+                    staging_table = deepcopy(table)
+                    staging_table.schema = staging_schema
 
-            cursor.execute(staging_table.create_statement())
+                    stream.staging_tables[key] = staging_table
+
+                    cursor.execute(staging_table.create_statement())
 
     def _create_pool(self, config: Mapping[str, Any]):
         self.connection_pool = ThreadedConnectionPool(
@@ -201,14 +211,20 @@ class DestinationRedshiftPy(Destination):
         return connection
 
     def _initialize_csv_writers(self):
-        for table in self.final_tables.values():
-            csv_writer = CSVWriter(table=table)
-            csv_writer.initialize_writer()
+        for stream in self.streams.values():
+            for table in stream.final_tables.values():
+                csv_writer = CSVWriter(table=table)
+                csv_writer.initialize_writer()
 
-            self.csv_writers[table.name] = csv_writer
+                self.csv_writers[table.name] = csv_writer
 
     def _initialize_s3_writer(self, config: Mapping[str, Any]):
-        self.s3_writer = S3Writer(bucket=config.get("s3_bucket_name"), s3_path=config.get("s3_bucket_path"))
+        bucket = config.get("s3_bucket_name")
+        s3_path = config.get("s3_bucket_path")
+        access_key_id = config.get("access_key_id")
+        secret_access_key = config.get("secret_access_key")
+
+        self.s3_writer = S3Writer(bucket=bucket, s3_path=s3_path, aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key)
 
     def _initialize_iam_role_arn(self, iam_role_arn: str):
         self.iam_role_arn = iam_role_arn
@@ -217,19 +233,26 @@ class DestinationRedshiftPy(Destination):
         connection = self._get_connection()
         cursor = connection.cursor()
 
-        for key, staging_table in self.staging_tables.items():
-            csv_writer = self.csv_writers[staging_table.name]
-            temporary_gzip_file = csv_writer.flush_gzipped()
+        for stream in self.streams.values():
+            for key, final_table in stream.final_tables.items():
+                csv_writer = self.csv_writers[final_table.name]
+                temporary_gzip_file = csv_writer.flush_gzipped()
 
-            if temporary_gzip_file:
-                s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
-                csv_writer.delete_gzip_file(temporary_gzip_file)
-                copy_statement = staging_table.coy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
-                cursor.execute(copy_statement)
+                if temporary_gzip_file:
+                    s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
+                    csv_writer.delete_gzip_file(temporary_gzip_file)
 
-                final_table = self.final_tables[key]
-                upsert_statements = final_table.upsert_statements(staging_table=staging_table)
-                cursor.execute(upsert_statements)
+                    if stream.destination_sync_mode in [DestinationSyncMode.append, DestinationSyncMode.overwrite]:
+                        copy_statement = final_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                        cursor.execute(copy_statement)
+                    else:
+                        staging_table = stream.staging_tables[key]
 
-            connection.commit()
+                        copy_statement = staging_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                        cursor.execute(copy_statement)
+
+                        upsert_statements = final_table.upsert_statements(staging_table=staging_table)
+                        cursor.execute(upsert_statements)
+
+                connection.commit()
 
