@@ -1,8 +1,7 @@
+import base64
 import json
 from datetime import datetime
 from pathlib import Path
-import base64
-import time
 
 import pytest
 import requests
