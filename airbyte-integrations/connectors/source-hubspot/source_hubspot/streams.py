@@ -226,7 +226,7 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> str:
         return self.url
 
     def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
@@ -243,7 +243,7 @@ class Stream(HttpStream, ABC):
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ):
+    ) -> Mapping[str, Any]:
         return {
             "Content-Type": "application/json",
             "User-Agent": self._api.USER_AGENT,
@@ -453,7 +453,7 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         default_params = {self.limit_field: self.limit}
         params = {**default_params}
         if next_page_token:
@@ -470,7 +470,7 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping]:
         response = self._parse_response(response)
 
         if isinstance(response, Mapping):
@@ -601,7 +601,7 @@ class IncrementalStream(Stream, ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         latest_cursor = None
         for record in records:
@@ -652,7 +652,7 @@ class IncrementalStream(Stream, ABC):
                 self._state = new_state
                 self._start_date = self._state
 
-    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None):
+    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
         chunk_size = pendulum.duration(days=30)
         slices = []
 
@@ -677,7 +677,7 @@ class IncrementalStream(Stream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if stream_slice:
             params.update(stream_slice)
@@ -796,13 +796,13 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         params = {"archived": str(self._include_archived_only).lower(), "associations": self.associations, "limit": self.limit}
         if next_page_token:
             params.update(next_page_token.get("params", {}))
         return params
 
-    def next_page_token(self, response: requests.Response):
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response = self._parse_response(response)
         params = {}
         payload = {}
@@ -854,7 +854,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         params = IncrementalStream.request_params(
             self, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
@@ -872,7 +872,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping[str, Any]]:
         records = IncrementalStream.read_records(
             self,
             sync_mode,
@@ -901,7 +901,7 @@ class Campaigns(Stream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield {**row, **record}
@@ -954,7 +954,7 @@ class ContactsListMemberships(Stream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params.update({"showListMemberships": True})
         return params
@@ -984,7 +984,7 @@ class DealStageHistoryStream(Stream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         return {"propertiesWithHistory": "dealstage"}
 
 
@@ -1005,7 +1005,7 @@ class Deals(CRMSearchStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping[str, Any]]:
         history_by_id = {}
         for record in self._stage_history.read_records(sync_mode):
             if all(field in record for field in ("id", "dealstage")):
@@ -1077,7 +1077,7 @@ class Engagements(IncrementalStream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> MutableMapping[str, Any]:
         params = {self.limit_field: self.limit}
         if self.state:
             params["since"] = int(self._state.timestamp() * 1000)
@@ -1112,7 +1112,7 @@ class FormSubmissions(Stream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
+    ) -> str:
         return f"{self.url}/{stream_slice['form_id']}"
 
     def __init__(self, **kwargs):
@@ -1130,7 +1130,7 @@ class FormSubmissions(Stream):
 
             yield record
 
-    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None):
+    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         seen = set()
         # To get submissions for all forms date filtering has to be disabled
@@ -1147,7 +1147,7 @@ class FormSubmissions(Stream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ):
+    ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record["formId"] = stream_slice["form_id"]
             yield record
@@ -1191,7 +1191,7 @@ class PropertyHistory(IncrementalStream):
     page_filter = "vidOffset"
     limit = 100
 
-    def list(self, fields) -> Iterable:  # TODO where it is called?
+    def list(self, fields) -> Iterable:
         properties = self._api.get("/properties/v2/contact/properties")
         properties_list = [single_property["name"] for single_property in properties]
         params = {"propertyMode": "value_and_history", "property": properties_list}
