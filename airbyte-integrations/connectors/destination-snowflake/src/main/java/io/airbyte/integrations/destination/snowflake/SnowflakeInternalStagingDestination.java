@@ -49,9 +49,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   private static void attemptSQLCreateAndDropStages(final String outputSchema,
-      final JdbcDatabase database,
-      final SnowflakeSQLNameTransformer namingResolver,
-      final SnowflakeStagingSqlOperations sqlOperations)
+                                                    final JdbcDatabase database,
+                                                    final SnowflakeSQLNameTransformer namingResolver,
+                                                    final SnowflakeStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
@@ -80,8 +80,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return new SnowflakeInternalStagingConsumerFactory().create(outputRecordCollector, getDatabase(config),
         new SnowflakeStagingSqlOperations(), new SnowflakeSQLNameTransformer(), config, catalog);
   }

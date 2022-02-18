@@ -76,14 +76,14 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mariadb://%s:%s/%s",
+    final String jdbcUrl = String.format("jdbc:mariadb://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
+        config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put("jdbc_url", jdbcUrl);
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
