@@ -43,7 +43,8 @@ include ':airbyte-commons-docker'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-metrics'
+include ':airbyte-metrics:lib'
+include ':airbyte-metrics:reporter'
 include ':airbyte-oauth'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
