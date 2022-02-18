@@ -1,5 +1,5 @@
 ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS scheduler
+FROM openjdk:${JDK_VERSION}-slim AS metrics-reporter
 
 ENV APPLICATION airbyte-metrics-reporter
 
