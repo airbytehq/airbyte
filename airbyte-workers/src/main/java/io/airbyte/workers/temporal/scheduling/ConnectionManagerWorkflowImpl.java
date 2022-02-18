@@ -438,12 +438,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Start the child SyncWorkflow. We are using the sync workflow here for two main reason: -
-   * Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
-   * limit the portential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
-   * sync workflow. - The {@link SyncWorkflow} has different requirements than the
-   * {@link ConnectionManagerWorkflow} because it mainly runs long term activity, in the future, using
-   * a different Node pool would make sense.
+   * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
+   * <p>
+   * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
+   * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
+   * child workflow.
+   * <p>
+   * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow}
+   * since the latter is a long running workflow, in the future, using a different Node pool would
+   * make sense.
    */
   private StandardSyncOutput runChildWorkflow(GeneratedJobInput jobInputs) {
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
