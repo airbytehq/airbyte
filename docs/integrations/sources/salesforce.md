@@ -24,10 +24,6 @@ We can retrieve deleted records in Salesforce. It is available only for streams 
 If the record was deleted, Salesforce set `IsDeleted=True` and in the next incremental sync, we read this record.
 In case, when the record was created, synced, then updated and deleted, synced one more time, we retrieve the record with updated data and `IsDeleted=True`.
 
-The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. 
-While a user could archive or delete an ad campaign, there is still a record of that campaign having existed in the Facebook Marketing API. 
-If configured by the user, the Facebook connector replicates records for campaigns or ads even if they were archived or deleted from the Facebook platform.
-
 ### Performance considerations
 
 The connector is restricted by daily Salesforce rate limiting.
