@@ -769,18 +769,17 @@ class CRMSearchStream(IncrementalStream, ABC):
                 records = self._filter_old_records(records)
                 records = self._flat_associations(records)
 
-                # latest_cursor = None
                 for record in records:
                     cursor = self._field_to_datetime(record[self.updated_at_field])
                     latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                     yield record
-                # self._update_state(latest_cursor=latest_cursor)  # TODO update state
+                # self._update_state(latest_cursor=latest_cursor)
 
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
                     pagination_complete = True
 
-            self._update_state(latest_cursor=latest_cursor)  # TODO update state
+            self._update_state(latest_cursor=latest_cursor)
             # Always return an empty generator just in case no records were ever yielded
             yield from []
 
