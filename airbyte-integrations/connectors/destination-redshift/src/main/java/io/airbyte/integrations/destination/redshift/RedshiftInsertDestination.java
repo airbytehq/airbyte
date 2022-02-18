@@ -11,7 +11,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -44,7 +43,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return new HashMap<>();
+    return SSL_JDBC_PARAMETERS;
   }
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
