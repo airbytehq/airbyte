@@ -27,7 +27,6 @@ runs:
     - name: Build Coverage Reports
       id: build-coverage-reports
       shell: bash
-#      working-directory: ${{ inputs.module-folder }}
       run: |
         GRADLE_JOB=$(source ./tools/lib/lib.sh; full_path_to_gradle_path ${{ inputs.module-folder }} "unitTest")
         REPORT_FOLDER="${{ inputs.module-folder }}/coverage/"
@@ -36,13 +35,14 @@ runs:
         echo "::set-output name=coverage-paths::coverage/coverage.xml"
 
     - name: Upload coverage to Codecov
-      if: ${{ always() }}
       uses: codecov/codecov-action@v2
+      with:
+        file: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
+        name: "UnitTests of ${{ inputs.module-name }}"
 
     - name: Build Linter Reports
       id: build-linter-reports
       shell: bash
-      # working-directory: ${{ inputs.module-folder }}
       run: |
         GRADLE_JOB=$(source ./tools/lib/lib.sh; full_path_to_gradle_path ${{ inputs.module-folder }} "airbytePythonReport")
         REPORT_FOLDER="${{ inputs.module-folder }}/reports/"
