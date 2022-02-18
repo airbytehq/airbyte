@@ -28,7 +28,7 @@ def some_config_fixture(account_id):
 
 @pytest.fixture(autouse=True)
 def mock_default_sleep_interval(mocker):
-    mocker.patch("source_facebook_marketing.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
+    mocker.patch("source_facebook_marketing.streams.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
 
 
 @pytest.fixture(name="api")
@@ -42,7 +42,10 @@ def api_fixture(some_config, requests_mock, fb_account_response):
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
     error = {
-        "message": "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting.",
+        "message": (
+            "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. "
+            "For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting."
+        ),
         "type": "OAuthException",
         "code": 80000,
         "error_subcode": 2446079,
@@ -77,8 +80,10 @@ def fb_account_response_fixture(account_id):
 
 
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
+    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
+        # turn Campaigns into non batch mode to test non batch logic
+        mocker.patch.object(Campaigns, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
         campaign_responses = [
             fb_call_rate_response,
             {
