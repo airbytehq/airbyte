@@ -29,6 +29,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.metrics.lib.AirbyteApplications;
 import io.airbyte.metrics.lib.DogstatsdMetricSingleton;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -274,7 +275,7 @@ public class SchedulerApp {
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    DogstatsdMetricSingleton.initialize("airbyte-scheduler", configs.getPublishMetrics());
+    DogstatsdMetricSingleton.initialize(AirbyteApplications.AIRBYTE_SCHEDULER, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(

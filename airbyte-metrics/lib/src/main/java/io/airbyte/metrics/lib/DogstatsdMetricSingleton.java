@@ -22,7 +22,26 @@ public class DogstatsdMetricSingleton {
   private final StatsDClient statsDClient;
   private final boolean instancePublish;
 
-  public DogstatsdMetricSingleton(final String appName, final boolean publish) {
+  public static synchronized DogstatsdMetricSingleton getInstance() {
+    if (instance == null) {
+      throw new RuntimeException("You must initialize configuration with the initialize() method before getting an instance.");
+    }
+    return instance;
+  }
+
+  public synchronized static void initialize(final AirbyteApplication app, final boolean publish) {
+    if (instance != null) {
+      throw new RuntimeException("You cannot initialize configuration more than once.");
+    }
+    if (publish) {
+      log.info("Starting DogStatsD client..");
+      // The second constructor argument ('true') makes this server start as a separate daemon thread.
+      // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
+      instance = new DogstatsdMetricSingleton(app.getApplicationName(), publish);
+    }
+  }
+
+  private DogstatsdMetricSingleton(final String appName, final boolean publish) {
     instancePublish = publish;
     statsDClient = new NonBlockingStatsDClientBuilder()
         .prefix(appName)
@@ -31,36 +50,17 @@ public class DogstatsdMetricSingleton {
         .build();
   }
 
-  public static synchronized DogstatsdMetricSingleton getInstance() {
-    if (instance == null) {
-      throw new RuntimeException("You must initialize configuration with the initialize() method before getting an instance.");
-    }
-    return instance;
-  }
-
-  public synchronized static void initialize(final String appName, final boolean publish) {
-    if (instance != null) {
-      throw new RuntimeException("You cannot initialize configuration more than once.");
-    }
-    if (publish) {
-      log.info("Starting DogStatsD client..");
-      // The second constructor argument ('true') makes this server start as a separate daemon thread.
-      // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
-      instance = new DogstatsdMetricSingleton(appName, publish);
-    }
-  }
-
   /**
    * Increment or decrement a counter.
    *
-   * @param name of counter.
+   * @param metric
    * @param amt to adjust.
    * @param tags
    */
-  public void count(final String name, final double amt, final String... tags) {
+  public void count(final AirbyteMetric metric, final double amt, final String... tags) {
     if (instancePublish) {
-      log.info("publishing count, name: {}, value: {}", name, amt);
-      statsDClient.count(name, amt, tags);
+      log.info("publishing count, name: {}, value: {}", metric.metricName, amt);
+      statsDClient.count(metric.metricName, amt, tags);
     }
   }
 
@@ -71,10 +71,10 @@ public class DogstatsdMetricSingleton {
    * @param val to record.
    * @param tags
    */
-  public void gauge(final String name, final double val, final String... tags) {
+  public void gauge(final AirbyteMetric metric, final double val, final String... tags) {
     if (instancePublish) {
-      log.info("publishing gauge, name: {}, value: {}", name, val);
-      statsDClient.gauge(name, val, tags);
+      log.info("publishing gauge, name: {}, value: {}", metric, val);
+      statsDClient.gauge(metric.metricName, val, tags);
     }
   }
 
@@ -86,40 +86,41 @@ public class DogstatsdMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeLocal(final String name, final double val, final String... tags) {
+  public void recordTimeLocal(final AirbyteMetric metric, final double val, final String... tags) {
     if (instancePublish) {
-      log.info("recording histogram, name: {}, value: {}", name, val);
-      statsDClient.histogram(name, val, tags);
+      log.info("recording histogram, name: {}, value: {}", metric.metricName, val);
+      statsDClient.histogram(metric.metricName, val, tags);
     }
   }
 
   /**
    * Submit a single execution time aggregated globally by Datadog. Use this for precise stats.
    *
-   * @param name of distribution.
+   * @param metric
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeGlobal(final String name, final double val, final String... tags) {
+  public void recordTimeGlobal(final AirbyteMetric metric, final double val, final String... tags) {
     if (instancePublish) {
-      log.info("recording distribution, name: {}, value: {}", name, val);
-      statsDClient.distribution(name, val, tags);
+      log.info("recording distribution, name: {}, value: {}", metric.metricName, val);
+      statsDClient.distribution(metric.metricName, val, tags);
     }
   }
 
   /**
-   * Wrapper of {@link #recordTimeGlobal(String, double, String...)} with a runnable for convenience.
+   * Wrapper of {@link #recordTimeGlobal(AirbyteMetric, double, String...)} with a runnable for
+   * convenience.
    *
-   * @param name
-   * @param runnable
+   * @param metric
+   * @param runnable to time
    * @param tags
    */
-  public void recordTimeGlobal(final String name, final Runnable runnable, final String... tags) {
+  public void recordTimeGlobal(final AirbyteMetric metric, final Runnable runnable, final String... tags) {
     final long start = System.currentTimeMillis();
     runnable.run();
     final long end = System.currentTimeMillis();
     final long val = end - start;
-    recordTimeGlobal(name, val, tags);
+    recordTimeGlobal(metric, val, tags);
   }
 
 }
