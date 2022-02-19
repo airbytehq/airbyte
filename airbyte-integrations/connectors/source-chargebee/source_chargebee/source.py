@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Addon, AttachedItem, Transactions, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription
+from .streams import Addon, AttachedItem, Coupon, Transactions, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription
 
 class SourceChargebee(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
