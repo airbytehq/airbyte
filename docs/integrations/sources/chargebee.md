@@ -84,6 +84,7 @@ Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-02-19 | [10312](https://github.com/airbytehq/airbyte/pull/10312) | Add support for Transaction Stream
 | 0.1.7 | 2022-02-14 | [10269](https://github.com/airbytehq/airbyte/pull/10269) | Add support for Coupon stream |
 | 0.1.6 | 2022-02-10 | [10143](https://github.com/airbytehq/airbyte/pull/10143) | Add support for Event stream |
 | 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
