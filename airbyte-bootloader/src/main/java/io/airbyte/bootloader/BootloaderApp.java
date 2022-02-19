@@ -114,7 +114,7 @@ public class BootloaderApp {
 
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
       final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence, null, Optional.empty(), Optional.empty());
+          new ConfigRepository(configPersistence, null, Optional.empty(), Optional.empty(), configDatabase);
 
       createWorkspaceIfNoneExists(configRepository);
       LOGGER.info("Default workspace created..");
