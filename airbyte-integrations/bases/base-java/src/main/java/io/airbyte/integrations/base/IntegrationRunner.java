@@ -78,6 +78,7 @@ public class IntegrationRunner {
   }
 
   public void run(final String[] args) throws Exception {
+    LOGGER.info("==== System env: {}", System.getenv());
     initSentry();
 
     final IntegrationConfig parsed = cliParser.parse(args);

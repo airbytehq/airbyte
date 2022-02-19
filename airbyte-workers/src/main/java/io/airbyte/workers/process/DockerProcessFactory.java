@@ -85,6 +85,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> labels,
+                        final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
@@ -131,6 +132,11 @@ public class DockerProcessFactory implements ProcessFactory {
       for (final var envEntry : workerConfigs.getEnvMap().entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
+      }
+
+      for (final Map.Entry<String, String> envEntry : envMap.entrySet()) {
+        cmd.add("-e");
+        cmd.add(envEntry.getKey() + "="+ envEntry.getValue());
       }
 
       if (!Strings.isNullOrEmpty(entrypoint)) {

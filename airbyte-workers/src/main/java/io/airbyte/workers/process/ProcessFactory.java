@@ -24,9 +24,9 @@ public interface ProcessFactory {
    *        by this argument.
    * @param resourceRequirements CPU and RAM to assign to the created process.
    * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
+   * @param envMap Extra environment variables to pass to the created process.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
-   * @throws WorkerException
    */
   Process create(String jobId,
                  int attempt,
@@ -37,6 +37,7 @@ public interface ProcessFactory {
                  final String entrypoint,
                  final ResourceRequirements resourceRequirements,
                  final Map<String, String> labels,
+                 final Map<String, String> envMap,
                  final Map<Integer, Integer> portMapping,
                  final String... args)
       throws WorkerException;
