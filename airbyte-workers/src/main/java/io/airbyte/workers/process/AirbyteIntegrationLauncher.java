@@ -159,9 +159,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private Map<String, String> getWorkerMetadata() {
     return Map.of(
-        "connectorImage", imageName,
-        "jobId", jobId,
-        "jobAttempt", String.valueOf(attempt));
+        "WORKER_CONNECTOR_IMAGE", imageName,
+        "WORKER_JOB_ID", jobId,
+        "WORKER_JOB_ATTEMPT", String.valueOf(attempt));
   }
 
 }

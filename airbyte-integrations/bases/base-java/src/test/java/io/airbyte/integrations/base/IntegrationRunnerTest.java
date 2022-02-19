@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -20,6 +21,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.base.IntegrationRunner.ConnectorImage;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -276,6 +278,20 @@ class IntegrationRunnerTest {
     inOrder.verify(airbyteMessageConsumerMock).accept(message1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  void testParseConnectorImage() {
+    assertEquals(new ConnectorImage("", ""), IntegrationRunner.parseConnectorImage(null));
+    assertEquals(new ConnectorImage("", ""), IntegrationRunner.parseConnectorImage(""));
+    assertEquals(new ConnectorImage("destination-snowflake", "1.0.1-beta"),
+        IntegrationRunner.parseConnectorImage("airbyte/destination-snowflake:1.0.1-beta"));
+    assertEquals(new ConnectorImage("destination-snowflake", "dev"), IntegrationRunner.parseConnectorImage("airbyte/destination-snowflake:dev"));
+    assertEquals(new ConnectorImage("destination-snowflake", "dev"), IntegrationRunner.parseConnectorImage("destination-snowflake:dev"));
+    assertEquals(new ConnectorImage("destination-snowflake", "unknown"), IntegrationRunner.parseConnectorImage("destination-snowflake"));
+    assertEquals(new ConnectorImage("destination-snowflake", "unknown"), IntegrationRunner.parseConnectorImage("airbyte/destination-snowflake"));
+    assertEquals(new ConnectorImage("unknown", "1.0.1-beta"), IntegrationRunner.parseConnectorImage(":1.0.1-beta"));
+    assertEquals(new ConnectorImage("unknown", "1.0.1-beta"), IntegrationRunner.parseConnectorImage("airbyte/:1.0.1-beta"));
   }
 
 }

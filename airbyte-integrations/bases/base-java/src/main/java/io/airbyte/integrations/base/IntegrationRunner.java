@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.sentry.ITransaction;
+import io.sentry.NoOpTransaction;
 import io.sentry.Sentry;
 import io.sentry.SpanStatus;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,17 +80,10 @@ public class IntegrationRunner {
   }
 
   public void run(final String[] args) throws Exception {
-    LOGGER.info("==== System env: {}", System.getenv());
-    initSentry();
-
     final IntegrationConfig parsed = cliParser.parse(args);
-    final ITransaction transaction = Sentry.startTransaction(
-        integration.getClass().getSimpleName(),
-        parsed.getCommand().toString(),
-        true);
-    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
+    final ITransaction transaction = createSentryTransaction(integration.getClass(), parsed.getCommand());
     try {
-      runInternal(transaction, parsed);
+      runInternal(parsed);
       transaction.finish(SpanStatus.OK);
     } catch (final Exception e) {
       transaction.setThrowable(e);
@@ -103,7 +98,7 @@ public class IntegrationRunner {
     }
   }
 
-  public void runInternal(final ITransaction transaction, final IntegrationConfig parsed) throws Exception {
+  private void runInternal(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
@@ -191,10 +186,13 @@ public class IntegrationRunner {
     return Jsons.object(jsonNode, klass);
   }
 
-  private static void initSentry() {
+  private static ITransaction createSentryTransaction(final Class<?> connectorClass, final Command command) {
+    if (command == Command.SPEC) {
+      return NoOpTransaction.getInstance();
+    }
+
     final Map<String, String> env = System.getenv();
-    final String connector = env.getOrDefault("APPLICATION", "unknown");
-    final String version = env.getOrDefault("APPLICATION_VERSION", "unknown");
+    final ConnectorImage connectorImage = parseConnectorImage(env.getOrDefault(JavaBaseConstants.ENV_WORKER_CONNECTOR_IMAGE, ""));
     final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
 
     // https://docs.sentry.io/platforms/java/configuration/
@@ -202,10 +200,50 @@ public class IntegrationRunner {
       options.setDsn(enableSentry ? env.getOrDefault("SENTRY_DSN", "") : "");
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
-      options.setRelease(String.format("%s@%s", connector, version));
-      options.setTag("connector", connector);
-      options.setTag("connector_version", version);
+      options.setRelease(String.format("%s@%s", connectorImage.name, connectorImage.version));
+      options.setTag("connector", connectorImage.name);
+      options.setTag("connector_version", connectorImage.version);
+      options.setTag("job_id", env.getOrDefault(JavaBaseConstants.ENV_WORKER_JOB_ID, ""));
+      options.setTag("job_attempt", env.getOrDefault(JavaBaseConstants.ENV_WORKER_JOB_ATTEMPT, ""));
     });
+
+    final ITransaction transaction = Sentry.startTransaction(
+        connectorClass.getSimpleName(),
+        command.toString(),
+        true);
+    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
+    return transaction;
+  }
+
+  @VisibleForTesting
+  record ConnectorImage(String name, String version) {
+
+    private static final String UNKNOWN = "unknown";
+
+    public ConnectorImage(String name, String version) {
+      this.name = Strings.isBlank(name) ? UNKNOWN : name;
+      this.version = Strings.isBlank(version) ? UNKNOWN : version;
+    }
+
+  }
+
+  /**
+   * @param connectorImageString Expected format: [<organization>/]<image>[:<version>]
+   */
+  @VisibleForTesting
+  static ConnectorImage parseConnectorImage(final String connectorImageString) {
+    if (Strings.isBlank(connectorImageString)) {
+      return new ConnectorImage(null, null);
+    }
+
+    // remove the organization prefix
+    final String imageVersion = connectorImageString.contains("/")
+        ? connectorImageString.replaceFirst(".+/", "")
+        : connectorImageString;
+    final String[] tokens = imageVersion.split(":");
+    final String name = tokens[0];
+    final String version = tokens.length > 1 ? tokens[1] : null;
+    return new ConnectorImage(name, version);
   }
 
 }
