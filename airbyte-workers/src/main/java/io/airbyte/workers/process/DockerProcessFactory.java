@@ -131,7 +131,7 @@ public class DockerProcessFactory implements ProcessFactory {
       }
 
       final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap());
-      for (final var envEntry : allEnvMap.entrySet()) {
+      for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }

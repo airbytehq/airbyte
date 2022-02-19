@@ -201,7 +201,7 @@ public class IntegrationRunner {
     final String connector = env.getOrDefault("APPLICATION", "unknown");
     final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
     final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION", "");
-    final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "none");
+    final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "");
     final boolean isDev = version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
 
     // https://docs.sentry.io/platforms/java/configuration/
