@@ -136,7 +136,7 @@ public class DockerProcessFactory implements ProcessFactory {
 
       for (final Map.Entry<String, String> envEntry : envMap.entrySet()) {
         cmd.add("-e");
-        cmd.add(envEntry.getKey() + "="+ envEntry.getValue());
+        cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }
 
       if (!Strings.isNullOrEmpty(entrypoint)) {
