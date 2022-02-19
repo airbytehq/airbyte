@@ -211,7 +211,7 @@ public class IntegrationRunner {
     }
 
     final ConnectorImage connectorImage = parseConnectorImage(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
-    final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION","");
+    final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION", "");
     final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "");
     final boolean isDev = connectorImage.version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
 

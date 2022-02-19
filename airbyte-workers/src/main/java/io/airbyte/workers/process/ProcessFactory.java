@@ -27,6 +27,7 @@ public interface ProcessFactory {
    * @param envMap Extra environment variables to pass to the created process.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
+   * @throws WorkerException
    */
   Process create(String jobId,
                  int attempt,
