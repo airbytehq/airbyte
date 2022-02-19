@@ -103,7 +103,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
-                        final Map<String, String> envMap,
+                        final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
@@ -143,7 +143,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
-          MoreMaps.merge(workerConfigs.getEnvMap(), envMap),
+          MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {
