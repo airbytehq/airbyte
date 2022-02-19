@@ -186,18 +186,6 @@ public class IntegrationRunner {
     return Jsons.object(jsonNode, klass);
   }
 
-  @VisibleForTesting
-  record ConnectorImage(String name, String version) {
-
-    private static final String UNKNOWN = "unknown";
-
-    public ConnectorImage(String name, String version) {
-      this.name = Strings.isBlank(name) ? UNKNOWN : name;
-      this.version = Strings.isBlank(version) ? UNKNOWN : version;
-    }
-
-  }
-
   private static ITransaction createSentryTransaction(final Class<?> connectorClass, final Command command) {
     if (command == Command.SPEC) {
       return NoOpTransaction.getInstance();
@@ -210,20 +198,21 @@ public class IntegrationRunner {
       return NoOpTransaction.getInstance();
     }
 
-    final ConnectorImage connectorImage = parseConnectorImage(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
+    final String connector = env.getOrDefault("APPLICATION", "unknown");
+    final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
     final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION", "");
     final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "none");
-    final boolean isDev = connectorImage.version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
+    final boolean isDev = version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
 
     // https://docs.sentry.io/platforms/java/configuration/
     Sentry.init(options -> {
       options.setDsn(sentryDsn);
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(1.0);
-      options.setRelease(String.format("%s@%s", connectorImage.name, connectorImage.version));
+      options.setRelease(String.format("%s@%s", connector, version));
       options.setEnvironment(isDev ? "dev" : "production");
-      options.setTag("connector", connectorImage.name);
-      options.setTag("connector_version", connectorImage.version);
+      options.setTag("connector", connector);
+      options.setTag("connector_version", version);
       options.setTag("job_id", env.getOrDefault("WORKER_JOB_ID", ""));
       options.setTag("job_attempt", env.getOrDefault("WORKER_JOB_ATTEMPT", ""));
       options.setTag("airbyte_version", airbyteVersion);
@@ -239,22 +228,16 @@ public class IntegrationRunner {
   }
 
   /**
-   * @param connectorImageString Expected format: [<organization>/]<image>[:<version>]
+   * @param connectorImage Expected format: [organization/]image[:version]
    */
   @VisibleForTesting
-  static ConnectorImage parseConnectorImage(final String connectorImageString) {
-    if (Strings.isBlank(connectorImageString)) {
-      return new ConnectorImage(null, null);
+  static String parseConnectorVersion(final String connectorImage) {
+    if (Strings.isBlank(connectorImage)) {
+      return "unknown";
     }
 
-    // remove the organization prefix
-    final String imageVersion = connectorImageString.contains("/")
-        ? connectorImageString.replaceFirst(".+/", "")
-        : connectorImageString;
-    final String[] tokens = imageVersion.split(":");
-    final String name = tokens[0];
-    final String version = tokens.length > 1 ? tokens[1] : null;
-    return new ConnectorImage(name, version);
+    final String[] tokens = connectorImage.split(":");
+    return tokens[tokens.length - 1];
   }
 
 }
