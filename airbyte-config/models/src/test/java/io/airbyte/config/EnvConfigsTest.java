@@ -328,21 +328,27 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testEmptyJobEnvMapRetrieval() {
-    assertEquals(Map.of(), config.getJobDefaultEnvMap());
+  void testSharedJobEnvMapRetrieval() {
+    envMap.put(EnvConfigs.AIRBYTE_VERSION, "dev");
+    envMap.put(EnvConfigs.WORKER_ENVIRONMENT, "UNIT_TEST");
+    final Map<String, String> expected = Map.of("AIRBYTE_VERSION", "dev",
+        "AIRBYTE_ROLE", "",
+        "WORKER_ENVIRONMENT", "UNIT_TEST");
+    assertEquals(expected, config.getJobDefaultEnvMap());
   }
 
   @Test
-  void testJobEnvMapRetrieval() {
-    EnvConfigs.JOB_DEFAULT_ENV_KEYS.forEach(key -> envMap.put(key, "VALUE"));
+  void testAllJobEnvMapRetrieval() {
+    envMap.put(EnvConfigs.AIRBYTE_VERSION, "dev");
+    envMap.put(EnvConfigs.AIRBYTE_ROLE, "UNIT_TEST");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1", "VAL1");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2", "VAL\"2WithQuotesand$ymbols");
 
     final Map<String, String> expected = Map.of("ENV1", "VAL1",
         "ENV2", "VAL\"2WithQuotesand$ymbols",
-        "AIRBYTE_VERSION", "VALUE",
-        "AIRBYTE_ROLE", "VALUE",
-        "WORKER_ENVIRONMENT", "VALUE");
+        "AIRBYTE_VERSION", "dev",
+        "AIRBYTE_ROLE", "UNIT_TEST",
+        "WORKER_ENVIRONMENT", "DOCKER");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
 
