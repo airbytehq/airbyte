@@ -160,7 +160,7 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
-  static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
+  private static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
       WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());

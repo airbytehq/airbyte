@@ -190,8 +190,8 @@ public class IntegrationRunner {
     if (command == Command.SPEC) {
       return NoOpTransaction.getInstance();
     }
+
     final Map<String, String> env = System.getenv();
-    System.out.println("==== system env: " + env);
     final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
     final String sentryDsn = env.getOrDefault("SENTRY_DSN", "");
     if (!enableSentry || Strings.isBlank(sentryDsn)) {
