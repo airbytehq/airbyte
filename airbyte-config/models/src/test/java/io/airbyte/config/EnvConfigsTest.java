@@ -328,16 +328,21 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testEmptyEnvMapRetrieval() {
+  void testEmptyJobEnvMapRetrieval() {
     assertEquals(Map.of(), config.getJobDefaultEnvMap());
   }
 
   @Test
-  void testEnvMapRetrieval() {
+  void testJobEnvMapRetrieval() {
+    EnvConfigs.JOB_DEFAULT_ENV_KEYS.forEach(key -> envMap.put(key, "VALUE"));
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1", "VAL1");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2", "VAL\"2WithQuotesand$ymbols");
 
-    final var expected = Map.of("ENV1", "VAL1", "ENV2", "VAL\"2WithQuotesand$ymbols");
+    final Map<String, String> expected = Map.of("ENV1", "VAL1",
+        "ENV2", "VAL\"2WithQuotesand$ymbols",
+        "AIRBYTE_VERSION", "VALUE",
+        "AIRBYTE_ROLE", "VALUE",
+        "WORKER_ENVIRONMENT", "VALUE");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
 

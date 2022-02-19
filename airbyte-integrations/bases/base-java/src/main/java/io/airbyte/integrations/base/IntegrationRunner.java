@@ -186,35 +186,6 @@ public class IntegrationRunner {
     return Jsons.object(jsonNode, klass);
   }
 
-  private static ITransaction createSentryTransaction(final Class<?> connectorClass, final Command command) {
-    if (command == Command.SPEC) {
-      return NoOpTransaction.getInstance();
-    }
-
-    final Map<String, String> env = System.getenv();
-    final ConnectorImage connectorImage = parseConnectorImage(env.getOrDefault(JavaBaseConstants.ENV_WORKER_CONNECTOR_IMAGE, ""));
-    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
-
-    // https://docs.sentry.io/platforms/java/configuration/
-    Sentry.init(options -> {
-      options.setDsn(enableSentry ? env.getOrDefault("SENTRY_DSN", "") : "");
-      options.setEnableExternalConfiguration(true);
-      options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
-      options.setRelease(String.format("%s@%s", connectorImage.name, connectorImage.version));
-      options.setTag("connector", connectorImage.name);
-      options.setTag("connector_version", connectorImage.version);
-      options.setTag("job_id", env.getOrDefault(JavaBaseConstants.ENV_WORKER_JOB_ID, ""));
-      options.setTag("job_attempt", env.getOrDefault(JavaBaseConstants.ENV_WORKER_JOB_ATTEMPT, ""));
-    });
-
-    final ITransaction transaction = Sentry.startTransaction(
-        connectorClass.getSimpleName(),
-        command.toString(),
-        true);
-    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
-    return transaction;
-  }
-
   @VisibleForTesting
   record ConnectorImage(String name, String version) {
 
@@ -225,6 +196,46 @@ public class IntegrationRunner {
       this.version = Strings.isBlank(version) ? UNKNOWN : version;
     }
 
+  }
+
+  private static ITransaction createSentryTransaction(final Class<?> connectorClass, final Command command) {
+    if (command == Command.SPEC) {
+      return NoOpTransaction.getInstance();
+    }
+    final Map<String, String> env = System.getenv();
+    System.out.println("==== system env: " + env);
+    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
+    final String sentryDsn = env.getOrDefault("SENTRY_DSN", "");
+    if (!enableSentry || Strings.isBlank(sentryDsn)) {
+      return NoOpTransaction.getInstance();
+    }
+
+    final ConnectorImage connectorImage = parseConnectorImage(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
+    final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION","");
+    final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "");
+    final boolean isDev = connectorImage.version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
+
+    // https://docs.sentry.io/platforms/java/configuration/
+    Sentry.init(options -> {
+      options.setDsn(sentryDsn);
+      options.setEnableExternalConfiguration(true);
+      options.setTracesSampleRate(1.0);
+      options.setRelease(String.format("%s@%s", connectorImage.name, connectorImage.version));
+      options.setEnvironment(isDev ? "dev" : "production");
+      options.setTag("connector", connectorImage.name);
+      options.setTag("connector_version", connectorImage.version);
+      options.setTag("job_id", env.getOrDefault("WORKER_JOB_ID", ""));
+      options.setTag("job_attempt", env.getOrDefault("WORKER_JOB_ATTEMPT", ""));
+      options.setTag("airbyte_version", airbyteVersion);
+      options.setTag("worker_environment", env.getOrDefault("WORKER_ENVIRONMENT", ""));
+    });
+
+    final ITransaction transaction = Sentry.startTransaction(
+        connectorClass.getSimpleName(),
+        command.toString(),
+        true);
+    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
+    return transaction;
   }
 
   /**

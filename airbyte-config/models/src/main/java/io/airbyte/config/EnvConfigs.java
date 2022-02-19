@@ -158,6 +158,10 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
+  // these environment variables are available to the job container
+  // in addition to those with the JOB_DEFAULT_ENV_PREFIX
+  static final Set<String> JOB_DEFAULT_ENV_KEYS = Set.of(AIRBYTE_VERSION, AIRBYTE_ROLE, WORKER_ENVIRONMENT);
+
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
   private final LogConfigs logConfigs;
@@ -613,7 +617,7 @@ public class EnvConfigs implements Configs {
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
     return getAllEnvKeys.get().stream()
-        .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
+        .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX) || JOB_DEFAULT_ENV_KEYS.contains(key))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
   }
 

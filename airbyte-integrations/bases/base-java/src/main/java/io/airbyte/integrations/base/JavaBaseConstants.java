@@ -20,8 +20,4 @@ public final class JavaBaseConstants {
   public static final String COLUMN_NAME_EMITTED_AT = "_airbyte_emitted_at";
   public static final String COLUMN_NAME_DATA = "_airbyte_data";
 
-  public static final String ENV_WORKER_CONNECTOR_IMAGE = "WORKER_CONNECTOR_IMAGE";
-  public static final String ENV_WORKER_JOB_ID = "WORKER_JOB_ID";
-  public static final String ENV_WORKER_JOB_ATTEMPT = "WORKER_JOB_ATTEMPT";
-
 }
