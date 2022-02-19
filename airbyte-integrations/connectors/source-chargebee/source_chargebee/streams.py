@@ -290,6 +290,15 @@ class Event(IncrementalChargebeeStream):
 
     api = EventModel
 
+class Coupon(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
+    """
+
+    cursor_field = "updated_at"
+
+    api = CouponModel
+
 class Transactions(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.eu.chargebee.com/docs/api/transaction?prod_cat_ver=2#list_transactions
