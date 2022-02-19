@@ -378,10 +378,7 @@ public class WorkerApp {
         configRepository,
         jobPersistence);
 
-    final ConnectionHelper connectionHelper = new ConnectionHelper(
-        configRepository,
-        workspaceHelper,
-        defaultWorkerConfigs);
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
