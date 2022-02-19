@@ -22,7 +22,7 @@ class DebeziumConverterUtilsTest {
   @Test
   public void convertDefaultValueTest() {
 
-    RelationalColumn relationalColumn = mock(RelationalColumn.class);
+    final RelationalColumn relationalColumn = mock(RelationalColumn.class);
 
     when(relationalColumn.isOptional()).thenReturn(true);
     Object actualColumnDefaultValue = DebeziumConverterUtils.convertDefaultValue(relationalColumn);
@@ -35,7 +35,7 @@ class DebeziumConverterUtilsTest {
 
     when(relationalColumn.isOptional()).thenReturn(false);
     when(relationalColumn.hasDefaultValue()).thenReturn(true);
-    String expectedColumnDefaultValue = "default value";
+    final String expectedColumnDefaultValue = "default value";
     when(relationalColumn.defaultValue()).thenReturn(expectedColumnDefaultValue);
     actualColumnDefaultValue = DebeziumConverterUtils.convertDefaultValue(relationalColumn);
     Assertions.assertEquals(actualColumnDefaultValue, expectedColumnDefaultValue);
@@ -43,59 +43,59 @@ class DebeziumConverterUtilsTest {
 
   @Test
   public void convertLocalDate() {
-    LocalDate localDate = LocalDate.of(2021, 1, 1);
+    final LocalDate localDate = LocalDate.of(2021, 1, 1);
 
-    String actual = DebeziumConverterUtils.convertDate(localDate);
+    final String actual = DebeziumConverterUtils.convertDate(localDate);
     Assertions.assertEquals("2021-01-01T00:00:00Z", actual);
   }
 
   @Test
   public void convertTLocalTime() {
-    LocalTime localTime = LocalTime.of(8, 1, 1);
-    String actual = DebeziumConverterUtils.convertDate(localTime);
+    final LocalTime localTime = LocalTime.of(8, 1, 1);
+    final String actual = DebeziumConverterUtils.convertDate(localTime);
     Assertions.assertEquals("08:01:01", actual);
   }
 
   @Test
   public void convertLocalDateTime() {
-    LocalDateTime localDateTime = LocalDateTime.of(2021, 1, 1, 8, 1, 1);
+    final LocalDateTime localDateTime = LocalDateTime.of(2021, 1, 1, 8, 1, 1);
 
-    String actual = DebeziumConverterUtils.convertDate(localDateTime);
+    final String actual = DebeziumConverterUtils.convertDate(localDateTime);
     Assertions.assertEquals("2021-01-01T08:01:01Z", actual);
   }
 
   @Test
   @Disabled
   public void convertDuration() {
-    Duration duration = Duration.ofHours(100_000);
+    final Duration duration = Duration.ofHours(100_000);
 
-    String actual = DebeziumConverterUtils.convertDate(duration);
+    final String actual = DebeziumConverterUtils.convertDate(duration);
     Assertions.assertEquals("1981-05-29T20:00:00Z", actual);
   }
 
   @Test
   public void convertTimestamp() {
-    LocalDateTime localDateTime = LocalDateTime.of(2021, 1, 1, 8, 1, 1);
-    Timestamp timestamp = Timestamp.valueOf(localDateTime);
+    final LocalDateTime localDateTime = LocalDateTime.of(2021, 1, 1, 8, 1, 1);
+    final Timestamp timestamp = Timestamp.valueOf(localDateTime);
 
-    String actual = DebeziumConverterUtils.convertDate(timestamp);
-    Assertions.assertEquals("2021-01-01T08:01:01Z", actual);
+    final String actual = DebeziumConverterUtils.convertDate(timestamp);
+    Assertions.assertEquals("2021-01-01T08:01:01.000000Z", actual);
   }
 
   @Test
   @Disabled
   public void convertNumber() {
-    Number number = 100_000;
+    final Number number = 100_000;
 
-    String actual = DebeziumConverterUtils.convertDate(number);
+    final String actual = DebeziumConverterUtils.convertDate(number);
     Assertions.assertEquals("1970-01-01T03:01:40Z", actual);
   }
 
   @Test
   public void convertStringDateFormat() {
-    String stringValue = "2021-01-01T00:00:00Z";
+    final String stringValue = "2021-01-01T00:00:00Z";
 
-    String actual = DebeziumConverterUtils.convertDate(stringValue);
+    final String actual = DebeziumConverterUtils.convertDate(stringValue);
     Assertions.assertEquals("2021-01-01T00:00:00Z", actual);
   }
 
