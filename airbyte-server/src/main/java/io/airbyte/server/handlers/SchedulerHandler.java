@@ -342,7 +342,9 @@ public class SchedulerHandler {
         standardSync,
         sourceImageName,
         destinationImageName,
-        standardSyncOperations);
+        standardSyncOperations,
+        sourceDef.getResourceRequirements(),
+        destinationDef.getResourceRequirements());
 
     return jobConverter.getJobInfoRead(job);
   }
