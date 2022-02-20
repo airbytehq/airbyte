@@ -141,8 +141,8 @@
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.reauthenticate": "Re-authenticate",
 
-  "form.rawData": "Serialized JSON",
-  "form.basicNormalization": "Original structure",
+  "form.rawData": "Original structure",
+  "form.basicNormalization": "Serialized JSON",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",
   "form.customTransformation": "Custom transformation",
   "form.transformationCount": "{count, plural, =0 {No custom transformation} one {{count} transformation} other {{count} transformations}}",

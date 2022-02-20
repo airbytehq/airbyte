@@ -81,10 +81,7 @@ const TransferFormCard: React.FC<TransferFormProps> = ({ connection }) => {
               {...field}
               error={!!meta.error && meta.touched}
               options={frequencies}
-              onChange={(item) => {
-                form.setFieldValue(field.name, item.value);
-                // reset();
-              }}
+              onChange={(item) => form.setFieldValue(field.name, item.value)}
             />
           </ConnectorLabel>
         )}

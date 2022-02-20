@@ -78,7 +78,7 @@ const NextLineText = styled.div`
 `;
 
 const LearnMoreLink = styled.a`
-  opacity: 0.5;
+  opacity: 0.6;
   display: block;
   margin-top: 10px;
   color: ${({ theme }) => theme.whiteColor};
