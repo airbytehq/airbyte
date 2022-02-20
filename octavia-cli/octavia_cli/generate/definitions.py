@@ -70,7 +70,7 @@ class BaseDefinition(abc.ABC):
             raise e
 
     def __getattr__(self, name: str) -> Any:
-        """Map attribute of the API response the BaseDefinition object.
+        """Map attribute of the API response to the BaseDefinition object.
 
         Args:
             name (str): Attribute name

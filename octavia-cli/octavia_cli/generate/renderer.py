@@ -58,7 +58,7 @@ class FieldToRender:
         return False
 
     def _get_one_of_values(self) -> List[List["FieldToRender"]]:
-        """An object field get have multiple kind of fields if it's a oneOf.
+        """An object field can have multiple kind of values if it's a oneOf.
         This functions returns all the possible one of values the field can take.
         Returns:
             [list]: List of oneof values.
