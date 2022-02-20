@@ -11,8 +11,11 @@ import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -75,8 +78,12 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
 
   @Override
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    // todo (cgardens) need to do class enforcement here here.
-    decoratedPersistence.replaceAllConfigs(configs, dryRun);
+    final Map<AirbyteConfig, Stream<?>> augmentedMap = new HashMap<>(configs).entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            entry -> entry.getValue().peek(config -> Preconditions.checkArgument(entry.getKey().getClassName().equals(config.getClass())))));
+    decoratedPersistence.replaceAllConfigs(augmentedMap, dryRun);
   }
 
   @Override
@@ -86,7 +93,6 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    // todo (cgardens) need to do class enforcement here here.
     decoratedPersistence.loadData(seedPersistence);
   }
 

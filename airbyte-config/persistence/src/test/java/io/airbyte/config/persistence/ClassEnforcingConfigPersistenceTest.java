@@ -6,12 +6,16 @@ package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardSync;
@@ -22,8 +26,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 
 class ClassEnforcingConfigPersistenceTest {
 
@@ -124,6 +131,37 @@ class ClassEnforcingConfigPersistenceTest {
     assertThrows(IllegalArgumentException.class,
         () -> configPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SYNC, StandardWorkspace.class));
     verifyNoInteractions(decoratedConfigPersistence);
+  }
+
+  @Test
+  void testReplaceAllConfigsSuccess() throws IOException, JsonValidationException {
+    consumeConfigInputStreams(decoratedConfigPersistence);
+    final Map<AirbyteConfig, Stream<?>> configs = ImmutableMap.of(ConfigSchema.STANDARD_SYNC, Stream.of(STANDARD_SYNC));
+    configPersistence.replaceAllConfigs(configs, false);
+    verify(decoratedConfigPersistence).replaceAllConfigs(any(), eq(false));
+  }
+
+  @Test
+  void testReplaceAllConfigsFailure() throws IOException {
+    consumeConfigInputStreams(decoratedConfigPersistence);
+    final Map<AirbyteConfig, Stream<?>> configs = ImmutableMap.of(ConfigSchema.STANDARD_SYNC, Stream.of(WORKSPACE));
+    assertThrows(IllegalArgumentException.class, () -> configPersistence.replaceAllConfigs(configs, false));
+    verify(decoratedConfigPersistence).replaceAllConfigs(any(), eq(false));
+  }
+
+  /**
+   * Consumes all streams input via replaceAllConfigs. This will trigger any exceptions that are
+   * thrown during processing.
+   *
+   * @param configPersistence - config persistence mock where this runs.
+   */
+  private static void consumeConfigInputStreams(final ConfigPersistence configPersistence) throws IOException {
+    doAnswer((Answer<Void>) invocation -> {
+      final Map<AirbyteConfig, Stream<?>> argument = invocation.getArgument(0);
+      // force the streams to be consumed so that we can verify the exception was thrown.
+      argument.values().forEach(entry -> entry.collect(Collectors.toList()));
+      return null;
+    }).when(configPersistence).replaceAllConfigs(any(), eq(false));
   }
 
   @SuppressWarnings("SameParameterValue")
