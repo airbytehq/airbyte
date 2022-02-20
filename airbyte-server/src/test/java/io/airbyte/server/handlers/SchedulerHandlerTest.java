@@ -507,9 +507,7 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations,
-        null,
-        null))
+        operations))
             .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
@@ -528,9 +526,7 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations,
-        null,
-        null);
+        operations);
   }
 
   @Test
