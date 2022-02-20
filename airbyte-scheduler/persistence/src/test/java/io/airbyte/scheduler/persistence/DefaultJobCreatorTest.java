@@ -151,7 +151,9 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -182,7 +184,9 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null).isEmpty());
   }
 
   @Test

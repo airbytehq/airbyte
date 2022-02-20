@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.client;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -24,7 +25,9 @@ public interface SchedulerJobClient {
                                StandardSync standardSync,
                                String sourceDockerImage,
                                String destinationDockerImage,
-                               List<StandardSyncOperation> standardSyncOperations)
+                               List<StandardSyncOperation> standardSyncOperations,
+                               ActorDefinitionResourceRequirements sourceResourceRequirements,
+                               ActorDefinitionResourceRequirements destinationResourceRequirements)
       throws IOException;
 
   Job createOrGetActiveResetConnectionJob(DestinationConnection destination,

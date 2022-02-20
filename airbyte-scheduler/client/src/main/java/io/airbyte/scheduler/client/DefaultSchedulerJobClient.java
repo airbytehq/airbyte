@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.client;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -35,7 +36,9 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
                                       final StandardSync standardSync,
                                       final String sourceDockerImage,
                                       final String destinationDockerImage,
-                                      final List<StandardSyncOperation> standardSyncOperations)
+                                      final List<StandardSyncOperation> standardSyncOperations,
+                                      final ActorDefinitionResourceRequirements sourceResourceRequirements,
+                                      final ActorDefinitionResourceRequirements destinationResourceRequirements)
       throws IOException {
     final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
         source,
@@ -43,7 +46,9 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
         standardSync,
         sourceDockerImage,
         destinationDockerImage,
-        standardSyncOperations);
+        standardSyncOperations,
+        sourceResourceRequirements,
+        destinationResourceRequirements);
 
     final long jobId = jobIdOptional.isEmpty()
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
