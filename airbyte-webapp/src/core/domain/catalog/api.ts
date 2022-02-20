@@ -1,5 +1,5 @@
 import { JSONSchema7 } from "json-schema";
-import { JobInfo } from "../job/Job";
+import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
   catalog: SyncSchema;

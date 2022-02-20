@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+
 import useRouter from "hooks/useRouter";
-import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { DestinationDefinition } from "core/domain/connector";
+import { useGetDestinationDefinitionSpecificationAsync } from "../../../../../services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -36,10 +37,10 @@ const DestinationForm: React.FC<IProps> = ({
     location.state?.destinationDefinitionId || ""
   );
   const {
-    destinationDefinitionSpecification,
+    data: destinationDefinitionSpecification,
     isLoading,
-    sourceDefinitionError,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+    error: destinationDefinitionError,
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
@@ -74,7 +75,7 @@ const DestinationForm: React.FC<IProps> = ({
   return (
     <ConnectorCard
       onServiceSelect={onDropDownSelect}
-      fetchingConnectorError={sourceDefinitionError}
+      fetchingConnectorError={destinationDefinitionError}
       onSubmit={onSubmitForm}
       formType="destination"
       availableServices={destinationDefinitions}

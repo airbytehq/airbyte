@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
 
-import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/domain/connector";
@@ -12,6 +11,7 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -33,11 +33,13 @@ const DestinationStep: React.FC<IProps> = ({
   error,
   afterSelectConnector,
 }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<
+    string | null
+  >(null);
   const {
-    destinationDefinitionSpecification,
+    data: destinationDefinitionSpecification,
     isLoading,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const analyticsService = useAnalyticsService();
 

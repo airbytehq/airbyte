@@ -4,13 +4,12 @@ import { FormattedMessage } from "react-intl";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 import { SourceDefinition } from "core/domain/connector";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -32,13 +31,15 @@ const SourceStep: React.FC<IProps> = ({
   error,
   afterSelectConnector,
 }) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    null
+  );
   const analyticsService = useAnalyticsService();
 
   const {
-    sourceDefinitionSpecification,
+    data: sourceDefinitionSpecification,
     isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = availableServices.find(

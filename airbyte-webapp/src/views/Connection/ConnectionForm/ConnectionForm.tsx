@@ -8,7 +8,6 @@ import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
-import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { TransformationField } from "./components/TransformationField";
@@ -17,9 +16,9 @@ import { NamespaceField } from "./components/NamespaceField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
-  useDefaultTransformation,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
+  useDefaultTransformation,
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
@@ -30,6 +29,7 @@ import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -86,7 +86,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   connection,
 }) => {
-  const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
+  const destDefinition = useGetDestinationDefinitionSpecification(
     connection.destination.destinationDefinitionId
   );
 

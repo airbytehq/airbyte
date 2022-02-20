@@ -7,7 +7,7 @@ import { useConfig } from "config";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
-import { DeploymentService } from "core/resources/DeploymentService";
+import { DeploymentService } from "core/domain/DeploymentService";
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
 import { useServicesProvider } from "core/servicesProvider";
