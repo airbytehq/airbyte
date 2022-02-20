@@ -43,6 +43,7 @@
   "workspaces.subtitle": "Workspaces let you collaborate with team members and share sources across your team under a shared billing account.",
   "workspaces.create": "Create workspace",
   "workspaces.createNew": "Create new workspace",
+  "workspaces.loading": "Loading...",
 
   "settings.accountSettings.logoutLabel": "Sign out",
   "settings.accountSettings.logoutText": "Sign out",
