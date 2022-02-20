@@ -88,7 +88,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   public static ConfigPersistence createWithValidation(final Database database,
                                                        final JsonSecretsProcessor jsonSecretsProcessor,
                                                        final FeatureFlags featureFlags) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    return new ClassEnforcingConfigPersistence(
+        new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags)));
   }
 
   public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor, final FeatureFlags featureFlags) {
@@ -1392,6 +1393,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  // todo (cgardens) - how to protect types here?
   @Override
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (dryRun) {
