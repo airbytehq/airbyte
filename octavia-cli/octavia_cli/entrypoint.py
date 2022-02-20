@@ -66,11 +66,6 @@ def _import() -> None:
     raise click.ClickException("The import command is not yet implemented.")
 
 
-@octavia.command(help="Generate a YAML configuration file to manage a resource.")
-def generate() -> None:
-    raise click.ClickException("The generate command is not yet implemented.")
-
-
 @octavia.command(help="Create or update resources according to YAML configurations.")
 def apply() -> None:
     raise click.ClickException("The apply command is not yet implemented.")
