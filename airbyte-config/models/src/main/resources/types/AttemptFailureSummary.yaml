@@ -14,5 +14,5 @@ properties:
     items:
       "$ref": FailureReason.yaml
   partialSuccess:
-    description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed.
+    description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed records is unknown.
     type: boolean

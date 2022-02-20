@@ -114,7 +114,7 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
+    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty(), configDatabase);
 
     jobPersistence.setVersion(VERSION.serialize());
 
@@ -163,7 +163,8 @@ public class ArchiveHandlerTest {
         sourceS3DefinitionId.toString(),
         StandardSourceDefinition.class)
         // This source definition is on an old version
-        .withDockerImageTag(sourceS3DefinitionVersion);
+        .withDockerImageTag(sourceS3DefinitionVersion)
+        .withTombstone(false);
     final Notification notification = new Notification()
         .withNotificationType(NotificationType.SLACK)
         .withSendOnFailure(true)
@@ -277,7 +278,8 @@ public class ArchiveHandlerTest {
         .withDockerRepository("repository-1")
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
-        .withSpec(new ConnectorSpecification());
+        .withSpec(new ConnectorSpecification())
+        .withTombstone(false);
 
     final SourceConnection sourceConnection = new SourceConnection()
         .withWorkspaceId(secondWorkspaceId)
