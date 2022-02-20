@@ -4,7 +4,6 @@ import { setIn } from "formik";
 
 import {
   AirbyteStreamConfiguration,
-  DestinationSyncMode,
   SyncSchemaStream,
 } from "core/domain/catalog";
 
@@ -24,7 +23,6 @@ interface BatchContext {
         ) => Partial<AirbyteStreamConfiguration>)
       | Partial<AirbyteStreamConfiguration>
   ) => void;
-  destinationSupportedSyncModes: DestinationSyncMode[];
   options: Partial<AirbyteStreamConfiguration>;
   onApply: () => void;
   onCancel: () => void;
@@ -37,8 +35,7 @@ const defaultOptions: Partial<AirbyteStreamConfiguration> = {
 const BatchEditProvider: React.FC<{
   nodes: SyncSchemaStream[];
   update: (streams: SyncSchemaStream[]) => void;
-  destinationSupportedSyncModes: DestinationSyncMode[];
-}> = ({ children, nodes, destinationSupportedSyncModes, update }) => {
+}> = ({ children, nodes, update }) => {
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string>(
     new Set()
   );
@@ -71,7 +68,6 @@ const BatchEditProvider: React.FC<{
   const allChecked = selectedBatchNodes.size === nodes.length;
 
   const ctx: BatchContext = {
-    destinationSupportedSyncModes,
     isActive: isActive,
     toggleNode: toggle,
     onCheckAll: () => (allChecked ? reset() : nodes.forEach((n) => add(n.id))),

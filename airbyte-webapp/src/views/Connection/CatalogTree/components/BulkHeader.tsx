@@ -15,7 +15,7 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
-import { flatten } from "../utils";
+import { flatten, getPathType } from "../utils";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
 
@@ -36,7 +36,9 @@ const ActionButton = styled(Button).attrs({
   white-space: nowrap;
 `;
 
-type BulkHeaderProps = {};
+type BulkHeaderProps = {
+  destinationSupportedSyncModes: DestinationSyncMode[];
+};
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
@@ -66,11 +68,11 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   return Array.from(pathMap.values());
 }
 
-export const BulkHeader: React.FC<BulkHeaderProps> = () => {
+export const BulkHeader: React.FC<BulkHeaderProps> = ({
+  destinationSupportedSyncModes,
+}) => {
   const {
     selectedBatchNodes,
-    // TODO: extract this from context
-    destinationSupportedSyncModes,
     options,
     onChangeOption,
     onApply,
@@ -103,15 +105,19 @@ export const BulkHeader: React.FC<BulkHeaderProps> = () => {
     return null;
   }
 
-  // TODO: calculate actualy type
-  const pkType = "required";
-  const cursorType = "required";
   const pkRequired =
     options.destinationSyncMode === DestinationSyncMode.Dedupted;
+  const shouldDefinePk =
+    selectedBatchNodes.every(
+      (n) => n.stream.sourceDefinedPrimaryKey.length === 0
+    ) && pkRequired;
   const cursorRequired = options.syncMode === SyncMode.Incremental;
-  // const shouldDefinePk =
-  //   stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
-  // const shouldDefineCursor = !stream.sourceDefinedCursor && cursorRequired;
+  const shouldDefineCursor =
+    selectedBatchNodes.every((n) => !n.stream.sourceDefinedCursor) &&
+    cursorRequired;
+
+  const pkType = getPathType(pkRequired, shouldDefinePk);
+  const cursorType = getPathType(cursorRequired, shouldDefineCursor);
 
   const paths = primitiveFields.map((f) => f.path);
 
@@ -139,7 +145,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = () => {
         />
       </Cell>
       <HeaderCell>
-        {cursorRequired && (
+        {cursorType && (
           <PathPopout
             isMulti={false}
             onPathChange={(path) => onChangeOption({ cursorField: path })}
@@ -150,7 +156,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = () => {
         )}
       </HeaderCell>
       <HeaderCell>
-        {pkRequired && (
+        {pkType && (
           <PathPopout
             isMulti={true}
             onPathChange={(path) => onChangeOption({ primaryKey: path })}

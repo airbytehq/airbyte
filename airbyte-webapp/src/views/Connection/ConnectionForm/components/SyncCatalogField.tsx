@@ -223,11 +223,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   }, [searchString, sortedSchema]);
 
   return (
-    <BatchEditProvider
-      nodes={streams}
-      destinationSupportedSyncModes={destinationSupportedSyncModes}
-      update={onChangeSchema}
-    >
+    <BatchEditProvider nodes={streams} update={onChangeSchema}>
       <HeaderBlock>
         <FormattedMessage id="form.dataSync" />
         {additionalControl}
@@ -236,7 +232,9 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <StreamsContent>
         <CatalogHeader />
         <CatalogSubheader />
-        <BulkHeader />
+        <BulkHeader
+          destinationSupportedSyncModes={destinationSupportedSyncModes}
+        />
         <TreeViewContainer>
           <CatalogTree
             streams={filteredStreams}

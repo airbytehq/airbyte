@@ -1,4 +1,5 @@
 import { SyncSchemaField } from "core/domain/catalog";
+import { IndexerType } from "./components/PathPopout";
 
 export const flatten = (
   fArr: SyncSchemaField[],
@@ -12,3 +13,9 @@ export const flatten = (
     }
     return acc;
   }, arr);
+
+export const getPathType = (
+  required: boolean,
+  shouldDefine: boolean
+): IndexerType =>
+  required ? (shouldDefine ? "required" : "sourceDefined") : null;

@@ -27,7 +27,7 @@ import { StreamHeader } from "./StreamHeader";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { StreamFieldTable } from "./StreamFieldTable";
-import { flatten } from "./utils";
+import { flatten, getPathType } from "./utils";
 
 const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid
@@ -175,17 +175,9 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
           primitiveFields={primitiveFields}
-          pkType={
-            pkRequired ? (shouldDefinePk ? "required" : "sourceDefined") : null
-          }
+          pkType={getPathType(pkRequired, shouldDefinePk)}
           onPrimaryKeyChange={onPkUpdate}
-          cursorType={
-            cursorRequired
-              ? shouldDefineCursor
-                ? "required"
-                : "sourceDefined"
-              : null
-          }
+          cursorType={getPathType(cursorRequired, shouldDefineCursor)}
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}
