@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -41,7 +42,9 @@ public class DefaultJobCreator implements JobCreator {
                                       final StandardSync standardSync,
                                       final String sourceDockerImageName,
                                       final String destinationDockerImageName,
-                                      final List<StandardSyncOperation> standardSyncOperations)
+                                      final List<StandardSyncOperation> standardSyncOperations,
+                                      final ActorDefinitionResourceRequirements sourceResourceReqs,
+                                      final ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
@@ -55,7 +58,9 @@ public class DefaultJobCreator implements JobCreator {
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null)
-        .withResourceRequirements(getJobResourceRequirements(standardSync));
+        .withResourceRequirements(getJobResourceRequirements(standardSync))
+        .withSourceResourceRequirements(sourceResourceReqs)
+        .withDestinationResourceRequirements(destinationResourceReqs);
 
     configRepository.getConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 

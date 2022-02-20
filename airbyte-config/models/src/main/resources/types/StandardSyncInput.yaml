@@ -35,11 +35,16 @@ properties:
   catalog:
     description: the configured airbyte catalog
     type: object
+    # necessary because the configuration declaration is in a separate package.
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   state:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml
   resourceRequirements:
-    description: optional resource requirements to run sync workers
+    description: optional resource requirements to run sync workers (confusing - overrides source and destination). takes precedence over source and destination resource requirements.
     type: object
-    existingJavaType: io.airbyte.config.ResourceRequirements
+    "$ref": ResourceRequirements.yaml
+  sourceResourceRequirements:
+    "$ref": ActorDefinitionResourceRequirements.yaml
+  destinationResourceRequirements:
+    "$ref": ActorDefinitionResourceRequirements.yaml
