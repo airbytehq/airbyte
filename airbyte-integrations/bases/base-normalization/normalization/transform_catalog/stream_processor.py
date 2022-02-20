@@ -538,6 +538,9 @@ where 1 = 1
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            elif self.destination_type == DestinationType.MYSQL:
+                # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
+                sql_type = f"{sql_type}(1024)"
         else:
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
