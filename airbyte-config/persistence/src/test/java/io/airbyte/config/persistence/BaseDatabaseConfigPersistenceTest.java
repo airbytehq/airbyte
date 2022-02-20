@@ -6,14 +6,13 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorType;
+import io.airbyte.config.ActorDefinition.SourceType;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.Database;
 import java.sql.SQLException;
 import java.util.List;
@@ -60,58 +59,97 @@ public abstract class BaseDatabaseConfigPersistenceTest {
             "TRUNCATE TABLE state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }
 
-  protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()
+  protected static final ActorDefinition SOURCE_GITHUB = new ActorDefinition()
+      .withActorType(ActorType.SOURCE)
       .withName("GitHub")
-      .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e"))
+      .withId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e"))
       .withDockerRepository("airbyte/source-github")
       .withDockerImageTag("0.2.3")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/github")
       .withIcon("github.svg")
       .withSourceType(SourceType.API)
       .withTombstone(false);
-  protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
+  protected static final ActorDefinition SOURCE_POSTGRES = new ActorDefinition()
+      .withActorType(ActorType.SOURCE)
       .withName("Postgres")
-      .withSourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
+      .withId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
       .withDockerRepository("airbyte/source-postgres")
       .withDockerImageTag("0.3.11")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/postgres")
       .withIcon("postgresql.svg")
       .withSourceType(SourceType.DATABASE)
       .withTombstone(false);
-  protected static final StandardDestinationDefinition DESTINATION_SNOWFLAKE = new StandardDestinationDefinition()
+  protected static final ActorDefinition DESTINATION_SNOWFLAKE = new ActorDefinition()
+      .withActorType(ActorType.DESTINATION)
       .withName("Snowflake")
-      .withDestinationDefinitionId(UUID.fromString("424892c4-daac-4491-b35d-c6688ba547ba"))
+      .withId(UUID.fromString("424892c4-daac-4491-b35d-c6688ba547ba"))
       .withDockerRepository("airbyte/destination-snowflake")
       .withDockerImageTag("0.3.16")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/snowflake")
       .withTombstone(false);
-  protected static final StandardDestinationDefinition DESTINATION_S3 = new StandardDestinationDefinition()
+  protected static final ActorDefinition DESTINATION_S3 = new ActorDefinition()
+      .withActorType(ActorType.DESTINATION)
       .withName("S3")
-      .withDestinationDefinitionId(UUID.fromString("4816b78f-1489-44c1-9060-4b19d5fa9362"))
+      .withId(UUID.fromString("4816b78f-1489-44c1-9060-4b19d5fa9362"))
       .withDockerRepository("airbyte/destination-s3")
       .withDockerImageTag("0.1.12")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
       .withTombstone(false);
 
-  protected static void writeSource(final ConfigPersistence configPersistence, final StandardSourceDefinition source) throws Exception {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(), source);
+  // protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()
+  // .withName("GitHub")
+  // .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e"))
+  // .withDockerRepository("airbyte/source-github")
+  // .withDockerImageTag("0.2.3")
+  // .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/github")
+  // .withIcon("github.svg")
+  // .withSourceType(SourceType.API)
+  // .withTombstone(false);
+  // protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
+  // .withName("Postgres")
+  // .withSourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
+  // .withDockerRepository("airbyte/source-postgres")
+  // .withDockerImageTag("0.3.11")
+  // .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/postgres")
+  // .withIcon("postgresql.svg")
+  // .withSourceType(SourceType.DATABASE)
+  // .withTombstone(false);
+  // protected static final StandardDestinationDefinition DESTINATION_SNOWFLAKE = new
+  // StandardDestinationDefinition()
+  // .withName("Snowflake")
+  // .withDestinationDefinitionId(UUID.fromString("424892c4-daac-4491-b35d-c6688ba547ba"))
+  // .withDockerRepository("airbyte/destination-snowflake")
+  // .withDockerImageTag("0.3.16")
+  // .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/snowflake")
+  // .withTombstone(false);
+  // protected static final StandardDestinationDefinition DESTINATION_S3 = new
+  // StandardDestinationDefinition()
+  // .withName("S3")
+  // .withDestinationDefinitionId(UUID.fromString("4816b78f-1489-44c1-9060-4b19d5fa9362"))
+  // .withDockerRepository("airbyte/destination-s3")
+  // .withDockerImageTag("0.1.12")
+  // .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
+  // .withTombstone(false);
+
+  protected static void writeSource(final ConfigPersistence configPersistence, final ActorDefinition source) throws Exception {
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getId().toString(), source);
   }
 
-  protected static void writeDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
+  protected static void writeDestination(final ConfigPersistence configPersistence, final ActorDefinition destination)
       throws Exception {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getId().toString(), destination);
   }
 
-  protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)
+  protected static void writeDestinations(final ConfigPersistence configPersistence, final List<ActorDefinition> destinations)
       throws Exception {
-    final Map<String, StandardDestinationDefinition> destinationsByID = destinations.stream()
-        .collect(Collectors.toMap(destinationDefinition -> destinationDefinition.getDestinationDefinitionId().toString(), Function.identity()));
+    final Map<String, ActorDefinition> destinationsByID = destinations.stream()
+        .collect(Collectors.toMap(destinationDefinition -> destinationDefinition.getId().toString(), Function.identity()));
     configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationsByID);
   }
 
-  protected static void deleteDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
+  protected static void deleteDestination(final ConfigPersistence configPersistence, final ActorDefinition destination)
       throws Exception {
-    configPersistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString());
+    configPersistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getId().toString());
   }
 
   protected Map<String, Set<JsonNode>> getMapWithSet(final Map<String, Stream<JsonNode>> input) {
@@ -131,16 +169,16 @@ public abstract class BaseDatabaseConfigPersistenceTest {
     assertEquals(expectedCount, recordCount.get(0).value1());
   }
 
-  protected void assertHasSource(final StandardSourceDefinition source) throws Exception {
-    assertEquals(source, configPersistence
-        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
-            StandardSourceDefinition.class));
+  protected void assertHasSource(final ActorDefinition expected) throws Exception {
+    final ActorDefinition actual = configPersistence
+        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, expected.getId().toString(), ActorDefinition.class);
+    assertEquals(expected, actual);
   }
 
-  protected void assertHasDestination(final StandardDestinationDefinition destination) throws Exception {
-    assertEquals(destination, configPersistence
-        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
-            StandardDestinationDefinition.class));
+  protected void assertHasDestination(final ActorDefinition expected) throws Exception {
+    final ActorDefinition actual = configPersistence
+        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, expected.getId().toString(), ActorDefinition.class);
+    assertEquals(expected, actual);
   }
 
 }

@@ -18,13 +18,12 @@ import static org.mockito.Mockito.spy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
-import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
@@ -71,7 +70,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_S3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertThat(configPersistence
-        .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .listConfigs(STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3));
   }
 
@@ -83,7 +82,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_S3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertThat(configPersistence
-        .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .listConfigs(STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3));
   }
 
@@ -91,14 +90,14 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   public void testGetConfigWithMetadata() throws Exception {
     final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);
-    final ConfigWithMetadata<StandardDestinationDefinition> configWithMetadata = configPersistence.getConfigWithMetadata(
+    final ConfigWithMetadata<ActorDefinition> configWithMetadata = configPersistence.getConfigWithMetadata(
         STANDARD_DESTINATION_DEFINITION,
-        DESTINATION_S3.getDestinationDefinitionId().toString(),
-        StandardDestinationDefinition.class);
+        DESTINATION_S3.getId().toString(),
+        ActorDefinition.class);
     assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.getConfigType());
     assertTrue(configWithMetadata.getCreatedAt().isAfter(now));
     assertTrue(configWithMetadata.getUpdatedAt().isAfter(now));
-    assertEquals(DESTINATION_S3.getDestinationDefinitionId().toString(), configWithMetadata.getConfigId());
+    assertEquals(DESTINATION_S3.getId().toString(), configWithMetadata.getConfigId());
     assertEquals(DESTINATION_S3, configWithMetadata.getConfig());
   }
 
@@ -107,8 +106,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
-    final List<ConfigWithMetadata<StandardDestinationDefinition>> configWithMetadata = configPersistence
-        .listConfigsWithMetadata(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+    final List<ConfigWithMetadata<ActorDefinition>> configWithMetadata = configPersistence
+        .listConfigsWithMetadata(STANDARD_DESTINATION_DEFINITION, ActorDefinition.class);
     assertEquals(2, configWithMetadata.size());
     assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.get(0).getConfigType());
     assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.get(1).getConfigType());
@@ -129,12 +128,12 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_S3);
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertThat(configPersistence
-        .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .listConfigs(STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3));
     deleteDestination(configPersistence, DESTINATION_S3);
     assertThrows(ConfigNotFoundException.class, () -> assertHasDestination(DESTINATION_S3));
     assertThat(configPersistence
-        .listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .listConfigs(STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
             .hasSameElementsAs(List.of(DESTINATION_SNOWFLAKE));
   }
 
@@ -175,22 +174,22 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final String connectorRepository = "airbyte/duplicated-connector";
     final String oldVersion = "0.1.10";
     final String newVersion = "0.2.0";
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+    final ActorDefinition source1 = new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withName("source-1")
         .withDockerRepository(connectorRepository)
         .withDockerImageTag(oldVersion);
-    final StandardSourceDefinition source2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+    final ActorDefinition source2 = new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withName("source-2")
         .withDockerRepository(connectorRepository)
         .withDockerImageTag(newVersion);
     writeSource(configPersistence, source1);
     writeSource(configPersistence, source2);
-    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
+    final Map<String, ActorDefinition> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
     // when there are duplicated connector definitions, the one with the latest version should be
     // retrieved
-    assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
+    assertEquals(newVersion, result.get(connectorRepository).getDockerImageTag());
   }
 
   @Test
@@ -199,14 +198,15 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final String connectorRepository = "airbyte/test-connector";
 
     // when the record does not exist, it is inserted
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
+    final ActorDefinition source1 = new ActorDefinition()
+        .withId(definitionId)
+        .withActorType(ActorType.SOURCE)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2")
         .withName("random-name")
         .withTombstone(false)
         .withReleaseDate(LocalDate.now().toString())
-        .withReleaseStage(ReleaseStage.ALPHA);
+        .withReleaseStage(ActorDefinitionReleaseStage.ALPHA);
     writeSource(configPersistence, source1);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
@@ -214,14 +214,15 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasSource(source1);
     assertHasSource(SOURCE_GITHUB);
     // when the record already exists, it is updated
-    final StandardSourceDefinition source2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
+    final ActorDefinition source2 = new ActorDefinition()
+        .withId(definitionId)
+        .withActorType(ActorType.SOURCE)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.5")
         .withName("random-name-2")
         .withTombstone(false)
         .withReleaseDate(LocalDate.now().minusDays(1).toString())
-        .withReleaseStage(ReleaseStage.BETA);
+        .withReleaseStage(ActorDefinitionReleaseStage.BETA);
     writeSource(configPersistence, source2);
     assertRecordCount(2, ACTOR_DEFINITION);
     assertHasSource(source2);
@@ -261,8 +262,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final String connectorRepository = "airbyte/test-connector";
 
     // when the record does not exist, it is inserted
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(definitionId)
+    final ActorDefinition source1 = new ActorDefinition()
+        .withId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2")
         .withName("random-name")

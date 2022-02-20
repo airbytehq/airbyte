@@ -27,12 +27,7 @@ properties:
   icon:
     type: string
   sourceType:
-    type: string
-    enum:
-      - api
-      - file
-      - database
-      - custom
+    "$ref": SourceType.yaml
   spec:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
@@ -42,12 +37,7 @@ properties:
       configuration is permanently off.
     type: boolean
   releaseStage:
-    type: string
-    enum:
-      - alpha
-      - beta
-      - generallyAvailable
-      - custom
+    "$ref": ActorDefinitionReleaseStage.yaml
   releaseDate:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string

@@ -7,3 +7,5 @@ type: string
 enum:
   - source
   - destination
+#  - mapper
+#  - runner

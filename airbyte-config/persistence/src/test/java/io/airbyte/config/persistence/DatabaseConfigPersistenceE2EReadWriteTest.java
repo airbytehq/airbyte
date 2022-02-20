@@ -12,6 +12,7 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -94,14 +95,14 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
 
-    for (final StandardSourceDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
-      configPersistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, standardSourceDefinition.getSourceDefinitionId().toString());
+    for (final ActorDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
+      configPersistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, standardSourceDefinition.getId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class).isEmpty());
 
-    for (final StandardDestinationDefinition standardDestinationDefinition : MockData.standardDestinationDefinitions()) {
+    for (final ActorDefinition standardDestinationDefinition : MockData.standardDestinationDefinitions()) {
       configPersistence
-          .deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, standardDestinationDefinition.getDestinationDefinitionId().toString());
+          .deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, standardDestinationDefinition.getId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
 
@@ -225,34 +226,34 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   private void standardDestinationDefinition() throws JsonValidationException, IOException, ConfigNotFoundException {
-    for (final StandardDestinationDefinition standardDestinationDefinition : MockData.standardDestinationDefinitions()) {
+    for (final ActorDefinition standardDestinationDefinition : MockData.standardDestinationDefinitions()) {
       configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-          standardDestinationDefinition.getDestinationDefinitionId().toString(),
+          standardDestinationDefinition.getId().toString(),
           standardDestinationDefinition);
-      final StandardDestinationDefinition standardDestinationDefinitionFromDB = configPersistence
+      final ActorDefinition standardDestinationDefinitionFromDB = configPersistence
           .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-              standardDestinationDefinition.getDestinationDefinitionId().toString(),
-              StandardDestinationDefinition.class);
+              standardDestinationDefinition.getId().toString(),
+              ActorDefinition.class);
       assertEquals(standardDestinationDefinition, standardDestinationDefinitionFromDB);
     }
-    final List<StandardDestinationDefinition> standardDestinationDefinitions = configPersistence
-        .listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+    final List<ActorDefinition> standardDestinationDefinitions = configPersistence
+        .listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class);
     assertEquals(MockData.standardDestinationDefinitions().size(), standardDestinationDefinitions.size());
     assertThat(MockData.standardDestinationDefinitions()).hasSameElementsAs(standardDestinationDefinitions);
   }
 
   private void standardSourceDefinition() throws JsonValidationException, IOException, ConfigNotFoundException {
-    for (final StandardSourceDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
+    for (final ActorDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
       configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION,
-          standardSourceDefinition.getSourceDefinitionId().toString(),
+          standardSourceDefinition.getId().toString(),
           standardSourceDefinition);
-      final StandardSourceDefinition standardSourceDefinitionFromDB = configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION,
-          standardSourceDefinition.getSourceDefinitionId().toString(),
-          StandardSourceDefinition.class);
+      final ActorDefinition standardSourceDefinitionFromDB = configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+          standardSourceDefinition.getId().toString(),
+          ActorDefinition.class);
       assertEquals(standardSourceDefinition, standardSourceDefinitionFromDB);
     }
-    final List<StandardSourceDefinition> standardSourceDefinitions = configPersistence
-        .listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+    final List<ActorDefinition> standardSourceDefinitions = configPersistence
+        .listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class);
     assertEquals(MockData.standardSourceDefinitions().size(), standardSourceDefinitions.size());
     assertThat(MockData.standardSourceDefinitions()).hasSameElementsAs(standardSourceDefinitions);
   }
@@ -277,7 +278,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
       final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
           ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
       assertEquals(actorCatalog, retrievedActorCatalog);
-    } ;
+    }
     final List<ActorCatalog> actorCatalogs = configPersistence
         .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
     assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());

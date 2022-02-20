@@ -1,0 +1,11 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SourceType.yaml
+title: SourceType
+description: enum to describe each type of source
+type: string
+enum:
+  - api
+  - file
+  - database
+  - custom

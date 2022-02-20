@@ -1,21 +1,23 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardDestinationDefinition.yaml
-title: StandardDestinationDefinition
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ActorDefinition.yaml
+title: ActorDefinition
 description: describes a destination
 type: object
 required:
-  - destinationDefinitionId
+  - id
+  - actorType
   - name
   - dockerRepository
   - dockerImageTag
-  - documentationUrl
   - spec
 additionalProperties: true
 properties:
-  destinationDefinitionId:
+  id:
     type: string
     format: uuid
+  actorType:
+    "$ref": ActorType.yaml
   name:
     type: string
   dockerRepository:
@@ -26,9 +28,12 @@ properties:
     type: string
   icon:
     type: string
+  # only relevant for sources
+  sourceType:
+    "$ref": SourceType.yaml
   spec:
     type: object
-    # tooooooooodoooo
+    # necessary because declaration is in another package.
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   tombstone:
     description:

@@ -15,11 +15,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
@@ -71,9 +70,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @Order(1)
   @DisplayName("When database is empty, configs should be inserted")
   public void testUpdateConfigsInNonEmptyDatabase() throws Exception {
-    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class))
         .thenReturn(Lists.newArrayList(SOURCE_GITHUB));
-    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
     configPersistence.loadData(seedPersistence);
@@ -90,11 +89,11 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination and github source
-    final StandardDestinationDefinition destinationS3V2 = Jsons.clone(DESTINATION_S3).withDockerImageTag("10000.1.0");
-    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+    final ActorDefinition destinationS3V2 = Jsons.clone(DESTINATION_S3).withDockerImageTag("10000.1.0");
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
         .thenReturn(Collections.singletonList(destinationS3V2));
-    final StandardSourceDefinition sourceGithubV2 = Jsons.clone(SOURCE_GITHUB).withDockerImageTag("10000.15.3");
-    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+    final ActorDefinition sourceGithubV2 = Jsons.clone(SOURCE_GITHUB).withDockerImageTag("10000.15.3");
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class))
         .thenReturn(Collections.singletonList(sourceGithubV2));
 
     // create connections to mark the source and destination as in use
@@ -102,7 +101,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         .withDestinationId(UUID.randomUUID())
         .withWorkspaceId(UUID.randomUUID())
         .withName("s3Connection")
-        .withDestinationDefinitionId(destinationS3V2.getDestinationDefinitionId());
+        .withDestinationDefinitionId(destinationS3V2.getId());
     final StandardWorkspace standardWorkspace = new StandardWorkspace()
         .withWorkspaceId(s3Connection.getWorkspaceId())
         .withName("workspace")
@@ -114,7 +113,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         .withSourceId(UUID.randomUUID())
         .withWorkspaceId(standardWorkspace.getWorkspaceId())
         .withName("githubConnection")
-        .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
+        .withSourceDefinitionId(sourceGithubV2.getId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
     configPersistence.loadData(seedPersistence);
@@ -128,8 +127,8 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
-    final StandardDestinationDefinition snowflakeV2 = Jsons.clone(DESTINATION_SNOWFLAKE).withDockerImageTag("10000.2.0");
-    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+    final ActorDefinition snowflakeV2 = Jsons.clone(DESTINATION_SNOWFLAKE).withDockerImageTag("10000.2.0");
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 
     configPersistence.loadData(seedPersistence);

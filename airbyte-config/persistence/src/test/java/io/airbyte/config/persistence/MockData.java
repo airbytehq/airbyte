@@ -8,6 +8,9 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorType;
+import io.airbyte.config.ActorDefinition.SourceType;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -23,9 +26,6 @@ import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
@@ -102,10 +102,11 @@ public class MockData {
         .withFeedbackDone(true);
   }
 
-  public static List<StandardSourceDefinition> standardSourceDefinitions() {
+  public static List<ActorDefinition> standardSourceDefinitions() {
     final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardSourceDefinition standardSourceDefinition1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
+    final ActorDefinition standardSourceDefinition1 = new ActorDefinition()
+        .withId(SOURCE_DEFINITION_ID_1)
+        .withActorType(ActorType.SOURCE)
         .withSourceType(SourceType.API)
         .withName("random-source-1")
         .withDockerImageTag("tag-1")
@@ -115,8 +116,9 @@ public class MockData {
         .withSpec(connectorSpecification)
         .withTombstone(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
+    final ActorDefinition standardSourceDefinition2 = new ActorDefinition()
+        .withId(SOURCE_DEFINITION_ID_2)
+        .withActorType(ActorType.SOURCE)
         .withSourceType(SourceType.DATABASE)
         .withName("random-source-2")
         .withDockerImageTag("tag-2")
@@ -140,10 +142,11 @@ public class MockData {
         .withSupportsNormalization(true);
   }
 
-  public static List<StandardDestinationDefinition> standardDestinationDefinitions() {
+  public static List<ActorDefinition> standardDestinationDefinitions() {
     final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardDestinationDefinition standardDestinationDefinition1 = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
+    final ActorDefinition standardDestinationDefinition1 = new ActorDefinition()
+        .withId(DESTINATION_DEFINITION_ID_1)
+        .withActorType(ActorType.DESTINATION)
         .withName("random-destination-1")
         .withDockerImageTag("tag-3")
         .withDockerRepository("repository-3")
@@ -152,8 +155,9 @@ public class MockData {
         .withSpec(connectorSpecification)
         .withTombstone(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
+    final ActorDefinition standardDestinationDefinition2 = new ActorDefinition()
+        .withId(DESTINATION_DEFINITION_ID_2)
+        .withActorType(ActorType.DESTINATION)
         .withName("random-destination-2")
         .withDockerImageTag("tag-4")
         .withDockerRepository("repository-4")
