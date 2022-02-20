@@ -7,6 +7,7 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -330,10 +331,10 @@ class EnvConfigsTest {
   @Test
   void testSharedJobEnvMapRetrieval() {
     envMap.put(EnvConfigs.AIRBYTE_VERSION, "dev");
-    envMap.put(EnvConfigs.WORKER_ENVIRONMENT, "UNIT_TEST");
+    envMap.put(EnvConfigs.WORKER_ENVIRONMENT, WorkerEnvironment.KUBERNETES.name());
     final Map<String, String> expected = Map.of("AIRBYTE_VERSION", "dev",
         "AIRBYTE_ROLE", "",
-        "WORKER_ENVIRONMENT", "UNIT_TEST");
+        "WORKER_ENVIRONMENT", "KUBERNETES");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
 
