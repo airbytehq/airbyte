@@ -516,6 +516,8 @@ where 1 = 1
                 return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_timestamp_with_timezone()")
+            if self.destination_type == DestinationType.MYSQL:
+                sql_type = f"{sql_type}(1024)"
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
             if self.destination_type.value == DestinationType.MYSQL.value:
