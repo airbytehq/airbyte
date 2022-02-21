@@ -9,19 +9,25 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.api.model.SourceRead;
 import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinition.ActorType;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.services.AirbyteGithubStore;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public class SourceDefinitionsHandler2 extends
     ActorDefinitionsHandler<SourceDefinitionRead, SourceDefinitionReadList, SourceDefinitionCreate, SourceDefinitionUpdate, SourceDefinitionIdRequestBody> {
+
+  private final SourceHandler sourceHandler;
 
   public SourceDefinitionsHandler2(final ConfigRepository configRepository,
                                    final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -38,9 +44,8 @@ public class SourceDefinitionsHandler2 extends
         uuidSupplier,
         schedulerSynchronousClient,
         githubStore,
-        sourceHandler,
-        null, // will never use destination handler since this is the source version.
         ActorType.SOURCE);
+    this.sourceHandler = sourceHandler;
   }
 
   @Override
@@ -58,11 +63,6 @@ public class SourceDefinitionsHandler2 extends
   }
 
   @Override
-  ActorDefinition fromRead(final SourceDefinitionRead sourceDefinitionRead) {
-    return null;
-  }
-
-  @Override
   SourceDefinitionReadList toList(final List<SourceDefinitionRead> reads) {
     return new SourceDefinitionReadList().sourceDefinitions(reads);
   }
@@ -70,6 +70,7 @@ public class SourceDefinitionsHandler2 extends
   @Override
   ActorDefinition fromCreate(final SourceDefinitionCreate create) {
     return new ActorDefinition()
+        .withActorType(actorType)
         .withId(null) // will get populated internally.
         .withDockerRepository(create.getDockerRepository())
         .withDockerImageTag(create.getDockerImageTag())
@@ -85,6 +86,7 @@ public class SourceDefinitionsHandler2 extends
   @Override
   ActorDefinition fromUpdate(final SourceDefinitionUpdate update) {
     return new ActorDefinition()
+        .withActorType(actorType)
         .withId(update.getSourceDefinitionId())
         .withDockerImageTag(update.getDockerImageTag())
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(update.getResourceRequirements()));
@@ -93,6 +95,14 @@ public class SourceDefinitionsHandler2 extends
   @Override
   UUID fromId(final SourceDefinitionIdRequestBody idRequest) {
     return idRequest.getSourceDefinitionId();
+  }
+
+  @Override
+  void deleteChildren(final UUID definitionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final SourceDefinitionIdRequestBody destDefRequest = new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId);
+    for (final SourceRead sourceRead : sourceHandler.listSourcesForSourceDefinition(destDefRequest).getSources()) {
+      sourceHandler.deleteSource(sourceRead);
+    }
   }
 
 }

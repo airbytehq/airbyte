@@ -83,6 +83,7 @@ class SourceDefinitionsHandler2Test {
         Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
 
     return new ActorDefinition()
+        .withActorType(ActorType.SOURCE)
         .withId(sourceDefinitionId)
         .withName("presto")
         .withDocumentationUrl("https://netflix.com")
@@ -263,7 +264,7 @@ class SourceDefinitionsHandler2Test {
     @DisplayName("should return the latest list")
     void testCorrect() throws InterruptedException {
       final ActorDefinition sourceDefinition = generateSourceDefinition();
-      when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
+      when(githubStore.getLatestDefinitions(ActorType.SOURCE)).thenReturn(Collections.singletonList(sourceDefinition));
 
       final var sourceDefinitionReadList = sourceDefinitionsHandler.listLatestActorDefinitions().getSourceDefinitions();
       assertEquals(1, sourceDefinitionReadList.size());

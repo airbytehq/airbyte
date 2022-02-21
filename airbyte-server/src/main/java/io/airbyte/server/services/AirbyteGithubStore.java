@@ -6,6 +6,7 @@ package io.airbyte.server.services;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import java.io.IOException;
@@ -51,6 +52,17 @@ public class AirbyteGithubStore {
     this.timeout = timeout;
   }
 
+  public List<ActorDefinition> getLatestDefinitions(final ActorType actorType) throws InterruptedException {
+    if (actorType == ActorType.SOURCE) {
+      return getLatestSources();
+    } else if (actorType == ActorType.DESTINATION) {
+      return getLatestDestinations();
+    } else {
+      throw new IllegalArgumentException("Unrecognized actor type");
+    }
+  }
+
+  // todo (cgardens) - make private
   public List<ActorDefinition> getLatestDestinations() throws InterruptedException {
     try {
       // todo (cgardens) - remove migration shim
@@ -66,6 +78,7 @@ public class AirbyteGithubStore {
     }
   }
 
+  // todo (cgardens) - make private
   public List<ActorDefinition> getLatestSources() throws InterruptedException {
     try {
       // todo (cgardens) - remove migration shim

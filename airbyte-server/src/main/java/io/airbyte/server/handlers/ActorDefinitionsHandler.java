@@ -6,12 +6,7 @@ package io.airbyte.server.handlers;
 
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ActorDefinition;
@@ -46,52 +41,80 @@ public abstract class ActorDefinitionsHandler<READ, LIST, CREATE, UPDATE, ID> {
   private final Supplier<UUID> uuidSupplier;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
-  private final SourceHandler sourceHandler;
-  private final DestinationHandler destinationHandler;
-  private final ActorType actorType;
+  final ActorType actorType;
 
   public ActorDefinitionsHandler(final ConfigRepository configRepository,
                                  final SynchronousSchedulerClient schedulerSynchronousClient,
-                                 final SourceHandler sourceHandler,
-                                 final DestinationHandler destinationHandler,
                                  final ActorType actorType) {
     this(configRepository,
         UUID::randomUUID,
         schedulerSynchronousClient,
         AirbyteGithubStore.production(),
-        sourceHandler,
-        destinationHandler,
         actorType);
   }
 
-  @VisibleForTesting
   public ActorDefinitionsHandler(final ConfigRepository configRepository,
                                  final Supplier<UUID> uuidSupplier,
                                  final SynchronousSchedulerClient schedulerSynchronousClient,
                                  final AirbyteGithubStore githubStore,
-                                 final SourceHandler sourceHandler,
-                                 final DestinationHandler destinationHandler,
                                  final ActorType actorType) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
-    this.sourceHandler = sourceHandler;
-    this.destinationHandler = destinationHandler;
     this.actorType = actorType;
   }
 
+  /**
+   * Convert from an ActorDefinition to the API read struct for the resource.
+   *
+   * @param actorDefinition - actor definition to convert
+   * @return API read struct
+   */
   abstract READ toRead(ActorDefinition actorDefinition);
 
-  abstract ActorDefinition fromRead(READ read);
-
+  /**
+   * For a resource, convert from a list of API read structs to an API list struct.
+   *
+   * @param reads - API read structs to convert
+   * @return API list struct
+   */
   abstract LIST toList(List<READ> reads);
 
+  /**
+   * Convert from a resource's API create struct to a PARTIAL ActorDefinition. The following fields do
+   * not need to be filled: id, spec. They are filled by the internals of the create method.
+   *
+   * @param create - API create struct to convert
+   * @return API create struct represented as an actor definition
+   */
   abstract ActorDefinition fromCreate(CREATE create);
 
+  /**
+   * Convert from a resource's API update struct to a PARTIAL ActorDefinition. Only the following
+   * fields will be set: actorType, id, dockerImageTag, resourceRequirements. All others are not
+   * updatable by the end user and will be set or overwritten by the internals of the update method.
+   *
+   * @param update - API update struct to convert
+   * @return API update struct represented as an actor definition
+   */
   abstract ActorDefinition fromUpdate(UPDATE update);
 
+  /**
+   * Convert from a resource's API id struct to the actual id (as a UUID).
+   *
+   * @param idRequest - API id struct to convert
+   * @return extracted id
+   */
   abstract UUID fromId(ID idRequest);
+
+  /**
+   * When deleting an actor definition, we usually want to disable all actors associated with that
+   * definition. This method should overridden to carry that out.
+   *
+   * @param definitionId - definition id whose children will be targeted
+   */
+  abstract void deleteChildren(UUID definitionId) throws JsonValidationException, ConfigNotFoundException, IOException;
 
   public READ getActorDefinition(final ID idRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
     return toRead(configRepository.getActorDefinition(fromId(idRequestBody), actorType));
@@ -139,6 +162,7 @@ public abstract class ActorDefinitionsHandler<READ, LIST, CREATE, UPDATE, ID> {
         : currentActorDefinition.getResourceRequirements();
 
     final ActorDefinition newActorDefinition = new ActorDefinition()
+        .withActorType(actorType)
         .withId(currentActorDefinition.getId())
         .withDockerImageTag(updateActorDefinition.getDockerImageTag())
         .withDockerRepository(currentActorDefinition.getDockerRepository())
@@ -157,53 +181,31 @@ public abstract class ActorDefinitionsHandler<READ, LIST, CREATE, UPDATE, ID> {
 
   public void deleteActorDefinition(final ID idRequestBody) throws JsonValidationException, ConfigNotFoundException, IOException {
     /*
-     * "delete" all destinations associated with the destination definition as well. This will cascade
-     * to connections that depend on any deleted destinations. Delete destinations first in case a
-     * failure occurs mid-operation.
+     * "delete" all actors associated with the actor definition as well. This will cascade to
+     * connections that depend on any deleted actors. Delete actors first in case a failure occurs
+     * mid-operation.
      */
     final UUID actorDefinitionId = fromId(idRequestBody);
     final ActorDefinition persistedActorDefinition = configRepository.getActorDefinition(actorDefinitionId, actorType);
 
-    // todo (cgardens) - remove when we consolidate SourceHandler and DestinationHandler
-    if (actorType == ActorType.SOURCE) {
-      final SourceDefinitionIdRequestBody destDefRequest = new SourceDefinitionIdRequestBody().sourceDefinitionId(actorDefinitionId);
-      for (final SourceRead sourceRead : sourceHandler.listSourcesForSourceDefinition(destDefRequest).getSources()) {
-        sourceHandler.deleteSource(sourceRead);
-      }
-    } else if (actorType == ActorType.DESTINATION) {
-      final DestinationDefinitionIdRequestBody destDefRequest = new DestinationDefinitionIdRequestBody().destinationDefinitionId(actorDefinitionId);
-      for (final DestinationRead destinationRead : destinationHandler.listDestinationsForDestinationDefinition(destDefRequest).getDestinations()) {
-        destinationHandler.deleteDestination(destinationRead);
-      }
-    } else {
-      throw new IllegalArgumentException("Unrecognized actor type");
-    }
+    deleteChildren(actorDefinitionId);
 
     persistedActorDefinition.withTombstone(true);
     configRepository.writeActorDefinition(persistedActorDefinition);
   }
 
   public LIST listLatestActorDefinitions() {
-    if (actorType == ActorType.SOURCE) {
-      return toList(getLatestSources()
-          .stream()
-          .map(this::toRead)
-          .collect(Collectors.toList()));
-    } else if (actorType == ActorType.DESTINATION) {
-      return toList(getLatestDestinations()
-          .stream()
-          .map(this::toRead)
-          .collect(Collectors.toList()));
-    } else {
-      throw new IllegalArgumentException("Unrecognized actor type");
-    }
+    return toList(getLatestDefinitions(actorType)
+        .stream()
+        .map(this::toRead)
+        .collect(Collectors.toList()));
   }
 
   static URI getDocumentUri(final String documentationUrl) {
     try {
       return new URI(documentationUrl);
     } catch (final URISyntaxException | NullPointerException e) {
-      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
+      throw new InternalServerKnownException(String.format("Unable to create documentationUrl for url: %s", documentationUrl), e);
     }
   }
 
@@ -222,19 +224,11 @@ public abstract class ActorDefinitionsHandler<READ, LIST, CREATE, UPDATE, ID> {
     return LocalDate.parse(actorDefinition.getReleaseDate());
   }
 
-  private List<ActorDefinition> getLatestSources() {
+  private List<ActorDefinition> getLatestDefinitions(final ActorType actorType) {
     try {
-      return githubStore.getLatestSources();
+      return githubStore.getLatestDefinitions(actorType);
     } catch (final InterruptedException e) {
-      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
-    }
-  }
-
-  private List<ActorDefinition> getLatestDestinations() {
-    try {
-      return githubStore.getLatestDestinations();
-    } catch (final InterruptedException e) {
-      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest actor definitions failed", e);
     }
   }
 

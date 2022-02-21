@@ -1,0 +1,290 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.server.handlers;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.api.model.DestinationDefinitionCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionReadList;
+import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.ReleaseStage;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
+import io.airbyte.config.ActorDefinition.ActorType;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.services.AirbyteGithubStore;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+class DestinationDefinitionsHandler2Test {
+
+  private static final String TODAY_DATE_STRING = LocalDate.now().toString();
+
+  private ConfigRepository configRepository;
+  private ActorDefinition destinationDefinition;
+  private DestinationDefinitionsHandler2 destinationDefinitionsHandler;
+  private Supplier<UUID> uuidSupplier;
+  private SynchronousSchedulerClient schedulerSynchronousClient;
+  private AirbyteGithubStore githubStore;
+  private DestinationHandler destinationHandler;
+
+  @SuppressWarnings("unchecked")
+  @BeforeEach
+  void setUp() {
+    configRepository = mock(ConfigRepository.class);
+    uuidSupplier = mock(Supplier.class);
+    destinationDefinition = generateDestinationDefinition();
+    schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
+    githubStore = mock(AirbyteGithubStore.class);
+    destinationHandler = mock(DestinationHandler.class);
+
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler2(
+        configRepository,
+        uuidSupplier,
+        schedulerSynchronousClient,
+        githubStore,
+        destinationHandler);
+  }
+
+  private ActorDefinition generateDestinationDefinition() {
+    final ConnectorSpecification spec = new ConnectorSpecification()
+        .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
+
+    return new ActorDefinition()
+        .withActorType(ActorType.DESTINATION)
+        .withId(UUID.randomUUID())
+        .withName("presto")
+        .withDockerImageTag("12.3")
+        .withDockerRepository("repo")
+        .withDocumentationUrl("https://hulu.com")
+        .withIcon("http.svg")
+        .withSpec(spec)
+        .withTombstone(false)
+        .withReleaseStage(ActorDefinitionReleaseStage.ALPHA)
+        .withReleaseDate(TODAY_DATE_STRING)
+        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
+  }
+
+  @Test
+  @DisplayName("listDestinationDefinition should return the right list")
+  void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
+    final ActorDefinition destination2 = generateDestinationDefinition();
+
+    when(configRepository.listActorDefinitions(ActorType.DESTINATION, false))
+        .thenReturn(Lists.newArrayList(destinationDefinition, destination2));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destination2.getId())
+        .name(destination2.getName())
+        .dockerRepository(destination2.getDockerRepository())
+        .dockerImageTag(destination2.getDockerImageTag())
+        .documentationUrl(new URI(destination2.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destination2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listActorDefinitions();
+
+    assertEquals(
+        Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
+        actualDestinationDefinitionReadList.getDestinationDefinitions());
+  }
+
+  @Test
+  @DisplayName("getDestinationDefinition should return the right destination")
+  void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION))
+        .thenReturn(destinationDefinition);
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
+        .destinationDefinitionId(destinationDefinition.getId());
+
+    final DestinationDefinitionRead actualDestinationDefinitionRead = destinationDefinitionsHandler
+        .getActorDefinition(destinationDefinitionIdRequestBody);
+
+    assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
+  }
+
+  @Test
+  @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
+  void testCreateDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
+    final ActorDefinition destination = generateDestinationDefinition();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+
+    when(uuidSupplier.get()).thenReturn(destination.getId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        destination.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .icon(destination.getIcon())
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .destinationDefinitionId(destination.getId())
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
+        .releaseStage(ReleaseStage.CUSTOM)
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomActorDefinition(create);
+
+    assertEquals(expectedRead, actualRead);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeActorDefinition(destination
+        .withReleaseDate(null)
+        .withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
+  }
+
+  @Test
+  @DisplayName("updateDestinationDefinition should correctly update a destinationDefinition")
+  void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION)).thenReturn(destinationDefinition);
+    final DestinationDefinitionRead currentDestination = destinationDefinitionsHandler
+        .getActorDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getId()));
+    final String currentTag = currentDestination.getDockerImageTag();
+    final String newDockerImageTag = "averydifferenttag";
+    assertNotEquals(newDockerImageTag, currentTag);
+
+    final String newImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), newDockerImageTag);
+    final ConnectorSpecification newSpec = new ConnectorSpecification().withConnectionSpecification(
+        Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")));
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+        newSpec,
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final ActorDefinition updatedDestination = Jsons.clone(destinationDefinition)
+        .withDockerImageTag(newDockerImageTag)
+        .withSpec(newSpec);
+
+    final DestinationDefinitionRead destinationRead = destinationDefinitionsHandler.updateActorDefinition(
+        new DestinationDefinitionUpdate()
+            .destinationDefinitionId(this.destinationDefinition.getId())
+            .dockerImageTag(newDockerImageTag));
+
+    assertEquals(newDockerImageTag, destinationRead.getDockerImageTag());
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(configRepository).writeActorDefinition(updatedDestination);
+  }
+
+  @Test
+  @DisplayName("deleteDestinationDefinition should correctly delete a sourceDefinition")
+  void testDeleteDestinationDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
+        .destinationDefinitionId(destinationDefinition.getId());
+    final ActorDefinition updatedDestinationDefinition = Jsons.clone(destinationDefinition).withTombstone(true);
+    final DestinationRead destination = new DestinationRead();
+
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION))
+        .thenReturn(destinationDefinition);
+    when(destinationHandler.listDestinationsForDestinationDefinition(destinationDefinitionIdRequestBody))
+        .thenReturn(new DestinationReadList().destinations(Collections.singletonList(destination)));
+
+    assertFalse(destinationDefinition.getTombstone());
+
+    destinationDefinitionsHandler.deleteActorDefinition(destinationDefinitionIdRequestBody);
+
+    verify(destinationHandler).deleteDestination(destination);
+    verify(configRepository).writeActorDefinition(updatedDestinationDefinition);
+  }
+
+  @Nested
+  @DisplayName("listLatest")
+  class listLatest {
+
+    @Test
+    @DisplayName("should return the latest list")
+    void testCorrect() throws InterruptedException {
+      final ActorDefinition destinationDefinition = generateDestinationDefinition();
+      when(githubStore.getLatestDefinitions(ActorType.DESTINATION)).thenReturn(Collections.singletonList(destinationDefinition));
+
+      final var destinationDefinitionReadList = destinationDefinitionsHandler.listLatestActorDefinitions().getDestinationDefinitions();
+      assertEquals(1, destinationDefinitionReadList.size());
+
+      final var destinationDefinitionRead = destinationDefinitionReadList.get(0);
+      assertEquals(DestinationDefinitionsHandler.buildDestinationDefinitionRead(destinationDefinition), destinationDefinitionRead);
+    }
+
+    @Test
+    @DisplayName("returns empty collection if cannot find latest definitions")
+    void testHttpTimeout() {
+      assertEquals(0, destinationDefinitionsHandler.listLatestActorDefinitions().getDestinationDefinitions().size());
+    }
+
+  }
+
+}
