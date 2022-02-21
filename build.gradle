@@ -249,6 +249,11 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
+    spotbugs {
+        reportLevel = 'high'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+    }
+
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -305,6 +310,8 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
+        // adds owasp plugin
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     }
 
     tasks.withType(Tar) {
@@ -316,11 +323,6 @@ subprojects {
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-
-    spotbugs {
-        reportLevel = 'high'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
-    }
 }
 
 task('generate') {
