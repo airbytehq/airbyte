@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.lib;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +17,13 @@ import lombok.extern.slf4j.Slf4j;
  * Open source users are free to turn this on and consume the same metrics.
  */
 @Slf4j
-public class DogstatsdMetricSingleton {
+public class DogStatsDMetricSingleton {
 
-  private static DogstatsdMetricSingleton instance;
+  private static DogStatsDMetricSingleton instance;
   private final StatsDClient statsDClient;
   private final boolean instancePublish;
 
-  public static synchronized DogstatsdMetricSingleton getInstance() {
+  public static synchronized DogStatsDMetricSingleton getInstance() {
     if (instance == null) {
       throw new RuntimeException("You must initialize configuration with the initialize() method before getting an instance.");
     }
@@ -30,24 +31,56 @@ public class DogstatsdMetricSingleton {
   }
 
   public synchronized static void initialize(final AirbyteApplication app, final boolean publish) {
+    initialize(app, publish, null, null);
+  }
+
+  @VisibleForTesting
+  public synchronized static void initialize(final AirbyteApplication app, final boolean publish, final String ddAgentHost, final String ddPort) {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
-    if (publish) {
-      log.info("Starting DogStatsD client..");
-      // The second constructor argument ('true') makes this server start as a separate daemon thread.
-      // http://prometheus.github.io/client_java/io/prometheus/client/exporter/HTTPServer.html#HTTPServer-int-boolean-
-      instance = new DogstatsdMetricSingleton(app.getApplicationName(), publish);
+
+    if (!publish) {
+      log.info("Starting stub DogstatsD client..");
+      instance = new DogStatsDMetricSingleton();
+      return;
     }
+
+    log.info("Starting DogStatsD client..");
+    if (!ddAgentHost.isBlank() || !ddPort.isBlank()) {
+      instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish, ddAgentHost, ddPort);
+      return;
+    }
+
+    instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish);
   }
 
-  private DogstatsdMetricSingleton(final String appName, final boolean publish) {
+  @VisibleForTesting
+  public synchronized static void flush() {
+    instance = null;
+  }
+
+  private DogStatsDMetricSingleton(final String appName, final boolean publish) {
     instancePublish = publish;
     statsDClient = new NonBlockingStatsDClientBuilder()
         .prefix(appName)
-        .hostname(System.getenv("DD_AGENT_HOST"))
-        .port(Integer.parseInt(System.getenv("DD_DOGSTATSD_PORT")))
+        .hostname(System.getenv("DD_AGENT_HOST")) // Matches Airbyte Cloud Datadog env vars.
+        .port(Integer.parseInt(System.getenv("DD_DOGSTATSD_PORT"))) // Matches Airbyte Cloud Datadog env vars.
         .build();
+  }
+
+  private DogStatsDMetricSingleton(final String appName, final boolean publish, final String ddAgentHost, final String ddPort) {
+    instancePublish = publish;
+    statsDClient = new NonBlockingStatsDClientBuilder()
+        .prefix(appName)
+        .hostname(ddAgentHost)
+        .port(Integer.parseInt(ddPort))
+        .build();
+  }
+
+  private DogStatsDMetricSingleton() {
+    instancePublish = false;
+    statsDClient = null;
   }
 
   /**
@@ -67,7 +100,7 @@ public class DogstatsdMetricSingleton {
   /**
    * Record the latest value for a gauge.
    *
-   * @param name of gauge.
+   * @param metric
    * @param val to record.
    * @param tags
    */
@@ -82,7 +115,7 @@ public class DogstatsdMetricSingleton {
    * Submit a single execution time aggregated locally by the Agent. Use this if approximate stats are
    * sufficient.
    *
-   * @param name of histogram.
+   * @param metric
    * @param val of time to record.
    * @param tags
    */

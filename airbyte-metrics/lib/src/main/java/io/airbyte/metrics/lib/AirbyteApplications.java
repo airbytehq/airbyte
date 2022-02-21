@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 
 /**
  * Enum containing all applications metrics are emitted for. Used to initialize
- * {@link DogstatsdMetricSingleton#initialize(AirbyteApplication, boolean)}.
+ * {@link DogStatsDMetricSingleton#initialize(AirbyteApplication, boolean)}.
  *
  * Application Name Conventions:
  * <p>

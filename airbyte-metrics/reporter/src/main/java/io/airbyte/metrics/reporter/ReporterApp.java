@@ -5,12 +5,12 @@
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.metrics.lib.AirbyteApplications;
-import io.airbyte.metrics.lib.DogstatsdMetricSingleton;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 
 public class ReporterApp {
 
   public static void main(final String[] args) {
-    DogstatsdMetricSingleton.initialize(AirbyteApplications.METRICS_REPORTER, false);
+    DogStatsDMetricSingleton.initialize(AirbyteApplications.METRICS_REPORTER, false);
   }
 
 }

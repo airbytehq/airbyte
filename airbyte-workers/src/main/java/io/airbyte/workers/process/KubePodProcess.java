@@ -11,7 +11,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
-import io.airbyte.metrics.lib.DogstatsdMetricSingleton;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -501,7 +501,7 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
-    DogstatsdMetricSingleton.getInstance().recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS,
+    DogStatsDMetricSingleton.getInstance().recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS,
         System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
