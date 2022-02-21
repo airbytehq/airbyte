@@ -109,15 +109,15 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
           final PreparedStatement ps = connection.prepareStatement(
               "SELECT schemaname, tablename "
                   + "FROM   pg_tables "
-                  + "WHERE  has_table_privilege(?, schemaname||'.'||tablename, 'select')");
+                  + "WHERE  has_table_privilege(?, schemaname||'.'||tablename, 'select') = true;");
           ps.setString(1, database.getDatabaseConfig().get("username").asText());
           return ps.executeQuery();
         },
         resultSet -> {
           final JsonNode json = sourceOperations.rowToJson(resultSet);
           return JdbcPrivilegeDto.builder()
-              .schemaName(json.get("table_schema").asText())
-              .tableName(json.get("table_name").asText())
+              .schemaName(json.get("schemaname").asText())
+              .tableName(json.get("tablename").asText())
               .build();
         }));
   }
