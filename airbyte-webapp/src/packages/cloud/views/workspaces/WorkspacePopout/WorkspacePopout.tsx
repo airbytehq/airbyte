@@ -102,16 +102,15 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 const WorkspacePopout: React.FC<{
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { data: workspaceList, isLoading } = useListCloudWorkspacesAsync();
   const { selectWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
 
   const options = useMemo(
     () =>
-      workspaceList &&
       workspaceList
-        .filter((w) => w.workspaceId !== workspace.workspaceId)
+        ?.filter((w) => w.workspaceId !== workspace.workspaceId)
         .map((workspace) => ({
           value: workspace.workspaceId,
           label: workspace.name,
