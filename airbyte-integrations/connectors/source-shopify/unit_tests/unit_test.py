@@ -37,8 +37,8 @@ def test_privileges_validation(requests_mock, basic_config):
         "metafields",
         "order_refunds",
         "order_risks",
-        "transactions",
         "tender_transactions",
+        "transactions",
         "fulfillments",
         "shop",
     ]
