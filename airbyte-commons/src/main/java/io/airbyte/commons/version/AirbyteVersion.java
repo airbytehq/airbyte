@@ -114,6 +114,24 @@ public class AirbyteVersion {
     return compareVersion(patch, another.patch);
   }
 
+  /**
+   * Compares two Airbyte Version to check if they are equivalent (including patch version).
+   */
+  public boolean checkOnlyPatchVersionIsUpdated(final AirbyteVersion another) {
+    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
+      return false;
+    }
+    final int majorDiff = compareVersion(major, another.major);
+    if (majorDiff > 0) {
+      return false;
+    }
+    final int minorDiff = compareVersion(minor, another.minor);
+    if (minorDiff > 0) {
+      return false;
+    }
+    return compareVersion(patch, another.patch) > 0;
+  }
+
   public boolean isDev() {
     return version.equals(DEV_VERSION);
   }

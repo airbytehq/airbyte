@@ -1859,7 +1859,19 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
-        if (newFields.size() == 0) {
+        final String latestImageTag = latestDefinition.get("dockerImageTag").asText();
+        if (hasNewPatchVersion(connectorInfo.dockerImageTag, latestImageTag)) {
+          // Update connector to the latest patch version
+          LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
+          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+            writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
+          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+            writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
+          } else {
+            throw new RuntimeException("Unknown config type " + configType);
+          }
+          updatedCount++;
+        } else if (newFields.size() == 0) {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
@@ -1931,6 +1943,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   static boolean hasNewVersion(final String currentVersion, final String latestVersion) {
     try {
       return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
+    } catch (final Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
+  }
+
+  @VisibleForTesting
+  static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
+    try {
+      return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdated(new AirbyteVersion(currentVersion));
     } catch (final Exception e) {
       LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
       return false;
