@@ -8,7 +8,7 @@ application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
 // enable when profiling
     applicationDefaultJvmArgs = [
-
+            '-XX:+ExitOnOutOfMemoryError',
             '-XX:MaxRAMPercentage=75.0',
 //            '-XX:NativeMemoryTracking=detail',
 //            "-Djava.rmi.server.hostname=localhost",

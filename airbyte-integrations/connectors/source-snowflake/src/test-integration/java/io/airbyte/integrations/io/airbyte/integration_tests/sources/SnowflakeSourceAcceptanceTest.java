@@ -24,10 +24,12 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";
+  private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST_"
+      + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
 
@@ -99,7 +101,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get("warehouse").asText(),
             config.get("database").asText()));
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+    final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String
         .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
             STREAM_NAME1);

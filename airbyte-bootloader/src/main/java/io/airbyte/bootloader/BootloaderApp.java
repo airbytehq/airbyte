@@ -55,10 +55,10 @@ public class BootloaderApp {
 
   private final Configs configs;
   private Runnable postLoadExecution;
-  private FeatureFlags featureFlags;
+  private final FeatureFlags featureFlags;
 
   @VisibleForTesting
-  public BootloaderApp(Configs configs, FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
     this.configs = configs;
     this.featureFlags = featureFlags;
   }
@@ -71,7 +71,7 @@ public class BootloaderApp {
    * @param configs
    * @param postLoadExecution
    */
-  public BootloaderApp(Configs configs, Runnable postLoadExecution, FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs, final Runnable postLoadExecution, final FeatureFlags featureFlags) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
@@ -87,7 +87,7 @@ public class BootloaderApp {
         final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
         LOGGER.info("Loaded seed data..");
-      } catch (IOException e) {
+      } catch (final IOException e) {
         e.printStackTrace();
       }
     };
@@ -114,7 +114,7 @@ public class BootloaderApp {
 
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
       final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence, null, Optional.empty(), Optional.empty());
+          new ConfigRepository(configPersistence, null, Optional.empty(), Optional.empty(), configDatabase);
 
       createWorkspaceIfNoneExists(configRepository);
       LOGGER.info("Default workspace created..");
@@ -134,7 +134,7 @@ public class BootloaderApp {
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final var bootloader = new BootloaderApp();
     bootloader.load();
   }
@@ -168,7 +168,8 @@ public class BootloaderApp {
     configRepository.writeStandardWorkspace(workspace);
   }
 
-  private static void assertNonBreakingMigration(JobPersistence jobPersistence, AirbyteVersion airbyteVersion) throws IOException {
+  private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)
+      throws IOException {
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
     LOGGER.info("Checking illegal upgrade..");
@@ -221,7 +222,7 @@ public class BootloaderApp {
 
   private static void cleanupZombies(final JobPersistence jobPersistence) throws IOException {
     final Configs configs = new EnvConfigs();
-    WorkflowClient wfClient =
+    final WorkflowClient wfClient =
         WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
             WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
     for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {

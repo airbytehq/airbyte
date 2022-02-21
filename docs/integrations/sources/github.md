@@ -92,7 +92,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
-| 0.2.18  | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193) | Add handling secondary rate limits |
+| 0.2.19  | 2022-02-07 | [10211](https://github.com/airbytehq/airbyte/pull/10211) | Add human-readable error in case of incorrect organization or repo name                                    |
+| 0.2.18  | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193) | Add handling secondary rate limits                                                                         |
 | 0.2.17  | 2021-02-02 | [9999](https://github.com/airbytehq/airbyte/pull/9999) | Remove BAD_GATEWAY code from backoff_time                                                                    |
 | 0.2.16  | 2021-02-02 | [9868](https://github.com/airbytehq/airbyte/pull/9868) | Add log message for streams that are restricted for OAuth. Update oauth scopes.                              |
 | 0.2.15  | 2021-01-26 | [9802](https://github.com/airbytehq/airbyte/pull/9802) | Add missing fields for auto_merge in pull request stream                                                     |
