@@ -416,6 +416,31 @@ class IssuingCards(IncrementalStripeStream):
     """
 
     cursor_field = "created"
+    name = "issuing_cards"
 
     def path(self, **kwargs):
         return "issuing/cards"
+
+
+class IssuingDisputes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/disputes/list
+    """
+
+    cursor_field = "created"
+    name = "issuing_disputes"
+
+    def path(self, **kwargs):
+        return "issuing/disputes"
+
+
+class IssuingDisputes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/transctions/list
+    """
+
+    cursor_field = "created"
+    name = "issuing_transactions"
+
+    def path(self, **kwargs):
+        return "issuing/transctions"
