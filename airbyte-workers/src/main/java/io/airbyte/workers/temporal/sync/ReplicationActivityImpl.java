@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.sync;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ActorType;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;

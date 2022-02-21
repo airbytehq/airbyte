@@ -1744,8 +1744,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       int newConnectorCount = 0;
       int updatedConnectorCount = 0;
 
-      // todo (cgardens) you need to handle the backwards compat and conversion from old model to new
-      // somewhere. either here or upstream.
       final List<ActorDefinition> latestSources = seedConfigPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class);
       final ConnectorCounter sourceConnectorCounter = updateConnectorDefinitions(
           ctx,
@@ -1963,7 +1961,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return false;
     }
   }
-  
+
   private static class ConnectorCounter {
 
     private final int newCount;

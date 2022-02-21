@@ -25,6 +25,7 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -89,7 +90,7 @@ class SourceDefinitionsHandlerTest {
         .withIcon("http.svg")
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardSourceDefinition.ReleaseStage.ALPHA)
+        .withReleaseStage(ActorDefinitionReleaseStage.ALPHA)
         .withReleaseDate(TODAY_DATE_STRING)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
 
@@ -200,7 +201,7 @@ class SourceDefinitionsHandlerTest {
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository)
-        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
   }
 
   @Test

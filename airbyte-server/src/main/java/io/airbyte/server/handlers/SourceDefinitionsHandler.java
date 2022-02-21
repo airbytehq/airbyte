@@ -16,6 +16,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -139,7 +140,7 @@ public class SourceDefinitionsHandler {
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withReleaseStage(ActorDefinitionReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);

@@ -4,17 +4,18 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.*;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.destinationOauthParameters;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncOperations;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncStates;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardSyncs;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.standardWorkspace;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.*;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.destinationOauthParameters;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.standardSyncOperations;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.standardSyncStates;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.standardSyncs;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.standardWorkspace;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.table;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.Notification;
@@ -62,7 +63,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
   public void testCompleteMigration() throws IOException, SQLException {
     final Database database = getDatabase();
     final DSLContext context = DSL.using(database.getDataSource().getConnection());
-    SetupForNormalizedTablesTest.setup(context);
+    V0_32_8_001__SetupForNormalizedTablesTest.setup(context);
 
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);
 
@@ -79,7 +80,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
   }
 
   private void assertDataForWorkspace(final DSLContext context) {
-    Result<Record> workspaces = context.select(asterisk())
+    final Result<Record> workspaces = context.select(asterisk())
         .from(table("workspace"))
         .fetch();
     Assertions.assertEquals(1, workspaces.size());
@@ -105,7 +106,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
     final List<Notification> notificationList = new ArrayList<>();
     final List fetchedNotifications = Jsons.deserialize(workspace.get(notifications).data(), List.class);
-    for (Object notification : fetchedNotifications) {
+    for (final Object notification : fetchedNotifications) {
       notificationList.add(Jsons.convertValue(notification, Notification.class));
     }
     final StandardWorkspace workspaceFromNewTable = new StandardWorkspace()
@@ -158,7 +159,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
           .withDockerRepository(sourceDefinition.get(dockerRepository))
           .withDocumentationUrl(sourceDefinition.get(documentationUrl))
           .withName(sourceDefinition.get(name))
-          .withSourceType(Enums.toEnum(sourceDefinition.get(sourceType, String.class), StandardSourceDefinition.SourceType.class).orElseThrow())
+          .withSourceType(Enums.toEnum(sourceDefinition.get(sourceType, String.class), ActorDefinition.SourceType.class).orElseThrow())
           .withSpec(Jsons.deserialize(sourceDefinition.get(spec).data(), ConnectorSpecification.class));
       Assertions.assertTrue(expectedDefinitions.contains(standardSourceDefinition));
       Assertions.assertEquals(now(), sourceDefinition.get(createdAt).toInstant());
@@ -428,7 +429,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
     final List<UUID> ids = new ArrayList<>();
 
-    for (Record record : connectionOperations) {
+    for (final Record record : connectionOperations) {
       ids.add(record.get(operationId));
       Assertions.assertNotNull(record.get(id));
       Assertions.assertEquals(now(), record.get(createdAt).toInstant());

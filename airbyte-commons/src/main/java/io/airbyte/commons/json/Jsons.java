@@ -83,6 +83,13 @@ public class Jsons {
     }
   }
 
+  /**
+   * Convert an object into JsonNode.
+   *
+   * @param object - object to convert to JsonNote
+   * @param <T> - type
+   * @return object as JsonNode
+   */
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
   }
@@ -91,6 +98,14 @@ public class Jsons {
     return jsonNode(Collections.emptyMap());
   }
 
+  /**
+   * Convert JsonNode into a typed object.
+   *
+   * @param jsonNode - json to type
+   * @param klass - type of the json will be converted to
+   * @param <T> - type
+   * @return object converted to type
+   */
   public static <T> T object(final JsonNode jsonNode, final Class<T> klass) {
     return OBJECT_MAPPER.convertValue(jsonNode, klass);
   }

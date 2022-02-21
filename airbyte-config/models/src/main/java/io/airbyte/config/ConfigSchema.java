@@ -18,20 +18,20 @@ public enum ConfigSchema implements AirbyteConfig {
       "workspaceId"),
 
   // source
-  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
-      StandardSourceDefinition.class,
-      standardSourceDefinition -> standardSourceDefinition.getSourceDefinitionId().toString(),
-      "sourceDefinitionId"),
+  STANDARD_SOURCE_DEFINITION("ActorDefinition.yaml",
+      ActorDefinition.class,
+      standardSourceDefinition -> standardSourceDefinition.getId().toString(),
+      "id"),
   SOURCE_CONNECTION("SourceConnection.yaml",
       SourceConnection.class,
       sourceConnection -> sourceConnection.getSourceId().toString(),
       "sourceId"),
 
   // destination
-  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml",
-      StandardDestinationDefinition.class,
-      standardDestinationDefinition -> standardDestinationDefinition.getDestinationDefinitionId().toString(),
-      "destinationDefinitionId"),
+  STANDARD_DESTINATION_DEFINITION("ActorDefinition.yaml",
+      ActorDefinition.class,
+      standardDestinationDefinition -> standardDestinationDefinition.getId().toString(),
+      "id"),
   DESTINATION_CONNECTION("DestinationConnection.yaml",
       DestinationConnection.class,
       destinationConnection -> destinationConnection.getDestinationId().toString(),
@@ -90,12 +90,13 @@ public enum ConfigSchema implements AirbyteConfig {
 
   <T> ConfigSchema(final String schemaFilename,
                    final Class<T> className) {
-    this.schemaFilename = schemaFilename;
-    this.className = className;
-    this.extractId = object -> {
-      throw new RuntimeException(className.getSimpleName() + " doesn't have an id");
-    };
-    this.idFieldName = null;
+    this(
+        schemaFilename,
+        className,
+        object -> {
+          throw new RuntimeException(className.getSimpleName() + " doesn't have an id");
+        },
+        null);
   }
 
   @Override

@@ -16,6 +16,7 @@ import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
+import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.validation.json.JsonValidationException;
@@ -39,7 +40,6 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
       ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
-
   // A mapping from seed config type to config UUID to config.
   private final ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
 
@@ -119,11 +119,16 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     if (configs == null) {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
     }
+
     final JsonNode config = configs.get(configId);
     if (config == null) {
       throw new ConfigNotFoundException(configType, configId);
     }
-    return Jsons.object(config, clazz);
+
+    // todo (cgardens) - remove migration shim.
+    final JsonNode converted = ActorDefinitionMigrationUtils.convertIfNeeded(configType, configs.get(configId));
+
+    return Jsons.object(converted, clazz);
   }
 
   @Override
@@ -132,7 +137,12 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     if (configs == null) {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
     }
-    return configs.values().stream().map(json -> Jsons.object(json, clazz)).collect(Collectors.toList());
+    return configs.values()
+        .stream()
+        // todo (cgardens) - remove migration shim.
+        .map(json -> ActorDefinitionMigrationUtils.convertIfNeeded(configType, json))
+        .map(json -> Jsons.object(json, clazz))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -169,9 +179,18 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   @Override
   public Map<String, Stream<JsonNode>> dumpConfigs() {
+    // inverse the config schema map
+    final Map<SeedType, AirbyteConfig> seedTypeToConfigSchemaType =
+        CONFIG_SCHEMA_MAP.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
     return allSeedConfigs.entrySet().stream().collect(Collectors.toMap(
         e -> e.getKey().name(),
-        e -> e.getValue().values().stream()));
+        e -> e.getValue().values()
+            .stream()
+            // todo (cgardens) - remove migration shim.
+            .map(json -> ActorDefinitionMigrationUtils.convertIfNeeded(seedTypeToConfigSchemaType.get(e.getKey()), json))));
   }
 
   @Override

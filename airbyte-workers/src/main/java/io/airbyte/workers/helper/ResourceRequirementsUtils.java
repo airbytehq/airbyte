@@ -5,8 +5,8 @@
 package io.airbyte.workers.helper;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.ActorType;
 import io.airbyte.config.JobTypeResourceLimit;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ResourceRequirements;

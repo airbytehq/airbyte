@@ -15,6 +15,7 @@ import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -23,6 +24,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -195,7 +197,9 @@ public class ConfigDumpImporter {
       return StreamSupport
           .stream(Spliterators.spliteratorUnknownSize(node.elements(), Spliterator.ORDERED), false)
           .map(element -> {
-            final T config = Jsons.object(element, schemaType.getClassName());
+            // todo (cgardens) - remove migration shim.
+            final JsonNode converted = ActorDefinitionMigrationUtils.convertIfNeeded(schemaType, element);
+            final T config = Jsons.object(converted, schemaType.getClassName());
             try {
               validateJson(config, schemaType);
               return config;
@@ -466,9 +470,9 @@ public class ConfigDumpImporter {
 
   protected <T> void importSourceDefinitionIntoWorkspace(final Stream<T> configs)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    importIntoWorkspace(
+    importIntoWorkspaceShim(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        configs.map(c -> (StandardSourceDefinition) c),
+        configs.map(c -> (ActorDefinition) c),
         () -> configRepository.listStandardSourceDefinitions(false),
         (config) -> true,
         (config, id) -> {
@@ -489,9 +493,9 @@ public class ConfigDumpImporter {
 
   protected <T> void importDestinationDefinitionIntoWorkspace(final Stream<T> configs)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    importIntoWorkspace(
+    importIntoWorkspaceShim(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-        configs.map(c -> (StandardDestinationDefinition) c),
+        configs.map(c -> (ActorDefinition) c),
         () -> configRepository.listStandardDestinationDefinitions(false),
         (config) -> true,
         (config, id) -> {
@@ -526,6 +530,7 @@ public class ConfigDumpImporter {
         .map(configSchema::getId)
         .map(UUID::fromString)
         .collect(Collectors.toSet());
+
     for (T config : configs.collect(Collectors.toList())) {
       final UUID configId = UUID.fromString(configSchema.getId(config));
       final UUID configIdToPersist = idsInUse.contains(configId) ? UUID.randomUUID() : configId;
@@ -533,6 +538,56 @@ public class ConfigDumpImporter {
       if (config != null) {
         idsMap.put(configId, UUID.fromString(configSchema.getId(config)));
         persistConfig.apply(config);
+      } else {
+        idsMap.put(configId, configId);
+      }
+    }
+    return idsMap;
+  }
+
+  // todo (cgardens) - remove migration shim
+  private <T> Map<UUID, UUID> importIntoWorkspaceShim(final ConfigSchema configSchema,
+                                                      final Stream<ActorDefinition> configs,
+                                                      final ListConfigCall<T> listConfigCall,
+                                                      final Function<T, Boolean> filterConfigCall,
+                                                      final MutateConfigCall<T> mutateConfig,
+                                                      final PersistConfigCall<T> persistConfig)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Map<UUID, UUID> idsMap = new HashMap<>();
+    // To detect conflicts, we retrieve ids already in use by others for this ConfigSchema (ids from the
+    // current workspace can be safely updated)
+    final Set<UUID> idsInUse = listConfigCall.apply()
+        .stream()
+        .filter(filterConfigCall::apply)
+        .map(config -> {
+          if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+            return ActorDefinitionMigrationUtils.mapSourceDefToActorDef((StandardSourceDefinition) config);
+          } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+            return ActorDefinitionMigrationUtils.mapDestDefToActorDef((StandardDestinationDefinition) config);
+          } else {
+            return config;
+          }
+        })
+        .map(configSchema::getId)
+        .map(UUID::fromString)
+        .collect(Collectors.toSet());
+
+    for (final ActorDefinition config : configs.collect(Collectors.toList())) {
+      final T converted;
+      if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+        converted = (T) ActorDefinitionMigrationUtils.mapActorDefToSourceDef(config);
+      } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+        converted = (T) ActorDefinitionMigrationUtils.mapActorDefToDestDef(config);
+      } else {
+        throw new IllegalArgumentException();
+      }
+
+      final UUID configId = UUID.fromString(configSchema.getId(config));
+      final UUID configIdToPersist = idsInUse.contains(configId) ? UUID.randomUUID() : configId;
+      final T convertedMutated = mutateConfig.apply(converted, configIdToPersist);
+      if (converted != null) {
+        idsMap.put(configId, UUID.fromString(configSchema.getId(config)));
+        persistConfig.apply(convertedMutated);
       } else {
         idsMap.put(configId, configId);
       }

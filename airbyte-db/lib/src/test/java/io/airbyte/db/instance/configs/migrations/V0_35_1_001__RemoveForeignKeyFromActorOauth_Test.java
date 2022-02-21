@@ -4,9 +4,9 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.destinationOauthParameters;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.now;
-import static io.airbyte.db.instance.configs.migrations.SetupForNormalizedTablesTest.sourceOauthParameters;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.destinationOauthParameters;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.now;
+import static io.airbyte.db.instance.configs.migrations.V0_32_8_001__SetupForNormalizedTablesTest.sourceOauthParameters;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.table;
 
@@ -37,7 +37,9 @@ public class V0_35_1_001__RemoveForeignKeyFromActorOauth_Test extends AbstractCo
   public void testCompleteMigration() throws IOException, SQLException {
     final Database database = getDatabase();
     final DSLContext context = DSL.using(database.getDataSource().getConnection());
-    SetupForNormalizedTablesTest.setup(context);
+    // todo (cgardens) - we should not be using V0_32_8_001__SetupForNormalizedTablesTest outside of
+    // their intended migration.
+    V0_32_8_001__SetupForNormalizedTablesTest.setup(context);
 
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);
     V0_35_1_001__RemoveForeignKeyFromActorOauth.migrate(context);

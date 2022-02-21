@@ -24,6 +24,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -91,7 +92,7 @@ class DestinationDefinitionsHandlerTest {
         .withIcon("http.svg")
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.ALPHA)
+        .withReleaseStage(ActorDefinitionReleaseStage.ALPHA)
         .withReleaseDate(TODAY_DATE_STRING)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
   }
@@ -203,7 +204,7 @@ class DestinationDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardDestinationDefinition(destination
         .withReleaseDate(null)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM));
+        .withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
   }
 
   @Test

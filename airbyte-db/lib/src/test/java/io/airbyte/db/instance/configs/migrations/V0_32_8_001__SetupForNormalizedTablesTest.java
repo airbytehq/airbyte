@@ -10,8 +10,7 @@ import static org.jooq.impl.DSL.table;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.ActorDefinition.SourceType;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -28,7 +27,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
@@ -60,7 +58,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Table;
 
-public class SetupForNormalizedTablesTest {
+public class V0_32_8_001__SetupForNormalizedTablesTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
@@ -91,45 +89,45 @@ public class SetupForNormalizedTablesTest {
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   public static void setup(final DSLContext context) {
-    createConfigInOldTable(context, standardWorkspace(), ConfigSchema.STANDARD_WORKSPACE);
+    createConfigInOldTable(context, standardWorkspace(), ConfigSchemaAt0_32_8_001.STANDARD_WORKSPACE);
 
     for (final StandardSourceDefinition standardSourceDefinition : standardSourceDefinitions()) {
-      createConfigInOldTable(context, standardSourceDefinition, ConfigSchema.STANDARD_SOURCE_DEFINITION);
+      createConfigInOldTable(context, standardSourceDefinition, ConfigSchemaAt0_32_8_001.STANDARD_SOURCE_DEFINITION);
     }
 
     for (final StandardDestinationDefinition standardDestinationDefinition : standardDestinationDefinitions()) {
-      createConfigInOldTable(context, standardDestinationDefinition, ConfigSchema.STANDARD_DESTINATION_DEFINITION);
+      createConfigInOldTable(context, standardDestinationDefinition, ConfigSchemaAt0_32_8_001.STANDARD_DESTINATION_DEFINITION);
     }
 
     for (final SourceConnection sourceConnection : sourceConnections()) {
-      createConfigInOldTable(context, sourceConnection, ConfigSchema.SOURCE_CONNECTION);
+      createConfigInOldTable(context, sourceConnection, ConfigSchemaAt0_32_8_001.SOURCE_CONNECTION);
     }
 
     for (final DestinationConnection destinationConnection : destinationConnections()) {
-      createConfigInOldTable(context, destinationConnection, ConfigSchema.DESTINATION_CONNECTION);
+      createConfigInOldTable(context, destinationConnection, ConfigSchemaAt0_32_8_001.DESTINATION_CONNECTION);
     }
 
     for (final SourceOAuthParameter sourceOAuthParameter : sourceOauthParameters()) {
-      createConfigInOldTable(context, sourceOAuthParameter, ConfigSchema.SOURCE_OAUTH_PARAM);
+      createConfigInOldTable(context, sourceOAuthParameter, ConfigSchemaAt0_32_8_001.SOURCE_OAUTH_PARAM);
     }
 
     for (final DestinationOAuthParameter destinationOAuthParameter : destinationOauthParameters()) {
-      createConfigInOldTable(context, destinationOAuthParameter, ConfigSchema.DESTINATION_OAUTH_PARAM);
+      createConfigInOldTable(context, destinationOAuthParameter, ConfigSchemaAt0_32_8_001.DESTINATION_OAUTH_PARAM);
     }
 
     for (final StandardSyncOperation standardSyncOperation : standardSyncOperations()) {
-      createConfigInOldTable(context, standardSyncOperation, ConfigSchema.STANDARD_SYNC_OPERATION);
+      createConfigInOldTable(context, standardSyncOperation, ConfigSchemaAt0_32_8_001.STANDARD_SYNC_OPERATION);
     }
 
     for (final StandardSync standardSync : standardSyncs()) {
-      createConfigInOldTable(context, standardSync, ConfigSchema.STANDARD_SYNC);
+      createConfigInOldTable(context, standardSync, ConfigSchemaAt0_32_8_001.STANDARD_SYNC);
     }
     for (final StandardSyncState standardSyncState : standardSyncStates()) {
-      createConfigInOldTable(context, standardSyncState, ConfigSchema.STANDARD_SYNC_STATE);
+      createConfigInOldTable(context, standardSyncState, ConfigSchemaAt0_32_8_001.STANDARD_SYNC_STATE);
     }
   }
 
-  private static <T> void createConfigInOldTable(final DSLContext context, final T config, final AirbyteConfig configType) {
+  private static <T> void createConfigInOldTable(final DSLContext context, final T config, final ConfigSchemaAt0_32_8_001 configType) {
     insertConfigRecord(
         context,
         configType.name(),
@@ -423,6 +421,44 @@ public class SetupForNormalizedTablesTest {
 
   public static Instant now() {
     return NOW;
+  }
+
+  /**
+   * This is the ConfigSchema as it existed at the time of migration v0.32.8-alpha. We have preseved
+   * it (pruning out unneeded functionality), so that these helper methods work as they did when the
+   * migration was written.
+   */
+  public enum ConfigSchemaAt0_32_8_001 {
+
+    // workspace
+    STANDARD_WORKSPACE("workspaceId"),
+
+    // source
+    STANDARD_SOURCE_DEFINITION("sourceDefinitionId"),
+    SOURCE_CONNECTION("sourceId"),
+
+    // destination
+    STANDARD_DESTINATION_DEFINITION("destinationDefinitionId"),
+    DESTINATION_CONNECTION("destinationId"),
+
+    // sync (i.e. connection)
+    STANDARD_SYNC("connectionId"),
+    STANDARD_SYNC_OPERATION("operationId"),
+    STANDARD_SYNC_STATE("connectionId"),
+
+    SOURCE_OAUTH_PARAM("oauthParameterId"),
+    DESTINATION_OAUTH_PARAM("oauthParameterId");
+
+    private final String idFieldName;
+
+    <T> ConfigSchemaAt0_32_8_001(final String idFieldName) {
+      this.idFieldName = idFieldName;
+    }
+
+    public String getIdFieldName() {
+      return idFieldName;
+    }
+
   }
 
 }

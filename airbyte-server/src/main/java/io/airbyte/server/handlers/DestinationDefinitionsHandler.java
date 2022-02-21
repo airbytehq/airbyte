@@ -16,6 +16,7 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -146,7 +147,7 @@ public class DestinationDefinitionsHandler {
         .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withReleaseStage(ActorDefinitionReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);

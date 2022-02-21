@@ -20,6 +20,8 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.SourceType;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Notification;
@@ -27,9 +29,9 @@ import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -158,10 +160,10 @@ public class ArchiveHandlerTest {
     // When a connector definition is in use, it will not be updated.
     final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
     final String sourceS3DefinitionVersion = "0.0.0";
-    final StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
+    final ActorDefinition sourceS3Definition = seedPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceS3DefinitionId.toString(),
-        StandardSourceDefinition.class)
+        ActorDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion)
         .withTombstone(false);
@@ -196,7 +198,10 @@ public class ArchiveHandlerTest {
     // Write source connection and an old source definition.
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString(), sourceConnection);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
+    configPersistence.writeConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceS3DefinitionId.toString(),
+        sourceS3Definition);
 
     // Export, wipe, and import the configs.
     archive = archiveHandler.exportData();
@@ -204,10 +209,10 @@ public class ArchiveHandlerTest {
     archiveHandler.importData(archive);
 
     // The version has not changed.
-    final StandardSourceDefinition actualS3Definition = configPersistence.getConfig(
+    final ActorDefinition actualS3Definition = configPersistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceS3DefinitionId.toString(),
-        StandardSourceDefinition.class);
+        ActorDefinition.class);
     assertEquals(sourceS3DefinitionVersion, actualS3Definition.getDockerImageTag());
   }
 
@@ -345,10 +350,19 @@ public class ArchiveHandlerTest {
         String.format("The expected (%s) vs actual (%s) streams does not match", expected.size(), actual.size()));
     for (final String stream : expected.keySet()) {
       LOGGER.info("Checking stream {}", stream);
-      // assertEquals cannot correctly check the equality of two maps with stream values,
-      // so streams are converted to sets before being compared.
-      final Set<JsonNode> expectedRecords = expected.get(stream).collect(Collectors.toSet());
-      final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
+      // todo (cgardens) - remove migration shim
+      // depending on whether the data is sourced from a config persistence or the config repository it
+      // could b in different shapes (ActorDefinition and StandardSourceDefinition,
+      // StandardDestinationDefinition, respectively). Just convert them all to ActorDefinition for sake
+      // of comparison.
+      final Set<JsonNode> expectedRecords = expected.get(stream)
+          // todo (cgardens) - remove migration shim
+          .map(config -> ActorDefinitionMigrationUtils.convertIfNeeded(ConfigSchema.valueOf(stream), config))
+          .collect(Collectors.toSet());
+      final Set<JsonNode> actualRecords = actual.get(stream)
+          // todo (cgardens) - remove migration shim
+          .map(config -> ActorDefinitionMigrationUtils.convertIfNeeded(ConfigSchema.valueOf(stream), config))
+          .collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
         assertTrue(
             actualRecords.contains(expectedRecord),

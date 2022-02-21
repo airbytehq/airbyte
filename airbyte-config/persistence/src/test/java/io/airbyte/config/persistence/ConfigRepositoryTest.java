@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -162,8 +164,8 @@ class ConfigRepositoryTest {
 
   void assertReturnsSourceDefinition(final StandardSourceDefinition sourceDefinition)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_DEFINITION_ID.toString(), StandardSourceDefinition.class))
-        .thenReturn(sourceDefinition);
+    when(configPersistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_DEFINITION_ID.toString(), ActorDefinition.class))
+        .thenReturn(ActorDefinitionMigrationUtils.mapSourceDefToActorDef(sourceDefinition));
 
     assertEquals(sourceDefinition, configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID));
   }
@@ -176,11 +178,17 @@ class ConfigRepositoryTest {
         .withSourceId(sourceId)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID);
 
+    final StandardSourceDefinition sourceDef = new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID);
+
     doReturn(source)
         .when(configRepository)
         .getSourceConnection(sourceId);
+    doReturn(sourceDef)
+        .when(configRepository)
+        .getStandardSourceDefinition(SOURCE_DEFINITION_ID);
 
-    configRepository.getSourceDefinitionFromSource(sourceId);
+    assertEquals(sourceDef, configRepository.getSourceDefinitionFromSource(sourceId));
     verify(configRepository).getStandardSourceDefinition(SOURCE_DEFINITION_ID);
   }
 
@@ -230,8 +238,9 @@ class ConfigRepositoryTest {
         notTombstoneSourceDefinitions.add(sourceDefinition);
       }
     }
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
-        .thenReturn(allSourceDefinitions);
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class))
+        // todo (cgardens) - remove migration shim.
+        .thenReturn(allSourceDefinitions.stream().map(ActorDefinitionMigrationUtils::mapSourceDefToActorDef).collect(Collectors.toList()));
 
     final List<StandardSourceDefinition> returnedSourceDefinitionsWithoutTombstone = configRepository.listStandardSourceDefinitions(false);
     assertEquals(notTombstoneSourceDefinitions, returnedSourceDefinitionsWithoutTombstone);
@@ -293,9 +302,12 @@ class ConfigRepositoryTest {
 
   void assertReturnsDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_DEFINITION_ID.toString(),
-        StandardDestinationDefinition.class))
-            .thenReturn(destinationDefinition);
+    when(configPersistence.getConfig(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        DESTINATION_DEFINITION_ID.toString(),
+        ActorDefinition.class))
+            // todo (cgardens) - remove migration shim.
+            .thenReturn(ActorDefinitionMigrationUtils.mapDestDefToActorDef(destinationDefinition));
 
     assertEquals(destinationDefinition, configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID));
   }
@@ -308,11 +320,17 @@ class ConfigRepositoryTest {
         .withDestinationId(destinationId)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
 
+    final StandardDestinationDefinition destinationDef = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
+
     doReturn(destination)
         .when(configRepository)
         .getDestinationConnection(destinationId);
+    doReturn(destinationDef)
+        .when(configRepository)
+        .getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
 
-    configRepository.getDestinationDefinitionFromDestination(destinationId);
+    assertEquals(destinationDef, configRepository.getDestinationDefinitionFromDestination(destinationId));
     verify(configRepository).getStandardDestinationDefinition(DESTINATION_DEFINITION_ID);
   }
 
@@ -362,8 +380,9 @@ class ConfigRepositoryTest {
         notTombstoneDestinationDefinitions.add(destinationDefinition);
       }
     }
-    when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
-        .thenReturn(allDestinationDefinitions);
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class))
+        // todo (cgardens) - remove migration shim.
+        .thenReturn(allDestinationDefinitions.stream().map(ActorDefinitionMigrationUtils::mapDestDefToActorDef).collect(Collectors.toList()));
 
     final List<StandardDestinationDefinition> returnedDestinationDefinitionsWithoutTombstone =
         configRepository.listStandardDestinationDefinitions(false);

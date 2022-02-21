@@ -28,7 +28,7 @@ properties:
     type: string
   spec:
     type: object
-    # tooooooooodoooo
+    # necessary because this type is declared in another module
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   tombstone:
     description:
