@@ -16,6 +16,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.github.spotbugs' version '5.0.5'
 }
 
 repositories {
@@ -177,6 +178,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.spotbugs'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -314,6 +316,11 @@ subprojects {
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+    spotbugs {
+        reportLevel = 'high'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+    }
 }
 
 task('generate') {
