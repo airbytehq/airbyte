@@ -26,6 +26,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -84,6 +85,7 @@ class DestinationDefinitionsHandlerTest {
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
 
     return new ActorDefinition()
+        .withActorType(ActorType.DESTINATION)
         .withId(UUID.randomUUID())
         .withName("presto")
         .withDockerImageTag("12.3")
@@ -102,7 +104,8 @@ class DestinationDefinitionsHandlerTest {
   void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
     final ActorDefinition destination2 = generateDestinationDefinition();
 
-    when(configRepository.listStandardDestinationDefinitions(false)).thenReturn(Lists.newArrayList(destinationDefinition, destination2));
+    when(configRepository.listActorDefinitions(ActorType.DESTINATION, false))
+        .thenReturn(Lists.newArrayList(destinationDefinition, destination2));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
         .destinationDefinitionId(destinationDefinition.getId())
@@ -130,7 +133,7 @@ class DestinationDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination2.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listDestinationDefinitions();
+    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listActorDefinitions();
 
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
@@ -140,7 +143,7 @@ class DestinationDefinitionsHandlerTest {
   @Test
   @DisplayName("getDestinationDefinition should return the right destination")
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getId()))
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION))
         .thenReturn(destinationDefinition);
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
@@ -159,8 +162,8 @@ class DestinationDefinitionsHandlerTest {
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
         .destinationDefinitionId(destinationDefinition.getId());
 
-    final DestinationDefinitionRead actualDestinationDefinitionRead =
-        destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
+    final DestinationDefinitionRead actualDestinationDefinitionRead = destinationDefinitionsHandler
+        .getActorDefinition(destinationDefinitionIdRequestBody);
 
     assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
   }
@@ -198,11 +201,11 @@ class DestinationDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomDestinationDefinition(create);
+    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomActorDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository).writeStandardDestinationDefinition(destination
+    verify(configRepository).writeActorDefinition(destination
         .withReleaseDate(null)
         .withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
   }
@@ -210,12 +213,10 @@ class DestinationDefinitionsHandlerTest {
   @Test
   @DisplayName("updateDestinationDefinition should correctly update a destinationDefinition")
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getId())).thenReturn(destinationDefinition);
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION)).thenReturn(destinationDefinition);
     final DestinationDefinitionRead currentDestination = destinationDefinitionsHandler
-        .getDestinationDefinition(
-            new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getId()));
+        .getActorDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getId()));
     final String currentTag = currentDestination.getDockerImageTag();
-    final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
@@ -230,34 +231,35 @@ class DestinationDefinitionsHandlerTest {
         .withDockerImageTag(newDockerImageTag)
         .withSpec(newSpec);
 
-    final DestinationDefinitionRead destinationRead = destinationDefinitionsHandler.updateDestinationDefinition(
-        new DestinationDefinitionUpdate().destinationDefinitionId(this.destinationDefinition.getId())
+    final DestinationDefinitionRead destinationRead = destinationDefinitionsHandler.updateActorDefinition(
+        new DestinationDefinitionUpdate()
+            .destinationDefinitionId(this.destinationDefinition.getId())
             .dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, destinationRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
-    verify(configRepository).writeStandardDestinationDefinition(updatedDestination);
+    verify(configRepository).writeActorDefinition(updatedDestination);
   }
 
   @Test
   @DisplayName("deleteDestinationDefinition should correctly delete a sourceDefinition")
   void testDeleteDestinationDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
-        new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getId());
-    final ActorDefinition updatedDestinationDefinition = Jsons.clone(this.destinationDefinition).withTombstone(true);
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
+        .destinationDefinitionId(destinationDefinition.getId());
+    final ActorDefinition updatedDestinationDefinition = Jsons.clone(destinationDefinition).withTombstone(true);
     final DestinationRead destination = new DestinationRead();
 
-    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getId()))
+    when(configRepository.getActorDefinition(destinationDefinition.getId(), ActorType.DESTINATION))
         .thenReturn(destinationDefinition);
     when(destinationHandler.listDestinationsForDestinationDefinition(destinationDefinitionIdRequestBody))
         .thenReturn(new DestinationReadList().destinations(Collections.singletonList(destination)));
 
     assertFalse(destinationDefinition.getTombstone());
 
-    destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
+    destinationDefinitionsHandler.deleteActorDefinition(destinationDefinitionIdRequestBody);
 
     verify(destinationHandler).deleteDestination(destination);
-    verify(configRepository).writeStandardDestinationDefinition(updatedDestinationDefinition);
+    verify(configRepository).writeActorDefinition(updatedDestinationDefinition);
   }
 
   @Nested
@@ -268,19 +270,19 @@ class DestinationDefinitionsHandlerTest {
     @DisplayName("should return the latest list")
     void testCorrect() throws InterruptedException {
       final ActorDefinition destinationDefinition = generateDestinationDefinition();
-      when(githubStore.getLatestDestinations()).thenReturn(Collections.singletonList(destinationDefinition));
+      when(githubStore.getLatestDefinitions(ActorType.DESTINATION)).thenReturn(Collections.singletonList(destinationDefinition));
 
-      final var destinationDefinitionReadList = destinationDefinitionsHandler.listLatestDestinationDefinitions().getDestinationDefinitions();
+      final var destinationDefinitionReadList = destinationDefinitionsHandler.listLatestActorDefinitions().getDestinationDefinitions();
       assertEquals(1, destinationDefinitionReadList.size());
 
       final var destinationDefinitionRead = destinationDefinitionReadList.get(0);
-      assertEquals(DestinationDefinitionsHandler.buildDestinationDefinitionRead(destinationDefinition), destinationDefinitionRead);
+      assertEquals(destinationDefinitionsHandler.toRead(destinationDefinition), destinationDefinitionRead);
     }
 
     @Test
     @DisplayName("returns empty collection if cannot find latest definitions")
     void testHttpTimeout() {
-      assertEquals(0, destinationDefinitionsHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
+      assertEquals(0, destinationDefinitionsHandler.listLatestActorDefinitions().getDestinationDefinitions().size());
     }
 
   }

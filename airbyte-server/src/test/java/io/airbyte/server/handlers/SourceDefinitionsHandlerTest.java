@@ -27,6 +27,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -82,6 +83,7 @@ class SourceDefinitionsHandlerTest {
         Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
 
     return new ActorDefinition()
+        .withActorType(ActorType.SOURCE)
         .withId(sourceDefinitionId)
         .withName("presto")
         .withDocumentationUrl("https://netflix.com")
@@ -101,7 +103,8 @@ class SourceDefinitionsHandlerTest {
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
     final ActorDefinition sourceDefinition2 = generateSourceDefinition();
 
-    when(configRepository.listStandardSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition, sourceDefinition2));
+    when(configRepository.listActorDefinitions(ActorType.SOURCE, false))
+        .thenReturn(Lists.newArrayList(sourceDefinition, sourceDefinition2));
 
     final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition.getId())
@@ -129,7 +132,7 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
+    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listActorDefinitions();
 
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
@@ -139,7 +142,7 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("getSourceDefinition should return the right source")
   void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId()))
+    when(configRepository.getActorDefinition(sourceDefinition.getId(), ActorType.SOURCE))
         .thenReturn(sourceDefinition);
 
     final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
@@ -158,7 +161,7 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getId());
 
-    final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
+    final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler.getActorDefinition(sourceDefinitionIdRequestBody);
 
     assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
   }
@@ -196,21 +199,21 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(create);
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomActorDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository)
-        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
+        .writeActorDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(ActorDefinitionReleaseStage.CUSTOM));
   }
 
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId())).thenReturn(sourceDefinition);
+    when(configRepository.getActorDefinition(sourceDefinition.getId(), ActorType.SOURCE)).thenReturn(sourceDefinition);
     final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceDefinitionsHandler
-        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getId()));
+        .getActorDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getId()));
     final String dockerRepository = sourceDefinition.getDockerRepository();
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
@@ -225,12 +228,11 @@ class SourceDefinitionsHandlerTest {
     final ActorDefinition updatedSource = Jsons.clone(this.sourceDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
 
     final SourceDefinitionRead sourceDefinitionRead = sourceDefinitionsHandler
-        .updateSourceDefinition(
-            new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getId()).dockerImageTag(newDockerImageTag));
+        .updateActorDefinition(new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
-    verify(configRepository).writeStandardSourceDefinition(updatedSource);
+    verify(configRepository).writeActorDefinition(updatedSource);
   }
 
   @Test
@@ -241,17 +243,17 @@ class SourceDefinitionsHandlerTest {
     final ActorDefinition updatedSourceDefinition = Jsons.clone(this.sourceDefinition).withTombstone(true);
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId()))
+    when(configRepository.getActorDefinition(sourceDefinition.getId(), ActorType.SOURCE))
         .thenReturn(sourceDefinition);
     when(sourceHandler.listSourcesForSourceDefinition(sourceDefinitionIdRequestBody))
         .thenReturn(new SourceReadList().sources(Collections.singletonList(source)));
 
     assertFalse(sourceDefinition.getTombstone());
 
-    sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
+    sourceDefinitionsHandler.deleteActorDefinition(sourceDefinitionIdRequestBody);
 
     verify(sourceHandler).deleteSource(source);
-    verify(configRepository).writeStandardSourceDefinition(updatedSourceDefinition);
+    verify(configRepository).writeActorDefinition(updatedSourceDefinition);
   }
 
   @Nested
@@ -260,21 +262,21 @@ class SourceDefinitionsHandlerTest {
 
     @Test
     @DisplayName("should return the latest list")
-    void testCorrect() throws IOException, InterruptedException {
+    void testCorrect() throws InterruptedException {
       final ActorDefinition sourceDefinition = generateSourceDefinition();
-      when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
+      when(githubStore.getLatestDefinitions(ActorType.SOURCE)).thenReturn(Collections.singletonList(sourceDefinition));
 
-      final var sourceDefinitionReadList = sourceDefinitionsHandler.listLatestSourceDefinitions().getSourceDefinitions();
+      final var sourceDefinitionReadList = sourceDefinitionsHandler.listLatestActorDefinitions().getSourceDefinitions();
       assertEquals(1, sourceDefinitionReadList.size());
 
       final var sourceDefinitionRead = sourceDefinitionReadList.get(0);
-      assertEquals(SourceDefinitionsHandler.buildSourceDefinitionRead(sourceDefinition), sourceDefinitionRead);
+      assertEquals(sourceDefinitionsHandler.toRead(sourceDefinition), sourceDefinitionRead);
     }
 
     @Test
     @DisplayName("returns empty collection if cannot find latest definitions")
     void testHttpTimeout() {
-      assertEquals(0, sourceDefinitionsHandler.listLatestSourceDefinitions().getSourceDefinitions().size());
+      assertEquals(0, sourceDefinitionsHandler.listLatestActorDefinitions().getSourceDefinitions().size());
     }
 
     @Test

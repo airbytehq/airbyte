@@ -288,33 +288,33 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionReadList listSourceDefinitions() {
-    return execute(sourceDefinitionsHandler::listSourceDefinitions);
+    return execute(sourceDefinitionsHandler::listActorDefinitions);
   }
 
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+    return execute(sourceDefinitionsHandler::listLatestActorDefinitions);
   }
 
   @Override
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
+    return execute(() -> sourceDefinitionsHandler.getActorDefinition(sourceDefinitionIdRequestBody));
   }
 
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
-    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(sourceDefinitionCreate));
+    return execute(() -> sourceDefinitionsHandler.createCustomActorDefinition(sourceDefinitionCreate));
   }
 
   @Override
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
-    return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
+    return execute(() -> sourceDefinitionsHandler.updateActorDefinition(sourceDefinitionUpdate));
   }
 
   @Override
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     execute(() -> {
-      sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
+      sourceDefinitionsHandler.deleteActorDefinition(sourceDefinitionIdRequestBody);
       return null;
     });
   }
@@ -430,33 +430,33 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+    return execute(destinationDefinitionsHandler::listActorDefinitions);
   }
 
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+    return execute(destinationDefinitionsHandler::listLatestActorDefinitions);
   }
 
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
+    return execute(() -> destinationDefinitionsHandler.getActorDefinition(destinationDefinitionIdRequestBody));
   }
 
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(destinationDefinitionCreate));
+    return execute(() -> destinationDefinitionsHandler.createCustomActorDefinition(destinationDefinitionCreate));
   }
 
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
-    return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
+    return execute(() -> destinationDefinitionsHandler.updateActorDefinition(destinationDefinitionUpdate));
   }
 
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     execute(() -> {
-      destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
+      destinationDefinitionsHandler.deleteActorDefinition(destinationDefinitionIdRequestBody);
       return null;
     });
   }

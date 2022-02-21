@@ -62,8 +62,8 @@ public class AirbyteGithubStore {
     }
   }
 
-  // todo (cgardens) - make private
-  public List<ActorDefinition> getLatestDestinations() throws InterruptedException {
+  @VisibleForTesting
+  List<ActorDefinition> getLatestDestinations() throws InterruptedException {
     try {
       // todo (cgardens) - remove migration shim
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH))
@@ -78,8 +78,8 @@ public class AirbyteGithubStore {
     }
   }
 
-  // todo (cgardens) - make private
-  public List<ActorDefinition> getLatestSources() throws InterruptedException {
+  @VisibleForTesting
+  List<ActorDefinition> getLatestSources() throws InterruptedException {
     try {
       // todo (cgardens) - remove migration shim
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH))

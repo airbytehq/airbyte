@@ -119,14 +119,14 @@ public class JobHistoryHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceRead.getSourceDefinitionId());
-    return sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
+    return sourceDefinitionsHandler.getActorDefinition(sourceDefinitionIdRequestBody);
   }
 
   private DestinationDefinitionRead getDestinationDefinitionRead(final DestinationRead destinationRead)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
         new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationRead.getDestinationDefinitionId());
-    return destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
+    return destinationDefinitionsHandler.getActorDefinition(destinationDefinitionIdRequestBody);
   }
 
   private JobDebugInfoRead buildJobDebugInfoRead(final JobInfoRead jobInfoRead)
