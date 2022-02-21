@@ -32,24 +32,13 @@ def test_privileges_validation(requests_mock, basic_config):
     source = SourceShopify()
 
     expected = [
-        "customers",
         "orders",
-        "draft_orders",
-        "products",
         "abandoned_checkouts",
         "metafields",
-        "custom_collections",
-        "collects",
         "order_refunds",
         "order_risks",
         "transactions",
-        "pages",
-        "price_rules",
-        "discount_codes",
-        "locations",
-        "inventory_items",
-        "inventory_levels",
-        "fulfillment_orders",
+        "tender_transactions",
         "fulfillments",
         "shop",
     ]
