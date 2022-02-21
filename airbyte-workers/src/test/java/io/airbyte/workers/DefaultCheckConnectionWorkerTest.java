@@ -50,7 +50,7 @@ public class DefaultCheckConnectionWorkerTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
-    workerConfigs = new WorkerConfigs(new EnvConfigs());
+    workerConfigs = WorkerConfigs.buildCheckWorkerConfigs(new EnvConfigs());
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
