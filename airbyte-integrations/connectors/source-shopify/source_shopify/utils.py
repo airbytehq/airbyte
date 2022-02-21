@@ -11,7 +11,7 @@ import requests
 
 SCOPES_MAPPING = {
     "read_customers": ["Customers"],
-    "read_orders": ["Orders", "AbandonedCheckouts", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
+    "read_orders": ["Orders", "AbandonedCheckouts", "TenderTransactions", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
     "read_draft_orders": ["DraftOrders"],
     "read_products": ["Products", "CustomCollections", "Collects"],
     "read_content": ["Pages"],

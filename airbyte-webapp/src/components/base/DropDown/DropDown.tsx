@@ -38,11 +38,15 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
     [propsComponents]
   );
 
-  const currentValue = props.isMulti
-    ? props.options?.filter((op) =>
-        props.value.find((o: OptionType) => equal(o, op.value))
-      )
-    : props.options?.find((op) => equal(op.value, props.value));
+  // undefined value is assumed to mean that value was not selected
+  const currentValue =
+    props.value !== undefined
+      ? props.isMulti
+        ? props.options?.filter((op) =>
+            props.value.find((o: OptionType) => equal(o, op.value))
+          )
+        : props.options?.find((op) => equal(op.value, props.value))
+      : null;
 
   const styles = {
     ...(props.styles ?? {}),
