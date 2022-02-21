@@ -243,19 +243,19 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     // Check Zero-date value for mandatory field
     addDataTypeTestData(
         TestDataHolder.builder()
-             .sourceType("date")
-             .fullSourceDataType("date not null")
-             .airbyteType(JsonSchemaPrimitive.STRING)
-             .addInsertValues("'0000-00-00'")
-             .addExpectedValues("1970-01-01T00:00:00Z")
-             .build());
+            .sourceType("date")
+            .fullSourceDataType("date not null")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'0000-00-00'")
+            .addExpectedValues("1970-01-01T00:00:00Z")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2005-10-10 23:22:21'")
-            .addExpectedValues(null, "2005-10-10T23:22:21Z")
+            .addExpectedValues(null, "2005-10-10T23:22:21.000000Z")
             .build());
 
     // Check Zero-date value for mandatory field
@@ -263,7 +263,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("datetime")
             .fullSourceDataType("datetime not null")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0000-00-00 00:00:00'")
             .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
@@ -278,10 +278,10 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     // Check Zero-date value for mandatory field
     addDataTypeTestData(
-       TestDataHolder.builder()
+        TestDataHolder.builder()
             .sourceType("timestamp")
             .fullSourceDataType("timestamp not null")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0000-00-00 00:00:00.000000'")
             .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
@@ -292,7 +292,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
             // https://debezium.io/documentation/reference/connectors/mysql.html#mysql-temporal-types
-            .addInsertValues("null", "'-23:59:59.123456'", "'00:00:00'")
+            .addInsertValues("null", "'-23:59:59'", "'00:00:00'")
             .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
             .build());
 

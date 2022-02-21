@@ -78,7 +78,7 @@
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
 - name: Kinesis
@@ -126,7 +126,7 @@
 - name: MySQL
   destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
   icon: mysql.svg
 - name: Oracle
@@ -162,7 +162,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.3.25
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - name: Rockset
@@ -185,7 +185,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.10
+  dockerImageTag: 0.4.14
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
 - name: MariaDB ColumnStore

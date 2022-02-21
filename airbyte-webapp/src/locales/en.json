@@ -436,7 +436,8 @@
   "connector.releaseStage.beta": "beta",
   "connector.releaseStage.custom": "custom",
   "connector.releaseStage.generally_available": "generally available",
-
+  "connector.connectorsInDevelopment.alpha": "<b>Alpha connectors</b> are in development. We strongly discourage production use cases and do not offer support SLAs. The release may not be feature complete and breaking changes may be introduced.",
+  "connector.connectorsInDevelopment.beta": "<b>Beta connectors</b> are considered stable and reliable with no backwards incompatible changes but has yet to be used by a larger group of users so we expect there to be some small issues and bugs to iron out.",
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
   "credits.buyCredits": "+ Buy credits",

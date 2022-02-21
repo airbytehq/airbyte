@@ -312,8 +312,9 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .createTablePatternSql(CREATE_TABLE_SQL)
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'2018-03-22-12.00.00.123'", "'20180322125959'", "'20180101 12:00:59 PM'")
-            .addExpectedValues(null, "2018-03-22T12:00:00Z", "2018-03-22T12:59:59Z", "2018-01-01T12:00:59Z") // milliseconds values are erased
+            .addInsertValues("null", "'2018-03-22-12.00.00.123'", "'2018-03-22-12.00.00.123456'", "'20180322125959'", "'20180101 12:00:59 PM'")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123000Z", "2018-03-22T12:00:00.123456Z", "2018-03-22T12:59:59.000000Z",
+                "2018-01-01T12:00:59.000000Z")
             .build());
   }
 
