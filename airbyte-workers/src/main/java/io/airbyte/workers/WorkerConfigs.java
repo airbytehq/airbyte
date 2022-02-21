@@ -88,10 +88,10 @@ public class WorkerConfigs {
     return new WorkerConfigs(
         configs.getWorkerEnvironment(),
         new ResourceRequirements()
-            .withCpuRequest(configs.getJobMainContainerCpuRequest())
-            .withCpuLimit(configs.getJobMainContainerCpuLimit())
-            .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
-            .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
+            .withCpuRequest(configs.getCheckJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getCheckJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getCheckJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
         configs.getJobKubeMainContainerImagePullSecret(),
