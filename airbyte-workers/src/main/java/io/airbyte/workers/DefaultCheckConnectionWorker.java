@@ -11,6 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.metrics.lib.AirbyteApplications;
+import io.airbyte.metrics.lib.DogstatsdMetricSingleton;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;

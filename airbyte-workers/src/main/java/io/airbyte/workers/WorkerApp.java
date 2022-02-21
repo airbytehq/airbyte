@@ -305,7 +305,7 @@ public class WorkerApp {
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
 
-    DogstatsdMetricSingleton.initialize(AirbyteApplications.WORKER, false);
+    DogstatsdMetricSingleton.initialize(AirbyteApplications.WORKER, configs.getPublishMetrics());
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
