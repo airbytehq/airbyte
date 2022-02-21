@@ -294,6 +294,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 |:------- | :--------- | :----------------------------------------------------- | :------------------------------------- |
+| 0.3.16  | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
 | 0.3.15  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.3.14  | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC |
 | 0.3.13  | 2022-01-07 | [9094](https://github.com/airbytehq/airbyte/pull/9094) | Added support for missed data types |
