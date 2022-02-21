@@ -15,9 +15,17 @@ export enum ConnectionNamespaceDefinition {
   CustomFormat = "customformat",
 }
 
+export enum ConnectionSchedule {
+  Minutes = "minutes",
+  Hours = "hours",
+  Days = "days",
+  Weeks = "weeks",
+  Months = "months",
+}
+
 export type ScheduleProperties = {
   units: number;
-  timeUnit: string;
+  timeUnit: ConnectionSchedule;
 };
 
 export interface Connection {
