@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_hubspot.api import Stream
+from source_hubspot.streams import Stream
 
 
 @pytest.mark.parametrize(
