@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+ 
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -98,7 +98,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # Async report generation time is 15 minutes according to docs:
     # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
+    REPORT_WAIT_TIMEOUT = timedelta(minutes=120).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -153,7 +153,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff.on_exception(
         backoff.expo,
         ReportGenerationFailure,
-        max_tries=5,
+        max_tries=1000,
     )
     def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)
