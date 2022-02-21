@@ -4,22 +4,16 @@
 
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_strava.streams import Activities, AthleteStats
-
-from airbyte_cdk.sources import AbstractSource
-import requests
-
-
-
 
 
 # Source
 class SourceStrava(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        dddd = "aaaaaaaa"
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
