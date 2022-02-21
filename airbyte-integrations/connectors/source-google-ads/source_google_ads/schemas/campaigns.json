@@ -255,7 +255,8 @@
       "type": ["null", "number"]
     },
     "segments.date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

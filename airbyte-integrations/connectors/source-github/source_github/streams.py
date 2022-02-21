@@ -5,6 +5,7 @@
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -65,6 +66,13 @@ class GithubStream(HttpStream, ABC):
             self.logger.info(
                 f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
+
+        # Handling secondary rate limits for Github
+        # Additional information here: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+        elif response.headers.get("Retry-After"):
+            time_delay = int(response.headers["Retry-After"])
+            self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
+            sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
@@ -72,7 +80,7 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code in [requests.codes.BAD_GATEWAY, requests.codes.SERVER_ERROR]:
+        if response.status_code == requests.codes.SERVER_ERROR:
             return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")

@@ -30,7 +30,7 @@ public class OrchestratorConstants {
       EnvConfigs.LOCAL_DOCKER_MOUNT,
       EnvConfigs.WORKSPACE_DOCKER_MOUNT,
       EnvConfigs.WORKSPACE_ROOT,
-      EnvConfigs.DEFAULT_JOB_KUBE_NAMESPACE,
+      EnvConfigs.JOB_KUBE_NAMESPACE,
       EnvConfigs.JOB_MAIN_CONTAINER_CPU_REQUEST,
       EnvConfigs.JOB_MAIN_CONTAINER_CPU_LIMIT,
       EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,

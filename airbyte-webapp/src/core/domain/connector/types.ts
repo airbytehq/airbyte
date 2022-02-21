@@ -4,6 +4,13 @@ import {
 } from "core/domain/connection";
 import { DestinationSyncMode } from "core/domain/catalog";
 
+export enum ReleaseStage {
+  "ALPHA" = "alpha",
+  "BETA" = "beta",
+  "GENERALLY_AVAILABLE" = "generally_available",
+  "CUSTOM" = "custom",
+}
+
 export interface DestinationDefinition {
   destinationDefinitionId: string;
   name: string;
@@ -12,6 +19,7 @@ export interface DestinationDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
+  releaseStage?: ReleaseStage;
 }
 
 export interface SourceDefinition {
@@ -22,6 +30,7 @@ export interface SourceDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
+  releaseStage?: ReleaseStage;
 }
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;

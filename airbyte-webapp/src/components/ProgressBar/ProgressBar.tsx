@@ -11,6 +11,15 @@ export const GrowAnimation = keyframes`
   0% {
     width: 0;
   }
+  20% {
+    width: 65%;
+  }
+  50% {
+    width: 80%;
+  }
+  80% {
+    width: 95%;
+  }
   100% {
     width: 100%;
   }
