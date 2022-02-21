@@ -272,7 +272,6 @@ class EnvConfigsTest {
     assertFalse(config.getPublishMetrics());
   }
 
-
   @Nested
   @DisplayName("CheckJobResourceSettings")
   public class CheckJobResourceSettings {

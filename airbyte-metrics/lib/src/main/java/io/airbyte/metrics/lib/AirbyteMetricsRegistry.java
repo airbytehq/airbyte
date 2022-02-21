@@ -24,12 +24,14 @@ import com.google.api.client.util.Preconditions;
  * - No spaces. This makes the metric confusing to read.
  * <p>
  * - Avoid numbers. This makes the metric confusing to read. Numbers should only be used as a
- * versioning tactic and present at the end of the metric.
+ * <p>
+ * - Add units at name end if applicable. This is especially relevant for time units. versioning
+ * tactic and present at the end of the metric.
  */
 public enum AirbyteMetricsRegistry {
 
-  KUBE_POD_PROCESS_CREATE_TIME(AirbyteApplications.WORKER,
-      "kube_pod_process_create_time", "time taken to create a new kube pod process");
+  KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(AirbyteApplications.WORKER,
+      "kube_pod_process_create_time_millisecs", "time taken to create a new kube pod process");
 
   public final AirbyteApplication application;
   public final String metricName;
