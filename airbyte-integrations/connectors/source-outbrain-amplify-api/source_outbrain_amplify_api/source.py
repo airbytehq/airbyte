@@ -90,7 +90,7 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return None
+        return {}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -197,10 +197,8 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
         should return "customers". Required.
         """
         marketer_id = self.marketer_id
-        start_date = self.start_date
-        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
 
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections?from=' + start_date + '&to=' + end_date
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections'
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -211,6 +209,19 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
 
 
         return response.json().get("campaignResults")
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+        start_date = self.start_date
+        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+        params = {"from": start_date, "to": end_date}
+        return params
+    
 
 class PerformanceByCountry(OutbrainAmplifyApiStream):
     """
@@ -229,10 +240,9 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
         should return "customers". Required.
         """
         marketer_id = self.marketer_id
-        start_date = self.start_date
-        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
 
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?from=' + start_date + '&to=' + end_date + '&breakdown=country'
+
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?breakdown=country'
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -242,6 +252,18 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
         """
 
         return response.json().get("results")
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        Usually contains common params e.g. pagination size etc.
+        """
+        start_date = self.start_date
+        end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
+        params = {"from": start_date, "to": end_date}
+        return params
 
 
 # Basic incremental stream
@@ -252,26 +274,87 @@ class IncrementalOutbrainAmplifyApiStream(OutbrainAmplifyApiStream, ABC):
     """
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
+    cursor_field_date = []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        return {}
+        return {
+            "date": date.today().strftime("%Y-%m-%d")
+        }
+ 
+    def _chunk_date_range(self, start_date: datetime.date) -> List[Mapping[str, any]]:
+        dates = []
+        while start_date < datetime.date.today():
+            dates.append({'date': start_date.strftime("%Y-%m-%d")})
+            start_date += datetime.timedelta(days=1)
+        return dates
 
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+        start_date = (datetime.date.today() - datetime.timedelta(days=8))
+        return self._chunk_date_range(start_date)
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        if stream_slice:
+            params["from"] = stream_slice.get("date")
+            params["to"] = stream_slice.get("date")
+
+        self.logger.info(f"PARAMS: start_date: {params['from']} end_date: {params['to']}")
+        return params
+
+class PerformanceByCountry(IncrementalOutbrainAmplifyApiStream):
+    primary_key = ["id","date"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        marketer_id = self.marketer_id
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?breakdown=country'
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        results = response.json().get("results", [])
+
+        self.logger.info(f"SLICE: start_date: {stream_slice.get('date')}")
+
+        for result in results:
+            result["date"] = stream_slice.get("date")
+
+        return results
+
+class PublisherSectionByCampaignPerformance(IncrementalOutbrainAmplifyApiStream):
+    primary_key = ["id","date"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        marketer_id = self.marketer_id
+        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections'
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        results = response.json().get("campaignResults", [])
+
+        self.logger.info(f"SLICE: start_date: {stream_slice.get('date')}")
+
+        for result in results:
+            result["date"] = stream_slice.get("date")
+
+        return results
 
 # Source
 class SourceOutbrainAmplifyApi(AbstractSource):
