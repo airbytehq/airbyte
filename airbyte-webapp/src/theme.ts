@@ -26,6 +26,7 @@ export const theme = {
   textColor: "#1A194D",
   lightTextColor: "#AFAFC1",
   textColor90: "rgba(26,26,33, .9)",
+  darkBlue90: "rgba(26, 25, 77, 0.9)",
   greyColor80: "#353542",
   greyColor70: "#555461",
   greyColor60: "#6B6B75",
@@ -37,6 +38,7 @@ export const theme = {
   greyColor0: "#F7F7FA",
 
   whiteColor: "#FFFFFF",
+  blackColor: "#000000",
   beigeColor: "#FEF9F4",
   darkBeigeColor: "#FFEBD7",
   borderTableColor: "#D3DCE4",

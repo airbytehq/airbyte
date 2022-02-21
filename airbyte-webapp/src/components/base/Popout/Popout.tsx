@@ -21,6 +21,7 @@ const ControlComponent = (props: ControlProps<Value, false>) => (
   <div ref={props.innerRef}>
     {props.selectProps.selectProps.targetComponent({
       onOpen: props.selectProps.selectProps.onOpen,
+      value: props.selectProps.value,
     })}
   </div>
 );
