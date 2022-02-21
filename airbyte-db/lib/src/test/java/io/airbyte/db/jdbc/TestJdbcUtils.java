@@ -270,13 +270,13 @@ public class TestJdbcUtils {
 
   private ObjectNode jsonFieldExpectedValues() {
     final ObjectNode expected = expectedValues();
-    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
     arrayNode.add("one");
     arrayNode.add("two");
     arrayNode.add("three");
     expected.set("text_array", arrayNode);
 
-    ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
+    final ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
     arrayNode2.add("1");
     arrayNode2.add("2");
     arrayNode2.add("3");
@@ -303,7 +303,7 @@ public class TestJdbcUtils {
     expected.put("date", "2020-11-01T00:00:00Z");
     // todo (cgardens) we should parse this to a time string
     expected.put("time", "1970-01-01T05:00:00Z");
-    expected.put("timestamp", "2001-09-29T03:00:00Z");
+    expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
   }
