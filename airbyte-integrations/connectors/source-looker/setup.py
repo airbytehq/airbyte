@@ -6,7 +6,10 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "types-requests",
     "airbyte-cdk~=0.1",
+    "prance~=0.21.8",
+    "openapi_spec_validator~=0.3.1",
 ]
 
 TEST_REQUIREMENTS = [

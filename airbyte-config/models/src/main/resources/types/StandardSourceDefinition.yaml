@@ -41,3 +41,14 @@ properties:
       if not set or false, the configuration is active. if true, then this
       configuration is permanently off.
     type: boolean
+  releaseStage:
+    type: string
+    enum:
+      - alpha
+      - beta
+      - generallyAvailable
+      - custom
+  releaseDate:
+    description: The date when this connector was first released, in yyyy-mm-dd format.
+    type: string
+    format: date

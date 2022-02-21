@@ -59,6 +59,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
+| [Jenkins](sources/jenkins.md) | Alpha |
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
@@ -99,7 +100,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
 | [Qualaroo](sources/qualaroo.md) | Beta |
-| [Quickbooks](sources/quickbooks.md) | Beta |
+| [QuickBooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
 | [Redshift](sources/redshift.md) | Certified |
@@ -176,3 +177,4 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Scylla](destinations/scylla.md) | Alpha |
 | [Redis](destinations/redis.md) | Alpha |
 | [Kinesis](destinations/kinesis.md) | Alpha |
+| [Streamr](destinations/streamr.md) | Alpha |

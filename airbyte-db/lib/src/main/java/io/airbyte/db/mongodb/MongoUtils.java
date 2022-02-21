@@ -17,7 +17,7 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,14 +51,14 @@ public class MongoUtils {
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
   private static final int DISCOVER_LIMIT = 10000;
 
-  public static JsonSchemaPrimitive getType(final BsonType dataType) {
+  public static JsonSchemaType getType(final BsonType dataType) {
     return switch (dataType) {
-      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaPrimitive.NUMBER;
-      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT -> JsonSchemaPrimitive.STRING;
-      case ARRAY -> JsonSchemaPrimitive.ARRAY;
-      case DOCUMENT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaPrimitive.OBJECT;
-      default -> JsonSchemaPrimitive.STRING;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaType.NUMBER;
+      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT -> JsonSchemaType.STRING;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      case DOCUMENT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaType.OBJECT;
+      default -> JsonSchemaType.STRING;
     };
   }
 

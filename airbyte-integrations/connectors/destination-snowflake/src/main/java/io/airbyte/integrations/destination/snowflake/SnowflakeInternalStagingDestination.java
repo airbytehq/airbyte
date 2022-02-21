@@ -33,9 +33,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeStagingSqlOperations();
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      AirbyteSentry.runWithSpan("CreateAndDropTable",
+      AirbyteSentry.executeWithTracing("CreateAndDropTable",
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
-      AirbyteSentry.runWithSpan("CreateAndDropStage",
+      AirbyteSentry.executeWithTracing("CreateAndDropStage",
           () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {

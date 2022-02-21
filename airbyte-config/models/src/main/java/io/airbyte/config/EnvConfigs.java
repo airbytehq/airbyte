@@ -15,6 +15,7 @@ import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +73,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
-  private static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
+  public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
   public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
@@ -88,6 +89,9 @@ public class EnvConfigs implements Configs {
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
+  private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
+  private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
+  private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -99,6 +103,31 @@ public class EnvConfigs implements Configs {
   public static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
   public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
   public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
+
+  public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
+  public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
+  public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
+
+  // job-type-specific overrides
+  public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
+  public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
+  public static final String DISCOVER_JOB_KUBE_NODE_SELECTORS = "DISCOVER_JOB_KUBE_NODE_SELECTORS";
+
+  private static final String REPLICATION_ORCHESTRATOR_CPU_REQUEST = "REPLICATION_ORCHESTRATOR_CPU_REQUEST";
+  private static final String REPLICATION_ORCHESTRATOR_CPU_LIMIT = "REPLICATION_ORCHESTRATOR_CPU_LIMIT";
+  private static final String REPLICATION_ORCHESTRATOR_MEMORY_REQUEST = "REPLICATION_ORCHESTRATOR_MEMORY_REQUEST";
+  private static final String REPLICATION_ORCHESTRATOR_MEMORY_LIMIT = "REPLICATION_ORCHESTRATOR_MEMORY_LIMIT";
+
+  private static final String DEFAULT_WORKER_STATUS_CHECK_INTERVAL = "DEFAULT_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String SPEC_WORKER_STATUS_CHECK_INTERVAL = "SPEC_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String CHECK_WORKER_STATUS_CHECK_INTERVAL = "CHECK_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String DISCOVER_WORKER_STATUS_CHECK_INTERVAL = "DISCOVER_WORKER_STATUS_CHECK_INTERVAL";
+  private static final String REPLICATION_WORKER_STATUS_CHECK_INTERVAL = "REPLICATION_WORKER_STATUS_CHECK_INTERVAL";
+
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST = "CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -115,6 +144,12 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
+
+  private static final Duration DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
+  private static final Duration DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
+  private static final Duration DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -420,22 +455,64 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns a map of node selectors from its own environment variable. The value of the env is a
-   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
+   * Returns a map of node selectors for any job type. Used as a default if a particular job type does
+   * not define its own node selector environment variable.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Spec job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getSpecJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Check job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getCheckJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Discover job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors() {
+    return getNodeSelectorsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  /**
+   * Parse string containing node selectors into a map. Each kv-pair is separated by a `,`
    * <p>
    * For example:- The following represents two node selectors
    * <p>
    * airbyte=server,type=preemptive
    *
-   * @return map containing kv pairs of node selectors
+   * @param envString string that represents one or more node selector labels.
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
-  @Override
-  public Map<String, String> getJobKubeNodeSelectors() {
-    return Splitter.on(",")
-        .splitToStream(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""))
+  private Optional<Map<String, String>> getNodeSelectorsFromEnvString(final String envString) {
+    final Map<String, String> selectors = Splitter.on(",")
+        .splitToStream(envString)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+
+    return selectors.isEmpty() ? Optional.empty() : Optional.of(selectors);
   }
 
   @Override
@@ -474,6 +551,46 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Duration getDefaultWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getSpecWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        SPEC_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getCheckWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        CHECK_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getDiscoverWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
+  public Duration getReplicationWorkerStatusCheckInterval() {
+    return getEnvOrDefault(
+        REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
+        DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
+        value -> Duration.ofSeconds(Integer.parseInt(value)));
+  }
+
+  @Override
   public String getJobMainContainerCpuRequest() {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_CPU_REQUEST, DEFAULT_JOB_CPU_REQUIREMENT);
   }
@@ -501,8 +618,33 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getCheckJobMainContainerCpuRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerCpuLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getCheckJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
+  }
+
+  @Override
+  public String getGoogleApplicationCredentials() {
+    return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, null);
   }
 
   @Override
@@ -565,6 +707,56 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getContainerOrchestratorEnabled() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
+  }
+
+  @Override
+  public String getContainerOrchestratorSecretName() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SECRET_NAME, null);
+  }
+
+  @Override
+  public String getContainerOrchestratorSecretMountPath() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH, null);
+  }
+
+  @Override
+  public String getContainerOrchestratorImage() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_IMAGE, "airbyte/container-orchestrator:" + getAirbyteVersion().serialize());
+  }
+
+  @Override
+  public String getReplicationOrchestratorCpuRequest() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_CPU_REQUEST, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorCpuLimit() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_CPU_LIMIT, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorMemoryRequest() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_MEMORY_REQUEST, null);
+  }
+
+  @Override
+  public String getReplicationOrchestratorMemoryLimit() {
+    return getEnvOrDefault(REPLICATION_ORCHESTRATOR_MEMORY_LIMIT, null);
+  }
+
+  @Override
+  public int getMaxActivityTimeoutSecond() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "120"));
+  }
+
+  @Override
+  public int getDelayBetweenActivityAttempts() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_TIMEOUT_SECOND, "30"));
+  }
+
+  @Override
+  public int getActivityNumberOfAttempt() {
+    return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
   }
 
   // Helpers
