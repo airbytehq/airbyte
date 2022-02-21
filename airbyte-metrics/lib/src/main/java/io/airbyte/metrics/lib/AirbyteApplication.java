@@ -6,8 +6,8 @@ package io.airbyte.metrics.lib;
 
 /**
  * Interface representing an Airbyte Application to collect metrics for. This interface is present
- * as Java doesn't support enum inheritance as of Java 17, so we use a shared interface so this
- * interface can be used in the {@link AirbyteMetricsRegistry} enum. enum.
+ * as Java doesn't support enum inheritance as of Java 17. We use a shared interface so this
+ * interface can be used in the {@link AirbyteMetricsRegistry} enum.
  */
 public interface AirbyteApplication {
 
