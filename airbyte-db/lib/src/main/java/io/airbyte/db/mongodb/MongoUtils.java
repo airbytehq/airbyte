@@ -269,7 +269,7 @@ public class MongoUtils {
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
-      CodecRegistry custom_codec_registry =
+      CodecRegistry customCodecRegistry =
               fromProviders(asList(
                       new ValueCodecProvider(),
                       new BsonValueCodecProvider(),
@@ -282,7 +282,7 @@ public class MongoUtils {
                       new DBRefCodecProvider()));
 
       // Override the default codec registry
-      return document.toBsonDocument(BsonDocument.class, custom_codec_registry);
+      return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
     }
     catch (final Exception e) {
       LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
