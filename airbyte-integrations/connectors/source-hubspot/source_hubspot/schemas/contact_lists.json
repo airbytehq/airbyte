@@ -67,15 +67,13 @@
       "type": ["null", "integer"]
     },
     "createdAt": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "listId": {
       "type": ["null", "integer"]
     },
     "updatedAt": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "internalListId": {
       "type": ["null", "integer"]
