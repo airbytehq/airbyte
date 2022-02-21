@@ -38,10 +38,12 @@
           "type": ["null", "string"]
         },
         "closedate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "createdate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "days_to_close": {
           "type": ["null", "string"]
@@ -107,7 +109,8 @@
           "type": ["null", "string"]
         },
         "hs_createdate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_9567448": {
           "type": ["null", "string"]
@@ -191,7 +194,8 @@
           "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_latest_meeting_activity": {
           "type": ["null", "string"]
@@ -278,7 +282,8 @@
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hubspot_owner_id": {
           "type": ["null", "string"]
