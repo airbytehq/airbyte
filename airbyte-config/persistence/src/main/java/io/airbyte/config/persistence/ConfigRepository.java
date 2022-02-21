@@ -14,6 +14,7 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -130,6 +131,14 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public ActorDefinition getActorDefinition(final UUID actorDefId, final ActorType actorType)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(
+        actorType == ActorType.SOURCE ? ConfigSchema.STANDARD_SOURCE_DEFINITION : ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        actorDefId.toString(),
+        ActorDefinition.class);
+  }
+
   public ActorDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
@@ -241,9 +250,33 @@ public class ConfigRepository {
     return destinationDefinitions;
   }
 
+  public List<ActorDefinition> listActorDefinitions(final ActorType actorType, final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<ActorDefinition> destinationDefinitions = new ArrayList<>();
+
+    final ConfigSchema configSchema = actorType == ActorType.SOURCE
+        ? ConfigSchema.STANDARD_SOURCE_DEFINITION
+        : ConfigSchema.STANDARD_DESTINATION_DEFINITION;
+    final List<ActorDefinition> destDefinitions = persistence.listConfigs(configSchema, ActorDefinition.class);
+    for (final ActorDefinition destinationDefinition : destDefinitions) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
+  }
+
+  public void writeActorDefinition(final ActorDefinition actorDefinition)
+      throws JsonValidationException, IOException {
+    persistence.writeConfig(
+        actorDefinition.getActorType() == ActorType.SOURCE ? ConfigSchema.STANDARD_SOURCE_DEFINITION : ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        actorDefinition.getId().toString(),
+        actorDefinition);
+  }
+
   public void writeStandardDestinationDefinition(final ActorDefinition destinationDefinition)
       throws JsonValidationException, IOException {
-    // todo (cgardens) - remove migration shim.
     persistence.writeConfig(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destinationDefinition.getId().toString(),
