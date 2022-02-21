@@ -29,6 +29,15 @@
         "minimum": 0,
         "description": "When set to N, the connector will always refresh resources created within the past N days. By default, updated objects that are not newly created are not incrementally synced.",
         "order": 3
+      },
+      "event_properties_keys": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Event properties keys",
+        "description": "Property key names to extract from all events, in order to enrich ledger entries corresponding to an event deduction",
+        "order": 4
       }
     }
   }

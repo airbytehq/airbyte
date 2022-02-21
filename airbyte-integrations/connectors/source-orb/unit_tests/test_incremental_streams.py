@@ -5,6 +5,7 @@
 
 import pendulum
 import pytest
+import responses
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_orb.source import CreditsLedgerEntries, Customers, IncrementalOrbStream, OrbStream
@@ -98,19 +99,19 @@ def test_request_params(patch_incremental_base_class, mocker, config, current_st
         # Updates for matching customer already in state
         (
             dict(customer_id_foo=dict(created_at="2022-01-25T12:00:00+00:00")),
-            dict(created_at="2022-01-26T12:00:00+00:00", customer=dict(id="customer_id_foo")),
+            dict(created_at="2022-01-26T12:00:00+00:00", customer_id="customer_id_foo"),
             dict(customer_id_foo=dict(created_at="2022-01-26T12:00:00+00:00")),
         ),
         # No state for customer
         (
             {},
-            dict(created_at="2022-01-26T12:00:00+00:00", customer=dict(id="customer_id_foo")),
+            dict(created_at="2022-01-26T12:00:00+00:00", customer_id="customer_id_foo"),
             dict(customer_id_foo=dict(created_at="2022-01-26T12:00:00+00:00")),
         ),
         # State has different customer than latest record
         (
             dict(customer_id_foo=dict(created_at="2022-01-25T12:00:00+00:00")),
-            dict(created_at="2022-01-26T12:00:00+00:00", customer=dict(id="customer_id_bar")),
+            dict(created_at="2022-01-26T12:00:00+00:00", customer_id="customer_id_bar"),
             dict(
                 customer_id_foo=dict(created_at="2022-01-25T12:00:00+00:00"),
                 customer_id_bar=dict(created_at="2022-01-26T12:00:00+00:00"),
@@ -167,6 +168,68 @@ def test_credits_ledger_entries_request_params(mocker, current_stream_state, cur
         expected_params["cursor"] = next_page_token["cursor"]
 
     assert stream.request_params(**inputs) == expected_params
+
+
+@responses.activate
+def test_credits_ledger_entries_no_matching_events(mocker):
+    stream = CreditsLedgerEntries(event_properties_keys=["ping"])
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "bar-event-id", "entry_type": "decrement"}]
+    mock_response = {
+        "data": [
+            {
+                "customer_id": "foo-customer-id",
+                "event_name": "foo-name",
+                # Does not match either event_id that we'd expect
+                "id": "foo-event-id-2",
+                "properties": {"ping": "pong"},
+                "timestamp": "2022-02-21T07:00:00+00:00",
+            }
+        ],
+        "pagination_metadata": {"has_more": False, "next_cursor": None},
+    }
+    responses.add(responses.POST, f"{stream.url_base}events", json=mock_response, status=200)
+    enriched_entries = stream.enrich_ledger_entries_with_event_data(ledger_entries)
+
+    # We failed to enrich either event, but still check that the schema was
+    # transformed as expected
+    assert enriched_entries == [
+        {"event": {"id": "foo-event-id"}, "entry_type": "decrement"},
+        {"event": {"id": "bar-event-id"}, "entry_type": "decrement"},
+    ]
+
+
+@pytest.mark.parametrize(
+    ("event_properties", "selected_property_keys", "resulting_properties"),
+    [
+        ({}, ["event-property-foo"], {}),
+        ({"ping": "pong"}, ["ping"], {"ping": "pong"}),
+        ({"ping": "pong", "unnamed_property": "foo"}, ["ping"], {"ping": "pong"}),
+        ({"unnamed_property": "foo"}, ["ping"], {}),
+    ],
+)
+@responses.activate
+def test_credits_ledger_entries_enriches_selected_property_keys(mocker, event_properties, selected_property_keys, resulting_properties):
+    stream = CreditsLedgerEntries(event_properties_keys=selected_property_keys)
+    original_entry_1 = {"entry_type": "increment"}
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, original_entry_1]
+    mock_response = {
+        "data": [
+            {
+                "customer_id": "foo-customer-id",
+                "event_name": "foo-name",
+                "id": "foo-event-id",
+                "properties": event_properties,
+                "timestamp": "2022-02-21T07:00:00+00:00",
+            }
+        ],
+        "pagination_metadata": {"has_more": False, "next_cursor": None},
+    }
+    responses.add(responses.POST, f"{stream.url_base}events", json=mock_response, status=200)
+    enriched_entries = stream.enrich_ledger_entries_with_event_data(ledger_entries)
+
+    assert enriched_entries[0] == {"entry_type": "decrement", "event": {"id": "foo-event-id", "properties": resulting_properties}}
+    # Does not enrich, but still passes back, irrelevant (for enrichment purposes) ledger entry
+    assert enriched_entries[1] == original_entry_1
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):

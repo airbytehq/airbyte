@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_orb.source import OrbStream
+from source_orb.source import CreditsLedgerEntries, OrbStream
 
 
 @pytest.fixture
@@ -57,3 +57,16 @@ def test_http_method(patch_base_class):
     stream = OrbStream()
     expected_method = "GET"
     assert stream.http_method == expected_method
+
+
+@pytest.mark.parametrize("event_properties_keys", [["foo-property"], ["foo-property", "bar-property"], None])
+def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties_keys):
+    stream = CreditsLedgerEntries(event_properties_keys=event_properties_keys)
+    json_schema = stream.get_json_schema()
+
+    assert "event" in json_schema["properties"]
+    if event_properties_keys is None:
+        assert json_schema["properties"]["event"]["properties"]["properties"]["properties"] == {}
+    else:
+        for property_key in event_properties_keys:
+            assert property_key in json_schema["properties"]["event"]["properties"]["properties"]["properties"]

@@ -192,6 +192,10 @@ class CreditsLedgerEntries(IncrementalOrbStream):
     API Docs: https://docs.withorb.com/reference/view-credits-ledger
     """
 
+    def __init__(self, event_properties_keys: Optional[List[str]] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.event_properties_keys = event_properties_keys
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         The state for this stream is *per customer* (i.e. slice), and is a map from
@@ -263,6 +267,113 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         return ledger_entry_record
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Once we parse the response from the ledger entries stream, enrich the resulting entries
+        with event metadata.
+        """
+        ledger_entries = list(super().parse_response(response, **kwargs))
+        return self.enrich_ledger_entries_with_event_data(ledger_entries)
+
+    def enrich_ledger_entries_with_event_data(self, ledger_entries):
+        """
+        Enriches a list of ledger entries with event metadata (applies only to decrements that
+        have an event_id property set, i.e. automated decrements to the ledger applied by Orb).
+        """
+        # Build up a list of the subset of ledger entries we are expected
+        # to enrich with event metadata.
+        event_id_to_ledger_entry = {}
+        for entry in ledger_entries:
+            maybe_event_id: Optional[str] = entry.get("event_id")
+            if maybe_event_id:
+                event_id_to_ledger_entry[maybe_event_id] = entry
+
+        # Nothing to enrich; short-circuit
+        if len(event_id_to_ledger_entry) == 0:
+            return ledger_entries
+
+        def modify_ledger_entry_schema(ledger_entry):
+            """
+            Takes a ledger entry with an `event_id` and instead turn it into
+            an entry with an `event` dictionary, `event_id` nested.
+            """
+            event_id = ledger_entry["event_id"]
+            del ledger_entry["event_id"]
+            ledger_entry["event"] = {}
+            ledger_entry["event"]["id"] = event_id
+
+        for ledger_entry in event_id_to_ledger_entry.values():
+            modify_ledger_entry_schema(ledger_entry=ledger_entry)
+
+        # Nothing to extract for each ledger entry
+        if not self.event_properties_keys:
+            return ledger_entries
+
+        # The events endpoint is a `POST` endpoint which expects a list of
+        # event_ids to filter on
+        request_filter_json = {"event_ids": list(event_id_to_ledger_entry)}
+
+        # Prepare request with self._session, which should
+        # automatically deal with the authentication header.
+        args = {"method": "POST", "url": self.url_base + "events", "params": {"limit": self.page_size}, "json": request_filter_json}
+        prepared_request = self._session.prepare_request(requests.Request(**args))
+        events_response: requests.Response = self._session.send(prepared_request)
+        # Error for invalid responses
+        events_response.raise_for_status()
+        paginated_events_response_body = events_response.json()
+
+        if paginated_events_response_body["pagination_metadata"]["has_more"]:
+            raise ValueError("Did not expect any pagination for events request when enriching ledger entries.")
+
+        num_events_enriched = 0
+        for serialized_event in paginated_events_response_body["data"]:
+            event_id = serialized_event["id"]
+            desired_properties_subset = {
+                key: value for key, value in serialized_event["properties"].items() if key in self.event_properties_keys
+            }
+
+            # This would imply that the endpoint returned an event that wasn't part of the filter
+            # parameters, so log an error but ignore it.
+            if event_id not in event_id_to_ledger_entry:
+                self.logger.error(f"Unrecognized event received with ID {event_id} when trying to enrich ledger entries")
+                continue
+
+            # Replace ledger_entry.event_id with ledger_entry.event
+            event_id_to_ledger_entry[event_id]["event"]["properties"] = desired_properties_subset
+            num_events_enriched += 1
+
+        # Log an error if we did not enrich all the entries we asked for.
+        if num_events_enriched != len(event_id_to_ledger_entry):
+            self.logger.error("Unable to enrich all eligible credit ledger entries with event metadata.")
+
+        # Mutating entries within `event_id_to_ledger_entry` should have modified
+        # the passed-in ledger_entries array
+        return ledger_entries
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        This schema differs from `credit_ledger_entries.json` based on the configuration
+        of the Stream. The configuration specifies a list of properties that each event
+        is expected to have (and this connector returns). As of now, these properties
+        are assumed to have String type.
+        """
+        schema = super().get_json_schema()
+        dynamic_event_properties_schema = {}
+        if self.event_properties_keys:
+            for property_key in self.event_properties_keys:
+                # Property values are assumed to have string type.
+                dynamic_event_properties_schema[property_key] = {"type": "string"}
+
+        schema["properties"]["event"] = {
+            "type": ["null", "object"],
+            "properties": {
+                "event_id": {"type": "string"},
+                "properties": {"type": ["null", "object"], "properties": dynamic_event_properties_schema},
+            },
+        }
+
+        return schema
+
 
 # Source
 class SourceOrb(AbstractSource):
@@ -283,11 +394,17 @@ class SourceOrb(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
         lookback_window = config.get("lookback_window_days")
+        event_properties_keys = config.get("event_properties_keys")
         start_date_str = config.get("start_date")
         start_date = pendulum.parse(start_date_str) if start_date_str else None
         return [
             Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
-            CreditsLedgerEntries(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            CreditsLedgerEntries(
+                authenticator=authenticator,
+                lookback_window_days=lookback_window,
+                start_date=start_date,
+                event_properties_keys=event_properties_keys,
+            ),
         ]
