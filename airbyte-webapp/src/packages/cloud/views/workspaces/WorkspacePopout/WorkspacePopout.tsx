@@ -100,6 +100,7 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 };
 
 const WorkspacePopout: React.FC<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
   const workspaceList = useListCloudWorkspaces();

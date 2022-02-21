@@ -70,6 +70,7 @@ function useConnectionService(): ConnectionService {
     "DefaultRequestMiddlewares"
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
     config,
   ]);

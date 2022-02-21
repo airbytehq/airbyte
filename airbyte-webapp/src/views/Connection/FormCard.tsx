@@ -16,6 +16,7 @@ const FormContainer = styled(Form)`
 `;
 
 export const FormCard: React.FC<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   CollapsibleCardProps & { bottomSeparator?: boolean; form: FormikConfig<any> }
 > = ({ children, form, bottomSeparator = true, ...props }) => {
   const { formatMessage } = useIntl();
@@ -23,6 +24,7 @@ export const FormCard: React.FC<
   const { mutateAsync, error, reset, isSuccess } = useMutation<
     unknown,
     Error,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   >(async ({ values, formikHelpers }) => form.onSubmit(values, formikHelpers));
 

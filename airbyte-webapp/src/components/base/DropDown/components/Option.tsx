@@ -11,12 +11,14 @@ export type IProps = {
 
 export type IDataItem = {
   label?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
   groupValue?: string;
   groupValueText?: string;
   img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: any;
 };
 
