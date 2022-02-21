@@ -1,8 +1,13 @@
-FROM python:3.10-slim
-# pin black to version 21.12b0 because its latest version
-# 22.1.0 seems incompatible with datamodel-code-generator
-RUN pip install MarkupSafe==2.0.1 black==21.12b0 datamodel-code-generator==0.10.1
-ENTRYPOINT ["datamodel-codegen"]
+FROM python:3.7.11-alpine3.14 as base
+FROM base as builder
 
-LABEL io.airbyte.version=dev
-LABEL io.airbyte.name=airbyte/code-generator
+
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip  \
+    && apk add  g++ make
+
+# the new version (>= 2.1.0) of package markupsafe removed the funcion `soft_unicode`. And it broke other dependences
+# https://github.com/pallets/markupsafe/blob/main/CHANGES.rst
+# thus this version is pinned
+RUN  pip install --prefix=/install markupsafe==2.0.1
+RUN  pip install --prefix=/install black==22.1.0 datamodel_code_generator==0.11.19
