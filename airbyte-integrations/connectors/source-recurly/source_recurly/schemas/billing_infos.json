@@ -29,40 +29,48 @@
       "properties": {
         "phone": {
           "type": "string",
-          "title": "Phone number"
+          "title": "Phone number",
+          "maxLength": 256
         },
         "street1": {
           "type": "string",
-          "title": "Street 1"
+          "title": "Street 1",
+          "maxLength": 256
         },
         "street2": {
           "type": "string",
-          "title": "Street 2"
+          "title": "Street 2",
+          "maxLength": 256
         },
         "city": {
           "type": "string",
-          "title": "City"
+          "title": "City",
+          "maxLength": 256
         },
         "region": {
           "type": "string",
           "title": "State/Province",
-          "description": "State or province."
+          "description": "State or province.",
+          "maxLength": 256
         },
         "postal_code": {
           "type": "string",
           "title": "Zip/Postal code",
-          "description": "Zip or postal code."
+          "description": "Zip or postal code.",
+          "maxLength": 256
         },
         "country": {
           "type": "string",
           "title": "Country",
-          "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+          "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
+          "maxLength": 2
         }
       }
     },
     "vat_number": {
       "type": "string",
-      "description": "Customer's VAT number (to avoid having the VAT applied). This is only used for automatically collected invoices."
+      "description": "Customer's VAT number (to avoid having the VAT applied). This is only used for automatically collected invoices.",
+      "maxLength": 20
     },
     "valid": {
       "type": "boolean",
@@ -71,12 +79,10 @@
     "payment_method": {
       "type": "object",
       "properties": {
-        "object": {
-          "type": "string"
-        },
         "card_type": {
           "description": "Visa, MasterCard, American Express, Discover, JCB, etc.",
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "first_six": {
           "type": "string",
@@ -110,7 +116,8 @@
         },
         "cc_bin_country": {
           "type": "string",
-          "description": "The 2-letter ISO 3166-1 alpha-2 country code associated with the credit card BIN, if known by Recurly. Available on the BillingInfo object only. Available when the BIN country lookup feature is enabled."
+          "description": "The 2-letter ISO 3166-1 alpha-2 country code associated with the credit card BIN, if known by Recurly. Available on the BillingInfo object only. Available when the BIN country lookup feature is enabled.",
+          "maxLength": 256
         },
         "gateway_code": {
           "type": "string",
@@ -119,27 +126,28 @@
         },
         "billing_agreement_id": {
           "type": "string",
-          "description": "Billing Agreement identifier. Only present for Amazon or Paypal payment methods."
+          "description": "Billing Agreement identifier. Only present for Amazon or Paypal payment methods.",
+          "maxLength": 256
         },
         "name_on_account": {
           "type": "string",
-          "description": "The name associated with the bank account."
+          "description": "The name associated with the bank account.",
+          "maxLength": 256
         },
         "account_type": {
           "description": "The bank account type. Only present for ACH payment methods.",
           "type": "string",
-          "enum": [
-            "checking",
-            "savings"
-          ]
+          "maxLength": 256
         },
         "routing_number": {
           "type": "string",
-          "description": "The bank account's routing number. Only present for ACH payment methods."
+          "description": "The bank account's routing number. Only present for ACH payment methods.",
+          "maxLength": 256
         },
         "routing_number_bank": {
           "type": "string",
-          "description": "The bank name of this routing number."
+          "description": "The bank name of this routing number.",
+          "maxLength": 256
         }
       }
     },

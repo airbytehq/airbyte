@@ -3,19 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "uuid": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "account": {
       "type": "object",
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "code": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
@@ -23,15 +27,18 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "code": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "shipping": {
       "type": ["null", "object"],
@@ -70,7 +77,8 @@
         "id": {
           "type": "string",
           "title": "Subscription Change ID",
-          "description": "The ID of the Subscription Change."
+          "description": "The ID of the Subscription Change.",
+          "maxLength": 13
         },
         "subscription_id": {
           "type": "string",
@@ -110,22 +118,28 @@
       }
     },
     "current_period_started_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "current_period_ends_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "current_term_started_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "current_term_ends_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "trial_started_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "trial_ends_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "remaining_billing_cycles": {
       "type": ["null", "number"]
@@ -140,16 +154,19 @@
       "type": ["null", "boolean"]
     },
     "paused_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "remaining_pause_cycles": {
       "type": ["null", "number"]
     },
     "currency": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 3
     },
     "revenue_schedule_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "unit_amount": {
       "type": ["null", "number"]
@@ -195,12 +212,14 @@
         "type": {
           "type": "string",
           "title": "Type",
-          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries."
+          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries.",
+            "maxLength": 256
         },
         "region": {
           "type": "string",
           "title": "Region",
-          "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST."
+          "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST.",
+            "maxLength": 256
         },
         "rate": {
           "type": "number",
@@ -217,12 +236,14 @@
               "type": {
                 "type": "string",
                 "title": "Type",
-                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST."
+                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST.",
+                "maxLength": 256
               },
               "region": {
                 "type": "string",
                 "title": "Region",
-                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code."
+                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code.",
+                "maxLength": 256
               },
               "rate": {
                 "type": "number",
@@ -245,46 +266,59 @@
       "type": ["null", "number"]
     },
     "collection_method": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "po_number": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "net_terms": {
       "type": ["null", "number"]
     },
     "terms_and_conditions": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 16384
     },
     "customer_notes": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "expiration_reason": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "activated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "canceled_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "expires_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "bank_account_authorized_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "gateway_code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "billing_info_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     }
   }
 }

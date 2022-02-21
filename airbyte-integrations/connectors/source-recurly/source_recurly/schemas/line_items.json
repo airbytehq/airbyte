@@ -17,7 +17,8 @@
     "type": {
       "type": "string",
       "title": "Line item type",
-      "description": "Charges are positive line items that debit the account. Credits are negative line items that credit the account."
+      "description": "Charges are positive line items that debit the account. Credits are negative line items that credit the account.",
+      "maxLength": 256
     },
     "item_code": {
       "type": ["null", "string"],
@@ -39,12 +40,14 @@
     },
     "revenue_schedule_type": {
       "type": ["null", "string"],
-      "title": "Revenue schedule type"
+      "title": "Revenue schedule type",
+      "maxLength": 256
     },
     "state": {
       "type": "string",
       "title": "Current state of the line item",
-      "description": "Pending line items are charges or credits on an account that have not been applied to an invoice yet. Invoiced line items will always have an `invoice_id` value."
+      "description": "Pending line items are charges or credits on an account that have not been applied to an invoice yet. Invoiced line items will always have an `invoice_id` value.",
+      "maxLength": 256
     },
     "legacy_category": {
       "type": ["null", "string"],
@@ -96,7 +99,8 @@
     "invoice_number": {
       "type": ["null", "string"],
       "title": "Invoice number",
-      "description": "Once the line item has been invoiced this will be the invoice's number. If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence."
+      "description": "Once the line item has been invoiced this will be the invoice's number. If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence.",
+      "maxLength": 256
     },
     "previous_line_item_id": {
       "type": ["null", "string"],
@@ -113,7 +117,8 @@
     "origin": {
       "type": "string",
       "title": "Origin of line item",
-      "description": "A credit created from an original charge will have the value of the charge's origin."
+      "description": "A credit created from an original charge will have the value of the charge's origin.",
+      "maxLength": 256
     },
     "accounting_code": {
       "type": "string",
@@ -131,7 +136,8 @@
       "type": ["null", "string"],
       "title": "Credit reason code",
       "description": "The reason the credit was given when line item is `type=credit`.",
-      "default": "general"
+      "default": "general",
+      "maxLength": 256
     },
     "currency": {
       "type": "string",

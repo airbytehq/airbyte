@@ -16,7 +16,8 @@
     "action": {
       "title": "Action",
       "description": "The action for which the credit was created.",
-      "type": "string"
+      "type": "string",
+      "maxLength": 256
     },
     "account": {
       "type": "object",
@@ -45,7 +46,8 @@
         },
         "number": {
           "type": "string",
-          "title": "Invoice number"
+          "title": "Invoice number",
+          "maxLength": 256
         }
       }
     },
@@ -60,7 +62,8 @@
         },
         "number": {
           "type": "string",
-          "title": "Invoice number"
+          "title": "Invoice number",
+          "maxLength": 256
         }
       }
     },

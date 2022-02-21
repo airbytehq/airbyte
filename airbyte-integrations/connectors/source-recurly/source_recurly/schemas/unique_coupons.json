@@ -6,28 +6,33 @@
     "id": {
       "type": "string",
       "title": "Unique Coupon Code ID",
-      "readOnly": true
+      "readOnly": true,
+      "maxLength": 13
     },
     "code": {
       "type": "string",
       "title": "Coupon code",
-      "description": "The code the customer enters to redeem the coupon."
+      "description": "The code the customer enters to redeem the coupon.",
+      "maxLength": 256
     },
     "state": {
       "type": "string",
       "title": "State",
-      "description": "Indicates if the unique coupon code is redeemable or why not."
+      "description": "Indicates if the unique coupon code is redeemable or why not.",
+      "maxLength": 256
     },
     "bulk_coupon_id": {
       "type": ["null", "string"],
       "title": "Bulk Coupon ID",
       "description": "The Coupon ID of the parent Bulk Coupon",
-      "readOnly": true
+      "readOnly": true,
+      "maxLength": 13
     },
     "bulk_coupon_code": {
       "type": ["null", "string"],
       "title": "Bulk Coupon code",
-      "description": "The Coupon code of the parent Bulk Coupon"
+      "description": "The Coupon code of the parent Bulk Coupon",
+      "maxLength": 256
     },
     "created_at": {
       "type": "string",

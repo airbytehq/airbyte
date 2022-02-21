@@ -3,16 +3,20 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "name": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "max_redemptions": {
       "type": ["null", "number"]
@@ -24,19 +28,23 @@
       "type": ["null", "number"]
     },
     "unique_code_template": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "duration": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "temporal_amount": {
       "type": ["null", "number"]
     },
     "temporal_unit": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "free_trial_unit": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "free_trial_amount": {
       "type": ["null", "number"]
@@ -68,7 +76,8 @@
           "code": {
             "type": "string",
             "title": "Plan code",
-            "description": "Unique code to identify the plan. This is used in Hosted Payment Page URLs and in the invoice exports."
+            "description": "Unique code to identify the plan. This is used in Hosted Payment Page URLs and in the invoice exports.",
+            "maxLength": 13
           }
         }
       }
@@ -92,14 +101,16 @@
       }
     },
     "redemption_resource": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "discount": {
       "type": ["null", "object"],
       "description": "Details of the discount a coupon applies. Will contain a `type`\nproperty and one of the following properties: `percent`, `fixed`, `trial`.\n",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 256
         },
         "percent": {
           "description": "This is only present when `type=percent`.",
@@ -133,7 +144,8 @@
             "unit": {
               "title": "Trial unit",
               "description": "Temporal unit of the free trial",
-              "type": "string"
+              "type": "string",
+              "maxLength": 256
             },
             "length": {
               "type": "integer",
@@ -145,25 +157,32 @@
       }
     },
     "coupon_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "hosted_page_description": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "invoice_description": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "redeem_by": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "expired_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

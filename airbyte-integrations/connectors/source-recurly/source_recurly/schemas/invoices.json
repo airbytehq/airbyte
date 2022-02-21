@@ -5,21 +5,25 @@
     "id": {
       "type": ["null", "string"],
       "title": "Invoice ID",
-      "readOnly": true
+      "readOnly": true,
+      "maxLength": 13
     },
     "type": {
       "title": "Invoice type",
       "description": "Invoices are either charge, credit, or legacy invoices.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "origin": {
       "type": ["null", "string"],
       "title": "Origin",
-      "description": "The event that created the invoice."
+      "description": "The event that created the invoice.",
+      "maxLength": 256
     },
     "state": {
       "title": "Invoice state",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "account": {
       "type": "object",
@@ -40,7 +44,8 @@
     "billing_info_id": {
       "type": ["null", "string"],
       "title": "Billing info ID",
-      "description": "The `billing_info_id` is the value that represents a specific billing info for an end customer. When `billing_info_id` is used to assign billing info to the subscription, all future billing events for the subscription will bill to the specified billing info. `billing_info_id` can ONLY be used for sites utilizing the Wallet feature."
+      "description": "The `billing_info_id` is the value that represents a specific billing info for an end customer. When `billing_info_id` is used to assign billing info to the subscription, all future billing events for the subscription will bill to the specified billing info. `billing_info_id` can ONLY be used for sites utilizing the Wallet feature.",
+      "maxLength": 256
     },
     "subscription_ids": {
       "type": ["null", "array"],
@@ -61,12 +66,14 @@
     "number": {
       "type": ["null", "string"],
       "title": "Invoice number",
-      "description": "If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence."
+      "description": "If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence.",
+      "maxLength": 256
     },
     "collection_method": {
       "type": ["null", "string"],
       "title": "Collection method",
-      "description": "An automatic invoice means a corresponding transaction is run using the account's billing information at the same time the invoice is created. Manual invoices are created without a corresponding transaction. The merchant must enter a manual payment transaction or have the customer pay the invoice with an automatic method, like credit card, PayPal, Amazon, or ACH bank payment."
+      "description": "An automatic invoice means a corresponding transaction is run using the account's billing information at the same time the invoice is created. Manual invoices are created without a corresponding transaction. The merchant must enter a manual payment transaction or have the customer pay the invoice with an automatic method, like credit card, PayPal, Amazon, or ACH bank payment.",
+      "maxLength": 256
     },
     "po_number": {
       "type": ["null", "string"],
@@ -86,48 +93,59 @@
       "properties": {
         "name_on_account": {
           "type": ["null", "string"],
-          "title": "Name on account"
+          "title": "Name on account",
+          "maxLength": 256
         },
         "company": {
           "type": ["null", "string"],
-          "title": "Company"
+          "title": "Company",
+          "maxLength": 256
         },
         "phone": {
           "type": ["null", "string"],
-          "title": "Phone number"
+          "title": "Phone number",
+          "maxLength": 256
         },
         "street1": {
           "type": ["null", "string"],
-          "title": "Street 1"
+          "title": "Street 1",
+          "maxLength": 256
         },
         "street2": {
           "type": ["null", "string"],
-          "title": "Street 2"
+          "title": "Street 2",
+          "maxLength": 256
         },
         "city": {
           "type": ["null", "string"],
-          "title": "City"
+          "title": "City",
+          "maxLength": 256
         },
         "region": {
           "type": ["null", "string"],
           "title": "State/Province",
-          "description": "State or province."
+          "description": "State or province.",
+          "maxLength": 256
         },
         "postal_code": {
           "type": ["null", "string"],
           "title": "Zip/Postal code",
-          "description": "Zip or postal code."
+          "description": "Zip or postal code.",
+          "maxLength": 256
         },
         "country": {
           "type": ["null", "string"],
           "title": "Country",
-          "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
+          "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
+          "maxLength": 2
         },
         "first_name": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "last_name": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
@@ -197,7 +215,8 @@
         "type": {
           "type": ["null", "string"],
           "title": "Type",
-          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries."
+          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries.",
+          "maxLength": 256
         },
         "region": {
           "type": ["null", "string"],
@@ -219,12 +238,14 @@
               "type": {
                 "type": ["null", "string"],
                 "title": "Type",
-                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST."
+                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST.",
+                "maxLength": 256
               },
               "region": {
                 "type": ["null", "string"],
                 "title": "Region",
-                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code."
+                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code.",
+                "maxLength": 256
               },
               "rate": {
                 "type": ["null", "number"],
@@ -252,17 +273,20 @@
     "vat_reverse_charge_notes": {
       "type": ["null", "string"],
       "title": "VAT reverse charge notes",
-      "description": "VAT Reverse Charge Notes only appear if you have EU VAT enabled or are using your own Avalara AvaTax account and the customer is in the EU, has a VAT number, and is in a different country than your own. This will default to the VAT Reverse Charge Notes text specified on the Tax Settings page in your Recurly admin, unless custom notes were created with the original subscription."
+      "description": "VAT Reverse Charge Notes only appear if you have EU VAT enabled or are using your own Avalara AvaTax account and the customer is in the EU, has a VAT number, and is in a different country than your own. This will default to the VAT Reverse Charge Notes text specified on the Tax Settings page in your Recurly admin, unless custom notes were created with the original subscription.",
+      "maxLength": 1024
     },
     "terms_and_conditions": {
       "type": ["null", "string"],
       "title": "Terms and conditions",
-      "description": "This will default to the Terms and Conditions text specified on the Invoice Settings page in your Recurly admin. Specify custom notes to add or override Terms and Conditions."
+      "description": "This will default to the Terms and Conditions text specified on the Invoice Settings page in your Recurly admin. Specify custom notes to add or override Terms and Conditions.",
+      "maxLength": 16384
     },
     "customer_notes": {
       "type": ["null", "string"],
       "title": "Customer notes",
-      "description": "This will default to the Customer Notes text specified on the Invoice Settings. Specify custom notes to add or override Customer Notes."
+      "description": "This will default to the Customer Notes text specified on the Invoice Settings. Specify custom notes to add or override Customer Notes.",
+      "maxLength": 2048
     },
     "line_items": {
       "type": ["null", "array"],
@@ -352,7 +376,8 @@
     "dunning_campaign_id": {
       "type": ["null", "string"],
       "title": "Dunning Campaign ID",
-      "description": "Unique ID to identify the dunning campaign used when dunning the invoice. Available when the Dunning Campaigns feature is enabled. For sites without multiple dunning campaigns enabled, this will always be the default dunning campaign."
+      "description": "Unique ID to identify the dunning campaign used when dunning the invoice. Available when the Dunning Campaigns feature is enabled. For sites without multiple dunning campaigns enabled, this will always be the default dunning campaign.",
+      "maxLength": 256
     }
   }
 }

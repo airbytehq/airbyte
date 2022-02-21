@@ -3,50 +3,61 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "account": {
       "type": "object",
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "code": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 50
         }
       }
     },
     "subscription_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "coupon": {
       "type": "object",
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "code": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "currency": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 3
     },
     "discounted": {
       "type": ["null", "number"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "removed_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
