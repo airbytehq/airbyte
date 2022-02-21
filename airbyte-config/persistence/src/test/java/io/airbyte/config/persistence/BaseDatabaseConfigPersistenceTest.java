@@ -96,41 +96,6 @@ public abstract class BaseDatabaseConfigPersistenceTest {
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
       .withTombstone(false);
 
-  // protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()
-  // .withName("GitHub")
-  // .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e"))
-  // .withDockerRepository("airbyte/source-github")
-  // .withDockerImageTag("0.2.3")
-  // .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/github")
-  // .withIcon("github.svg")
-  // .withSourceType(SourceType.API)
-  // .withTombstone(false);
-  // protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
-  // .withName("Postgres")
-  // .withSourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
-  // .withDockerRepository("airbyte/source-postgres")
-  // .withDockerImageTag("0.3.11")
-  // .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/postgres")
-  // .withIcon("postgresql.svg")
-  // .withSourceType(SourceType.DATABASE)
-  // .withTombstone(false);
-  // protected static final StandardDestinationDefinition DESTINATION_SNOWFLAKE = new
-  // StandardDestinationDefinition()
-  // .withName("Snowflake")
-  // .withDestinationDefinitionId(UUID.fromString("424892c4-daac-4491-b35d-c6688ba547ba"))
-  // .withDockerRepository("airbyte/destination-snowflake")
-  // .withDockerImageTag("0.3.16")
-  // .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/snowflake")
-  // .withTombstone(false);
-  // protected static final StandardDestinationDefinition DESTINATION_S3 = new
-  // StandardDestinationDefinition()
-  // .withName("S3")
-  // .withDestinationDefinitionId(UUID.fromString("4816b78f-1489-44c1-9060-4b19d5fa9362"))
-  // .withDockerRepository("airbyte/destination-s3")
-  // .withDockerImageTag("0.1.12")
-  // .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
-  // .withTombstone(false);
-
   protected static void writeSource(final ConfigPersistence configPersistence, final ActorDefinition source) throws Exception {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getId().toString(), source);
   }

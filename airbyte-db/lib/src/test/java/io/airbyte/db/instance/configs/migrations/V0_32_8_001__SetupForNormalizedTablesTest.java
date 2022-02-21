@@ -58,6 +58,9 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Table;
 
+/**
+ * This should only be used for testing migration V0_32_8_001. It preserves state from then.
+ */
 public class V0_32_8_001__SetupForNormalizedTablesTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
