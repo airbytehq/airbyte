@@ -272,7 +272,7 @@ class DestinationHandlerTest {
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationRead.getDestinationId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getDestinationId());
-    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
+    when(configRepository.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getDestinationConnection(clonedConnection.getDestinationId())).thenReturn(clonedConnection);
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionSpecificationRead.getDestinationDefinitionId()))
