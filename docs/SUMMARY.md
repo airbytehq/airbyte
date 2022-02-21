@@ -133,7 +133,7 @@
     * [PostHog](integrations/sources/posthog.md)
     * [PrestaShop](integrations/sources/presta-shop.md)
     * [Qualaroo](integrations/sources/qualaroo.md)
-    * [Quickbooks](integrations/sources/quickbooks.md)
+    * [QuickBooks](integrations/sources/quickbooks.md)
     * [Recharge](integrations/sources/recharge.md)
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)

@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -222,6 +223,35 @@ public class TemporalUtils {
     try {
       scheduledExecutor.scheduleAtFixedRate(() -> {
         Activity.getExecutionContext().heartbeat(null);
+      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+
+      return callable.call();
+    } catch (final ActivityCompletionException e) {
+      LOGGER.warn("Job either timed out or was cancelled.");
+      throw new RuntimeException(e);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      LOGGER.info("Stopping temporal heartbeating...");
+      scheduledExecutor.shutdown();
+    }
+  }
+
+  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef, final Callable<T> callable) {
+    final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    try {
+      scheduledExecutor.scheduleAtFixedRate(() -> {
+        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler();
+
+        cancellationHandler.checkAndHandleCancellation(() -> {
+          if (cancellationCallbackRef != null) {
+            final Runnable cancellationCallback = cancellationCallbackRef.get();
+            if (cancellationCallback != null) {
+              cancellationCallback.run();
+            }
+          }
+        });
       }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       return callable.call();

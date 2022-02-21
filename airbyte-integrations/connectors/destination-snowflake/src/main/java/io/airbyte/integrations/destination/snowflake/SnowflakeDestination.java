@@ -10,12 +10,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
   enum DestinationType {
     COPY_S3,

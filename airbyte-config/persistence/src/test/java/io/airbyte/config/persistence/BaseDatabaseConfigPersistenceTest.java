@@ -15,6 +15,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.Database;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,6 +52,12 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   @AfterAll
   public static void dbDown() {
     container.close();
+  }
+
+  protected static void truncateAllTables() throws SQLException {
+    database.query(ctx -> ctx
+        .execute(
+            "TRUNCATE TABLE state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }
 
   protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()

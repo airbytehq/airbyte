@@ -25,12 +25,13 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
- * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
- * or with a password.
+ * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file or with a password.
  */
 public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final List<String> HOST_KEY = List.of(MySQLDestination.HOST_KEY);
+  private final List<String> PORT_KEY = List.of(MySQLDestination.PORT_KEY);
   private String schemaName;
 
   public abstract Path getConfigFilePath();
@@ -60,9 +61,9 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -87,8 +88,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-                                                     final String streamName,
-                                                     final String namespace)
+      final String streamName,
+      final String namespace)
       throws Exception {
     final var tableName = namingResolver.getIdentifier(streamName);
     final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
@@ -121,8 +122,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
         getConfig(),
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -140,8 +141,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     final var config = getConfig();
     SshTunnel.sshWrap(
         config,
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
         });
@@ -151,8 +152,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });

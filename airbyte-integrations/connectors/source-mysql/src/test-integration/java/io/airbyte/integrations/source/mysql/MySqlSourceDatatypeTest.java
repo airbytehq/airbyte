@@ -14,7 +14,7 @@ import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -99,7 +99,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
             .build());
@@ -109,7 +109,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("bit(1)")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
             .build());
@@ -119,7 +119,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("bit(7)")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             // 1000001 is binary for A
             .addInsertValues("null", "b'1000001'")
             // QQo= is base64 encoding in charset UTF-8 for A
@@ -130,7 +130,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-128", "127")
             .addExpectedValues(null, "-128", "127")
             .build());
@@ -140,7 +140,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("tinyint")
             .fullSourceDataType("tinyint(1)")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
             .build());
@@ -149,7 +149,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("tinyint")
             .fullSourceDataType("tinyint(2)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-128", "127")
             .addExpectedValues(null, "-128", "127")
             .build());
@@ -159,7 +159,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(booleanType)
-              .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+              .airbyteType(JsonSchemaType.BOOLEAN)
               // MySql booleans are tinyint(1), and only 1 is true
               .addInsertValues("null", "1", "0", "127", "-128")
               .addExpectedValues(null, "true", "false", "false", "false")
@@ -169,7 +169,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .build());
@@ -177,7 +177,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("smallint zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -186,7 +186,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("smallint unsigned")
             .addInsertValues("null", "0", "65535")
             .addExpectedValues(null, "0", "65535")
@@ -195,7 +195,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-8388608", "8388607")
             .addExpectedValues(null, "-8388608", "8388607")
             .build());
@@ -203,7 +203,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("mediumint zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -212,7 +212,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
@@ -220,7 +220,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("int unsigned")
             .addInsertValues("3428724653")
             .addExpectedValues("3428724653")
@@ -229,7 +229,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("int zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -238,7 +238,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807")
             .addExpectedValues(null, "9223372036854775807")
             .build());
@@ -246,7 +246,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "10.5")
             .addExpectedValues(null, "10.5")
             .build());
@@ -254,7 +254,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("double")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
             .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
             .build());
@@ -262,7 +262,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("decimal(10,4)")
             .addInsertValues("0.188", "null")
             .addExpectedValues("0.188", null)
@@ -271,7 +271,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("decimal(19,2)")
             .addInsertValues("1700000.01")
             .addExpectedValues("1700000.01")
@@ -280,7 +280,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2021-01-01'")
             .addExpectedValues(null, "2021-01-01T00:00:00Z")
             .build());
@@ -288,15 +288,15 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2005-10-10 23:22:21'")
-            .addExpectedValues(null, "2005-10-10T23:22:21Z")
+            .addExpectedValues(null, "2005-10-10T23:22:21.000000Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
             .addExpectedValues(null, null, null, null)
             .build());
@@ -304,16 +304,16 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
-            .addInsertValues("null", "'-23:59:59.123456'", "'00:00:00'")
+            .addInsertValues("null", "'-23:59:59'", "'00:00:00'")
             .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("year")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             // MySQL converts values in the ranges '0' - '69' to YEAR value in the range 2000 - 2069
             // and '70' - '99' to 1970 - 1999.
             .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'")
@@ -328,7 +328,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(charType)
-              .airbyteType(JsonSchemaPrimitive.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .fullSourceDataType(charType + "(63)")
               .addInsertValues("null", "'Airbyte'", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
               .addExpectedValues(null, "Airbyte", "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~")
@@ -337,7 +337,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(charType)
-              .airbyteType(JsonSchemaPrimitive.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .fullSourceDataType(charType + "(63) character set utf16")
               .addInsertValues("0xfffd")
               .addExpectedValues("�")
@@ -346,7 +346,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(charType)
-              .airbyteType(JsonSchemaPrimitive.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .fullSourceDataType(charType + "(63) character set cp1251")
               .addInsertValues("'тест'")
               .addExpectedValues("тест")
@@ -356,7 +356,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(charType)
-              .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+              .airbyteType(JsonSchemaType.STRING_BASE_64)
               .fullSourceDataType(charType + "(7) character set binary")
               .addInsertValues("null", "'Airbyte'")
               .addExpectedValues(null, "QWlyYnl0ZQ==")
@@ -371,7 +371,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(blobType)
-              .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+              .airbyteType(JsonSchemaType.STRING_BASE_64)
               .addInsertValues("null", "'Airbyte'")
               .addExpectedValues(null, "QWlyYnl0ZQ==")
               .build());
@@ -382,7 +382,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType(MysqlType.BINARY.name())
             .fullSourceDataType(MysqlType.BINARY.name() + "(10)")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("null", "'Airbyte'")
             .addExpectedValues(null, "QWlyYnl0ZQAAAA==")
             .build());
@@ -392,7 +392,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType(MysqlType.VARBINARY.name())
             .fullSourceDataType(MysqlType.VARBINARY.name() + "(10)")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("null", "'Airbyte'")
             .addExpectedValues(null, "QWlyYnl0ZQ==")
             .build());
@@ -400,7 +400,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType(MysqlType.VARBINARY.name())
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .fullSourceDataType(MysqlType.VARBINARY.name() + "(20000)") // size should be enough to save test.png
             .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
             .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
@@ -415,7 +415,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(textType)
-              .airbyteType(JsonSchemaPrimitive.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("null", "'Airbyte'", String.format("'%s'", randomText))
               .addExpectedValues(null, "Airbyte", randomText)
               .build());
@@ -424,7 +424,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumtext")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues(getLogString(1048000), "'test'")
             .addExpectedValues(StringUtils.leftPad("0", 1048000, "0"), "test")
             .build());
@@ -432,7 +432,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
             .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
@@ -441,7 +441,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("enum")
             .fullSourceDataType("ENUM('xs', 's', 'm', 'l', 'xl')")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'xs'", "'m'")
             .addExpectedValues(null, "xs", "m")
             .build());
@@ -450,7 +450,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("set")
             .fullSourceDataType("SET('xs', 's', 'm', 'l', 'xl')")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'xs,s'", "'m,xl'")
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
@@ -458,7 +458,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("point")
-            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
             .addInsertValues("null", "(ST_GeomFromText('POINT(19 43)'))")
             .addExpectedValues(null, "AAAAAAEBAAAAAAAAAAAAM0AAAAAAAIBFQA==")
             .build());
