@@ -6,13 +6,18 @@ package io.airbyte.metrics.lib;
 
 import lombok.AllArgsConstructor;
 
+/**
+ * Enum source of truth of all Airbyte metrics. Each {@link AirbyteMetric} is linked to an
+ * application and contains a description to make it easier to understand.
+ */
 @AllArgsConstructor
 public enum AirbyteMetricsRegistry {
 
-  KUBE_POD_PROCESS_CREATE_TIME(AirbyteApplications.AIRBYTE_SCHEDULER, "kube_pod_process_create_time", "time taken to create a new kube pod process");
+  KUBE_POD_PROCESS_CREATE_TIME(
+      AirbyteApplications.WORKER,
+      new AirbyteMetric("kube_pod_process_create_time", "time taken to create a new kube pod process"));
 
-  private final AirbyteApplication application;
-  private final String metricName;
-  private final String metricDescription;
+  public final AirbyteApplication application;
+  public final AirbyteMetric metric;
 
 }

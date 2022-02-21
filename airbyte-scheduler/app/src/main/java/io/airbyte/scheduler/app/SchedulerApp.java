@@ -275,7 +275,7 @@ public class SchedulerApp {
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    DogstatsdMetricSingleton.initialize(AirbyteApplications.AIRBYTE_SCHEDULER, configs.getPublishMetrics());
+    DogstatsdMetricSingleton.initialize(AirbyteApplications.SCHEDULER, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(

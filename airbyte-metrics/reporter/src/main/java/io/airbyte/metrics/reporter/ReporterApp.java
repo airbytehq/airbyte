@@ -10,7 +10,7 @@ import io.airbyte.metrics.lib.DogstatsdMetricSingleton;
 public class ReporterApp {
 
   public static void main(final String[] args) {
-    DogstatsdMetricSingleton.initialize(AirbyteApplications.AIRBYTE_METRICS_REPORTER, false);
+    DogstatsdMetricSingleton.initialize(AirbyteApplications.METRICS_REPORTER, false);
   }
 
 }

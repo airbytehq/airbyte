@@ -4,13 +4,24 @@
 
 package io.airbyte.metrics.lib;
 
-import lombok.AllArgsConstructor;
+import com.google.api.client.util.Preconditions;
 
-@AllArgsConstructor
+/**
+ * Wrapper class representing an emitted metric.
+ *
+ * Although {@link #metricDescription} isn't used, it's presence is enforced as metadata to
+ * understand a metric.
+ */
 public class AirbyteMetric {
 
-  private final AirbyteApplications airbyteApplication;
   public final String metricName;
   public final String metricDescription;
+
+  public AirbyteMetric(final String metricName, final String metricDescription) {
+    Preconditions.checkNotNull(metricDescription);
+
+    this.metricName = metricName;
+    this.metricDescription = metricDescription;
+  }
 
 }

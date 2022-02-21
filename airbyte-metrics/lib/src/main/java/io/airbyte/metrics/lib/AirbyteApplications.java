@@ -6,12 +6,24 @@ package io.airbyte.metrics.lib;
 
 import lombok.AllArgsConstructor;
 
+/**
+ * Enum containing all applications metrics are emitted for. Used to initialize
+ * {@link DogstatsdMetricSingleton#initialize(AirbyteApplication, boolean)}.
+ *
+ * Application Name Conventions:
+ * <p>
+ * - Drop the airbyte prefix when naming applications, e.g airbyte-scheduler -> scheduler.
+ * <p>
+ * - Use dashes to delimit application names with multiple words.
+ * <p>
+ * - Use lowercase.
+ */
 @AllArgsConstructor
 public enum AirbyteApplications implements AirbyteApplication {
 
-  AIRBYTE_METRICS_REPORTER("metrics-reporter"),
-  AIRBYTE_SCHEDULER("scheduler"),
-  AIRBYTE_WORKER("worker");
+  METRICS_REPORTER("metrics-reporter"),
+  SCHEDULER("scheduler"),
+  WORKER("worker");
 
   private String applicationName;
 
