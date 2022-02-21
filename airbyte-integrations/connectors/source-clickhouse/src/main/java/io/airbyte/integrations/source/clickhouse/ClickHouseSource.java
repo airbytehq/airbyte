@@ -94,13 +94,13 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
     }
 
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-            .put("username", config.get("username").asText())
-            .put("jdbc_url", jdbcUrl.toString());
+        .put("username", config.get("username").asText())
+        .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
     }
-    
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
