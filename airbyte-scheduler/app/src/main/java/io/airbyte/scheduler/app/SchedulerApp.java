@@ -248,7 +248,8 @@ public class SchedulerApp {
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(
