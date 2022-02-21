@@ -31,6 +31,27 @@ def test_privileges_validation(requests_mock, basic_config):
     requests_mock.get("https://test_shop.myshopify.com/admin/oauth/access_scopes.json", json={"access_scopes": [{"handle": "read_orders"}]})
     source = SourceShopify()
 
-    expected = ["orders", "abandoned_checkouts", "metafields", "order_refunds", "order_risks", "transactions", "fulfillments", "shop"]
+    expected = [
+        "customers",
+        "orders",
+        "draft_orders",
+        "products",
+        "abandoned_checkouts",
+        "metafields",
+        "custom_collections",
+        "collects",
+        "order_refunds",
+        "order_risks",
+        "transactions",
+        "pages",
+        "price_rules",
+        "discount_codes",
+        "locations",
+        "inventory_items",
+        "inventory_levels",
+        "fulfillment_orders",
+        "fulfillments",
+        "shop",
+    ]
 
     assert [stream.name for stream in source.streams(basic_config)] == expected
