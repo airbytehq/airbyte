@@ -2,12 +2,14 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import concurrent.futures
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from requests.exceptions import HTTPError
+from requests import adapters as request_adapters
+from requests.exceptions import HTTPError, RequestException
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -173,6 +175,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 class Salesforce:
     logger = AirbyteLogger()
     version = "v52.0"
+    parallel_tasks_size = 200
 
     def __init__(
         self,
@@ -191,6 +194,10 @@ class Salesforce:
         self.access_token = None
         self.instance_url = None
         self.session = requests.Session()
+        # Change the connection pool size. Default value is not enough for parallel tasks
+        adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
+        self.session.mount("https://", adapter)
+
         self.is_sandbox = is_sandbox in [True, "true"]
         if self.is_sandbox:
             self.logger.info("using SANDBOX of Salesforce")
@@ -288,6 +295,32 @@ class Salesforce:
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)
         return schema
+
+    def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[Mapping[str, Any], Optional[str]]:
+            try:
+                result = self.generate_schema(stream_name=name, stream_options=stream_options)
+            except RequestException as e:
+                return None, str(e)
+            return result, None
+
+        stream_names = list(stream_objects.keys())
+        # try to split all requests by chunks
+        stream_schemas = {}
+        for i in range(0, len(stream_names), self.parallel_tasks_size):
+            chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
+                for stream_name, (schema, err) in zip(
+                    chunk_stream_names,
+                    executor.map(
+                        lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
+                    ),
+                ):
+                    if err:
+                        self.logger.error(f"Loading error of the {stream_name} schema: {err}")
+                        continue
+                    stream_schemas[stream_name] = schema
+        return stream_schemas
 
     @staticmethod
     def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:

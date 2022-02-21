@@ -45,12 +45,13 @@ class SourceSalesforce(AbstractSource):
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
+        stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
             streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema(stream_name, sobject_options).get("properties", {})
+            selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
@@ -63,7 +64,7 @@ class SourceSalesforce(AbstractSource):
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
 
-            json_schema = sf_object.generate_schema(stream_name, stream_objects)
+            json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:

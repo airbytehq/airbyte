@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import base64
 import json
 from datetime import datetime
@@ -39,16 +43,13 @@ def stream(input_sandbox_config, stream_name, sf):
 
 
 def _encode_content(text):
-    base64_bytes = base64.b64encode(text.encode('utf-8'))
-    return base64_bytes.decode('utf-8')
+    base64_bytes = base64.b64encode(text.encode("utf-8"))
+    return base64_bytes.decode("utf-8")
 
 
 def create_note(stream, headers):
     url = stream.url_base + f"/services/data/{stream.sf_api.version}/sobjects/{stream.name}"
-    note_data = {
-        "Title": "Integration Test",
-        "Content": _encode_content(NOTE_CONTENT)
-    }
+    note_data = {"Title": "Integration Test", "Content": _encode_content(NOTE_CONTENT)}
     return requests.post(url, headers=headers, json=note_data)
 
 
@@ -59,9 +60,7 @@ def delete_note(stream, note_id, headers):
 
 def update_note(stream, note_id, headers):
     url = stream.url_base + f"/services/data/{stream.sf_api.version}/sobjects/{stream.name}/{note_id}"
-    note_data = {
-        "Content": _encode_content(UPDATED_NOTE_CONTENT)
-    }
+    note_data = {"Content": _encode_content(UPDATED_NOTE_CONTENT)}
     return requests.patch(url, headers=headers, json=note_data)
 
 
@@ -75,7 +74,7 @@ def test_update_for_deleted_record(stream):
     response = create_note(stream, headers)
     assert response.status_code == 201, "Note was note created"
 
-    created_note_id = response.json()['id']
+    created_note_id = response.json()["id"]
 
     notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
     assert created_note_id in notes, "No created note during the sync"
@@ -107,7 +106,7 @@ def test_deleted_record(stream):
     response = create_note(stream, headers)
     assert response.status_code == 201, "Note was note created"
 
-    created_note_id = response.json()['id']
+    created_note_id = response.json()["id"]
 
     notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
     assert created_note_id in notes, "No created note during the sync"
@@ -126,5 +125,25 @@ def test_deleted_record(stream):
 
     assert record, "No updated note during the sync"
     assert record["IsDeleted"], "Wrong field value for deleted note during the sync"
-    assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, \
-        "Note Content was not updated"
+    assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, "Note Content was not updated"
+
+
+def test_parallel_discover(input_sandbox_config):
+    sf = Salesforce(**input_sandbox_config)
+    sf.login()
+    stream_objects = sf.get_validated_streams(config=input_sandbox_config)
+
+    # try to load all schema with the old consecutive logic
+    consecutive_schemas = {}
+    start_time = datetime.now()
+    for stream_name, sobject_options in stream_objects.items():
+        consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
+    consecutive_loading_time = (datetime.now() - start_time).total_seconds()
+    start_time = datetime.now()
+    parallel_schemas = sf.generate_schemas(stream_objects)
+    parallel_loading_time = (datetime.now() - start_time).total_seconds()
+
+    assert parallel_loading_time < (consecutive_loading_time / sf.parallel_tasks_size) + 5.0
+    assert set(consecutive_schemas.keys()) == set(parallel_schemas.keys())
+    for stream_name, schema in consecutive_schemas.items():
+        assert schema == parallel_schemas[stream_name]
