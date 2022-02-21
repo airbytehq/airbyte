@@ -270,21 +270,20 @@ public class MongoUtils {
   private static BsonDocument toBsonDocument(final Document document) {
     try {
       CodecRegistry customCodecRegistry =
-              fromProviders(asList(
-                      new ValueCodecProvider(),
-                      new BsonValueCodecProvider(),
-                      new DocumentCodecProvider(),
-                      new IterableCodecProvider(),
-                      new MapCodecProvider(),
-                      new Jsr310CodecProvider(),
-                      new JsonObjectCodecProvider(),
-                      new BsonCodecProvider(),
-                      new DBRefCodecProvider()));
+          fromProviders(asList(
+              new ValueCodecProvider(),
+              new BsonValueCodecProvider(),
+              new DocumentCodecProvider(),
+              new IterableCodecProvider(),
+              new MapCodecProvider(),
+              new Jsr310CodecProvider(),
+              new JsonObjectCodecProvider(),
+              new BsonCodecProvider(),
+              new DBRefCodecProvider()));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
-    }
-    catch (final Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
