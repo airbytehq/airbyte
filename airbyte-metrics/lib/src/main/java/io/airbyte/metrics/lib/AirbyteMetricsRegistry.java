@@ -21,7 +21,10 @@ import com.google.api.client.util.Preconditions;
  * <p>
  * - Use underscore to delimit names with multiple words.
  * <p>
- * - Avoid spaces or numbers. This makes the metric confusing to read.
+ * - No spaces. This makes the metric confusing to read.
+ * <p>
+ * - Avoid numbers. This makes the metric confusing to read. Numbers should only be used as a
+ * versioning tactic and present at the end of the metric.
  */
 public enum AirbyteMetricsRegistry {
 
