@@ -107,9 +107,9 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
         connection -> {
           connection.setAutoCommit(true);
           final PreparedStatement ps = connection.prepareStatement(
-              "SELECT DISTINCT table_schema, table_name "
-                  + "FROM   information_schema.table_privileges "
-                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+              "SELECT schemaname, tablename "
+                  + "FROM   pg_tables "
+                  + "WHERE  has_table_privilege(?, schemaname||'.'||tablename, 'select')");
           ps.setString(1, database.getDatabaseConfig().get("username").asText());
           return ps.executeQuery();
         },
