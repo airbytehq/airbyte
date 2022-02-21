@@ -7,8 +7,8 @@ package io.airbyte.server.helpers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSourceDefinition;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,10 +49,10 @@ public class SourceHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static SourceRead getSourceRead(final SourceConnection source, final StandardSourceDefinition standardSourceDefinition) {
+  public static SourceRead getSourceRead(final SourceConnection source, final ActorDefinition standardSourceDefinition) {
 
     return new SourceRead()
-        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(standardSourceDefinition.getId())
         .workspaceId(source.getWorkspaceId())
         .sourceDefinitionId(source.getSourceDefinitionId())
         .sourceId(source.getSourceId())

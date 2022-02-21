@@ -26,8 +26,8 @@ import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -49,7 +49,7 @@ import org.junit.jupiter.api.Test;
 class SourceHandlerTest {
 
   private ConfigRepository configRepository;
-  private StandardSourceDefinition standardSourceDefinition;
+  private ActorDefinition standardSourceDefinition;
   private SourceDefinitionSpecificationRead sourceDefinitionSpecificationRead;
   private SourceConnection sourceConnection;
   private SourceHandler sourceHandler;
@@ -73,8 +73,8 @@ class SourceHandlerTest {
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
-    standardSourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+    standardSourceDefinition = new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withName("marketo")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
@@ -84,11 +84,11 @@ class SourceHandlerTest {
     imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
-        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(standardSourceDefinition.getId())
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
-    sourceConnection = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
+    sourceConnection = SourceHelpers.generateSource(standardSourceDefinition.getId());
 
     sourceHandler = new SourceHandler(configRepository, validator, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
   }
@@ -98,7 +98,7 @@ class SourceHandlerTest {
     final SourceCreate sourceCreate = new SourceCreate()
         .name(sourceConnection.getName())
         .workspaceId(sourceConnection.getWorkspaceId())
-        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(standardSourceDefinition.getId())
         .connectionConfiguration(sourceConnection.getConfiguration());
 
     when(uuidGenerator.get()).thenReturn(sourceConnection.getSourceId());

@@ -4,14 +4,14 @@
 
 package io.airbyte.server.helpers;
 
-import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.ActorDefinition;
 import java.util.UUID;
 
 public class DestinationDefinitionHelpers {
 
-  public static StandardDestinationDefinition generateDestination() {
-    return new StandardDestinationDefinition()
-        .withDestinationDefinitionId(UUID.randomUUID())
+  public static ActorDefinition generateDestination() {
+    return new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withName("db2")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")

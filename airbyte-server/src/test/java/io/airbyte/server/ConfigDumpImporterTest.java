@@ -15,10 +15,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.ActorDefinition;
+import io.airbyte.config.ActorDefinition.ActorType;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
@@ -71,8 +71,9 @@ class ConfigDumpImporterTest {
     workspaceId = UUID.randomUUID();
     when(jobPersistence.getVersion()).thenReturn(Optional.of(TEST_VERSION.serialize()));
 
-    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+    final ActorDefinition standardSourceDefinition = new ActorDefinition()
+        .withActorType(ActorType.SOURCE)
+        .withId(UUID.randomUUID())
         .withName("test-standard-source")
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
@@ -81,20 +82,21 @@ class ConfigDumpImporterTest {
         .withSpec(emptyConnectorSpec);
     sourceConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
-        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .withSourceDefinitionId(standardSourceDefinition.getId())
         .withConfiguration(Jsons.emptyObject())
         .withName("test-source")
         .withTombstone(false)
         .withWorkspaceId(workspaceId);
     when(configRepository.listStandardSourceDefinitions(false))
         .thenReturn(List.of(standardSourceDefinition));
-    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceConnection(any()))
         .thenReturn(sourceConnection);
 
-    final StandardDestinationDefinition standardDestinationDefinition = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(UUID.randomUUID())
+    final ActorDefinition standardDestinationDefinition = new ActorDefinition()
+        .withActorType(ActorType.DESTINATION)
+        .withId(UUID.randomUUID())
         .withName("test-standard-destination")
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
@@ -103,14 +105,14 @@ class ConfigDumpImporterTest {
         .withSpec(emptyConnectorSpec);
     destinationConnection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
-        .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .withDestinationDefinitionId(standardDestinationDefinition.getId())
         .withConfiguration(Jsons.emptyObject())
         .withName("test-source")
         .withTombstone(false)
         .withWorkspaceId(workspaceId);
     when(configRepository.listStandardDestinationDefinitions(false))
         .thenReturn(List.of(standardDestinationDefinition));
-    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getId()))
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationConnection(any()))
         .thenReturn(destinationConnection);

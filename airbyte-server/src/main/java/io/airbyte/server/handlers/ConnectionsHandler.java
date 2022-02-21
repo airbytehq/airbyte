@@ -23,12 +23,11 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -178,15 +177,15 @@ public class ConnectionsHandler {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
     final UUID connectionId = standardSync.getConnectionId();
-    final StandardSourceDefinition sourceDefinition = configRepository
+    final ActorDefinition sourceDefinition = configRepository
         .getSourceDefinitionFromConnection(connectionId);
-    final StandardDestinationDefinition destinationDefinition = configRepository
+    final ActorDefinition destinationDefinition = configRepository
         .getDestinationDefinitionFromConnection(connectionId);
 
     metadata.put("connector_source", sourceDefinition.getName());
-    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_source_definition_id", sourceDefinition.getId());
     metadata.put("connector_destination", destinationDefinition.getName());
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put("connector_destination_definition_id", destinationDefinition.getId());
 
     final String frequencyString;
     if (standardSync.getManual()) {
@@ -307,12 +306,12 @@ public class ConnectionsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionRead.getSourceId());
-    final StandardSourceDefinition sourceDefinition =
+    final ActorDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final SourceRead sourceRead = SourceHandler.toSourceRead(sourceConnection, sourceDefinition);
 
     final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionRead.getDestinationId());
-    final StandardDestinationDefinition destinationDefinition =
+    final ActorDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final DestinationRead destinationRead = DestinationHandler.toDestinationRead(destinationConnection, destinationDefinition);
 

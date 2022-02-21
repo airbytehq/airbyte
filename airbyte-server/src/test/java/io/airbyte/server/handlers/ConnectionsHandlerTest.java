@@ -32,6 +32,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
@@ -39,8 +40,6 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.helpers.LogConfigs;
@@ -179,12 +178,12 @@ class ConnectionsHandlerTest {
     @Test
     void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
       when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-      final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+      final ActorDefinition sourceDefinition = new ActorDefinition()
           .withName("source-test")
-          .withSourceDefinitionId(UUID.randomUUID());
-      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withId(UUID.randomUUID());
+      final ActorDefinition destinationDefinition = new ActorDefinition()
           .withName("destination-test")
-          .withDestinationDefinitionId(UUID.randomUUID());
+          .withId(UUID.randomUUID());
       when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
       when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
       when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
@@ -246,12 +245,12 @@ class ConnectionsHandlerTest {
       final UUID sourceIdBad = UUID.randomUUID();
       final UUID destinationIdBad = UUID.randomUUID();
 
-      final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+      final ActorDefinition sourceDefinition = new ActorDefinition()
           .withName("source-test")
-          .withSourceDefinitionId(UUID.randomUUID());
-      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withId(UUID.randomUUID());
+      final ActorDefinition destinationDefinition = new ActorDefinition()
           .withName("destination-test")
-          .withDestinationDefinitionId(UUID.randomUUID());
+          .withId(UUID.randomUUID());
       when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
       when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
       when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
@@ -431,12 +430,12 @@ class ConnectionsHandlerTest {
           .withManual(true)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
       final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
-      final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+      final ActorDefinition sourceDefinition = new ActorDefinition()
           .withName("source-test")
-          .withSourceDefinitionId(UUID.randomUUID());
-      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withId(UUID.randomUUID());
+      final ActorDefinition destinationDefinition = new ActorDefinition()
           .withName("destination-test")
-          .withDestinationDefinitionId(UUID.randomUUID());
+          .withId(UUID.randomUUID());
 
       when(configRepository.listStandardSyncs())
           .thenReturn(Lists.newArrayList(standardSync, standardSync2));
@@ -581,12 +580,12 @@ class ConnectionsHandlerTest {
       when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
 
       when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-      final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+      final ActorDefinition sourceDefinition = new ActorDefinition()
           .withName("source-test")
-          .withSourceDefinitionId(UUID.randomUUID());
-      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withId(UUID.randomUUID());
+      final ActorDefinition destinationDefinition = new ActorDefinition()
           .withName("destination-test")
-          .withDestinationDefinitionId(UUID.randomUUID());
+          .withId(UUID.randomUUID());
       when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
       when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
       when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);

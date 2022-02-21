@@ -11,10 +11,9 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -47,7 +46,7 @@ class ConfigurationUpdateTest {
       .put("username", "airbyte")
       .put("password", "xyz")
       .build());
-  private static final StandardSourceDefinition SOURCE_DEFINITION = new StandardSourceDefinition()
+  private static final ActorDefinition SOURCE_DEFINITION = new ActorDefinition()
       .withDockerRepository(IMAGE_REPOSITORY)
       .withDockerImageTag(IMAGE_TAG)
       .withSpec(CONNECTOR_SPECIFICATION);
@@ -59,7 +58,7 @@ class ConfigurationUpdateTest {
       .withSourceId(UUID1)
       .withSourceDefinitionId(UUID2)
       .withConfiguration(NEW_CONFIGURATION);
-  private static final StandardDestinationDefinition DESTINATION_DEFINITION = new StandardDestinationDefinition()
+  private static final ActorDefinition DESTINATION_DEFINITION = new ActorDefinition()
       .withDockerRepository(IMAGE_REPOSITORY)
       .withDockerImageTag(IMAGE_TAG)
       .withSpec(CONNECTOR_SPECIFICATION);

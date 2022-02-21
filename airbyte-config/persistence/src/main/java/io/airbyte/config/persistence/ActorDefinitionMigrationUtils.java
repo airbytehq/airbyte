@@ -24,6 +24,7 @@ public class ActorDefinitionMigrationUtils {
   // ConfigRepository to convert from ActorDefinition (used internally in the db) and
   // StandardSourceDefinition, used externally.
   public static StandardSourceDefinition mapActorDefToSourceDef(final ActorDefinition actorDefinition) {
+    System.out.println("actorDefinition.getActorType() = " + actorDefinition.getActorType());
     Preconditions.checkArgument(actorDefinition.getActorType() == ActorType.SOURCE);
     return new StandardSourceDefinition()
         .withName(actorDefinition.getName())

@@ -7,10 +7,10 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -58,8 +58,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
-        final StandardDestinationDefinition destinationDef =
-            configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+        final ActorDefinition destinationDef = configRepository
+            .getStandardDestinationDefinition(destination.getDestinationDefinitionId());
         final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
         final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();

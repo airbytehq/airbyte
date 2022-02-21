@@ -19,6 +19,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -28,8 +29,6 @@ import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -166,8 +165,8 @@ class JobTrackerTest {
         .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
@@ -196,8 +195,8 @@ class JobTrackerTest {
         .build();
 
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
@@ -226,8 +225,8 @@ class JobTrackerTest {
         .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
@@ -350,30 +349,30 @@ class JobTrackerTest {
 
   private Job getJobMock(final ConfigType configType, final long jobId) throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION)
             .withSpec(SOURCE_SPEC));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION)
             .withSpec(DESTINATION_SPEC));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(UUID1)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION)
             .withSpec(SOURCE_SPEC));
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition()
-            .withDestinationDefinitionId(UUID2)
+        .thenReturn(new ActorDefinition()
+            .withId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION)

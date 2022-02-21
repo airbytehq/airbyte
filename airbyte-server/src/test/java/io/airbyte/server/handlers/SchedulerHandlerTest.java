@@ -37,6 +37,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
@@ -45,8 +46,6 @@ import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -168,10 +167,10 @@ class SchedulerHandlerTest {
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
@@ -193,10 +192,10 @@ class SchedulerHandlerTest {
         .connectionConfiguration(source.getConfiguration());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
@@ -215,10 +214,10 @@ class SchedulerHandlerTest {
         .name(source.getName())
         .sourceId(source.getSourceId())
         .connectionConfiguration(source.getConfiguration());
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+    final ActorDefinition sourceDefinition = new ActorDefinition()
         .withDockerRepository(DESTINATION_DOCKER_REPO)
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
-        .withSourceDefinitionId(source.getSourceDefinitionId())
+        .withId(source.getSourceDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(sourceDefinition);
@@ -243,11 +242,11 @@ class SchedulerHandlerTest {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.randomUUID());
 
     final SynchronousResponse<ConnectorSpecification> specResponse = (SynchronousResponse<ConnectorSpecification>) jobResponse;
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+    final ActorDefinition sourceDefinition = new ActorDefinition()
         .withName("name")
         .withDockerRepository(SOURCE_DOCKER_REPO)
         .withDockerImageTag(SOURCE_DOCKER_TAG)
-        .withSourceDefinitionId(sourceDefinitionIdRequestBody.getSourceDefinitionId())
+        .withId(sourceDefinitionIdRequestBody.getSourceDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
         .thenReturn(sourceDefinition);
@@ -263,11 +262,11 @@ class SchedulerHandlerTest {
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
         new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID());
 
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+    final ActorDefinition destinationDefinition = new ActorDefinition()
         .withName("name")
         .withDockerRepository(DESTINATION_DOCKER_REPO)
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
-        .withDestinationDefinitionId(destinationDefinitionIdRequestBody.getDestinationDefinitionId())
+        .withId(destinationDefinitionIdRequestBody.getDestinationDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()))
         .thenReturn(destinationDefinition);
@@ -284,10 +283,10 @@ class SchedulerHandlerTest {
     final DestinationIdRequestBody request = new DestinationIdRequestBody().destinationId(destination.getDestinationId());
 
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withId(destination.getDestinationDefinitionId()));
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
@@ -309,10 +308,10 @@ class SchedulerHandlerTest {
         .connectionConfiguration(destination.getConfiguration());
 
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withId(destination.getDestinationDefinitionId()));
 
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
@@ -331,10 +330,10 @@ class SchedulerHandlerTest {
         .name(destination.getName())
         .destinationId(destination.getDestinationId())
         .connectionConfiguration(destination.getConfiguration());
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+    final ActorDefinition destinationDefinition = new ActorDefinition()
         .withDockerRepository(DESTINATION_DOCKER_REPO)
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
-        .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+        .withId(destination.getDestinationDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(destinationDefinition);
@@ -368,10 +367,10 @@ class SchedulerHandlerTest {
     when(metadata.isSucceeded()).thenReturn(true);
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
@@ -391,10 +390,10 @@ class SchedulerHandlerTest {
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<AirbyteCatalog>) jobResponse);
@@ -428,10 +427,10 @@ class SchedulerHandlerTest {
         .connectionConfiguration(source.getConfiguration());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
     when(configRepository.statefulSplitEphemeralSecrets(
@@ -457,10 +456,10 @@ class SchedulerHandlerTest {
         .connectionConfiguration(source.getConfiguration());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<AirbyteCatalog>) jobResponse);
     when(configRepository.statefulSplitEphemeralSecrets(
@@ -488,15 +487,15 @@ class SchedulerHandlerTest {
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withId(destination.getDestinationDefinitionId()));
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
@@ -544,15 +543,15 @@ class SchedulerHandlerTest {
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
-        .thenReturn(new StandardSourceDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withId(source.getSourceDefinitionId()));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
-        .thenReturn(new StandardDestinationDefinition()
+        .thenReturn(new ActorDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withId(destination.getDestinationDefinitionId()));
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);

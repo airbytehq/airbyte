@@ -14,6 +14,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -180,7 +181,9 @@ public class ConfigDumpExporter {
       if (!sourceDefinitionMap.containsKey(sourceConnection.getSourceDefinitionId())) {
         sourceDefinitionMap
             .put(sourceConnection.getSourceDefinitionId(),
-                configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
+                // todo (cgardens) - remove migration shim.
+                ActorDefinitionMigrationUtils
+                    .mapActorDefToSourceDef(configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId())));
       }
     }
     return sourceDefinitionMap.values();
@@ -193,7 +196,9 @@ public class ConfigDumpExporter {
       if (!destinationDefinitionMap.containsKey(destinationConnection.getDestinationDefinitionId())) {
         destinationDefinitionMap
             .put(destinationConnection.getDestinationDefinitionId(),
-                configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()));
+                // todo (cgardens) - remove migration shim.
+                ActorDefinitionMigrationUtils
+                    .mapActorDefToDestDef(configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId())));
       }
     }
     return destinationDefinitionMap.values();

@@ -17,11 +17,10 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
@@ -125,10 +124,10 @@ public class JobTracker {
       Preconditions.checkArgument(allowedJob, "Job type " + configType + " is not allowed!");
       final long jobId = job.getId();
       final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-      final UUID sourceDefinitionId = sourceDefinition.getSourceDefinitionId();
-      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final UUID destinationDefinitionId = destinationDefinition.getDestinationDefinitionId();
+      final ActorDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final UUID sourceDefinitionId = sourceDefinition.getId();
+      final ActorDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final UUID destinationDefinitionId = destinationDefinition.getId();
 
       final Map<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
       final Map<String, Object> jobAttemptMetadata = generateJobAttemptMetadata(job.getId(), jobState);
@@ -319,13 +318,13 @@ public class JobTracker {
 
   private ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final UUID destinationDefinitionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final ActorDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
   }
 
   private ImmutableMap<String, Object> generateSourceDefinitionMetadata(final UUID sourceDefinitionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final ActorDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 

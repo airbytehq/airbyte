@@ -6,10 +6,9 @@ package io.airbyte.scheduler.persistence.job_tracker;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
@@ -62,10 +61,10 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
+  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final ActorDefinition destinationDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put("connector_destination_definition_id", destinationDefinition.getId());
     metadata.put("connector_destination_docker_repository", destinationDefinition.getDockerRepository());
     final String imageTag = destinationDefinition.getDockerImageTag();
     if (!Strings.isEmpty(imageTag)) {
@@ -74,10 +73,10 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
+  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final ActorDefinition sourceDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
-    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_source_definition_id", sourceDefinition.getId());
     metadata.put("connector_source_docker_repository", sourceDefinition.getDockerRepository());
     final String imageTag = sourceDefinition.getDockerImageTag();
     if (!Strings.isEmpty(imageTag)) {

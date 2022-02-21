@@ -14,10 +14,9 @@ import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
@@ -51,7 +50,7 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition sourceDefinition =
+    final ActorDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
@@ -80,8 +79,8 @@ public class OAuthHandler {
 
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    final ActorDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
@@ -109,8 +108,8 @@ public class OAuthHandler {
 
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
+    final ActorDefinition sourceDefinition = configRepository
+        .getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
@@ -141,8 +140,8 @@ public class OAuthHandler {
 
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest oauthDestinationRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
+    final ActorDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
@@ -197,13 +196,13 @@ public class OAuthHandler {
 
   private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final ActorDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     return TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
   }
 
   private ImmutableMap<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final ActorDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
   }
 

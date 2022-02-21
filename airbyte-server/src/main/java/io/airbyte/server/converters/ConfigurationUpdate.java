@@ -6,10 +6,9 @@ package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -38,7 +37,7 @@ public class ConfigurationUpdate {
     final SourceConnection persistedSource = configRepository.getSourceConnectionWithSecrets(sourceId);
     persistedSource.setName(sourceName);
     // get spec
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
+    final ActorDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     // copy any necessary secrets from the current source to the incoming updated source
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
@@ -55,7 +54,7 @@ public class ConfigurationUpdate {
     final DestinationConnection persistedDestination = configRepository.getDestinationConnectionWithSecrets(destinationId);
     persistedDestination.setName(destName);
     // get spec
-    final StandardDestinationDefinition destinationDefinition = configRepository
+    final ActorDefinition destinationDefinition = configRepository
         .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
     final ConnectorSpecification spec = destinationDefinition.getSpec();
     // copy any necessary secrets from the current destination to the incoming updated destination

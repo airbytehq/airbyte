@@ -25,11 +25,11 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -55,7 +55,7 @@ class SourceDefinitionsHandlerTest {
   private static final String TODAY_DATE_STRING = LocalDate.now().toString();
 
   private ConfigRepository configRepository;
-  private StandardSourceDefinition sourceDefinition;
+  private ActorDefinition sourceDefinition;
   private SourceDefinitionsHandler sourceDefinitionsHandler;
   private Supplier<UUID> uuidSupplier;
   private SynchronousSchedulerClient schedulerSynchronousClient;
@@ -76,13 +76,13 @@ class SourceDefinitionsHandlerTest {
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore, sourceHandler);
   }
 
-  private StandardSourceDefinition generateSourceDefinition() {
+  private ActorDefinition generateSourceDefinition() {
     final UUID sourceDefinitionId = UUID.randomUUID();
     final ConnectorSpecification spec = new ConnectorSpecification().withConnectionSpecification(
         Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
 
-    return new StandardSourceDefinition()
-        .withSourceDefinitionId(sourceDefinitionId)
+    return new ActorDefinition()
+        .withId(sourceDefinitionId)
         .withName("presto")
         .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
@@ -99,12 +99,12 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("listSourceDefinition should return the right list")
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
-    final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
+    final ActorDefinition sourceDefinition2 = generateSourceDefinition();
 
     when(configRepository.listStandardSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition, sourceDefinition2));
 
     final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
-        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(sourceDefinition.getId())
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
@@ -117,7 +117,7 @@ class SourceDefinitionsHandlerTest {
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
-        .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
+        .sourceDefinitionId(sourceDefinition2.getId())
         .name(sourceDefinition2.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
@@ -139,11 +139,11 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("getSourceDefinition should return the right source")
   void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId()))
         .thenReturn(sourceDefinition);
 
     final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
-        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(sourceDefinition.getId())
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
@@ -156,7 +156,7 @@ class SourceDefinitionsHandlerTest {
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
-        new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getId());
 
     final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
 
@@ -166,10 +166,10 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("createSourceDefinition should correctly create a sourceDefinition")
   void testCreateSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
-    final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
+    final ActorDefinition sourceDefinition = generateSourceDefinition();
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
-    when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
+    when(uuidSupplier.get()).thenReturn(sourceDefinition.getId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
@@ -189,7 +189,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(sourceDefinition.getId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.CUSTOM)
         .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
@@ -207,10 +207,10 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId())).thenReturn(sourceDefinition);
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId())).thenReturn(sourceDefinition);
     final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceDefinitionsHandler
-        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()));
+        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getId()));
     final String dockerRepository = sourceDefinition.getDockerRepository();
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
@@ -222,11 +222,11 @@ class SourceDefinitionsHandlerTest {
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
-    final StandardSourceDefinition updatedSource = Jsons.clone(this.sourceDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
+    final ActorDefinition updatedSource = Jsons.clone(this.sourceDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
 
     final SourceDefinitionRead sourceDefinitionRead = sourceDefinitionsHandler
         .updateSourceDefinition(
-            new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
+            new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
@@ -237,11 +237,11 @@ class SourceDefinitionsHandlerTest {
   @DisplayName("deleteSourceDefinition should correctly delete a sourceDefinition")
   void testDeleteSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
-        new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
-    final StandardSourceDefinition updatedSourceDefinition = Jsons.clone(this.sourceDefinition).withTombstone(true);
+        new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getId());
+    final ActorDefinition updatedSourceDefinition = Jsons.clone(this.sourceDefinition).withTombstone(true);
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getId()))
         .thenReturn(sourceDefinition);
     when(sourceHandler.listSourcesForSourceDefinition(sourceDefinitionIdRequestBody))
         .thenReturn(new SourceReadList().sources(Collections.singletonList(source)));
@@ -261,7 +261,7 @@ class SourceDefinitionsHandlerTest {
     @Test
     @DisplayName("should return the latest list")
     void testCorrect() throws IOException, InterruptedException {
-      final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
+      final ActorDefinition sourceDefinition = generateSourceDefinition();
       when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
 
       final var sourceDefinitionReadList = sourceDefinitionsHandler.listLatestSourceDefinitions().getSourceDefinitions();

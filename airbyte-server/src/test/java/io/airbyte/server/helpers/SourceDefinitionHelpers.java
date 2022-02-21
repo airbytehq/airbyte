@@ -4,14 +4,14 @@
 
 package io.airbyte.server.helpers;
 
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.ActorDefinition;
 import java.util.UUID;
 
 public class SourceDefinitionHelpers {
 
-  public static StandardSourceDefinition generateSourceDefinition() {
-    return new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+  public static ActorDefinition generateSourceDefinition() {
+    return new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withName("marketo")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")

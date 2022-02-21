@@ -17,8 +17,8 @@ import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -244,15 +244,15 @@ public class DestinationHandler {
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
     dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
-    final StandardDestinationDefinition standardDestinationDefinition =
+    final ActorDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return toDestinationRead(dci, standardDestinationDefinition);
   }
 
   protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
-                                                     final StandardDestinationDefinition standardDestinationDefinition) {
+                                                     final ActorDefinition standardDestinationDefinition) {
     return new DestinationRead()
-        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .destinationDefinitionId(standardDestinationDefinition.getId())
         .destinationId(destinationConnection.getDestinationId())
         .workspaceId(destinationConnection.getWorkspaceId())
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())

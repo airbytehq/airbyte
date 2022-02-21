@@ -14,13 +14,12 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -67,16 +66,16 @@ class JobNotifierTest {
   @Test
   void testFailJob() throws IOException, InterruptedException, JsonValidationException, ConfigNotFoundException {
     final Job job = createJob();
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+    final ActorDefinition sourceDefinition = new ActorDefinition()
         .withName("source-test")
         .withDockerRepository(TEST_DOCKER_REPO)
         .withDockerImageTag(TEST_DOCKER_TAG)
-        .withSourceDefinitionId(UUID.randomUUID());
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withId(UUID.randomUUID());
+    final ActorDefinition destinationDefinition = new ActorDefinition()
         .withName("destination-test")
         .withDockerRepository(TEST_DOCKER_REPO)
         .withDockerImageTag(TEST_DOCKER_TAG)
-        .withDestinationDefinitionId(UUID.randomUUID());
+        .withId(UUID.randomUUID());
     when(configRepository.getSourceDefinitionFromConnection(any())).thenReturn(sourceDefinition);
     when(configRepository.getDestinationDefinitionFromConnection(any())).thenReturn(destinationDefinition);
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
@@ -96,11 +95,11 @@ class JobNotifierTest {
 
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", UUID.fromString(job.getScope()));
-    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_source_definition_id", sourceDefinition.getId());
     metadata.put("connector_source", "source-test");
     metadata.put("connector_source_version", TEST_DOCKER_TAG);
     metadata.put("connector_source_docker_repository", sourceDefinition.getDockerRepository());
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put("connector_destination_definition_id", destinationDefinition.getId());
     metadata.put("connector_destination", "destination-test");
     metadata.put("connector_destination_version", TEST_DOCKER_TAG);
     metadata.put("connector_destination_docker_repository", destinationDefinition.getDockerRepository());

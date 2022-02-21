@@ -16,8 +16,8 @@ import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -203,7 +203,7 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
+    final ActorDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
     final ConnectorSpecification spec = sourceDef.getSpec();
     return buildSourceRead(sourceId, spec);
   }
@@ -212,7 +212,7 @@ public class SourceHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
-    final StandardSourceDefinition standardSourceDefinition = configRepository
+    final ActorDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
         sourceConnection.getConfiguration(), spec.getConnectionSpecification());
@@ -233,7 +233,7 @@ public class SourceHandler {
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
+    final ActorDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
     return sourceDef.getSpec();
   }
 
@@ -257,9 +257,9 @@ public class SourceHandler {
   }
 
   protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
-                                           final StandardSourceDefinition standardSourceDefinition) {
+                                           final ActorDefinition standardSourceDefinition) {
     return new SourceRead()
-        .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .sourceDefinitionId(standardSourceDefinition.getId())
         .sourceName(standardSourceDefinition.getName())
         .sourceId(sourceConnection.getSourceId())
         .workspaceId(sourceConnection.getWorkspaceId())

@@ -64,8 +64,8 @@ public class JobHistoryHandlerTest {
   private DestinationHandler destinationHandler;
   private SourceDefinitionsHandler sourceDefinitionsHandler;
   private DestinationDefinitionsHandler destinationDefinitionsHandler;
-  private StandardDestinationDefinition standardDestinationDefinition;
-  private StandardSourceDefinition standardSourceDefinition;
+  private ActorDefinition standardDestinationDefinition;
+  private ActorDefinition standardSourceDefinition;
   private AirbyteVersion airbyteVersion;
   private Job testJob;
   private Attempt testJobAttempt;

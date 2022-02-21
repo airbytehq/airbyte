@@ -5,9 +5,9 @@
 package io.airbyte.server.services;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
+import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,6 +16,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,13 @@ public class AirbyteGithubStore {
     this.timeout = timeout;
   }
 
-  public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
+  public List<ActorDefinition> getLatestDestinations() throws InterruptedException {
     try {
-      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+      // todo (cgardens) - remove migration shim
+      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH))
+          .stream()
+          .map(ActorDefinitionMigrationUtils::mapDestDefToActorDef)
+          .collect(Collectors.toList());
     } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
@@ -61,9 +66,13 @@ public class AirbyteGithubStore {
     }
   }
 
-  public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
+  public List<ActorDefinition> getLatestSources() throws InterruptedException {
     try {
-      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+      // todo (cgardens) - remove migration shim
+      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH))
+          .stream()
+          .map(ActorDefinitionMigrationUtils::mapSourceDefToActorDef)
+          .collect(Collectors.toList());
     } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",

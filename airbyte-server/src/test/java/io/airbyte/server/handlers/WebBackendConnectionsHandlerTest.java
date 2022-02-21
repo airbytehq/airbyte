@@ -56,10 +56,9 @@ import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -122,11 +121,11 @@ class WebBackendConnectionsHandlerTest {
         featureFlags,
         temporalWorkerRunFactory);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    final ActorDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    final ActorDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 

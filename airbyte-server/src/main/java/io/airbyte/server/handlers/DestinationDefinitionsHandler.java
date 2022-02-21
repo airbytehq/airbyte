@@ -16,9 +16,9 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -70,10 +70,10 @@ public class DestinationDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
+  static DestinationDefinitionRead buildDestinationDefinitionRead(final ActorDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
-          .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+          .destinationDefinitionId(standardDestinationDefinition.getId())
           .name(standardDestinationDefinition.getName())
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
@@ -87,14 +87,14 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  private static ReleaseStage getReleaseStage(final StandardDestinationDefinition standardDestinationDefinition) {
+  private static ReleaseStage getReleaseStage(final ActorDefinition standardDestinationDefinition) {
     if (standardDestinationDefinition.getReleaseStage() == null) {
       return null;
     }
     return ReleaseStage.fromValue(standardDestinationDefinition.getReleaseStage().value());
   }
 
-  private static LocalDate getReleaseDate(final StandardDestinationDefinition standardDestinationDefinition) {
+  private static LocalDate getReleaseDate(final ActorDefinition standardDestinationDefinition) {
     if (standardDestinationDefinition.getReleaseDate() == null || standardDestinationDefinition.getReleaseDate().isBlank()) {
       return null;
     }
@@ -106,7 +106,7 @@ public class DestinationDefinitionsHandler {
     return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
   }
 
-  private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
+  private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<ActorDefinition> defs) {
     final List<DestinationDefinitionRead> reads = defs.stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
@@ -117,7 +117,7 @@ public class DestinationDefinitionsHandler {
     return toDestinationDefinitionReadList(getLatestDestinations());
   }
 
-  private List<StandardDestinationDefinition> getLatestDestinations() {
+  private List<ActorDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
     } catch (final InterruptedException e) {
@@ -138,8 +138,8 @@ public class DestinationDefinitionsHandler {
         destinationDefCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(id)
+    final ActorDefinition destinationDefinition = new ActorDefinition()
+        .withId(id)
         .withDockerRepository(destinationDefCreate.getDockerRepository())
         .withDockerImageTag(destinationDefCreate.getDockerImageTag())
         .withDocumentationUrl(destinationDefCreate.getDocumentationUrl().toString())
@@ -157,7 +157,7 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardDestinationDefinition currentDestination = configRepository
+    final ActorDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
     // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
@@ -171,8 +171,8 @@ public class DestinationDefinitionsHandler {
         ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
         : currentDestination.getResourceRequirements();
 
-    final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
+    final ActorDefinition newDestination = new ActorDefinition()
+        .withId(currentDestination.getId())
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
@@ -194,7 +194,7 @@ public class DestinationDefinitionsHandler {
     // to connections that depend on any deleted
     // destinations. Delete destinations first in case a failure occurs mid-operation.
 
-    final StandardDestinationDefinition persistedDestinationDefinition =
+    final ActorDefinition persistedDestinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
 
     for (final DestinationRead destinationRead : destinationHandler.listDestinationsForDestinationDefinition(destinationDefinitionIdRequestBody)

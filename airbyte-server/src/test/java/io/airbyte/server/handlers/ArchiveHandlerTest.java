@@ -28,7 +28,6 @@ import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ActorDefinitionMigrationUtils;
@@ -275,8 +274,8 @@ public class ArchiveHandlerTest {
         .map(SourceConnection::getSourceId)
         .collect(Collectors.toList()).get(0);
 
-    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
+    final ActorDefinition standardSourceDefinition = new ActorDefinition()
+        .withId(UUID.randomUUID())
         .withSourceType(SourceType.API)
         .withName("random-source-1")
         .withDockerImageTag("tag-1")
@@ -290,7 +289,7 @@ public class ArchiveHandlerTest {
         .withWorkspaceId(secondWorkspaceId)
         .withSourceId(secondSourceId)
         .withName("Some new names")
-        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .withSourceDefinitionId(standardSourceDefinition.getId())
         .withTombstone(false)
         .withConfiguration(Jsons.emptyObject());
 

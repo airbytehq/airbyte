@@ -14,8 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
@@ -50,7 +49,7 @@ public class OAuthConfigSupplier {
   public JsonNode injectSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
       throws IOException {
     try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+      final ActorDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
       MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
           .ifPresent(sourceOAuthParameter -> {
             if (injectOAuthParameters(sourceDefinition.getName(), sourceDefinition.getSpec(), sourceOAuthParameter.getConfiguration(),
@@ -70,7 +69,7 @@ public class OAuthConfigSupplier {
                                                    final JsonNode destinationConnectorConfig)
       throws IOException {
     try {
-      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+      final ActorDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
       MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
           .ifPresent(destinationOAuthParameter -> {
             if (injectOAuthParameters(destinationDefinition.getName(), destinationDefinition.getSpec(), destinationOAuthParameter.getConfiguration(),

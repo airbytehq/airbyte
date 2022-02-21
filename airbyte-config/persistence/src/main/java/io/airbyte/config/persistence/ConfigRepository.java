@@ -20,8 +20,6 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
@@ -55,13 +53,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Query methods for the Config Db.
- *
- * Note: While migrating StandardSourceDefinition, StandardDestinationDefinition to ActorDefinition,
- * the public interface of this class operates on the old schema for now (StandardSourceDefinition,
- * StandardDestinationDefinition). ConfigPersistence, however, operates on the new schema
- * (ActorDefinition). Thus this class is responsible for handling the conversion. In a subsequent
- * PR, we will remove all usage of the old schema, and will then be able to remove all the shims.
- * There is one exception to this pattern. See: replaceAllConfigs.
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigRepository {
@@ -139,17 +130,16 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
-  public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
+  public ActorDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    // todo (cgardens) - remove migration shim.
-    return ActorDefinitionMigrationUtils.mapActorDefToSourceDef(persistence.getConfig(
+    return persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
-        ActorDefinition.class));
+        ActorDefinition.class);
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
+  public ActorDefinition getSourceDefinitionFromSource(final UUID sourceId) {
     try {
       final SourceConnection source = getSourceConnection(sourceId);
       return getStandardSourceDefinition(source.getSourceDefinitionId());
@@ -158,7 +148,7 @@ public class ConfigRepository {
     }
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromConnection(final UUID connectionId) {
+  public ActorDefinition getSourceDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getSourceDefinitionFromSource(sync.getSourceId());
@@ -177,21 +167,19 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
-    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+  public List<ActorDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<ActorDefinition> sourceDefinitions = new ArrayList<>();
     for (final ActorDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, ActorDefinition.class)) {
       if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
-        // todo (cgardens) - remove migration shim.
-        sourceDefinitions.add(ActorDefinitionMigrationUtils.mapActorDefToSourceDef(sourceDefinition));
+        sourceDefinitions.add(sourceDefinition);
       }
     }
 
     return sourceDefinitions;
   }
 
-  public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(),
-        ActorDefinitionMigrationUtils.mapSourceDefToActorDef(sourceDefinition));
+  public void writeStandardSourceDefinition(final ActorDefinition sourceDefinition) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getId().toString(), sourceDefinition);
   }
 
   public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
@@ -213,16 +201,15 @@ public class ConfigRepository {
         sourceDefinitionId);
   }
 
-  public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
+  public ActorDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    // todo (cgardens) - remove migration shim.
-    return ActorDefinitionMigrationUtils.mapActorDefToDestDef(persistence.getConfig(
+    return persistence.getConfig(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destinationDefinitionId.toString(),
-        ActorDefinition.class));
+        ActorDefinition.class);
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
+  public ActorDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
     try {
       final DestinationConnection destination = getDestinationConnection(destinationId);
       return getStandardDestinationDefinition(destination.getDestinationDefinitionId());
@@ -231,7 +218,7 @@ public class ConfigRepository {
     }
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromConnection(final UUID connectionId) {
+  public ActorDefinition getDestinationDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getDestinationDefinitionFromDestination(sync.getDestinationId());
@@ -240,28 +227,27 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+  public List<ActorDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
       throws JsonValidationException, IOException {
-    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+    final List<ActorDefinition> destinationDefinitions = new ArrayList<>();
 
     final List<ActorDefinition> destDefinitions = persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, ActorDefinition.class);
     for (final ActorDefinition destinationDefinition : destDefinitions) {
       if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
-        // todo (cgardens) - remove migration shim.
-        destinationDefinitions.add(ActorDefinitionMigrationUtils.mapActorDefToDestDef(destinationDefinition));
+        destinationDefinitions.add(destinationDefinition);
       }
     }
 
     return destinationDefinitions;
   }
 
-  public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
+  public void writeStandardDestinationDefinition(final ActorDefinition destinationDefinition)
       throws JsonValidationException, IOException {
     // todo (cgardens) - remove migration shim.
     persistence.writeConfig(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-        destinationDefinition.getDestinationDefinitionId().toString(),
-        ActorDefinitionMigrationUtils.mapDestDefToActorDef(destinationDefinition));
+        destinationDefinition.getId().toString(),
+        destinationDefinition);
   }
 
   public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
@@ -760,8 +746,6 @@ public class ConfigRepository {
     final var map = new HashMap<>(persistence.dumpConfigs());
     final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
     final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
-    final var sourceDefKey = ConfigSchema.STANDARD_SOURCE_DEFINITION.name();
-    final var destDefKey = ConfigSchema.STANDARD_DESTINATION_DEFINITION.name();
 
     if (map.containsKey(sourceKey)) {
       final Stream<JsonNode> augmentedValue = map.get(sourceKey).map(secretsHydrator::hydrate);
@@ -771,20 +755,6 @@ public class ConfigRepository {
     if (map.containsKey(destinationKey)) {
       final Stream<JsonNode> augmentedValue = map.get(destinationKey).map(secretsHydrator::hydrate);
       map.put(destinationKey, augmentedValue);
-    }
-
-    // todo (cgardens) - remove migration shim
-    if (map.containsKey(sourceDefKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(sourceDefKey)
-          .map(config -> Jsons.jsonNode(ActorDefinitionMigrationUtils.mapActorDefToSourceDef(Jsons.object(config, ActorDefinition.class))));
-      map.put(sourceDefKey, augmentedValue);
-    }
-
-    // todo (cgardens) - remove migration shim
-    if (map.containsKey(destDefKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(destDefKey)
-          .map(config -> Jsons.jsonNode(ActorDefinitionMigrationUtils.mapActorDefToDestDef(Jsons.object(config, ActorDefinition.class))));
-      map.put(destDefKey, augmentedValue);
     }
 
     return map;

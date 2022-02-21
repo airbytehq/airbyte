@@ -9,10 +9,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
@@ -56,8 +55,8 @@ public class JobNotifier {
   private void notifyJob(final String reason, final String action, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
     try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final ActorDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final ActorDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
       final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
       final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
       final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());

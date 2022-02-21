@@ -16,9 +16,9 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.ActorDefinition.ActorDefinitionReleaseStage;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -65,10 +65,10 @@ public class SourceDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static SourceDefinitionRead buildSourceDefinitionRead(final StandardSourceDefinition standardSourceDefinition) {
+  static SourceDefinitionRead buildSourceDefinitionRead(final ActorDefinition standardSourceDefinition) {
     try {
       return new SourceDefinitionRead()
-          .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+          .sourceDefinitionId(standardSourceDefinition.getId())
           .name(standardSourceDefinition.getName())
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
@@ -83,14 +83,14 @@ public class SourceDefinitionsHandler {
     }
   }
 
-  private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
+  private static ReleaseStage getReleaseStage(final ActorDefinition standardSourceDefinition) {
     if (standardSourceDefinition.getReleaseStage() == null) {
       return null;
     }
     return ReleaseStage.fromValue(standardSourceDefinition.getReleaseStage().value());
   }
 
-  private static LocalDate getReleaseDate(final StandardSourceDefinition standardSourceDefinition) {
+  private static LocalDate getReleaseDate(final ActorDefinition standardSourceDefinition) {
     if (standardSourceDefinition.getReleaseDate() == null || standardSourceDefinition.getReleaseDate().isBlank()) {
       return null;
     }
@@ -102,7 +102,7 @@ public class SourceDefinitionsHandler {
     return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
   }
 
-  private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
+  private static SourceDefinitionReadList toSourceDefinitionReadList(final List<ActorDefinition> defs) {
     final List<SourceDefinitionRead> reads = defs.stream()
         .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
         .collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class SourceDefinitionsHandler {
     return toSourceDefinitionReadList(getLatestSources());
   }
 
-  private List<StandardSourceDefinition> getLatestSources() {
+  private List<ActorDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
     } catch (final InterruptedException e) {
@@ -131,8 +131,8 @@ public class SourceDefinitionsHandler {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(id)
+    final ActorDefinition sourceDefinition = new ActorDefinition()
+        .withId(id)
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
@@ -150,8 +150,8 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSourceDefinition currentSourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
+    final ActorDefinition currentSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
 
     // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
     // to allow for easier iteration of dev images
@@ -164,8 +164,8 @@ public class SourceDefinitionsHandler {
         ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
         : currentSourceDefinition.getResourceRequirements();
 
-    final StandardSourceDefinition newSource = new StandardSourceDefinition()
-        .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
+    final ActorDefinition newSource = new ActorDefinition()
+        .withId(currentSourceDefinition.getId())
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
@@ -187,8 +187,8 @@ public class SourceDefinitionsHandler {
     // connections that depend on any deleted sources.
     // Delete sources first in case a failure occurs mid-operation.
 
-    final StandardSourceDefinition persistedSourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    final ActorDefinition persistedSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
 
     for (final SourceRead sourceRead : sourceHandler.listSourcesForSourceDefinition(sourceDefinitionIdRequestBody).getSources()) {
       sourceHandler.deleteSource(sourceRead);

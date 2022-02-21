@@ -5,8 +5,7 @@
 package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.*;
 import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
@@ -63,12 +62,8 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition) {
-    return create(sourceDefinition.getDockerRepository());
-  }
-
-  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition) {
-    return create(destinationDefinition.getDockerRepository());
+  public OAuthFlowImplementation create(final ActorDefinition actorDefinition) {
+    return create(actorDefinition.getDockerRepository());
   }
 
   private OAuthFlowImplementation create(final String imageName) {

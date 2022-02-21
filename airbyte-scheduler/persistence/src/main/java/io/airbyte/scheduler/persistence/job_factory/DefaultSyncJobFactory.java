@@ -7,10 +7,9 @@ package io.airbyte.scheduler.persistence.job_factory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ActorDefinition;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -50,9 +49,9 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           destinationConnection.getWorkspaceId(),
           destinationConnection.getConfiguration());
       destinationConnection.withConfiguration(destinationConfiguration);
-      final StandardSourceDefinition sourceDefinition = configRepository
+      final ActorDefinition sourceDefinition = configRepository
           .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-      final StandardDestinationDefinition destinationDefinition = configRepository
+      final ActorDefinition destinationDefinition = configRepository
           .getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
       final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
