@@ -5,9 +5,6 @@
     "id": {
       "type": ["null", "string"]
     },
-    "object": {
-      "type": ["null", "string"]
-    },
     "name": {
       "type": ["null", "string"]
     },
