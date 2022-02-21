@@ -5,26 +5,27 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 
 class Order(BaseModel):
-    account_number: str
-    order_number: str
-    item_number: str
-    serial_number: str
+    account_number: Annotated[str, Field(max_length=256)]
+    order_number: Annotated[str, Field(max_length=256)]
+    item_number: Annotated[str, Field(max_length=256)]
+    serial_number: Annotated[str, Field(max_length=256)]
     ship_date: Optional[date] = None
     quantity: Optional[int] = 0
-    customer_number: Optional[str] = None
-    description: Optional[str] = None
-    email: Optional[str] = None
-    country: Optional[str] = None
-    state_province: Optional[str] = None
-    city: Optional[str] = None
-    postal_code: Optional[str] = None
-    company: Optional[str] = None
-    attention: Optional[str] = None
-    carton_id: Optional[str] = None
-    order_type: Optional[str] = None
-    tracking_number: Optional[str] = None
+    customer_number: Annotated[Optional[str], Field(max_length=256)] = None
+    description: Annotated[Optional[str], Field(max_length=2048)] = None
+    email: Annotated[Optional[str], Field(max_length=256)] = None
+    country: Annotated[Optional[str], Field(max_length=256)] = None
+    state_province: Annotated[Optional[str], Field(max_length=256)] = None
+    city: Annotated[Optional[str], Field(max_length=256)] = None
+    postal_code: Annotated[Optional[str], Field(max_length=256)] = None
+    company: Annotated[Optional[str], Field(max_length=256)] = None
+    attention: Annotated[Optional[str], Field(max_length=1024)] = None
+    carton_id: Annotated[Optional[str], Field(max_length=256)] = None
+    order_type: Annotated[Optional[str], Field(max_length=256)] = None
+    tracking_number: Annotated[Optional[str], Field(max_length=256)] = None
     updated_at: datetime
