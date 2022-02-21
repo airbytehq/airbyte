@@ -24,10 +24,8 @@
       "type": "integer"
     },
     "last_event_time": {
-      "type": "string"
-    },
-    "emitted_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     }
   }
 }
