@@ -57,7 +57,7 @@ public class DogstatsdMetricSingleton {
    * @param amt to adjust.
    * @param tags
    */
-  public void count(final AirbyteMetric metric, final double amt, final String... tags) {
+  public void count(final AirbyteMetricsRegistry metric, final double amt, final String... tags) {
     if (instancePublish) {
       log.info("publishing count, name: {}, value: {}", metric.metricName, amt);
       statsDClient.count(metric.metricName, amt, tags);
@@ -71,7 +71,7 @@ public class DogstatsdMetricSingleton {
    * @param val to record.
    * @param tags
    */
-  public void gauge(final AirbyteMetric metric, final double val, final String... tags) {
+  public void gauge(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       log.info("publishing gauge, name: {}, value: {}", metric, val);
       statsDClient.gauge(metric.metricName, val, tags);
@@ -86,7 +86,7 @@ public class DogstatsdMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeLocal(final AirbyteMetric metric, final double val, final String... tags) {
+  public void recordTimeLocal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       log.info("recording histogram, name: {}, value: {}", metric.metricName, val);
       statsDClient.histogram(metric.metricName, val, tags);
@@ -100,7 +100,7 @@ public class DogstatsdMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeGlobal(final AirbyteMetric metric, final double val, final String... tags) {
+  public void recordTimeGlobal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       log.info("recording distribution, name: {}, value: {}", metric.metricName, val);
       statsDClient.distribution(metric.metricName, val, tags);
@@ -108,14 +108,14 @@ public class DogstatsdMetricSingleton {
   }
 
   /**
-   * Wrapper of {@link #recordTimeGlobal(AirbyteMetric, double, String...)} with a runnable for
-   * convenience.
+   * Wrapper of {@link #recordTimeGlobal(AirbyteMetricsRegistry, double, String...)} with a runnable
+   * for convenience.
    *
    * @param metric
    * @param runnable to time
    * @param tags
    */
-  public void recordTimeGlobal(final AirbyteMetric metric, final Runnable runnable, final String... tags) {
+  public void recordTimeGlobal(final AirbyteMetricsRegistry metric, final Runnable runnable, final String... tags) {
     final long start = System.currentTimeMillis();
     runnable.run();
     final long end = System.currentTimeMillis();
