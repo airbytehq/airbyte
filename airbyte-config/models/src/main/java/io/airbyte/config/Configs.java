@@ -8,8 +8,10 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -237,6 +239,30 @@ public interface Configs {
 
   // Jobs - Kube only
   /**
+   * Define the check job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerCpuRequest();
+
+  /**
+   * Define the check job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerCpuLimit();
+
+  /**
+   * Define the job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerMemoryRequest();
+
+  /**
+   * Define the job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerMemoryLimit();
+
+  /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
    * contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
    */
@@ -245,7 +271,22 @@ public interface Configs {
   /**
    * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
    */
-  Map<String, String> getJobKubeNodeSelectors();
+  Optional<Map<String, String>> getJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+
+  /**
+   * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
 
   /**
    * Define the Job pod connector image pull policy.
@@ -277,12 +318,52 @@ public interface Configs {
    */
   String getJobKubeNamespace();
 
+  /**
+   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDefaultWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "get spec" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getSpecWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "check connection" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getCheckWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "discover" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDiscoverWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "replication" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getReplicationWorkerStatusCheckInterval();
+
   // Logging/Monitoring/Tracking
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
    * involved here. Please see {@link CloudStorageConfigs} for more info.
    */
   LogConfigs getLogConfigs();
+
+  /**
+   * Defines the optional Google application credentials used for logging.
+   */
+  String getGoogleApplicationCredentials();
 
   /**
    * Define either S3, Minio or GCS as a state storage backend. Multiple variables are involved here.
@@ -328,9 +409,60 @@ public interface Configs {
 
   // Container Orchestrator
   /**
-   * Define if Airbyte should use Scheduler V2. Internal-use only.
+   * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
   boolean getContainerOrchestratorEnabled();
+
+  /**
+   * Get the name of the container orchestrator secret. Internal-use only.
+   */
+  String getContainerOrchestratorSecretName();
+
+  /**
+   * Get the mount path for a secret that should be loaded onto container orchestrator pods.
+   * Internal-use only.
+   */
+  String getContainerOrchestratorSecretMountPath();
+
+  /**
+   * Define the image to use for the container orchestrator. Defaults to the Airbyte version.
+   */
+  String getContainerOrchestratorImage();
+
+  /**
+   * Define the replication orchestrator's minimum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuRequest();
+
+  /**
+   * Define the replication orchestrator's maximum CPU usage. Defaults to none.
+   */
+  String getReplicationOrchestratorCpuLimit();
+
+  /**
+   * Define the replication orchestrator's minimum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryRequest();
+
+  /**
+   * Define the replication orchestrator's maximum RAM usage. Defaults to none.
+   */
+  String getReplicationOrchestratorMemoryLimit();
+
+  /**
+   * Get the longest duration of non long running activity
+   */
+  int getMaxActivityTimeoutSecond();
+
+  /**
+   * Get the duration in second between 2 activity attempts
+   */
+  int getDelayBetweenActivityAttempts();
+
+  /**
+   * Get number of attempts of the non long running activities
+   */
+  int getActivityNumberOfAttempt();
 
   enum TrackingStrategy {
     SEGMENT,

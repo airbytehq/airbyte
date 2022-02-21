@@ -12,12 +12,47 @@ import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from deprecated.classic import deprecated
 
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
     module: Any = inspect.getmodule(cls)
     return module.__name__.split(".")[0]
+
+
+class IncrementalMixin(ABC):
+    """Mixin to make stream incremental.
+
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
+
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
+    """
+
+    @property
+    @abstractmethod
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
 
 
 class Stream(ABC):
@@ -136,9 +171,9 @@ class Stream(ABC):
         """
         return None
 
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """
-        Override to extract state from the latest record. Needed to implement incremental sync.
+        """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
 

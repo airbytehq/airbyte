@@ -20,6 +20,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
@@ -30,7 +31,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,7 @@ public class DefaultJobCreatorTest {
   private JobPersistence jobPersistence;
   private ConfigRepository configRepository;
   private JobCreator jobCreator;
+  private ResourceRequirements workerResourceRequirements;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -84,7 +86,7 @@ public class DefaultJobCreatorTest {
         .withTombstone(false);
 
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
@@ -114,7 +116,12 @@ public class DefaultJobCreatorTest {
   void setup() {
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    jobCreator = new DefaultJobCreator(jobPersistence, configRepository);
+    workerResourceRequirements = new ResourceRequirements()
+        .withCpuLimit("0.2")
+        .withCpuRequest("0.2")
+        .withMemoryLimit("200Mi")
+        .withMemoryRequest("200Mi");
+    jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
   }
 
   @Test
@@ -128,7 +135,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -158,7 +166,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -192,7 +201,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -225,7 +235,8 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

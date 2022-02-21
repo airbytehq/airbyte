@@ -25,7 +25,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -96,8 +96,8 @@ public class PulsarRecordConsumerTest {
         CatalogHelpers.createConfiguredAirbyteStream(
             streamName,
             namespace,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))));
     final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, catalog, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
@@ -169,13 +169,13 @@ public class PulsarRecordConsumerTest {
     private final ConfiguredAirbyteStream stream1 = CatalogHelpers.createConfiguredAirbyteStream(
         SCHEMA_NAME1,
         STREAM_NAME1,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
     private final ConfiguredAirbyteStream stream2 = CatalogHelpers.createConfiguredAirbyteStream(
         SCHEMA_NAME2,
         STREAM_NAME2,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {

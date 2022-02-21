@@ -59,6 +59,16 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Username**
 * **Password**
 * **Database**
+* **jdbc_url_params** (Optional)
+
+### Default JDBC URL Parameters
+
+The following JDBC URL parameters are set by Airbyte and cannot be overridden by the `jdbc_url_params` field:
+
+* `useSSL=true` (unless `ssl` is set to false)
+* `requireSSL=true` (unless `ssl` is set to false)
+* `verifyServerCertificate=false` (unless `ssl` is set to false)
+* `zeroDateTimeBehavior=convertToNull`
 
 ## Known Limitations
 
@@ -95,8 +105,10 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.17  | 2022-02-16 | [10362](https://github.com/airbytehq/airbyte/pull/10362) | Add jdbc_url_params support for optional JDBC parameters |
+| 0.1.16  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.15  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
-| 0.1.14  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
+| 0.1.14  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.1.13  | 2021-09-28 | [\#6506](https://github.com/airbytehq/airbyte/pull/6506) | Added support for MySQL destination via TLS/SSL |
 | 0.1.12  | 2021-09-24 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | Added option to connect to DB via SSH |
 | 0.1.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
@@ -115,6 +127,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request                                             | Subject |
 |:--------| :---  |:---------------------------------------------------------| :--- |
+| 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
-| 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
+| 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.1.0   | 06.10.2021 | [\#6763](https://github.com/airbytehq/airbyte/pull/6763) | Added destination-mysql-strict-encrypt that supports SSL connections only. |

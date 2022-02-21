@@ -44,3 +44,13 @@ export enum NormalizationType {
   BASIC = "basic",
   RAW = "raw",
 }
+
+export const isDbtTransformation = (op: Operation): op is Transformation => {
+  return op.operatorConfiguration.operatorType === OperatorType.Dbt;
+};
+
+export const isNormalizationTransformation = (
+  op: Operation
+): op is Normalization => {
+  return op.operatorConfiguration.operatorType === OperatorType.Normalization;
+};

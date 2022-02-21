@@ -65,9 +65,10 @@ class SourceZendeskSupportStream(HttpStream, ABC):
 
         retry_after = int(response.headers.get("Retry-After", 0))
         if retry_after and retry_after > 0:
+            self.logger.info(f"The rate limit of requests is exceeded. Waiting for {retry_after} seconds.")
             return int(retry_after)
 
-        # the header X-Rate-Limit returns a amount of requests per minute
+        # the header X-Rate-Limit returns an amount of requests per minute
         # we try to wait twice as long
         rate_limit = float(response.headers.get("X-Rate-Limit", 0))
         if rate_limit and rate_limit > 0:

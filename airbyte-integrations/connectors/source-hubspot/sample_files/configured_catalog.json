@@ -92,6 +92,66 @@
     },
     {
       "stream": {
+        "name": "engagements_calls",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_meetings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_notes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_tasks",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "feedback_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

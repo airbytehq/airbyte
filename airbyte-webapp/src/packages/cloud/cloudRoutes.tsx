@@ -149,7 +149,7 @@ const MainViewRoutes = () => {
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
   const config = useConfig();
-  useFullStory(config.fullstory, config.fullstory.enabled);
+  useFullStory(config.fullstory, config.fullstory.enabled, user);
 
   const analyticsContext = useMemo(
     () =>
