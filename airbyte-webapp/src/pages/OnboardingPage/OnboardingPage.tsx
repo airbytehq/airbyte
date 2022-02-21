@@ -156,7 +156,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={sourceDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          // source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
     }
@@ -201,9 +200,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          // destination={
-          //   destinations.length && !successRequest ? destinations[0] : undefined
-          // }
         />
       );
     }
@@ -243,6 +239,7 @@ const OnboardingPage: React.FC = () => {
         <StepsCounter steps={steps} currentStep={currentStep} />
 
         <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
             {currentStep === StepType.FINAl ? (
