@@ -10,7 +10,7 @@ from typing import List, Optional
 import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveInt
 
 logger = logging.getLogger("airbyte")
 
@@ -23,11 +23,52 @@ ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdow
 class InsightConfig(BaseModel):
     """Config for custom insights"""
 
-    name: str = Field(description="The name value of insight")
-    fields: Optional[List[ValidFields]] = Field(description="A list of chosen fields for fields parameter", default=[])
-    breakdowns: Optional[List[ValidBreakdowns]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
+    name: str = Field(
+        title="Name",
+        description="The name value of insight",
+    )
+
+    fields: Optional[List[ValidFields]] = Field(
+        title="Fields",
+        description="A list of chosen fields for fields parameter",
+        default=[],
+    )
+
+    breakdowns: Optional[List[ValidBreakdowns]] = Field(
+        title="Breakdowns",
+        description="A list of chosen breakdowns for breakdowns",
+        default=[],
+    )
+
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
-        description="A list of chosen action_breakdowns for action_breakdowns", default=[]
+        title="Action Breakdowns",
+        description="A list of chosen action_breakdowns for action_breakdowns",
+        default=[],
+    )
+
+    time_increment: Optional[PositiveInt] = Field(
+        title="Time Increment",
+        description="Time window in days to get statistic from.",
+        le=90,
+        default=1,
+    )
+
+    start_date: Optional[datetime] = Field(
+        title="Start Date",
+        description="The date from which you'd like to replicate data, in the format YYYY-MM-DDT00:00:00Z.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-25T00:00:00Z"],
+    )
+
+    end_date: Optional[datetime] = Field(
+        title="End Date",
+        description=(
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
+            "All data generated between start_date and this date will be replicated. "
+            "Not setting this option will result in always syncing the latest data."
+        ),
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-26T00:00:00Z"],
     )
 
 
