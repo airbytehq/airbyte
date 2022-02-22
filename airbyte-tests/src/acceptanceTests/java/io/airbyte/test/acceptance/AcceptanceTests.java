@@ -307,7 +307,7 @@ public class AcceptanceTests {
     LOGGER.info("millisToSleep = " + millisToSleep);
 
     LOGGER.info("Scaling down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
     Thread.sleep(1000);
 
     LOGGER.info("Scaling up workers...");
