@@ -1,4 +1,5 @@
 {
   "ticker": "GEO.MI",
-  "interval": "1d"
+  "interval": "5m",
+  "range": "1d"
 }

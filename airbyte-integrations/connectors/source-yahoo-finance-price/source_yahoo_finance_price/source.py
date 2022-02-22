@@ -17,8 +17,8 @@ class Price(HttpStream, ABC):
     """
     Queries the Yahoo Finance API for the price history of the given stock.
     The length of the price history is determined by the interval parameter:
-    - 1m to 90m: 7 days of data
-    - 1h to 3mo: 730 days of data
+    - 1m to 90m: up to 7 days of data
+    - 1h to 3mo: up to 730 days of data
 
     Based on the documentation found at https://stackoverflow.com/questions/44030983/yahoo-finance-url-not-working.
     """
@@ -66,7 +66,7 @@ class Price(HttpStream, ABC):
         return {**base_headers, **headers}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
+        return [response.json()]
 
 # Basic incremental stream
 class IncrementalPriceStream(Price, ABC):
@@ -109,7 +109,7 @@ class SourceYahooFinancePrice(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {
             "ticker": config["ticker"],
-            "interval": config["interval"],
-            "range": config["range"]
+            "interval": config.get("interval", "7d"),
+            "range": config.get("range", "1m")
         }
         return [Price(**args)]
