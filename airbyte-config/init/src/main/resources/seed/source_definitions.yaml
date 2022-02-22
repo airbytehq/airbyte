@@ -160,7 +160,7 @@
   sourceType: api
 - name: Customer.io
   sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
-  dockerRepository: faros-ai/airbyte-customer-io-source
+  dockerRepository: farosai/airbyte-customer-io-source
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/customer-io
   icon: customer-io.svg
