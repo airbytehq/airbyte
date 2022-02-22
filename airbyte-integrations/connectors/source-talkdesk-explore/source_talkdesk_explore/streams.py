@@ -2,6 +2,7 @@ from typing import Optional, Mapping, MutableMapping, Any, Iterable
 import requests
 from datetime import datetime
 from abc import abstractmethod
+import json
 
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.models import SyncMode
@@ -133,7 +134,10 @@ class ReadReportStream(HttpStream):
                 else:
                     return False
             except KeyError:
-                # Response in different format.
+                # Report failures
+                if response.status_code in [400, 401, 403]:
+                    logger.error(f"Report returned an invalid response: {json.dumps(response_obj)}")
+                    raise ValueError("Requested report is in invalid/failed state.")
                 # TODO: implement handling of other response types here.
                 return False
 
