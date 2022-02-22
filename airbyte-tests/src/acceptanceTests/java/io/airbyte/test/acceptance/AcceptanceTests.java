@@ -88,9 +88,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -280,12 +280,12 @@ public class AcceptanceTests {
   }
 
   // todo: test with both types of workers getting scaled down, just one of each
-  @Test
+  @ParameterizedTest
   @Order(-1800000)
-  @ValueSource(strings = {"KILL_BOTH_SAME_TIME", "KILL_SYNC_FIRST", "KILL_NON_SYNC_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC"})
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
-  public void testDowntimeDuringSync(String type) throws Exception {
+  @ValueSource(strings = {"KILL_BOTH_SAME_TIME", "KILL_SYNC_FIRST", "KILL_NON_SYNC_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC"})
+  public void testDowntimeDuringSync(String input) throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -307,7 +307,7 @@ public class AcceptanceTests {
     // todo: ideally this waits a couple seconds after the orchestrator pod starts
     Thread.sleep(10000);
 
-    switch (type) {
+    switch (input) {
       case "KILL_BOTH_SAME_TIME" -> {
         LOGGER.info("Scaling down both workers at roughly the same time...");
         kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
