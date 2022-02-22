@@ -23,8 +23,7 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
                            final IntegrationLauncherConfig destinationLauncherConfig,
                            final JobRunConfig jobRunConfig,
                            final WorkerConfigs workerConfigs,
-                           final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                           final String airbyteVersion) {
+                           final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig) {
     super(
         connectionId,
         DBT,
@@ -33,7 +32,6 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
         Map.of(
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        airbyteVersion,
         workerConfigs.getResourceRequirements(),
         Void.class);
   }

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
+import { setIn } from "formik";
 
 import {
   AirbyteStreamConfiguration,
@@ -11,7 +12,8 @@ import {
 } from "core/domain/catalog";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import {
-  Normalization,
+  isDbtTransformation,
+  isNormalizationTransformation,
   NormalizationType,
   Operation,
   OperatorType,
@@ -20,7 +22,10 @@ import {
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import {
+  ConnectionNamespaceDefinition,
+  ConnectionSchedule,
+} from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
@@ -29,7 +34,7 @@ type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
-  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceDefinition?: ConnectionNamespaceDefinition;
   namespaceFormat: string;
   transformations?: Transformation[];
   normalization?: NormalizationType;
@@ -88,44 +93,53 @@ const connectionValidationSchema = yup
           id: yup
             .string()
             // This is required to get rid of id fields we are using to detect stream for edition
-            .when(
-              "$isRequest",
-              (isRequest: boolean, schema: yup.StringSchema) =>
-                isRequest ? schema.strip(true) : schema
-            ),
+            .strip(true),
           stream: yup.object(),
-          // @ts-ignore
-          config: yup.object().test({
-            name: "connectionSchema.config.validator",
-            // eslint-disable-next-line no-template-curly-in-string
-            message: "${path} is wrong",
-            test: function (value: AirbyteStreamConfiguration) {
-              if (!value.selected) {
-                return true;
-              }
-              if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
-                if (value.primaryKey.length === 0) {
-                  return this.createError({
-                    message: "connectionForm.primaryKey.required",
-                    path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                  });
+          config: yup
+            .object({
+              selected: yup.boolean(),
+              syncMode: yup.string(),
+              destinationSyncMode: yup.string(),
+              primaryKey: yup.array().of(yup.array().of(yup.string())),
+              cursorField: yup.array().of(yup.string()).defined(),
+            })
+            .test({
+              name: "connectionSchema.config.validator",
+              // eslint-disable-next-line no-template-curly-in-string
+              message: "${path} is wrong",
+              test: function (value) {
+                if (!value.selected) {
+                  return true;
                 }
-              }
-
-              if (SyncMode.Incremental === value.syncMode) {
                 if (
-                  !this.parent.stream.sourceDefinedCursor &&
-                  value.cursorField.length === 0
+                  DestinationSyncMode.Dedupted === value.destinationSyncMode
                 ) {
-                  return this.createError({
-                    message: "connectionForm.cursorField.required",
-                    path: `schema.streams[${this.parent.id}].config.cursorField`,
-                  });
+                  // it's possible that primaryKey array is always present
+                  // however yup couldn't determine type correctly even with .required() call
+                  if (value.primaryKey?.length === 0) {
+                    return this.createError({
+                      message: "connectionForm.primaryKey.required",
+                      path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                    });
+                  }
                 }
-              }
-              return true;
-            },
-          }),
+
+                if (SyncMode.Incremental === value.syncMode) {
+                  if (
+                    !this.parent.stream.sourceDefinedCursor &&
+                    // it's possible that cursorField array is always present
+                    // however yup couldn't determine type correctly even with .required() call
+                    value.cursorField?.length === 0
+                  ) {
+                    return this.createError({
+                      message: "connectionForm.cursorField.required",
+                      path: `schema.streams[${this.parent.id}].config.cursorField`,
+                    });
+                  }
+                }
+                return true;
+              },
+            }),
         })
       ),
     }),
@@ -156,8 +170,7 @@ function mapFormPropsToOperation(
   if (values.normalization) {
     if (values.normalization !== NormalizationType.RAW) {
       const normalizationOperation = initialOperations.find(
-        (op) =>
-          op.operatorConfiguration.operatorType === OperatorType.Normalization
+        isNormalizationTransformation
       );
 
       if (normalizationOperation) {
@@ -191,47 +204,37 @@ function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   return streamNode.config.cursorField;
 }
 
-// If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-// Otherwise it supports whatever sync modes are present.
 const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-        const streamNode: SyncSchemaStream = { ...apiNode, id: id.toString() };
-        const node = !streamNode.stream.supportedSyncModes?.length
-          ? {
-              ...streamNode,
-              stream: {
-                ...streamNode.stream,
-                supportedSyncModes: [SyncMode.FullRefresh],
-              },
-            }
-          : streamNode;
+        const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+
+        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
+        // Otherwise, it supports whatever sync modes are present.
+        const streamNode = nodeWithId.stream.supportedSyncModes?.length
+          ? nodeWithId
+          : setIn(nodeWithId, "stream.supportedSyncModes", [
+              SyncMode.FullRefresh,
+            ]);
 
         // If syncMode isn't null - don't change item
-        if (node.config.syncMode) {
-          return node;
+        if (streamNode.config.syncMode) {
+          return streamNode;
         }
 
-        const updateStream = (
+        const updateStreamConfig = (
           config: Partial<AirbyteStreamConfiguration>
         ): SyncSchemaStream => ({
-          ...node,
-          config: { ...node.config, ...config },
+          ...streamNode,
+          config: { ...streamNode.config, ...config },
         });
 
-        const supportedSyncModes = node.stream.supportedSyncModes;
+        const supportedSyncModes = streamNode.stream.supportedSyncModes;
 
-        // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
-        if (supportedSyncModes.includes(SyncMode.FullRefresh)) {
-          return updateStream({
-            syncMode: SyncMode.FullRefresh,
-          });
-        }
-
-        // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
+        // Prefer INCREMENTAL sync mode over other sync modes
         if (supportedSyncModes.includes(SyncMode.Incremental)) {
-          return updateStream({
+          return updateStreamConfig({
             cursorField: streamNode.config.cursorField.length
               ? streamNode.config.cursorField
               : getDefaultCursorField(streamNode),
@@ -240,13 +243,31 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
         }
 
         // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-        return updateStream({
+        return updateStreamConfig({
           syncMode: streamNode.stream.supportedSyncModes[0],
         });
       }),
     }),
     [schema.streams]
   );
+
+const getInitialTransformations = (operations: Operation[]): Transformation[] =>
+  operations.filter(isDbtTransformation);
+
+const getInitialNormalization = (
+  operations: Operation[],
+  isEditMode?: boolean
+): NormalizationType => {
+  let initialNormalization = operations.find(isNormalizationTransformation)
+    ?.operatorConfiguration?.normalization?.option;
+
+  // If no normalization was selected for already present normalization -> select Raw one
+  if (!initialNormalization && isEditMode) {
+    initialNormalization = NormalizationType.RAW;
+  }
+
+  return initialNormalization ?? NormalizationType.BASIC;
+};
 
 const useInitialValues = (
   connection:
@@ -255,49 +276,40 @@ const useInitialValues = (
         Pick<Connection, "syncCatalog" | "source" | "destination">),
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
-) => {
+): FormikConnectionFormValues => {
   const initialSchema = useInitialSchema(connection.syncCatalog);
 
-  return useMemo<FormikConnectionFormValues>(() => {
+  return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      schedule: connection.schedule,
+      schedule: connection.schedule ?? {
+        units: 24,
+        timeUnit: ConnectionSchedule.Hours,
+      },
       prefix: connection.prefix || "",
-      namespaceDefinition:
-        connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
-      // eslint-disable-next-line no-template-curly-in-string
+      namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
-    const { operations = [] } = connection;
+    const operations = connection.operations ?? [];
 
     if (destDefinition.supportsDbt) {
-      initialValues.transformations =
-        (operations.filter(
-          (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-        ) as Transformation[]) ?? [];
+      initialValues.transformations = getInitialTransformations(operations);
     }
 
     if (destDefinition.supportsNormalization) {
-      let initialNormalization = (operations.find(
-        (op) =>
-          op.operatorConfiguration.operatorType === OperatorType.Normalization
-      ) as Normalization)?.operatorConfiguration?.normalization?.option;
-
-      // If no normalization was selected for already present normalization -> Raw is select
-      if (!initialNormalization && isEditMode) {
-        initialNormalization = NormalizationType.RAW;
-      }
-
-      initialValues.normalization =
-        initialNormalization ?? NormalizationType.BASIC;
+      initialValues.normalization = getInitialNormalization(
+        operations,
+        isEditMode
+      );
     }
 
     return initialValues;
   }, [initialSchema, connection, isEditMode, destDefinition]);
 };
+
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return useMemo(
     () =>
@@ -327,4 +339,6 @@ export {
   mapFormPropsToOperation,
   SUPPORTED_MODES,
   useDefaultTransformation,
+  getInitialNormalization,
+  getInitialTransformations,
 };

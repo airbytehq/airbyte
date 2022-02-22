@@ -18,7 +18,7 @@ description: >-
 
 There are two flavors of connectors for this destination:
 
-1. Bigquery: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured. 
+1. Bigquery: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured.
 2. `Bigquery (Denormalized)`: Instead of splitting the final data into multiple tables, this destination leverages BigQuery capabilities with [Structured and Repeated fields](https://cloud.google.com/bigquery/docs/nested-repeated) to produce a single "big" table per stream. This does not write the `_airbyte_raw_*` tables in the destination and normalization from this connector is not supported at this time.
 
 ## Troubleshooting
@@ -104,7 +104,7 @@ Once you've configured BigQuery as a destination, delete the Service Account Key
 
 There are 2 available options to upload data to BigQuery `Standard` and `GCS Staging`.
 
-### `GCS Staging` 
+### `GCS Staging`
 
 This is the recommended configuration for uploading data to BigQuery. It works by first uploading all the data to a [GCS](https://cloud.google.com/storage) bucket, then ingesting the data to BigQuery. To configure GCS Staging, you'll need the following parameters:
 * **GCS Bucket Name**
@@ -128,7 +128,7 @@ This is the recommended configuration for uploading data to BigQuery. It works b
   * Corresponding key to the above access ID.
 * Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
-### `Standard` uploads 
+### `Standard` uploads
 This uploads data directly from your source to BigQuery. While this is faster to setup initially, **we strongly recommend that you do not use this option for anything other than a quick demo**. It is more than 10x slower than the GCS uploading option and will fail for many datasets. Please be aware you may see some failures for big datasets and slow sources, e.g. if reading from source takes more than 10-12 hours. This is caused by the Google BigQuery SDK client limitations. For more details please check [https://github.com/airbytehq/airbyte/issues/3549](https://github.com/airbytehq/airbyte/issues/3549)
 
 ## Naming Conventions
@@ -153,6 +153,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.6.8 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
 | 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields |
@@ -176,6 +177,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.2.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.2.7   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
 | 0.2.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 0.2.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields |

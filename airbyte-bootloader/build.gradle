@@ -23,7 +23,7 @@ dependencies {
 application {
     applicationName = "airbyte-bootloader"
     mainClass = 'io.airbyte.bootloader.BootloaderApp'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 // Publish this so Airbyte Cloud can consume and extend the classes within this jar.

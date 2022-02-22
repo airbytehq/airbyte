@@ -20,6 +20,7 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +52,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final JobRunConfig jobRunConfig;
   private final Map<String, String> additionalFileMap;
   private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
-  private final String airbyteVersion;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
 
@@ -63,7 +64,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final JobRunConfig jobRunConfig,
                         final Map<String, String> additionalFileMap,
                         final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                        final String airbyteVersion,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass) {
     this.connectionId = connectionId;
@@ -72,14 +72,15 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.jobRunConfig = jobRunConfig;
     this.additionalFileMap = additionalFileMap;
     this.containerOrchestratorConfig = containerOrchestratorConfig;
-    this.airbyteVersion = airbyteVersion;
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
   }
 
   @Override
   public OUTPUT run(INPUT input, Path jobRoot) throws WorkerException {
-    return TemporalUtils.withBackgroundHeartbeat(() -> {
+    final AtomicBoolean isCanceled = new AtomicBoolean(false);
+    final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
+    return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
@@ -104,24 +105,44 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             Math.toIntExact(jobRunConfig.getAttemptId()),
             Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()));
 
-        killRunningPodsForConnection();
-
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
+
         final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
 
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
-            containerOrchestratorConfig.kubernetesClient());
+            containerOrchestratorConfig.kubernetesClient(),
+            containerOrchestratorConfig.secretName(),
+            containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.googleApplicationCredentials());
 
+        cancellationCallback.set(() -> {
+          // When cancelled, try to set to true.
+          // Only proceed if value was previously false, so we only have one cancellation going. at a time
+          if (!isCanceled.getAndSet(true)) {
+            log.info("Trying to cancel async pod process.");
+            process.destroy();
+          }
+        });
+
+        // only kill running pods and create process if it is not already running.
         if (process.getDocStoreStatus().equals(AsyncKubePodStatus.NOT_STARTED)) {
-          process.create(
-              airbyteVersion,
-              allLabels,
-              resourceRequirements,
-              fileMap,
-              portMap);
+          log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
+          killRunningPodsForConnection();
+
+          try {
+            process.create(
+                allLabels,
+                resourceRequirements,
+                fileMap,
+                portMap);
+          } catch (KubernetesClientException e) {
+            throw new WorkerException(
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+          }
         }
 
         // this waitFor can resume if the activity is re-run
@@ -137,11 +158,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var output = process.getOutput();
 
-        if (output.isPresent()) {
-          return Jsons.deserialize(output.get(), outputClass);
-        } else {
-          throw new WorkerException("Running the " + application + " launcher resulted in no readable output!");
-        }
+        return output.map(s -> Jsons.deserialize(s, outputClass)).orElse(null);
       } catch (Exception e) {
         if (cancelled.get()) {
           try {

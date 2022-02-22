@@ -1,4 +1,5 @@
 import Status from "core/statuses";
+import { SourceDefinition, DestinationDefinition } from "core/domain/connector";
 
 export interface JobMeta {
   id: number | string;
@@ -14,6 +15,42 @@ export interface Logs {
   logLines: string[];
 }
 
+enum FailureOrigin {
+  SOURCE = "source",
+  DESTINATION = "destination",
+  REPLICATION = "replication",
+  PERSISTENCE = "persistence",
+  NORMALIZATION = "normalization",
+  DBT = "dbt",
+}
+
+enum FailureType {
+  CONFIG_ERROR = "config_error",
+  SYSTEM_ERROR = "system_error",
+  MANUAL_CANCELLATION = "manual_cancellation",
+}
+
+export interface Failure {
+  failureOrigin?: FailureOrigin;
+  failureType?: FailureType;
+  externalMessage?: string;
+  stacktrace?: string;
+  retryable?: boolean;
+  timestamp: number;
+}
+
+export interface FailedSummary {
+  failures: Failure[];
+  partialSuccess?: boolean;
+}
+
+export interface TotalStats {
+  recordsEmitted: number;
+  bytesEmitted: number;
+  stateMessagesEmitted: number;
+  recordsCommitted: number;
+}
+
 export interface Attempt {
   id: number;
   status: string;
@@ -22,6 +59,8 @@ export interface Attempt {
   endedAt: number;
   bytesSynced: number;
   recordsSynced: number;
+  totalStats?: TotalStats;
+  failureSummary?: FailedSummary;
 }
 
 export interface AttemptInfo {
@@ -35,6 +74,21 @@ export interface JobInfo extends JobMeta {
 
 export interface JobDetails {
   job: JobMeta;
+  attempts: AttemptInfo[];
+}
+
+export interface JobDebugInfoMeta {
+  airbyteVersion: string;
+  id: number;
+  configType: string;
+  configId: string;
+  status: Status | null;
+  sourceDefinition: SourceDefinition;
+  destinationDefinition: DestinationDefinition;
+}
+
+export interface JobDebugInfoDetails {
+  job: JobDebugInfoMeta;
   attempts: AttemptInfo[];
 }
 

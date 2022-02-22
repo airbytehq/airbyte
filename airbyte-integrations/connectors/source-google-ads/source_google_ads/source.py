@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
@@ -45,8 +46,21 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_account_info(google_api) -> dict:
-        return next(Accounts(api=google_api).read_records(sync_mode=None), {})
+    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], tz: Union[timezone, str] = "local"):
+        incremental_stream_config = dict(
+            api=google_api,
+            conversion_window_days=config["conversion_window_days"],
+            start_date=config["start_date"],
+            time_zone=tz,
+            end_date=config.get("end_date"),
+        )
+        return incremental_stream_config
+
+    def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> dict:
+        incremental_stream_config = self.get_incremental_stream_config(google_api, config)
+        accounts_streams = Accounts(**incremental_stream_config)
+        for stream_slice in accounts_streams.stream_slices(sync_mode=SyncMode.full_refresh):
+            return next(accounts_streams.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), {})
 
     @staticmethod
     def get_time_zone(account: dict) -> Union[timezone, str]:
@@ -71,7 +85,7 @@ class SourceGoogleAds(AbstractSource):
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
-            account_info = self.get_account_info(google_api)
+            account_info = self.get_account_info(google_api, config)
             is_manager_account = self.is_manager_account(account_info)
 
             # Check custom query request validity by sending metric request with non-existant time window
@@ -84,29 +98,23 @@ class SourceGoogleAds(AbstractSource):
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
 
                 req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                google_api.send_request(req_q)
+                for customer_id in google_api.customer_ids:
+                    google_api.send_request(req_q, customer_id=customer_id)
             return True, None
         except GoogleAdsException as error:
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
-        account_info = self.get_account_info(google_api)
+        account_info = self.get_account_info(google_api, config)
         time_zone = self.get_time_zone(account_info)
-        end_date = config.get("end_date")
-        incremental_stream_config = dict(
-            api=google_api,
-            conversion_window_days=config["conversion_window_days"],
-            start_date=config["start_date"],
-            time_zone=time_zone,
-            end_date=end_date,
-        )
+        incremental_stream_config = self.get_incremental_stream_config(google_api, config, tz=time_zone)
 
         streams = [
-            AdGroupAds(api=google_api),
-            AdGroups(api=google_api),
-            Accounts(api=google_api),
-            Campaigns(api=google_api),
+            AdGroupAds(**incremental_stream_config),
+            AdGroups(**incremental_stream_config),
+            Accounts(**incremental_stream_config),
+            Campaigns(**incremental_stream_config),
             ClickView(**incremental_stream_config),
         ]
 
