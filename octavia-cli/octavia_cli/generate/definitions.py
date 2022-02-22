@@ -65,7 +65,7 @@ class BaseDefinition(abc.ABC):
         try:
             return self._get_fn(self.api_instance, **self._get_fn_kwargs, **self.COMMON_GET_FUNCTION_KWARGS)
         except ApiException as e:
-            if e.status == 422:
+            if e.status in [422, 404]:
                 raise DefinitionNotFoundError(f"Definition {self.id} does not exists on your Airbyte instance.")
             raise e
 

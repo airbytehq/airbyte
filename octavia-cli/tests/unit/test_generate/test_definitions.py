@@ -56,8 +56,9 @@ class TestBaseDefinition:
         assert read_output == base_definition._get_fn.return_value
         base_definition._get_fn.assert_called_with(base_definition.api_instance, **base_definition._get_fn_kwargs, _check_return_type=False)
 
-    def test_read_error_not_found(self, patch_base_class, mock_api_client, mocker):
-        mocker.patch.object(BaseDefinition, "_get_fn", mocker.Mock(side_effect=ApiException(status=422)))
+    @pytest.mark.parametrize("status_code", [404, 422])
+    def test_read_error_not_found(self, status_code, patch_base_class, mock_api_client, mocker):
+        mocker.patch.object(BaseDefinition, "_get_fn", mocker.Mock(side_effect=ApiException(status=status_code)))
         with pytest.raises(DefinitionNotFoundError):
             BaseDefinition(mock_api_client, "my_definition_id")
 
