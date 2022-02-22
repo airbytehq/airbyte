@@ -95,7 +95,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return false;
     }
 
-    return !sourceProcess.isAlive() && !messageIterator.hasNext();
+    return !sourceProcess.isAlive();
   }
 
   @Override

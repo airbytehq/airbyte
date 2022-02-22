@@ -130,7 +130,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         // thrown
         final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
             getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc),
-            executors).whenComplete((msg, ex) -> {
+            executors)
+            .whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof DestinationException) {
                   destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
@@ -142,7 +143,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
             getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
-            executors).whenComplete((msg, ex) -> {
+            executors)
+            .whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
                   replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
