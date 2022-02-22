@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, Campaigns
+from source_facebook_marketing.streams import AdCreatives, AdsInsights, Campaigns
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -159,3 +159,14 @@ class TestBackoff:
         with pytest.raises(FacebookRequestError):
             stream = Campaigns(api=api, start_date=datetime.now(), end_date=datetime.now(), include_deleted=False)
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+
+    def test_connection_reset_error(self, requests_mock, api, account_id):
+        """Error once, check that we retry and not fail"""
+
+        responses = [{"json": {"error": {"code": 104}}}]
+
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/insights", responses)
+
+        with pytest.raises(FacebookRequestError):
+            stream = AdsInsights(api=api, start_date=datetime.now(), end_date=datetime.now())
+            list(stream.stream_slices(stream_state={}, sync_mode=None))
