@@ -1,6 +1,5 @@
 import React, { Suspense, useRef, useState } from "react";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import { Spinner } from "components";
@@ -12,7 +11,7 @@ import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import { LogsDetails } from "./components/LogsDetails";
-import { parseAttemptLink } from "./attemptLinkUtils";
+import { useAttemptLink } from "./attemptLinkUtils";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -68,8 +67,7 @@ type IProps = {
 
 const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
   const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
-  const { hash } = useLocation();
-  const { jobId: linkedJobId } = parseAttemptLink(hash);
+  const { jobId: linkedJobId } = useAttemptLink();
   const [isOpen, setIsOpen] = useState(linkedJobId === String(jobMeta.id));
   const onExpand = () => setIsOpen(!isOpen);
   const scrollAnchor = useRef<HTMLDivElement>(null);

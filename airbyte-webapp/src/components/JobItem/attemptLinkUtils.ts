@@ -1,4 +1,5 @@
 import { Attempt } from "core/domain/job";
+import { useLocation } from "react-router-dom";
 
 const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
 
@@ -28,4 +29,12 @@ export const parseAttemptLink = (
     jobId: match.groups?.jobId,
     attemptId: match.groups?.attemptId,
   };
+};
+
+/**
+ * Returns the information about which attempt was linked to from the hash if available.
+ */
+export const useAttemptLink = () => {
+  const { hash } = useLocation();
+  return parseAttemptLink(hash);
 };
