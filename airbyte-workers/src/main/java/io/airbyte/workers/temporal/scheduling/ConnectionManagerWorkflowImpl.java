@@ -455,7 +455,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())
-            .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
+            .setTaskQueue(TemporalJobType.SYNC.name())
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
             .build());

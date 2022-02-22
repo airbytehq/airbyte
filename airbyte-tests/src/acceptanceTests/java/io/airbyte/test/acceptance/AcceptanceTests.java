@@ -79,7 +79,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomUtils;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -279,7 +278,8 @@ public class AcceptanceTests {
     }
   }
 
-  @RepeatedTest(20)
+  // todo: test with both types of workers getting scaled down, just one of each
+  @RepeatedTest(1)
   @Order(-1800000)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
@@ -295,23 +295,21 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    // Avoid Race condition with the new scheduler
+    // Avoid race condition with the new scheduler
     if (featureFlags.usesNewScheduler()) {
       waitForTemporalWorkflow(connectionId);
     }
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    final int millisToSleep = RandomUtils.nextInt() % 10000;
-    Thread.sleep(millisToSleep);
-    LOGGER.info("millisToSleep = " + millisToSleep);
+    // todo: ideally this waits a couple seconds after the orchestrator pod starts
+    Thread.sleep(10000);
 
-    LOGGER.info("Scaling down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-    Thread.sleep(1000);
+    LOGGER.info("Scaling down sync workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
 
-    LOGGER.info("Scaling up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+    LOGGER.info("Scaling up sync workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
 
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
