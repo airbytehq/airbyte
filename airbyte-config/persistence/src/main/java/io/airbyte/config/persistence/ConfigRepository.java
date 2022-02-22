@@ -4,6 +4,9 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
@@ -32,6 +35,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -49,6 +53,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
+import org.jooq.SelectConditionStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -649,6 +655,27 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
         actorCatalogFetchEvent.getId().toString(),
         actorCatalogFetchEvent);
+  }
+
+  private SelectConditionStep selectCountWorkspaceConnections(final DSLContext ctx, final UUID workspaceId) {
+    return ctx.selectCount()
+        .from(ACTOR).join(WORKSPACE)
+        .on(ACTOR.WORKSPACE_ID.equal(WORKSPACE.ID))
+        .where(WORKSPACE.ID.equal(workspaceId));
+  }
+
+  public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId)).fetchOne().into(int.class);
+  }
+
+  public int countSourcesForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.source))).fetchOne()
+        .into(int.class);
+  }
+
+  public int countDestinationsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))).fetchOne()
+        .into(int.class);
   }
 
   /**
