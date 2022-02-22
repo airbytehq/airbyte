@@ -138,18 +138,6 @@ public class Databases {
     return new Database(connectionPool, dialect);
   }
 
-  public static Database createDatabase(final String username,
-                                        final String password,
-                                        final String jdbcConnectionString,
-                                        final String driverClassName,
-                                        final SQLDialect dialect,
-                                        final String connectionProperties) {
-    final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
-
-    return new Database(connectionPool, dialect);
-  }
-
   public static JdbcDatabase createJdbcDatabase(final String username,
                                                 final String password,
                                                 final String jdbcConnectionString,
@@ -222,22 +210,6 @@ public class Databases {
     connectionPool.setMaxTotal(5);
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.forEach(connectionPool::addConnectionProperty);
-    return connectionPool;
-  }
-
-  public static BasicDataSource createBasicDataSource(final String username,
-                                                      final String password,
-                                                      final String jdbcConnectionString,
-                                                      final String driverClassName,
-                                                      final String connectionProperties) {
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName(driverClassName);
-    connectionPool.setUsername(username);
-    connectionPool.setPassword(password);
-    connectionPool.setInitialSize(0);
-    connectionPool.setMaxTotal(5);
-    connectionPool.setUrl(jdbcConnectionString);
-    connectionPool.setConnectionProperties(connectionProperties);
     return connectionPool;
   }
 
