@@ -895,13 +895,7 @@ class ProjectColumns(GithubStream):
         current_stream_state.setdefault(repository, {}).setdefault(project_id, {})[self.cursor_field] = updated_state
         return current_stream_state
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        for record in response.json():
-            yield self.transform(record=record, repository=stream_slice["repository"], project_id=stream_slice["project_id"])
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["project_id"] = stream_slice["project_id"]
+        return record
