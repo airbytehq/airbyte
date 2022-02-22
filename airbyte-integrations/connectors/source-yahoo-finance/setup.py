@@ -17,9 +17,9 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_yahoo_finance",
-    description="Source implementation for Yahoo Finance.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    description="Source implementation for Yahoo Finance API.",
+    author="Luca Crema",
+    author_email="luca.crema.98@gmail.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},

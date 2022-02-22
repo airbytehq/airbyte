@@ -4,12 +4,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Yahoo Finance Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": [
+      "ticker"
+    ],
     "additionalProperties": false,
     "properties": {
-      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+      "ticker": {
         "type": "string",
-        "description": "describe me"
+        "description": "Identifier for the stock to be queried,",
+        "examples": ["AAPL", "GOOGL", "SPY"]
       }
     }
   }
