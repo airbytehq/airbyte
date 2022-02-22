@@ -85,7 +85,7 @@
   "form.done": "Done",
   "form.examples": "(e.g. {examples})",
   "form.prefix": "Destination Stream Prefix (Optional)",
-  "form.prefix.message": "Add a prefix to stream names (ex. “airbyte” causes “projects” => “airbyte_projects”)",
+  "form.prefix.message": "Add a prefix to stream names (ex. “airbyte_” causes “projects” => “airbyte_projects”)",
   "form.prefix.placeholder": "prefix",
   "form.nameSearch": "Search stream name",
   "form.namespace": "Namespace",
