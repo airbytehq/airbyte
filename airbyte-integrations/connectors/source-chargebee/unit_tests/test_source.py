@@ -87,19 +87,8 @@ def test_source_streams_v1(test_config_v1):
     streams = source.streams(test_config_v1)
     assert len(streams) == 8
     actual_stream_names = {stream.name for stream in streams}
-    expected_stream_names = set(
-        [
-            "coupon",
-            "customer",
-            "event",
-            "invoice",
-            "order",
-            "subscription",
-            "addon",
-            "plan",
-        ]
-    )
-    assert not expected_stream_names - actual_stream_names
+    expected_stream_names = {"coupon", "customer", "event", "invoice", "order", "subscription", "addon", "plan"}
+    assert expected_stream_names == actual_stream_names
 
 
 @responses.activate
@@ -108,5 +97,5 @@ def test_source_streams_v2(test_config_v2):
     streams = source.streams(test_config_v2)
     assert len(streams) == 9
     actual_stream_names = {stream.name for stream in streams}
-    expected_stream_names = set(["customer", "event", "invoice", "order", "subscription", "item", "item_price", "attached_item"])
-    assert not expected_stream_names - actual_stream_names
+    expected_stream_names = {"coupon", "customer", "event", "invoice", "order", "subscription", "item", "item_price", "attached_item"}
+    assert expected_stream_names == actual_stream_names
