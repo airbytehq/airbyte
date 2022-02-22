@@ -307,7 +307,7 @@
   sourceType: api
 - name: Harness
   sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
-  dockerRepository: faros-ai/airbyte-harness-source
+  dockerRepository: farosai/airbyte-harness-source
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/harness
   icon: harness.svg
@@ -535,7 +535,7 @@
   sourceType: api
 - name: PagerDuty
   sourceDefinitionId: 2817b3f0-04e4-4c7a-9f32-7a5e8a83db95
-  dockerRepository: faros-ai/airbyte-pagerduty-source
+  dockerRepository: farosai/airbyte-pagerduty-source
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/pagerduty
   icon: pagerduty.svg
@@ -807,7 +807,7 @@
   sourceType: api
 - name: VictorOps
   sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
-  dockerRepository: faros-ai/airbyte-victorops-source
+  dockerRepository: farosai/airbyte-victorops-source
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/victorops
   icon: victorops.svg
