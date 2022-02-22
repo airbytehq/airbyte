@@ -551,7 +551,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @Timeout(value = 2,
+    @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
     public void resetCancelRunningWorkflow() {
@@ -569,7 +569,7 @@ public class ConnectionManagerWorkflowTest {
           false);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(40L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
