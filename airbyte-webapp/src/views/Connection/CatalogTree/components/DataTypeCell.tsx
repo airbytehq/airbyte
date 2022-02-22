@@ -1,7 +1,8 @@
 import React from "react";
-import { Cell } from "components/SimpleTableComponents";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+
+import { Cell } from "components/SimpleTableComponents";
 
 type DataTypeCellProps = {
   nullable?: boolean;

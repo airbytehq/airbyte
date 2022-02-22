@@ -134,6 +134,18 @@
     },
     {
       "stream": {
+        "name": "tender_transactions",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["processed_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["processed_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "pages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
