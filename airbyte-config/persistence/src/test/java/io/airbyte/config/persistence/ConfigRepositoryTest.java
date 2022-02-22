@@ -48,16 +48,13 @@ class ConfigRepositoryTest {
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
-  private Database database;
 
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
-    database = mock(Database.class);
     final var secretPersistence = new MemorySecretPersistence();
     configRepository =
-        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
-            database));
+        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence)));
   }
 
   @AfterEach

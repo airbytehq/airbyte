@@ -114,7 +114,7 @@ public class ArchiveHandlerTest {
     configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
-    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty(), configDatabase);
+    configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
     jobPersistence.setVersion(VERSION.serialize());
 

@@ -348,7 +348,7 @@ public class WorkerApp {
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
