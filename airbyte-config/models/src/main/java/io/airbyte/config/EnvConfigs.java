@@ -661,12 +661,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getDDAgentHost() {
-    return getEnv(DD_AGENT_HOST);
+    return getEnvOrDefault(DD_AGENT_HOST, "");
   }
 
   @Override
   public String getDDDogStatsDPort() {
-    return getEnv(DD_DOGSTATSD_PORT);
+    return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
   }
 
   @Override

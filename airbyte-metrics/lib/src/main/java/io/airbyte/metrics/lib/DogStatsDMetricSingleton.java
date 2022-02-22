@@ -35,7 +35,13 @@ public class DogStatsDMetricSingleton {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
+    if (!config.publish) {
+      // do nothing if we do not want to publish. All metrics methods also do nothing.
+      return;
+    }
+
     log.info("Starting DogStatsD client..");
+    instancePublish = config.publish;
     statsDClient = new NonBlockingStatsDClientBuilder()
         .prefix(app.getApplicationName())
         .hostname(config.ddAgentHost)
