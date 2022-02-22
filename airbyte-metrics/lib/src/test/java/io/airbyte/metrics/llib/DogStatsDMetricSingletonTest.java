@@ -25,7 +25,7 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishTrueNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false));
-      DogStatsDMetricSingleton.getInstance().gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
@@ -34,7 +34,15 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishFalseNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", true));
-      DogStatsDMetricSingleton.getInstance().gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+    });
+  }
+
+  @Test
+  @DisplayName("there should be no exception if we attempt to emit metrics without initializing")
+  public void testNoInitializeNoEmitError() {
+    Assertions.assertDoesNotThrow(() -> {
+      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 

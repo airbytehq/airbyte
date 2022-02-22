@@ -13,7 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Light wrapper around the DogsStatsD client to make using the client slightly more ergonomic.
  * <p>
- * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud.
+ * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud. The
+ * methods here do not fail loudly to prevent application disruption.
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
  * <p>
@@ -22,59 +23,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DogStatsDMetricSingleton {
 
-  private static DogStatsDMetricSingleton instance;
-  private final StatsDClient statsDClient;
-  private final boolean instancePublish;
-
-  public static synchronized DogStatsDMetricSingleton getInstance() {
-    if (instance == null) {
-      throw new RuntimeException("You must initialize configuration with the initialize() method before getting an instance.");
-    }
-    return instance;
-  }
+  private static boolean instancePublish = false;
+  private static StatsDClient statsDClient;
 
   /**
    * Traditional singleton initialize call. Please invoke this before using any methods in this class.
+   * Usually called in the main class of the application attempting to publish metrics.
    */
   public synchronized static void initialize(final MetricEmittingApp app, final DatadogClientConfiguration config) {
-    if (instance != null) {
+    if (statsDClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
-    if (!config.publish) {
-      // For non-cloud deployment compatibility where publish=false. Instead of properly mocking the DD
-      // Client, create a client pointing to nothing.
-      // Although this is a hack, this is mostly fine since the overhead is minimal (one empty object).
-      log.info("Starting stub DogstatsD client..");
-      instance = new DogStatsDMetricSingleton();
-      return;
-    }
-
     log.info("Starting DogStatsD client..");
-    instance = new DogStatsDMetricSingleton(app.getApplicationName(), config.publish, config.ddAgentHost, config.ddPort);
+    statsDClient = new NonBlockingStatsDClientBuilder()
+        .prefix(app.getApplicationName())
+        .hostname(config.ddAgentHost)
+        .port(Integer.parseInt(config.ddPort))
+        .build();
   }
 
   @VisibleForTesting
   public synchronized static void flush() {
-    instance = null;
-  }
-
-  private DogStatsDMetricSingleton(final String appName, final boolean publish, final String ddAgentHost, final String ddPort) {
-    instancePublish = publish;
-    statsDClient = new NonBlockingStatsDClientBuilder()
-        .prefix(appName)
-        .hostname(ddAgentHost)
-        .port(Integer.parseInt(ddPort))
-        .build();
-  }
-
-  /**
-   * Stub constructor. An empty shell so calls to {@link #getInstance()} in deployments where publish
-   * is set to false do not error out.
-   */
-  private DogStatsDMetricSingleton() {
-    instancePublish = false;
     statsDClient = null;
+    instancePublish = false;
   }
 
   /**
@@ -84,8 +56,14 @@ public class DogStatsDMetricSingleton {
    * @param amt to adjust.
    * @param tags
    */
-  public void count(final AirbyteMetricsRegistry metric, final double amt, final String... tags) {
+  public static void count(final AirbyteMetricsRegistry metric, final double amt, final String... tags) {
     if (instancePublish) {
+      if (statsDClient == null) {
+        // do not loudly fail to prevent application disruption
+        log.warn("singleton not initialized, count {} not emitted", metric.metricName);
+        return;
+      }
+
       log.info("publishing count, name: {}, value: {}", metric.metricName, amt);
       statsDClient.count(metric.metricName, amt, tags);
     }
@@ -98,8 +76,14 @@ public class DogStatsDMetricSingleton {
    * @param val to record.
    * @param tags
    */
-  public void gauge(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void gauge(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
+      if (statsDClient == null) {
+        // do not loudly fail to prevent application disruption
+        log.warn("singleton not initialized, gauge {} not emitted", metric.metricName);
+        return;
+      }
+
       log.info("publishing gauge, name: {}, value: {}", metric, val);
       statsDClient.gauge(metric.metricName, val, tags);
     }
@@ -119,8 +103,14 @@ public class DogStatsDMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeLocal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void recordTimeLocal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
+      if (statsDClient == null) {
+        // do not loudly fail to prevent application disruption
+        log.warn("singleton not initialized, histogram {} not emitted", metric.metricName);
+        return;
+      }
+
       log.info("recording histogram, name: {}, value: {}", metric.metricName, val);
       statsDClient.histogram(metric.metricName, val, tags);
     }
@@ -134,8 +124,14 @@ public class DogStatsDMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public void recordTimeGlobal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void recordTimeGlobal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
+      if (statsDClient == null) {
+        // do not loudly fail to prevent application disruption
+        log.warn("singleton not initialized, distribution {} not emitted", metric.metricName);
+        return;
+      }
+
       log.info("recording distribution, name: {}, value: {}", metric.metricName, val);
       statsDClient.distribution(metric.metricName, val, tags);
     }
@@ -149,7 +145,7 @@ public class DogStatsDMetricSingleton {
    * @param runnable to time
    * @param tags
    */
-  public void recordTimeGlobal(final AirbyteMetricsRegistry metric, final Runnable runnable, final String... tags) {
+  public static void recordTimeGlobal(final AirbyteMetricsRegistry metric, final Runnable runnable, final String... tags) {
     final long start = System.currentTimeMillis();
     runnable.run();
     final long end = System.currentTimeMillis();
