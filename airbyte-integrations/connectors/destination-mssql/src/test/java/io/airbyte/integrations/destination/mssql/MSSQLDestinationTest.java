@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -20,41 +21,22 @@ public class MSSQLDestinationTest {
   private Map<String, String> existingProperties;
 
   private JsonNode createConfig(final String sslMethod) {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    return createConfig(sslMethod, new HashMap<>());
+  }
+
+  private JsonNode createConfig(final String sslMethod, final Map<String, String> additionalConfigs) {
+    return Jsons.jsonNode(MoreMaps.merge(baseParameters(sslMethod), additionalConfigs));
+  }
+
+  private Map<String, String> baseParameters(final String sslMethod) {
+    return ImmutableMap.<String, String>builder()
         .put("ssl_method", sslMethod)
         .put("host", "localhost")
         .put("port", "1773")
         .put("database", "db")
         .put("username", "username")
         .put("password", "verysecure")
-        .build()
-    );
-  }
-
-  private JsonNode createConfigWithTrustStorePassword(final String trustStorePassword) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("ssl_method", "encrypted_verify_certificate")
-        .put("trustStorePassword", trustStorePassword)
-        .put("host", "localhost")
-        .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
-        .build()
-    );
-  }
-
-  private JsonNode createConfigWithHostnameInCertificate(final String hostnameInCertificate) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("ssl_method", "encrypted_verify_certificate")
-        .put("hostNameInCertificate", hostnameInCertificate)
-        .put("host", "localhost")
-        .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
-        .build()
-    );
+        .build();
   }
 
   @BeforeEach
@@ -121,7 +103,7 @@ public class MSSQLDestinationTest {
   public void testEncryptedVerifyCertificateWithEmptyTrustStorePassword() {
     setProperty("javax.net.ssl.trustStorePassword", "");
     final MSSQLDestination destination = new MSSQLDestination();
-    final JsonNode config = createConfigWithTrustStorePassword("");
+    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("trustStorePassword", ""));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
@@ -137,7 +119,7 @@ public class MSSQLDestinationTest {
     final String TRUST_STORE_PASSWORD = "TRUSTSTOREPASSWORD";
     setProperty("javax.net.ssl.trustStorePassword", TRUST_STORE_PASSWORD);
     final MSSQLDestination destination = new MSSQLDestination();
-    final JsonNode config = createConfigWithTrustStorePassword(TRUST_STORE_PASSWORD);
+    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("trustStorePassword", TRUST_STORE_PASSWORD));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
@@ -152,7 +134,7 @@ public class MSSQLDestinationTest {
   public void testEncryptedVerifyCertificateWithHostNameInCertificate() {
     final MSSQLDestination destination = new MSSQLDestination();
     final String HOSTNAME_IN_CERTIFICATE = "HOSTNAME_IN_CERTIFICATE";
-    final JsonNode config = createConfigWithHostnameInCertificate(HOSTNAME_IN_CERTIFICATE);
+    final JsonNode config = createConfig("encrypted_verify_certificate", ImmutableMap.of("hostNameInCertificate", HOSTNAME_IN_CERTIFICATE));
 
     final Map<String, String> properties = destination.getDefaultConnectionProperties(config);
     assertEquals(properties.get("encrypt"), "true");
