@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import calendar
 import time
 from abc import ABC
@@ -33,7 +34,17 @@ class SourceZendeskException(Exception):
 
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
+    """
+    Check the docs at https://github.com/ross/requests-futures.
+    Used to async execute a set of requests.
+    """
+
     def send_future(self, request: requests.PreparedRequest, **kwargs) -> Future:
+        """
+        Use instead of default `Session.send()` method.
+        `Session.send()` should not be overridden as it used by `requests-futures` lib.
+        """
+
         if self.session:
             func = self.session.send
         else:
@@ -224,8 +235,8 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         """
 
         retry_after = int(response.headers.get("Retry-After", 0))
-        if retry_after and retry_after > 0:
-            return int(retry_after)
+        if retry_after > 0:
+            return retry_after
 
         # the header X-Rate-Limit returns a amount of requests per minute
         # we try to wait twice as long
@@ -270,17 +281,15 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """try to select relevant data only"""
 
+        records = response.json().get(self.response_list_name or self.name) or []
         if not self.cursor_field:
-            yield from response.json().get(self.response_list_name or self.name)
+            yield from records
         else:
             cursor_date = (stream_state or {}).get(self.cursor_field)
-            for record in response.json().get(self.response_list_name or self.name):
+            for record in records:
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
                     yield record
-
-    # def parse_response(self, response: requests.Response, **kwargs):
-    #     yield from response.json().get(self.response_list_name or self.name)
 
 
 class SourceZendeskSupportFullRefreshStream(HttpStream, ABC):
@@ -325,7 +334,7 @@ class SourceZendeskSupportFullRefreshStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs):
-        yield from response.json().get(self.response_list_name or self.name)
+        yield from response.json().get(self.response_list_name or self.name) or []
 
 
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
