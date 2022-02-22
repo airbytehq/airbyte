@@ -45,11 +45,7 @@ public class ApiPojoConverters {
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {
-      newConnection.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpuRequest(update.getResourceRequirements().getCpuRequest())
-          .withCpuLimit(update.getResourceRequirements().getCpuLimit())
-          .withMemoryRequest(update.getResourceRequirements().getMemoryRequest())
-          .withMemoryLimit(update.getResourceRequirements().getMemoryLimit()));
+      newConnection.withResourceRequirements(resourceRequirementsToInternal(update.getResourceRequirements()));
     }
 
     // update sync schedule
