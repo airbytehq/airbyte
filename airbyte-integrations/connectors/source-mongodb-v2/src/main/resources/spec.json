@@ -89,6 +89,40 @@
                 "order": 0
               }
             }
+          },
+          {
+            "title": "Amazon DocumentDB",
+            "required": ["instance", "host", "port"],
+            "properties": {
+              "instance": {
+                "type": "string",
+                "enum": ["documentdb"],
+                "default": "documentdb"
+              },
+              "host": {
+                "title": "Host",
+                "type": "string",
+                "description": "The host name of the Amazon DocumentDb cluster.",
+                "order": 0
+              },
+              "port": {
+                "title": "Port",
+                "type": "integer",
+                "description": "The port of the Amazon DocumentDb database.",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 27017,
+                "examples": ["27017"],
+                "order": 1
+              },
+              "tls": {
+                "title": "TLS Connection",
+                "type": "boolean",
+                "description": "Indicates whether TLS encryption protocol will be used to connect to Amazon DocumentDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
+                "default": false,
+                "order": 2
+              }
+            }
           }
         ]
       },

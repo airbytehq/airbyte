@@ -45,6 +45,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
   private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
   private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
+  private static final String MONGODB_DOCUMENTDB_URL = "mongodb://%s%s:%s/%s?ssl=%s&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false";
   private static final String USER = "user";
   private static final String PASSWORD = "password";
   private static final String INSTANCE_TYPE = "instance_type";
@@ -236,9 +237,14 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
             String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
                 config.get(AUTH_SOURCE).asText()));
       }
+      case DOCUMENTDB -> {
+        final var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
+        connectionStrBuilder.append(
+                String.format(MONGODB_DOCUMENTDB_URL, credentials, instanceConfig.get(HOST).asText(),
+                        instanceConfig.get(PORT).asText(), config.get(DATABASE).asText(), tls));
+      }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
     return connectionStrBuilder.toString();
   }
-
 }
