@@ -35,24 +35,13 @@ public class DogStatsDMetricSingleton {
 
   /**
    * Traditional singleton initialize call. Please invoke this before using any methods in this class.
-   * This version invokes {@link #initialize(MetricEmittingApp, boolean)} and is intended for Airbyte
-   * Cloud use.
    */
-  public synchronized static void initialize(final MetricEmittingApp app, final boolean publish) {
-    initialize(app, publish, null, null);
-  }
-
-  /**
-   * Traditional singleton initialize call. Please invoke this before using any methods in this class.
-   * This version gives full control of the underlying client and is intended for maximum flexibility.
-   */
-  @VisibleForTesting
-  public synchronized static void initialize(final MetricEmittingApp app, final boolean publish, final String ddAgentHost, final String ddPort) {
+  public synchronized static void initialize(final MetricEmittingApp app, final DatadogClientConfiguration config) {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
-    if (!publish) {
+    if (!config.publish) {
       // For non-cloud deployment compatibility where publish=false. Instead of properly mocking the DD
       // Client, create a client pointing to nothing.
       // Although this is a hack, this is mostly fine since the overhead is minimal (one empty object).
@@ -62,27 +51,12 @@ public class DogStatsDMetricSingleton {
     }
 
     log.info("Starting DogStatsD client..");
-    if (ddAgentHost.isBlank() && ddPort.isBlank()) {
-      // General case - create a singleton with configuration tuned for Airbyte Cloud e.g. looking for
-      // certain env vars.
-      instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish);
-      return;
-    }
-
-    // If the caller wants finer control over the underlying client.
-    instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish, ddAgentHost, ddPort);
+    instance = new DogStatsDMetricSingleton(app.getApplicationName(), config.publish, config.ddAgentHost, config.ddPort);
   }
 
   @VisibleForTesting
   public synchronized static void flush() {
     instance = null;
-  }
-
-  /**
-   * Constructor with Airbyte Cloud compatible env var set for convenience.
-   */
-  private DogStatsDMetricSingleton(final String appName, final boolean publish) {
-    this(appName, publish, System.getenv("DD_AGENT_HOST"), System.getenv("DD_DOGSTATSD_PORT"));
   }
 
   private DogStatsDMetricSingleton(final String appName, final boolean publish, final String ddAgentHost, final String ddPort) {
