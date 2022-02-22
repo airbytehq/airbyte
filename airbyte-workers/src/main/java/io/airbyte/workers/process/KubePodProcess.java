@@ -520,6 +520,13 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stdout socket server...");
         final var socket = stdoutServerSocket.accept(); // blocks until connected
+        // cat /proc/sys/net/ipv4/tcp_keepalive_time
+        // 300
+        // cat /proc/sys/net/ipv4/tcp_keepalive_probes
+        // 5
+        // cat /proc/sys/net/ipv4/tcp_keepalive_intvl
+        // 60
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stdout...");
         this.stdout = socket.getInputStream();
       } catch (final IOException e) {
@@ -531,6 +538,7 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stderr socket server...");
         final var socket = stderrServerSocket.accept(); // blocks until connected
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stderr...");
         this.stderr = socket.getInputStream();
       } catch (final IOException e) {
