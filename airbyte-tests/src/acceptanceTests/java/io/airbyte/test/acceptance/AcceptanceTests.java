@@ -88,9 +88,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -279,11 +280,12 @@ public class AcceptanceTests {
   }
 
   // todo: test with both types of workers getting scaled down, just one of each
-  @RepeatedTest(1)
+  @Test
   @Order(-1800000)
+  @ValueSource(strings = {"KILL_BOTH_SAME_TIME", "KILL_SYNC_FIRST", "KILL_NON_SYNC_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC"})
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
-  public void testDowntimeDuringSync() throws Exception {
+  public void testDowntimeDuringSync(String type) throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -305,11 +307,49 @@ public class AcceptanceTests {
     // todo: ideally this waits a couple seconds after the orchestrator pod starts
     Thread.sleep(10000);
 
-    LOGGER.info("Scaling down sync workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+    switch (type) {
+      case "KILL_BOTH_SAME_TIME" -> {
+        LOGGER.info("Scaling down both workers at roughly the same time...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
 
-    LOGGER.info("Scaling up sync workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        LOGGER.info("Scaling up both workers...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+      }
+      case "KILL_SYNC_FIRST" -> {
+        LOGGER.info("Scaling down sync worker first...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+        LOGGER.info("Scaling up both workers...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+      }
+      case "KILL_NON_SYNC_FIRST" -> {
+        LOGGER.info("Scaling down non-sync worker first...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+        LOGGER.info("Scaling up both workers...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+      }
+      case "KILL_ONLY_SYNC" -> {
+        LOGGER.info("Scaling down only sync worker...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+        LOGGER.info("Scaling up sync worker...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+      }
+      case "KILL_ONLY_NON_SYNC" -> {
+        LOGGER.info("Scaling down only non-sync worker...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+        LOGGER.info("Scaling up non-sync worker...");
+        kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+      }
+    }
 
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
