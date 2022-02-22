@@ -9,7 +9,7 @@ package io.airbyte.metrics.lib;
  * as Java doesn't support enum inheritance as of Java 17. We use a shared interface so this
  * interface can be used in the {@link AirbyteMetricsRegistry} enum.
  */
-public interface AirbyteApplication {
+public interface MetricEmittingApp {
 
   String getApplicationName();
 

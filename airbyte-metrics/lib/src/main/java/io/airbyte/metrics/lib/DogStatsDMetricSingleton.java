@@ -7,6 +7,7 @@ package io.airbyte.metrics.lib;
 import com.google.common.annotations.VisibleForTesting;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
+import io.airbyte.config.Configs;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
  * This class mainly exists to help Airbyte instrument/debug application on Airbyte Cloud.
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
+ * <p>
+ * This class is intended to be used in conjection with {@link Configs#getPublishMetrics()}.
  */
 @Slf4j
 public class DogStatsDMetricSingleton {
@@ -30,29 +33,44 @@ public class DogStatsDMetricSingleton {
     return instance;
   }
 
-  public synchronized static void initialize(final AirbyteApplication app, final boolean publish) {
+  /**
+   * Traditional singleton initialize call. Please invoke this before using any methods in this class.
+   * This version invokes {@link #initialize(MetricEmittingApp, boolean)} and is intended for Airbyte
+   * Cloud use.
+   */
+  public synchronized static void initialize(final MetricEmittingApp app, final boolean publish) {
     initialize(app, publish, null, null);
   }
 
+  /**
+   * Traditional singleton initialize call. Please invoke this before using any methods in this class.
+   * This version gives full control of the underlying client and is intended for maximum flexibility.
+   */
   @VisibleForTesting
-  public synchronized static void initialize(final AirbyteApplication app, final boolean publish, final String ddAgentHost, final String ddPort) {
+  public synchronized static void initialize(final MetricEmittingApp app, final boolean publish, final String ddAgentHost, final String ddPort) {
     if (instance != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
     if (!publish) {
+      // For non-cloud deployment compatibility where publish=false. Instead of properly mocking the DD
+      // Client, create a client pointing to nothing.
+      // Although this is a hack, this is mostly fine since the overhead is minimal (one empty object).
       log.info("Starting stub DogstatsD client..");
       instance = new DogStatsDMetricSingleton();
       return;
     }
 
     log.info("Starting DogStatsD client..");
-    if (!ddAgentHost.isBlank() || !ddPort.isBlank()) {
-      instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish, ddAgentHost, ddPort);
+    if (ddAgentHost.isBlank() && ddPort.isBlank()) {
+      // General case - create a singleton with configuration tuned for Airbyte Cloud e.g. looking for
+      // certain env vars.
+      instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish);
       return;
     }
 
-    instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish);
+    // If the caller wants finer control over the underlying client.
+    instance = new DogStatsDMetricSingleton(app.getApplicationName(), publish, ddAgentHost, ddPort);
   }
 
   @VisibleForTesting
@@ -60,13 +78,11 @@ public class DogStatsDMetricSingleton {
     instance = null;
   }
 
+  /**
+   * Constructor with Airbyte Cloud compatible env var set for convenience.
+   */
   private DogStatsDMetricSingleton(final String appName, final boolean publish) {
-    instancePublish = publish;
-    statsDClient = new NonBlockingStatsDClientBuilder()
-        .prefix(appName)
-        .hostname(System.getenv("DD_AGENT_HOST")) // Matches Airbyte Cloud Datadog env vars.
-        .port(Integer.parseInt(System.getenv("DD_DOGSTATSD_PORT"))) // Matches Airbyte Cloud Datadog env vars.
-        .build();
+    this(appName, publish, System.getenv("DD_AGENT_HOST"), System.getenv("DD_DOGSTATSD_PORT"));
   }
 
   private DogStatsDMetricSingleton(final String appName, final boolean publish, final String ddAgentHost, final String ddPort) {
@@ -78,6 +94,10 @@ public class DogStatsDMetricSingleton {
         .build();
   }
 
+  /**
+   * Stub constructor. An empty shell so calls to {@link #getInstance()} in deployments where publish
+   * is set to false do not error out.
+   */
   private DogStatsDMetricSingleton() {
     instancePublish = false;
     statsDClient = null;

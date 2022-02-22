@@ -4,9 +4,9 @@
 
 package io.airbyte.metrics.llib;
 
-import io.airbyte.metrics.lib.AirbyteApplications;
 import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +23,7 @@ public class DogStatsDMetricSingletonTest {
   @DisplayName("there should be no exception if we attempt to emit metrics while publish is false")
   public void testPublishTrueNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
-      DogStatsDMetricSingleton.initialize(AirbyteApplications.WORKER, false);
+      DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, false);
       DogStatsDMetricSingleton.getInstance().gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
@@ -32,7 +32,7 @@ public class DogStatsDMetricSingletonTest {
   @DisplayName("there should be no exception if we attempt to emit metrics while publish is true")
   public void testPublishFalseNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
-      DogStatsDMetricSingleton.initialize(AirbyteApplications.WORKER, true, "localhost", "1000");
+      DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, true, "localhost", "1000");
       DogStatsDMetricSingleton.getInstance().gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }

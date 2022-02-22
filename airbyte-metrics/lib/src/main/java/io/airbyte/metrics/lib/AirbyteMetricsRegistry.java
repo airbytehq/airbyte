@@ -30,14 +30,16 @@ import com.google.api.client.util.Preconditions;
  */
 public enum AirbyteMetricsRegistry {
 
-  KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(AirbyteApplications.WORKER,
-      "kube_pod_process_create_time_millisecs", "time taken to create a new kube pod process");
+  KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
+      MetricEmittingApps.WORKER,
+      "kube_pod_process_create_time_millisecs",
+      "time taken to create a new kube pod process");
 
-  public final AirbyteApplication application;
+  public final MetricEmittingApp application;
   public final String metricName;
   public final String metricDescription;
 
-  AirbyteMetricsRegistry(final AirbyteApplication application, final String metricName, final String metricDescription) {
+  AirbyteMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 

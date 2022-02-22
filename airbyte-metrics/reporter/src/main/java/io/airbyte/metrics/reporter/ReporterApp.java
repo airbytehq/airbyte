@@ -4,13 +4,13 @@
 
 package io.airbyte.metrics.reporter;
 
-import io.airbyte.metrics.lib.AirbyteApplications;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 
 public class ReporterApp {
 
   public static void main(final String[] args) {
-    DogStatsDMetricSingleton.initialize(AirbyteApplications.METRICS_REPORTER, false);
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, false);
   }
 
 }

@@ -23,8 +23,8 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.metrics.lib.AirbyteApplications;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
@@ -305,7 +305,7 @@ public class WorkerApp {
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
 
-    DogStatsDMetricSingleton.initialize(AirbyteApplications.WORKER, configs.getPublishMetrics());
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, configs.getPublishMetrics());
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
