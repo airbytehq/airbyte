@@ -87,7 +87,7 @@ def test_commands_in_octavia_group():
 
 @pytest.mark.parametrize(
     "command",
-    [entrypoint.apply, entrypoint.generate, entrypoint.delete, entrypoint._import],
+    [entrypoint.apply, entrypoint.delete, entrypoint._import],
 )
 def test_not_implemented_commands(command):
     runner = CliRunner()
