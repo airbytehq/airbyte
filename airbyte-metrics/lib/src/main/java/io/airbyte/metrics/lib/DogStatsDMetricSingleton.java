@@ -132,8 +132,14 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Submit a single execution time aggregated locally by the Agent. Use this if approximate stats are
-   * sufficient.
+   * Submit a single execution time aggregated locally by the Agent - all metric related statistics
+   * are calculated agent-side. Be careful using this if there will be multiple agents emitting this
+   * metric as this will cause inaccuracy in non-additive metrics e.g. average, median, percentiles
+   * etc.
+   *
+   * The upside of this is this metric is cheaper to calculate than the Distribution type.
+   *
+   * See https://docs.datadoghq.com/metrics/types/?tab=histogram#metric-types for more information.
    *
    * @param metric
    * @param val of time to record.
@@ -147,7 +153,8 @@ public class DogStatsDMetricSingleton {
   }
 
   /**
-   * Submit a single execution time aggregated globally by Datadog. Use this for precise stats.
+   * Submit a single execution time aggregated globally by Datadog - all metric related statistics are
+   * calculated in Datadog. Use this for precise stats.
    *
    * @param metric
    * @param val of time to record.
