@@ -38,6 +38,8 @@ This connector outputs the following incremental streams:
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
+* [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
+* [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 
 ### Notes
 
