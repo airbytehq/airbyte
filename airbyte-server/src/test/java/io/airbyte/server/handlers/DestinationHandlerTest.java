@@ -255,19 +255,19 @@ class DestinationHandlerTest {
   void testCloneDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     final DestinationConnection clonedConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
     final DestinationRead expectedDestinationRead = new DestinationRead()
-            .name(clonedConnection.getName())
-            .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-            .workspaceId(clonedConnection.getWorkspaceId())
-            .destinationId(clonedConnection.getDestinationId())
-            .connectionConfiguration(clonedConnection.getConfiguration())
-            .destinationName(standardDestinationDefinition.getName());
+        .name(clonedConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(clonedConnection.getWorkspaceId())
+        .destinationId(clonedConnection.getDestinationId())
+        .connectionConfiguration(clonedConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
     final DestinationRead destinationRead = new DestinationRead()
-            .name(destinationConnection.getName())
-            .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-            .workspaceId(destinationConnection.getWorkspaceId())
-            .destinationId(destinationConnection.getDestinationId())
-            .connectionConfiguration(destinationConnection.getConfiguration())
-            .destinationName(standardDestinationDefinition.getName());
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
 
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationRead.getDestinationId());
 
@@ -276,10 +276,11 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationConnection(clonedConnection.getDestinationId())).thenReturn(clonedConnection);
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionSpecificationRead.getDestinationDefinitionId()))
-            .thenReturn(standardDestinationDefinition);
-    when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId())).thenReturn(standardDestinationDefinition);
+        .thenReturn(standardDestinationDefinition);
+    when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
+        .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationIdRequestBody);
 
