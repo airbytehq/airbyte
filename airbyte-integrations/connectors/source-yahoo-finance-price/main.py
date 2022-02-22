@@ -6,7 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_yahoo_finance import SourceYahooFinance
+from source_yahoo_finance_price import SourceYahooFinance
 
 if __name__ == "__main__":
     source = SourceYahooFinance()

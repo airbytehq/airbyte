@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_yahoo_finance.source import SourceYahooFinance
+from source_yahoo_finance_price.source import SourceYahooFinance
 
 
 def test_check_connection(mocker):

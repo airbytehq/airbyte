@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_yahoo_finance.source import YahooFinanceStream
+from source_yahoo_finance_price.source import YahooFinanceStream
 
 
 @pytest.fixture

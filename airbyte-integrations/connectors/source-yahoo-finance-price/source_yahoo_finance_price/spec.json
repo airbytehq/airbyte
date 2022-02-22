@@ -1,0 +1,41 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Yahoo Finance Spec",
+    "type": "object",
+    "required": [
+      "ticker"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "ticker": {
+        "type": "string",
+        "description": "Identifier for the stock to be queried,",
+        "examples": [
+          "AAPL",
+          "GOOGL",
+          "SPY"
+        ]
+      },
+      "interval": {
+        "title": "Interval",
+        "description": "The interval of between prices queried.",
+        "type": "string",
+        "enum": [
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "90m",
+          "1h",
+          "1d",
+          "5d",
+          "1wk",
+          "1mo",
+          "3mo"
+        ]
+      }
+    }
+  }
+}

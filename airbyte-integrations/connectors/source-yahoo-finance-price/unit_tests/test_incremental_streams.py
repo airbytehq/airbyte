@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_yahoo_finance.source import IncrementalYahooFinanceStream
+from source_yahoo_finance_price.source import IncrementalYahooFinanceStream
 
 
 @fixture

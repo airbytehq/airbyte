@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_yahoo_finance'
+    moduleDirectory 'source_yahoo_finance_price'
 }

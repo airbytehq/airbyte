@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_yahoo_finance",
+    name="source_yahoo_finance_price",
     description="Source implementation for Yahoo Finance API.",
     author="Luca Crema",
     author_email="luca.crema.98@gmail.com",
