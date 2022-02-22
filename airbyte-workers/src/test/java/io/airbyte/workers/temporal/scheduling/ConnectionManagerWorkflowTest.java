@@ -569,11 +569,11 @@ public class ConnectionManagerWorkflowTest {
           false);
 
       WorkflowClient.start(workflow::run, input);
-      testEnv.sleep(Duration.ofSeconds(30L));
+      testEnv.sleep(Duration.ofSeconds(40L));
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(30L));
+      testEnv.sleep(Duration.ofSeconds(40L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofMinutes(15L));
+      testEnv.sleep(Duration.ofMinutes(25L));
       testEnv.shutdown();
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
