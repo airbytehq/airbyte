@@ -48,7 +48,11 @@ class WoocommerceStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        #for some source user-agent is required for 
+        return {
+            'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+            'Content-Type': 'application/json'
+        }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -70,12 +74,7 @@ class WoocommerceStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # print('in full refresh')
-        # json_response = response.json()
-        # print(f"json_response: {json_response}")
-        # yield from json_response
         records = response.json()
-        # print(f"json_response: {records}")
 
         if isinstance(records, dict):
             # for cases when we have a single record as dict
@@ -104,19 +103,15 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # print(f'cursor_field: {self.cursor_field}')
         if self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, ""):
             return {self.cursor_field: latest_record.get(self.cursor_field, "")}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        # params =  {"per_page": self.limit}
-        print(f"stream_state: {stream_state}")
-        print(f"params: {params}")
+        AirbyteLogger().log("INFO", f"using params: {params}")
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
-            # start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
             params["orderby"] = self.order_field
             params["order"] = "asc"
             if stream_state:
@@ -132,7 +127,6 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         # Getting records >= state
-        # print('here')
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -142,7 +136,6 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
             for record in records_slice:
                 record['shop_url'] = self.shop
                 yield record
-            # yield from records_slice
 
 
 class NonFilteredStream(IncrementalWoocommerceStream):
@@ -196,8 +189,6 @@ class SourceWoocommerce(AbstractSource):
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
             headers = dict(Accept="application/json", **auth.get_auth_header())
             headers['User-Agent']='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
-            print(f'headers: {headers}')
-            print(f'url: {url}')
             session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
