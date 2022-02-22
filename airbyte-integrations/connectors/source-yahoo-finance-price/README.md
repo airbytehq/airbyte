@@ -1,7 +1,7 @@
 # Yahoo Finance Source
 
 This is the repository for the Yahoo Finance source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/yahoo-finance).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/yahoo-finance-price).
 
 ## Local development
 
@@ -35,16 +35,16 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-yahoo-finance:build
+./gradlew :airbyte-integrations:connectors:source-yahoo-finance-price:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/yahoo-finance)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/yahoo-finance-price)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_yahoo_finance_price/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source yahoo-finance test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source yahoo-finance-price test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -60,12 +60,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-yahoo-finance:dev
+docker build . -t airbyte/source-yahoo-finance-price:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-yahoo-finance:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-yahoo-finance-price:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -73,10 +73,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-yahoo-finance:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-yahoo-finance:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-yahoo-finance:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-yahoo-finance:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-yahoo-finance-price:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-yahoo-finance-price:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-yahoo-finance-price:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-yahoo-finance-price:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -110,11 +110,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-yahoo-finance:unitTest
+./gradlew :airbyte-integrations:connectors:source-yahoo-finance-price:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-yahoo-finance:integrationTest
+./gradlew :airbyte-integrations:connectors:source-yahoo-finance-price:integrationTest
 ```
 
 ## Dependency Management
