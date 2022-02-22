@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "FILTER_ACTIVE_VIEW_EXPECTED_VIEWABILITY": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ADVERTISER": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ADVERTISER_INTEGRATION_CODE": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ADVERTISER_INTEGRATION_STATUS": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ADVERTISER_NAME": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_DATE": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_PARTNER": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_PARTNER_NAME": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_PARTNER_STATUS": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  },
+  "METRIC_COOKIE_CONSENTED_FLOODLIGHT_IMPRESSIONS": {
+    "type": [
+      "null",
+      "number"
+    ]
+  },
+  "METRIC_COOKIE_UNCONSENTED_FLOODLIGHT_IMPRESSIONS": {
+    "type": [
+      "null",
+      "number"
+    ]
+  },
+  "METRIC_FLOODLIGHT_IMPRESSIONS": {
+    "type": [
+      "null",
+      "number"
+    ]
+  },
+  "METRIC_DUPLICATE_FLOODLIGHT_IMPRESSIONS": {
+    "type": [
+      "null",
+      "number"
+    ]
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "kind": "doubleclickbidmanager#listReportsResponse",
+  "reports": [
+    {
+      "key": {
+        "queryId": "912584356",
+        "reportId": "3575679090"
+      },
+      "metadata": {
+        "status": {
+          "state": "DONE",
+          "finishTimeMs": "1643187967739"
+        },
+        "reportDataStartTimeMs": "1643097600000",
+        "reportDataEndTimeMs": "1643097600000",
+        "googleCloudStoragePath": "https://storage.googleapis.com/dfa_-b8d7cf41be5eb53420e455d913fdfab19a164cc3/Standard_Report_Airbyte_20220126_090606_912584356_3575679090.csv?GoogleAccessId=573983893819-acfst5i6ba5a02rsdrjlpcfbq9k169sm@developer.gserviceaccount.com&Expires=1648896739&Signature=bfi7xh6TZoFcwvzUrc4xBA2LLRRoDZDLIesA%2BwOgt3wSljFbKrs4AkgLyUbczXb7ftWSJOXgp7C6ttQv1qLSvnDXrxrdNlF4ttkB9MU05dyMChll8TXV%2FFYldxAe7rmLlFLla32SeHjZpmvnTOF7kxJs2Bk8TV7zoDD4xMtH6hs%3D"
+      },
+      "params": {
+        "groupBys": [
+          "FILTER_ADVERTISER_NAME",
+          "FILTER_ADVERTISER",
+          "FILTER_ADVERTISER_CURRENCY",
+          "FILTER_INSERTION_ORDER_NAME",
+          "FILTER_INSERTION_ORDER",
+          "FILTER_LINE_ITEM_NAME",
+          "FILTER_LINE_ITEM"
+        ],
+        "filters": [
+          {
+            "type": "FILTER_ADVERTISER",
+            "value": "625540"
+          },
+          {
+            "type": "FILTER_INSERTION_ORDER",
+            "value": "1996482"
+          },
+          {
+            "type": "FILTER_LINE_ITEM",
+            "value": "4167900"
+          }
+        ],
+        "metrics": [
+          "METRIC_IMPRESSIONS",
+          "METRIC_BILLABLE_IMPRESSIONS",
+          "METRIC_CLICKS",
+          "METRIC_CTR",
+          "METRIC_TOTAL_CONVERSIONS",
+          "METRIC_LAST_CLICKS",
+          "METRIC_LAST_IMPRESSIONS",
+          "METRIC_REVENUE_ADVERTISER",
+          "METRIC_MEDIA_COST_ADVERTISER"
+        ],
+        "options": {
+          "includeOnlyTargetedUserLists": false
+        }
+      }
+    },
+    {
+      "key": {
+        "queryId": "912584356",
+        "reportId": "3582325733"
+      },
+      "metadata": {
+        "status": {
+          "state": "DONE",
+          "finishTimeMs": "1643712441730"
+        },
+        "reportDataStartTimeMs": "1641024000000",
+        "reportDataEndTimeMs": "1641542400000",
+        "googleCloudStoragePath": "https://storage.googleapis.com/dfa_-b8d7cf41be5eb53420e455d913fdfab19a164cc3/Standard_Report_Airbyte_20220201_104720_912584356_3582325733.csv?GoogleAccessId=573983893819-acfst5i6ba5a02rsdrjlpcfbq9k169sm@developer.gserviceaccount.com&Expires=1648896739&Signature=NbiP9yPF9qbuzJ14zbu4tQFe8%2BUrGrg4rHgwkZQeeZ7Fo4lkctDHodOjAXTnMIzeS9mE5LeHM0Rg%2Bc3WK410uPyzGpHOTrj5MkCgEksI94Qqg22CghLPin8G9yM7PtbBls6PRbjA0OW3YsQ%2FCcNHlyYwgeAlf5ft0RL1tutUb1o%3D"
+      },
+      "params": {
+        "groupBys": [
+          "FILTER_ADVERTISER_NAME",
+          "FILTER_ADVERTISER",
+          "FILTER_ADVERTISER_CURRENCY",
+          "FILTER_INSERTION_ORDER_NAME",
+          "FILTER_INSERTION_ORDER",
+          "FILTER_LINE_ITEM_NAME",
+          "FILTER_LINE_ITEM"
+        ],
+        "filters": [
+          {
+            "type": "FILTER_ADVERTISER",
+            "value": "625540"
+          },
+          {
+            "type": "FILTER_INSERTION_ORDER",
+            "value": "1996482"
+          }
+        ],
+        "metrics": [
+          "METRIC_IMPRESSIONS",
+          "METRIC_BILLABLE_IMPRESSIONS",
+          "METRIC_CLICKS",
+          "METRIC_CTR",
+          "METRIC_TOTAL_CONVERSIONS",
+          "METRIC_LAST_CLICKS",
+          "METRIC_LAST_IMPRESSIONS",
+          "METRIC_REVENUE_ADVERTISER",
+          "METRIC_MEDIA_COST_ADVERTISER"
+        ],
+        "options": {
+          "includeOnlyTargetedUserLists": false
+        }
+      }
+    },
+    {
+      "key": {
+        "queryId": "912584356",
+        "reportId": "3582326550"
+      },
+      "metadata": {
+        "status": {
+          "state": "DONE",
+          "finishTimeMs": "1643712622311"
+        },
+        "reportDataStartTimeMs": "1641024000000",
+        "reportDataEndTimeMs": "1641542400000",
+        "googleCloudStoragePath": "https://storage.googleapis.com/dfa_-b8d7cf41be5eb53420e455d913fdfab19a164cc3/Standard_Report_Airbyte_20220201_105021_912584356_3582326550.csv?GoogleAccessId=573983893819-acfst5i6ba5a02rsdrjlpcfbq9k169sm@developer.gserviceaccount.com&Expires=1648896739&Signature=moAl0YEQWFHXsf%2FCSbfw77DaJ7GHBzviGasAKNr22qwjiZWE7HUbAzntDiJnAHXS5KS753ta9AN1FYJKUcWfJQthNzQ4dbHpoJD%2F4gIZ74b0x1MICbulfw%2F%2BQPeCbY%2F%2BPFgYbe2lq2eqRO%2FSnP7Abs2J1QQOLHoXU3R558necO8%3D"
+      },
+      "params": {
+        "groupBys": [
+          "FILTER_ADVERTISER_NAME",
+          "FILTER_ADVERTISER",
+          "FILTER_ADVERTISER_CURRENCY",
+          "FILTER_INSERTION_ORDER_NAME",
+          "FILTER_INSERTION_ORDER",
+          "FILTER_LINE_ITEM_NAME",
+          "FILTER_LINE_ITEM"
+        ],
+        "filters": [
+          {
+            "type": "FILTER_PARTNER",
+            "value": "231"
+          }
+        ],
+        "metrics": [
+          "METRIC_IMPRESSIONS",
+          "METRIC_BILLABLE_IMPRESSIONS",
+          "METRIC_CLICKS",
+          "METRIC_CTR",
+          "METRIC_TOTAL_CONVERSIONS",
+          "METRIC_LAST_CLICKS",
+          "METRIC_LAST_IMPRESSIONS",
+          "METRIC_REVENUE_ADVERTISER",
+          "METRIC_MEDIA_COST_ADVERTISER"
+        ],
+        "options": {
+          "includeOnlyTargetedUserLists": false
+        }
+      }
+    },
+    {
+      "key": {
+        "queryId": "912584356",
+        "reportId": "3582327133"
+      },
+      "metadata": {
+        "status": {
+          "state": "DONE",
+          "finishTimeMs": "1643712670657"
+        },
+        "reportDataStartTimeMs": "1641024000000",
+        "reportDataEndTimeMs": "1641542400000",
+        "googleCloudStoragePath": "https://storage.googleapis.com/dfa_-b8d7cf41be5eb53420e455d913fdfab19a164cc3/Standard_Report_Airbyte_20220201_105109_912584356_3582327133.csv?GoogleAccessId=573983893819-acfst5i6ba5a02rsdrjlpcfbq9k169sm@developer.gserviceaccount.com&Expires=1648896739&Signature=MRP3Q3yzymiAV9K%2BNbgYfyvc1RpX4SqGmbwJvuLTtlsn6Z0YElnaitdTelS%2BheFUD1T3jyMX3StCJZ29w9cBahd%2BoE%2B8%2F0AEYwfu6FOESeVZeEGqlS0gLBA%2FrOziuevBW38kS%2FC1jp%2BRPD0zNl8XiczTUCB%2B%2Fi7HTegMjVZazKs%3D"
+      },
+      "params": {
+        "groupBys": [
+          "FILTER_ADVERTISER_NAME",
+          "FILTER_ADVERTISER",
+          "FILTER_ADVERTISER_CURRENCY",
+          "FILTER_INSERTION_ORDER_NAME",
+          "FILTER_INSERTION_ORDER",
+          "FILTER_LINE_ITEM_NAME",
+          "FILTER_LINE_ITEM"
+        ],
+        "filters": [
+          {
+            "type": "FILTER_PARTNER",
+            "value": "231"
+          }
+        ],
+        "metrics": [
+          "METRIC_IMPRESSIONS",
+          "METRIC_BILLABLE_IMPRESSIONS",
+          "METRIC_CLICKS",
+          "METRIC_CTR",
+          "METRIC_TOTAL_CONVERSIONS",
+          "METRIC_LAST_CLICKS",
+          "METRIC_LAST_IMPRESSIONS",
+          "METRIC_REVENUE_ADVERTISER",
+          "METRIC_MEDIA_COST_ADVERTISER"
+        ],
+        "options": {
+          "includeOnlyTargetedUserLists": false
+        }
+      }
+    }
+  ],
+  "nextPageToken": ""
+}

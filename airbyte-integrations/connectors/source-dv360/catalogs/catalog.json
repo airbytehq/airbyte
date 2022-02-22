@@ -1,0 +1,1194 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "audience_composition",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "FILTER_USER_LIST_FIRST_PARTY_NAME": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "FILTER_MATCH_RATIO": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "FILTER_ELIGIBLE_COOKIES_ON_FIRST_PARTY_AUDIENCE_LIST": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "FILTER_USER_LIST_THIRD_PARTY_NAME": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "FILTER_ELIGIBLE_COOKIES_ON_THIRD_PARTY_AUDIENCE_LIST_AND_INTEREST": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "METRIC_BID_REQUESTS": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "METRIC_UNIQUE_VISITORS_COOKIES": {
+              "type": [
+                "null",
+                "number"
+              ]
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        },
+        {
+          "name": "standard",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "FILTER_AD_POSITION": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_AD_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_INTEGRATION_CODE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_INTEGRATION_STATUS": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_APP_URL": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_BILLABLE_OUTCOME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CHANNEL_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CHANNEL_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CHANNEL_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_COUNTRY": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE_HEIGHT": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE_SIZE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_CREATIVE_WIDTH": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_DATE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_DEVICE_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_EXCHANGE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_EXCHANGE_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INVENTORY_DELIVERY_METHOD": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INVENTORY_RATE_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INVENTORY_SOURCE_EXTERNAL_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INVENTORY_SOURCE_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INVENTORY_SOURCE_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM_TYPE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_MEDIA_PLAN": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_MEDIA_PLAN_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PLAYBACK_METHOD": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_REGION": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_REGION_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_SITE_ID": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_TRUEVIEW_IAR_ZIPCODE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ZIP_CODE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PCT_MEASURABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PCT_VIEWABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_AT_START": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_FIRST_QUAR": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_ON_COMPLETE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_SECOND_QUAR": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_THIRD_QUAR": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_FULL_SCREEN": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_FULLY_ON_SCREEN_2_SEC": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_IN_BACKGROUND": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_AD_PLAYED": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_COMPLETED_IMPRESSIONS_AUDIBLE_AND_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_COMPLETED_IMPRESSIONS_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_FIRST_QUARTILE_IMPRESSIONS_AUDIBLE_AND_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_FIRST_QUARTILE_IMPRESSIONS_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_MIDPOINT_IMPRESSIONS_AUDIBLE_AND_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_MIDPOINT_IMPRESSIONS_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_THIRD_QUARTILE_IMPRESSIONS_AUDIBLE_AND_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_OF_THIRD_QUARTILE_IMPRESSIONS_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_PLAY_TIME_AUDIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_PLAY_TIME_AUDIBLE_AND_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_PERCENT_PLAY_TIME_VISIBLE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_UNVIEWABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_AUDIO_REVENUE_ECPCL_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_BILLABLE_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLICK_TO_POST_CLICK_CONVERSION_RATE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLICKS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CM_POST_CLICK_REVENUE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CM_POST_VIEW_REVENUE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CPM_FEE1_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CPM_FEE2_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CPM_FEE3_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CPM_FEE4_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CPM_FEE5_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CTR": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_DATA_COST_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_DBM_ENGAGEMENT_RATE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_ENGAGEMENTS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_GMAIL_CONVERSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_GMAIL_POST_CLICK_CONVERSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_GMAIL_POST_VIEW_CONVERSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_GRP_CORRECTED_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_IMPRESSIONS_TO_CONVERSION_RATE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_LAST_CLICKS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_LAST_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_LAST_TOUCH_TOTAL_CONVERSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_COST_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_FEE1_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_FEE2_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_FEE3_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_FEE4_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_MEDIA_FEE5_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ECPA_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ECPAPC_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ECPAPV_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ECPC_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_ECPM_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_REVENUE_VIEWABLE_ECPM_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_RICH_MEDIA_VIDEO_COMPLETIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_RICH_MEDIA_VIDEO_FIRST_QUARTILE_COMPLETES": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_RICH_MEDIA_VIDEO_MIDPOINTS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_RICH_MEDIA_VIDEO_THIRD_QUARTILE_COMPLETES": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TOTAL_MEDIA_COST_ADVERTISER": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TRACKED_ADS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TRACKING_UNCONSENTED_CLICKS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TRUEVIEW_VIEW_RATE": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TRUEVIEW_VIEWS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_VENDOR_BLOCKED_ADS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_AUDIO_CLIENT_COST_ECPCL_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ECPA_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ECPA_PC_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ECPC_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ECPA_PV_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_ECPM_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_CLIENT_COST_VIEWABLE_ECPM_ADVERTISER_CURRENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        },
+        {
+          "name": "cookie_reach",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "FILTER_ADVERTISER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "METRIC_COOKIE_REACH_IMPRESSION_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        },
+        {
+          "name": "floodlight",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "FILTER_ACTIVE_VIEW_EXPECTED_VIEWABILITY": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_INTEGRATION_CODE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_INTEGRATION_STATUS": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_DATE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER_STATUS": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "METRIC_COOKIE_CONSENTED_FLOODLIGHT_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_COOKIE_UNCONSENTED_FLOODLIGHT_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_FLOODLIGHT_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_DUPLICATE_FLOODLIGHT_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        },
+        {
+          "name": "unique_reach",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "FILTER_ADVERTISER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_COUNTRY": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_INSERTION_ORDER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_LINE_ITEM_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_PARTNER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_AVERAGE_IMPRESSION_FREQUENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_CLICK_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_IMPRESSION_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_TOTAL_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        },
+        {
+          "name": "unique_reach_audience",
+          "json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "FILTER_ADVERTISER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_ADVERTISER_NAME": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_AGE": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_COUNTRY": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "FILTER_GENDER": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "METRIC_CLICKS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_DEMO_COMPOSITION_IMPRESSION": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_DEMO_POPULATION": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_GRP_CORRECTED_IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_TARGET_RATING_POINTS": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_AVERAGE_IMPRESSION_FREQUENCY": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_CLICK_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_UNIQUE_REACH_IMPRESSION_REACH": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_PERCENT": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_SHARE_PERCENT": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              }
+            }
+          },
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": true,
+          "default_cursor_field": [
+            "segments.date"
+          ]
+        }
+      ]
+    }
+  }

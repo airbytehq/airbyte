@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "FILTER_ADVERTISER": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ADVERTISER_NAME": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_AGE": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_COUNTRY": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_GENDER": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "METRIC_CLICKS": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_DEMO_COMPOSITION_IMPRESSION": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_DEMO_POPULATION": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_GRP_CORRECTED_IMPRESSIONS": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_TARGET_RATING_POINTS": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_UNIQUE_REACH_AVERAGE_IMPRESSION_FREQUENCY": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_UNIQUE_REACH_CLICK_REACH": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_UNIQUE_REACH_IMPRESSION_REACH": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_PERCENT": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_SHARE_PERCENT": {
+      "type": [
+        "null",
+        "number"
+      ]
+    }
+  }
+}

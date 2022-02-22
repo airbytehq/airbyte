@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "FILTER_USER_LIST_FIRST_PARTY_NAME": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_MATCH_RATIO": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ELIGIBLE_COOKIES_ON_FIRST_PARTY_AUDIENCE_LIST": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_USER_LIST_THIRD_PARTY_NAME": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FILTER_ELIGIBLE_COOKIES_ON_THIRD_PARTY_AUDIENCE_LIST_AND_INTEREST": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "METRIC_BID_REQUESTS": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "METRIC_UNIQUE_VISITORS_COOKIES": {
+      "type": [
+        "null",
+        "number"
+      ]
+    }
+  }
+}
