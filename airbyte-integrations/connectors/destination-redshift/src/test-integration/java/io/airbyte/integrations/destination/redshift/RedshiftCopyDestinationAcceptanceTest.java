@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -21,8 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
- * credentials contain S3 credentials - this automatically causes COPY to be selected.
+ * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test credentials contain S3 credentials - this
+ * automatically causes COPY to be selected.
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -141,7 +142,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null,
-        "ssl=true;sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+        ImmutableMap.of("ssl", "true", "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory")
+    );
   }
 
   @Override
