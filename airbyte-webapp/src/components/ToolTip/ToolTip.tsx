@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 type ToolTipProps = {
   control: React.ReactNode;
+  className?: string;
 };
 
 const Control = styled.div`
@@ -22,17 +23,19 @@ const ToolTipView = styled.div`
   top: calc(100% + 10px);
   left: -50px;
   min-width: 100px;
+  z-index: 10;
 
-  div:hover > & {
+  div:hover > &,
+  &:hover {
     display: block;
   }
 `;
 
-const ToolTip: React.FC<ToolTipProps> = ({ children, control }) => {
+const ToolTip: React.FC<ToolTipProps> = ({ children, control, className }) => {
   return (
     <Control>
       {control}
-      <ToolTipView>{children}</ToolTipView>
+      <ToolTipView className={className}>{children}</ToolTipView>
     </Control>
   );
 };
