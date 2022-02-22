@@ -501,8 +501,8 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
-    DogStatsDMetricSingleton.getInstance().recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS,
-        System.currentTimeMillis() - start);
+    DogStatsDMetricSingleton.getInstance()
+        .recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
