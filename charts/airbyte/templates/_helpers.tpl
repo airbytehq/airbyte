@@ -113,21 +113,6 @@ Add environment variables to configure database values
 {{/*
 Add environment variables to configure database values
 */}}
-{{- define "airbyte.database.password" -}}
-{{- if .Values.postgresql.enabled -}}
-    {{- printf "%s" .Values.postgresql.postgresqlPassword -}}
-{{- else -}}
-    {{- if eq "" .Values.externalDatabase.existingSecret -}}
-        {{- printf "%s" .Values.externalDatabase.password -}}      
-    {{- else -}}
-        {{- printf "%s" "postgresql-password" -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Add environment variables to configure database values
-*/}}
 {{- define "airbyte.database.existingsecret.key" -}}
 {{- if .Values.postgresql.enabled -}}
     {{- printf "%s" "postgresql-password" -}}
