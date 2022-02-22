@@ -340,7 +340,21 @@
       "type": ["null", "string"]
     },
     "auto_merge": {
-      "type": ["null", "boolean"]
+      "type": ["null", "object"],
+      "properties": {
+        "enabled_by": {
+          "$ref": "user.json"
+        },
+        "commit_title": {
+          "type": ["null", "string"]
+        },
+        "merge_method": {
+          "type": ["null", "string"]
+        },
+        "commit_message": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "draft": {
       "type": ["null", "boolean"]

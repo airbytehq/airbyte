@@ -6,6 +6,8 @@ package io.airbyte.config.persistence;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -37,7 +39,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
 import java.time.Instant;
@@ -68,6 +70,12 @@ public class MockData {
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_ID_1 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_ID_2 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_ID_3 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_1 = UUID.randomUUID();
+  private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_2 = UUID.randomUUID();
+
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   public static StandardWorkspace standardWorkspace() {
@@ -103,7 +111,8 @@ public class MockData {
         .withDockerRepository("repository-1")
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withSourceType(SourceType.DATABASE)
@@ -111,7 +120,8 @@ public class MockData {
         .withDockerImageTag("tag-2")
         .withDockerRepository("repository-2")
         .withDocumentationUrl("documentation-url-2")
-        .withIcon("icon-2");
+        .withIcon("icon-2")
+        .withTombstone(false);
     return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2);
   }
 
@@ -137,7 +147,8 @@ public class MockData {
         .withDockerRepository("repository-3")
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withName("random-destination-2")
@@ -145,7 +156,8 @@ public class MockData {
         .withDockerRepository("repository-4")
         .withDocumentationUrl("documentation-url-4")
         .withIcon("icon-4")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withTombstone(false);
     return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2);
   }
 
@@ -313,9 +325,9 @@ public class MockData {
         CatalogHelpers.createAirbyteStream(
             "models",
             "models_schema",
-            io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("model", JsonSchemaPrimitive.STRING))
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
@@ -335,6 +347,38 @@ public class MockData {
         .withConnectionId(CONNECTION_ID_4)
         .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
+  }
+
+  public static List<ActorCatalog> actorCatalogs() {
+    final ActorCatalog actorCatalog1 = new ActorCatalog()
+        .withId(ACTOR_CATALOG_ID_1)
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("TESTHASH");
+    final ActorCatalog actorCatalog2 = new ActorCatalog()
+        .withId(ACTOR_CATALOG_ID_2)
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("12345");
+    final ActorCatalog actorCatalog3 = new ActorCatalog()
+        .withId(ACTOR_CATALOG_ID_3)
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("SomeOtherHash");
+    return Arrays.asList(actorCatalog1, actorCatalog2, actorCatalog3);
+  }
+
+  public static List<ActorCatalogFetchEvent> actorCatalogFetchEvents() {
+    final ActorCatalogFetchEvent actorCatalogFetchEvent1 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_1)
+        .withActorCatalogId(ACTOR_CATALOG_ID_1)
+        .withActorId(SOURCE_ID_1)
+        .withConfigHash("CONFIG_HASH")
+        .withConnectorVersion("1.0.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent2 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
+        .withActorCatalogId(ACTOR_CATALOG_ID_2)
+        .withActorId(SOURCE_ID_2)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
+    return Arrays.asList(actorCatalogFetchEvent1);
   }
 
   public static Instant now() {

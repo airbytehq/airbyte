@@ -13,13 +13,13 @@
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Hostname of the database.",
+        "description": "The hostname of the database.",
         "type": "string",
         "order": 0
       },
       "port": {
         "title": "Port",
-        "description": "Port of the database.",
+        "description": "The port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -29,26 +29,26 @@
       },
       "sid": {
         "title": "SID",
-        "description": "SID",
+        "description": "The System Identifier uniquely distinguishes the instance from any other instance on the same computer.",
         "type": "string",
         "order": 2
       },
       "username": {
         "title": "User",
-        "description": "Username to use to access the database.  This user must have CREATE USER privileges in the database.",
+        "description": "The username to access the database. This user must have CREATE USER privileges in the database.",
         "type": "string",
         "order": 3
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with the username.",
+        "description": "The password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 4
       },
       "schema": {
         "title": "Default Schema",
-        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
+        "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
         "type": "string",
         "examples": ["airbyte"],
         "default": "airbyte",

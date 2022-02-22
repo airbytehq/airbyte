@@ -31,7 +31,6 @@ import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
@@ -40,7 +39,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +62,8 @@ public class TemporalClient {
    * use the queries to make sure that we are in a state in which we want to continue with.
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
+
+  private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
 
   public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
@@ -216,7 +216,7 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, false, 1, null, false);
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
@@ -357,7 +357,43 @@ public class TemporalClient {
       }
     } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
 
-    log.info("end of reset");
+    log.info("end of reset submission");
+
+    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    return new ManualSyncSubmissionResult(
+        Optional.empty(),
+        Optional.of(jobId));
+  }
+
+  /**
+   * This is launching a reset and wait for the reset to be performed.
+   *
+   * The way to do so is to wait for the jobId to change, either to a new job id or the default id
+   * that signal that a workflow is waiting to be submitted
+   */
+  public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
+    ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
+    if (resetResult.getFailingReason().isPresent()) {
+      return resetResult;
+    }
+
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+
+    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+
+    do {
+      try {
+        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+      } catch (final InterruptedException e) {
+        return new ManualSyncSubmissionResult(
+            Optional.of("Didn't manage to reset a sync for: " + connectionId),
+            Optional.empty());
+      }
+    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+
+    log.info("End of reset");
 
     final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
 
@@ -418,14 +454,15 @@ public class TemporalClient {
     ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
         ListOpenWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
+            .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
             .build();
     do {
       final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
           service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
-      final List<WorkflowExecutionInfo> workflowExecutionInfos = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+      final long matchingWorkflowCount = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
-          .collect(Collectors.toList());
-      if (!workflowExecutionInfos.isEmpty()) {
+          .count();
+      if (matchingWorkflowCount != 0) {
         return true;
       }
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
@@ -434,6 +471,7 @@ public class TemporalClient {
           ListOpenWorkflowExecutionsRequest.newBuilder()
               .setNamespace(client.getOptions().getNamespace())
               .setNextPageToken(token)
+              .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
               .build();
 
     } while (token != null && token.size() > 0);

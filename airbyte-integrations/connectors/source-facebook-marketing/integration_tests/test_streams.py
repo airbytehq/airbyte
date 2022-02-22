@@ -4,20 +4,21 @@
 
 
 import copy
+import logging
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
 @pytest.fixture(scope="session", name="state")
 def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
+    cursor_value = "2021-02-19T10:42:40-0800"
     return {
-        "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "ad_sets": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "campaigns": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "ads": {"updated_time": cursor_value},
+        "ad_sets": {"updated_time": cursor_value},
+        "campaigns": {"updated_time": cursor_value},
     }
 
 
@@ -52,7 +53,7 @@ class TestFacebookMarketingSource:
         assert deleted_records, f"{stream_name} stream should have deleted records returned"
         assert is_specific_deleted_pulled, f"{stream_name} stream should have a deleted record with id={deleted_id}"
 
-    @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 1), ("ad_sets", 1)])
+    @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("ad_sets", 1)])
     def test_streams_with_include_deleted_and_state(self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state):
         """Should ignore state because of include_deleted enabled"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
@@ -92,7 +93,7 @@ class TestFacebookMarketingSource:
     def _read_records(conf, catalog, state=None) -> Tuple[List[AirbyteMessage], List[AirbyteMessage]]:
         records = []
         states = []
-        for message in SourceFacebookMarketing().read(AirbyteLogger(), conf, catalog, state=state):
+        for message in SourceFacebookMarketing().read(logging.getLogger("airbyte"), conf, catalog, state=state):
             if message.type == Type.RECORD:
                 records.append(message)
             elif message.type == Type.STATE:
