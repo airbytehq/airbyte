@@ -63,18 +63,15 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
-  private final ExceptionWrappingDatabase database;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
                           final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence,
-                          final Database database) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
     this.persistence = persistence;
     this.secretsHydrator = secretsHydrator;
     this.longLivedSecretPersistence = longLivedSecretPersistence;
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
-    this.database = new ExceptionWrappingDatabase(database);
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
