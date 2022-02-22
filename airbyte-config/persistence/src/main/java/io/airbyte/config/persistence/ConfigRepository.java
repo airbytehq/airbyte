@@ -30,8 +30,6 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
-import io.airbyte.db.Database;
-import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;

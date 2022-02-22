@@ -27,7 +27,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
-import io.airbyte.db.Database;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
