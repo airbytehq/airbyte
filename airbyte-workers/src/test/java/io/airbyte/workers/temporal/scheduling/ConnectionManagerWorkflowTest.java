@@ -571,9 +571,9 @@ public class ConnectionManagerWorkflowTest {
       WorkflowClient.start(workflow::run, input);
       testEnv.sleep(Duration.ofSeconds(40L));
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofSeconds(40L));
+      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofMinutes(25L));
+      testEnv.sleep(Duration.ofMinutes(15L));
       testEnv.shutdown();
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
@@ -598,7 +598,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @Timeout(value = 2,
+    @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset doesn't restart a reset")
     public void cancelResetDontContinueAsReset() {
