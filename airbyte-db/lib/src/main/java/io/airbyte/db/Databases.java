@@ -41,7 +41,7 @@ public class Databases {
       try {
         val infinity = Integer.MAX_VALUE;
         database = createPostgresDatabaseWithRetryTimeout(username, password, jdbcConnectionString, isDbReady, infinity);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         // This should theoretically never happen since we set the timeout to be a very high number.
       }
     }
