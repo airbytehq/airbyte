@@ -466,7 +466,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @Timeout(value = 2,
+    @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a running workflow cancels the sync")
     public void cancelRunning() {
