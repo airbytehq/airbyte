@@ -39,8 +39,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "useSSL", "true",
       "requireSSL", "true",
-      "verifyServerCertificate", "false"
-  );
+      "verifyServerCertificate", "false");
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       // zero dates by default cannot be parsed into java date objects (they will throw an error)
       // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database

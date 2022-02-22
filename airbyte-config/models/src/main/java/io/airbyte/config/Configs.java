@@ -377,6 +377,18 @@ public interface Configs {
   boolean getPublishMetrics();
 
   /**
+   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDAgentHost();
+
+  /**
+   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDDogStatsDPort();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();

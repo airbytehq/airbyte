@@ -404,6 +404,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody) {
+    return execute(() -> sourceHandler.cloneSource(sourceIdRequestBody));
+  }
+
+  @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
@@ -505,6 +510,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+  }
+
+  @Override
+  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody) {
+    return execute(() -> destinationHandler.cloneDestination(destinationIdRequestBody));
   }
 
   @Override

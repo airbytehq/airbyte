@@ -7,7 +7,7 @@ import { useConfig } from "config";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
-import { DeploymentService } from "core/resources/DeploymentService";
+import { DeploymentService } from "core/domain/deployment/DeploymentService";
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
 import { useServicesProvider } from "core/servicesProvider";
@@ -58,8 +58,6 @@ const ConfigurationsPage: React.FC = () => {
 
         return new Promise((resolve, reject) => {
           reader.onloadend = async (e) => {
-            // setError("");
-            // setIsLoading(true);
             const file = e?.target?.result;
             if (!file) {
               throw new Error("No file");

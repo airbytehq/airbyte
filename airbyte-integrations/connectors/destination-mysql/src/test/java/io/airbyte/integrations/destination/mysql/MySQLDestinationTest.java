@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,8 +27,7 @@ public class MySQLDestinationTest {
         "host", "localhost",
         "port", 1337,
         "username", "user",
-        "database", "db"
-    ));
+        "database", "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
@@ -33,8 +36,7 @@ public class MySQLDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-        "jdbc_url_params", extraParam
-    ));
+        "jdbc_url_params", extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
@@ -43,8 +45,7 @@ public class MySQLDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-        "ssl", false
-    ));
+        "ssl", false));
   }
 
   @Test
@@ -78,4 +79,5 @@ public class MySQLDestinationTest {
     final Map<String, String> defaultProperties = new MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters());
     assertEquals(DEFAULT_PARAMETERS_WITH_SSL, defaultProperties);
   }
+
 }
