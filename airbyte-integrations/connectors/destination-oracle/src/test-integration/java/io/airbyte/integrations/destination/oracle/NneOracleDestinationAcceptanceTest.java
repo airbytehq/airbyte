@@ -51,7 +51,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
   private Map<String, String> getAdditionalProperties(final String algorithm) {
     return ImmutableMap.
         of("oracle.net.encryption_client", "REQUIRED",
-            "oracle.net.encryption_types_client", String.format("(%s)", algorithm));
+            "oracle.net.encryption_types_client", String.format("( %s )", algorithm));
   }
 
   @Test

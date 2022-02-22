@@ -14,7 +14,6 @@ import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public static final String COLUMN_NAME_EMITTED_AT =
       "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
 
-  private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
+  protected static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
+  public static final String ENCRYPTION_KEY = "encryption";
+  public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
 
   enum Protocol {
     TCP,
@@ -57,16 +58,39 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return new HashMap<>();
+    final HashMap<String, String> properties = new HashMap<>();
+    if (config.has(ENCRYPTION_KEY)) {
+      final JsonNode encryption = config.get(ENCRYPTION_KEY);
+      final String encryptionMethod = encryption.get(ENCRYPTION_METHOD_KEY).asText();
+      switch (encryptionMethod) {
+        case "unencrypted" -> {
+
+        }
+        case "client_nne" -> {
+          final String algorithm = encryption.get("encryption_algorithm").asText();
+          properties.put("oracle.net.encryption_client", "REQUIRED");
+          properties.put("oracle.net.encryption_types_client", "( " + algorithm + " )");
+        }
+        case "encrypted_verify_certificate" -> {
+          try {
+            convertAndImportCertificate(encryption.get("ssl_certificate").asText());
+          } catch (final IOException | InterruptedException e) {
+            throw new RuntimeException("Failed to import certificate into Java Keystore");
+          }
+          properties.put("javax.net.ssl.trustStore", KEY_STORE_FILE_PATH);
+          properties.put("javax.net.ssl.trustStoreType", "JKS");
+          properties.put("javax.net.ssl.trustStorePassword", KEY_STORE_PASS);
+        }
+        default -> throw new RuntimeException("Failed to obtain connection protocol from config " + encryption.asText());
+      }
+
+    }
+    return properties;
   }
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final List<String> additionalParameters = new ArrayList<>();
-
-    final Protocol protocol = config.has("encryption")
-        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
-        : Protocol.TCP;
+    final Protocol protocol = obtainConnectionProtocol(config);
     final String connectionString = String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
         protocol,
@@ -82,36 +106,20 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       configBuilder.put("password", config.get("password").asText());
     }
 
-    if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(";", additionalParameters);
-      configBuilder.put("connection_properties", connectionParams);
-    }
-
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(final JsonNode encryption,
-                                            final List<String> additionalParameters) {
-    final String encryptionMethod = encryption.get("encryption_method").asText();
+  protected Protocol obtainConnectionProtocol(final JsonNode config) {
+    if (!config.has(ENCRYPTION_KEY)) {
+      return Protocol.TCP;
+    }
+    final JsonNode encryption = config.get(ENCRYPTION_KEY);
+    final String encryptionMethod = encryption.get(ENCRYPTION_METHOD_KEY).asText();
     switch (encryptionMethod) {
-      case "unencrypted" -> {
-        return Protocol.TCP;
-      }
-      case "client_nne" -> {
-        final String algorithm = encryption.get("encryption_algorithm").asText();
-        additionalParameters.add("oracle.net.encryption_client=REQUIRED");
-        additionalParameters.add("oracle.net.encryption_types_client=( " + algorithm + " )");
+      case "unencrypted", "client_nne" -> {
         return Protocol.TCP;
       }
       case "encrypted_verify_certificate" -> {
-        try {
-          convertAndImportCertificate(encryption.get("ssl_certificate").asText());
-        } catch (final IOException | InterruptedException e) {
-          throw new RuntimeException("Failed to import certificate into Java Keystore");
-        }
-        additionalParameters.add("javax.net.ssl.trustStore=" + KEY_STORE_FILE_PATH);
-        additionalParameters.add("javax.net.ssl.trustStoreType=JKS");
-        additionalParameters.add("javax.net.ssl.trustStorePassword=" + KEY_STORE_PASS);
         return Protocol.TCPS;
       }
     }
