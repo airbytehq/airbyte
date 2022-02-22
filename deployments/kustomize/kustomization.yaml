@@ -4,13 +4,13 @@ kind: Kustomization
 namespace: airbyte
 
 bases:
-  - ../../../../kube/resources
+  - resources
 
 #commonLabels:
 #  app.kubernetes.io/name: airbyte
 
 resources:
-  - namespace.yaml
+#  - namespace.yaml
   - ingress.yaml
 
 images:
@@ -37,8 +37,10 @@ configMapGenerator:
 patchesStrategicMerge:
   - service_patch.yaml
 
-secretGenerator:
-  - name: airbyte-secrets
-    envs:
-      - .secrets.stg.yaml
+#secretGenerator:
+#  - name: airbyte-secrets
+#    envs:
+#      - .secrets
 
+#generators:
+#  - secret-generator.yaml

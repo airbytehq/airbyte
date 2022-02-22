@@ -1,0 +1,84 @@
+name: airbyte_pull_request
+
+on:
+  pull_request:
+env:
+  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_NAME: airbyte
+  AWS_PROFILE_ACCOUNT_DEV: prd-data-dev-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_STG: prd-data-stg-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-PlatformAdmin
+
+jobs:
+  ecr_login:
+    name: ecr_login
+    runs-on: self-hosted
+    outputs:
+      ECR_PASSWORD: ${{ steps.ecr_login_pwd.outputs.ECR_PASSWORD }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::856154240248:role/PlatformAdmin
+          role-duration-seconds: 1200
+          role-skip-session-tagging: true
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: retrieve ecr password and store as output
+        id: ecr_login_pwd
+        run: |
+          PWD=$(aws ecr get-login-password --region us-east-1)
+          echo "::set-output name=ECR_PASSWORD::${PWD}"
+
+  plan_stg:
+    name: plan-stg
+    runs-on: self-hosted
+    environment: stg
+    needs:
+      - ecr_login
+    container:
+      image: 856154240248.dkr.ecr.us-east-2.amazonaws.com/terraform:0.15.1
+      credentials:
+        username: AWS
+        password: ${{ needs.ecr_login.outputs.ECR_PASSWORD }}
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      GH_USERNAME: ${{ secrets.GH_USERNAME }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set branch name
+        uses: nelonoel/branch-name@v1.0.1
+
+      - name: Set AWS config
+        shell: bash
+        run: sh ./bin/ci/set-aws-config.sh
+
+      - name: Set PAT for module access
+        shell: bash
+        run: git config --global url."https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/viewthespace".insteadOf "https://github.com/viewthespace"
+
+      - name: plan
+        shell: bash
+        run: |
+          set -e
+          export AWS_PROFILE=${AWS_PROFILE}
+          export TF_VAR_change_cause=${IMAGE_TAG}
+          export TF_VAR_image_tag=${IMAGE_TAG}
+          cd deployments/helm/stg/us_east_2
+          terraform init
+          terraform plan -lock=false
