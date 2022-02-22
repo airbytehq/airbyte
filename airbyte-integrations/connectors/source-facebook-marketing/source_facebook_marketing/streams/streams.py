@@ -92,6 +92,15 @@ class Campaigns(FBMarketingIncrementalStream):
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_campaigns(params=params)
 
+class Activities(FBMarketingIncrementalStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-activity"""
+
+    entity_prefix = "activity"
+    cursor_field = "event_time"
+    primary_key = None
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_activities(params=params)
 
 class Videos(FBMarketingIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""

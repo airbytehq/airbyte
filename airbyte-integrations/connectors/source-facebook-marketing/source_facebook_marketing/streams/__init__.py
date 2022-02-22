@@ -17,6 +17,7 @@ from .streams import (
     Campaigns,
     Images,
     Videos,
+    Activities,
 )
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     "Campaigns",
     "Images",
     "Videos",
+    "Activities",
 ]

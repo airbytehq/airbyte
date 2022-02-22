@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     Campaigns,
     Images,
     Videos,
+    Activities,
 )
 
 logger = logging.getLogger("airbyte")
@@ -61,7 +62,6 @@ class SourceFacebookMarketing(AbstractSource):
             start_date=config.start_date,
             end_date=config.end_date,
         )
-
         streams = [
             AdAccount(api=api),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
@@ -77,6 +77,7 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Activities(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
