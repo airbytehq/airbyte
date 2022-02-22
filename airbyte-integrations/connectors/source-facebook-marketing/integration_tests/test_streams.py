@@ -7,7 +7,7 @@ import logging
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
@@ -34,11 +34,8 @@ def state_with_include_deleted_fixture(state):
 def configured_catalog_fixture(config) -> ConfiguredAirbyteCatalog:
     catalog = SourceFacebookMarketing().discover(logger=logging.getLogger("airbyte"), config=config)
     streams = [
-        ConfiguredAirbyteStream(
-            stream=stream,
-            sync_mode=stream.supported_sync_modes[0],
-            destination_sync_mode=DestinationSyncMode.append
-        ) for stream in catalog.streams
+        ConfiguredAirbyteStream(stream=stream, sync_mode=stream.supported_sync_modes[0], destination_sync_mode=DestinationSyncMode.append)
+        for stream in catalog.streams
     ]
     return ConfiguredAirbyteCatalog(streams=streams)
 
