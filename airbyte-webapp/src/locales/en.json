@@ -328,6 +328,8 @@
   "connection.replication": "Replication",
   "connection.streams": "Streams",
   "connection.transfer": "Transfer",
+  "connection.linkCopied": "Link copied!",
+  "connection.copyLogLink": "Copy link to log",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
