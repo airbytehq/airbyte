@@ -117,7 +117,8 @@ class ReadReportStream(HttpStream):
          {"job": {"id": "369f88a5-d5a3-42c6-a135-8aec4215553e", "name": "Calls", 
          "created_at": "2022-01-13T10:17:15", "status": "processing", "type": "calls", "format": "json", ...}}
          ```
-         The retry function will be looking for a response in this format with 'status=processing'.
+         The retry function will be looking for a response in this format with 'status' different than 'completed'.
+         Please refer to the docs to read more about executing a report: https://docs.talkdesk.com/docs/executing-report.
 
         """
         if response.status_code == 429 or 500 <= response.status_code < 600:
