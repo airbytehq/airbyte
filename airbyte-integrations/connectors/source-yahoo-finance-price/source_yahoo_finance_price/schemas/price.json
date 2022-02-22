@@ -175,28 +175,7 @@
 											"type": "string"
 										}
 									}
-								},
-								"required": [
-									"currency",
-									"symbol",
-									"exchangeName",
-									"instrumentType",
-									"firstTradeDate",
-									"regularMarketTime",
-									"gmtoffset",
-									"timezone",
-									"exchangeTimezoneName",
-									"regularMarketPrice",
-									"chartPreviousClose",
-									"previousClose",
-									"scale",
-									"priceHint",
-									"currentTradingPeriod",
-									"tradingPeriods",
-									"dataGranularity",
-									"range",
-									"validRanges"
-								]
+								}
 							},
 							"timestamp": {
 								"type": "array",
@@ -283,11 +262,7 @@
 				"error": {
 					"type": "null"
 				}
-			},
-			"required": [
-				"result",
-				"error"
-			]
+			}
 		}
 	},
 	"required": [
