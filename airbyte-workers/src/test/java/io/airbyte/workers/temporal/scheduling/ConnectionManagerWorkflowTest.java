@@ -551,7 +551,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @Timeout(value = 10,
+    @Timeout(value = 5,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
     public void resetCancelRunningWorkflow() {
