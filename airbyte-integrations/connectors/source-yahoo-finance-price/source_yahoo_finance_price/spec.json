@@ -15,7 +15,7 @@
         "examples": [
           "AAPL",
           "GOOGL",
-          "SPY"
+          "GEO.MI"
         ]
       },
       "interval": {
@@ -34,6 +34,24 @@
           "1wk",
           "1mo",
           "3mo"
+        ]
+      },
+      "range": {
+        "title": "Range",
+        "description": "The range of prices to be queried.",
+        "type": "string",
+        "enum": [
+          "1d",
+          "5d",
+          "7d",
+          "1mo",
+          "3mo",
+          "6mo",
+          "1y",
+          "2y",
+          "5y",
+          "ytd",
+          "max"
         ]
       }
     }

@@ -14,15 +14,24 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Full refresh stream
 class Price(HttpStream, ABC):
+    """
+    Queries the Yahoo Finance API for the price history of the given stock.
+    The length of the price history is determined by the interval parameter:
+    - 1m to 90m: 7 days of data
+    - 1h to 3mo: 730 days of data
+
+    Based on the documentation found at https://stackoverflow.com/questions/44030983/yahoo-finance-url-not-working.
+    """
 
 
     url_base = "https://query1.finance.yahoo.com/"
     primary_key = None
 
-    def __init__(self, ticker: str, interval: str, **kwargs):
+    def __init__(self, ticker: str, interval: str, range: str, **kwargs):
         super().__init__(**kwargs)
         self.ticker = ticker
         self.interval = interval
+        self.range = range
 
     def path(
         self,
@@ -33,7 +42,7 @@ class Price(HttpStream, ABC):
         return f"v8/finance/chart/{self.ticker}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # YF does not offer pagination
+        # Yahoo Finance API does not offer pagination for the chart endpoint
         return None
 
     def request_params(
@@ -44,20 +53,20 @@ class Price(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {
             "symbol": self.ticker,
-            "interval": self.interval
+            "interval": self.interval,
+            "range": self.range,
         }
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
-        headers = {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"}
+        headers = {
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)" # Required to avoid 403 response
+        }
         return {**base_headers, **headers}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        return [response.json()]
+        yield from response.json()
 
 # Basic incremental stream
 class IncrementalPriceStream(Price, ABC):
@@ -89,10 +98,18 @@ class IncrementalPriceStream(Price, ABC):
 
 
 # Source
-class SourceYahooFinance(AbstractSource):
+class SourceYahooFinancePrice(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        # No parameter validation required (?)
+        # Check that the range parameter is configured according to the interval parameter
+        # If the range DOES NOT end in "d" we cannot use minute intervals (end in "m")
+        if config["interval"][-1] == "m" and config["range"][-1] != "d":
+            return False, "Range parameter must end in 'd' for minute intervals"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Price(ticker=config['ticker'], interval=config.get('interval', '1m'))]
+        args = {
+            "ticker": config["ticker"],
+            "interval": config["interval"],
+            "range": config["range"]
+        }
+        return [Price(**args)]

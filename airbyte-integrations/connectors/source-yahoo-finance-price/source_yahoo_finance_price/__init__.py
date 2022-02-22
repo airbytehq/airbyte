@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceYahooFinance
+from .source import SourceYahooFinancePrice
 
-__all__ = ["SourceYahooFinance"]
+__all__ = ["SourceYahooFinancePrice"]
