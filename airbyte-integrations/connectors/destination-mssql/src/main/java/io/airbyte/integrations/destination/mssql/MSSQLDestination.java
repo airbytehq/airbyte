@@ -13,7 +13,9 @@ import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,11 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return new HashMap<>();
   }
 
   @Override
