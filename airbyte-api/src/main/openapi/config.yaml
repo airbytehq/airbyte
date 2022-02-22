@@ -494,6 +494,29 @@ paths:
                 $ref: "#/components/schemas/SourceReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/clone:
+    post:
+      tags:
+        - source
+      summary: Clone source
+      operationId: cloneSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
     post:
       tags:
@@ -888,6 +911,29 @@ paths:
       responses:
         "204":
           description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/clone:
+    post:
+      tags:
+        - destination
+      summary: Clone destination
+      operationId: cloneDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
