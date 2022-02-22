@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { FieldProps } from "formik";
-import { FormattedHTMLMessage, FormattedMessage } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { useConfig } from "config";
@@ -114,7 +114,7 @@ const CatalogHeader: React.FC = () => {
       <Cell lighter>
         <FormattedMessage id="sources.source" />
         <InformationToolTip>
-          <FormattedHTMLMessage id="connectionForm.source.info" />
+          <FormattedMessage id="connectionForm.source.info" />
         </InformationToolTip>
       </Cell>
       <Cell />
@@ -142,9 +142,9 @@ const CatalogHeader: React.FC = () => {
       <Cell lighter>
         <FormattedMessage id="connector.destination" />
         <InformationToolTip>
-          <FormattedHTMLMessage id="connectionForm.destinationName.info" />
+          <FormattedMessage id="connectionForm.destinationName.info" />
           <NextLineText>
-            <FormattedHTMLMessage id="connectionForm.destinationStream.info" />
+            <FormattedMessage id="connectionForm.destinationStream.info" />
           </NextLineText>
         </InformationToolTip>
       </Cell>
