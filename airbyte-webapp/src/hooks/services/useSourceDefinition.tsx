@@ -14,4 +14,10 @@ const useSourceDefinitionList = (): {
   });
 };
 
-export { useSourceDefinitionList };
+const useSourceDefinition = (id: string): SourceDefinition => {
+  return useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: id,
+  });
+};
+
+export { useSourceDefinitionList, useSourceDefinition };

@@ -108,7 +108,8 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         kubernetesClient,
         null,
         null,
-        "airbyte/container-orchestrator:dev");
+        "airbyte/container-orchestrator:dev",
+        null);
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,

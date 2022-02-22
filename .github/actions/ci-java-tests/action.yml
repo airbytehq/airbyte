@@ -9,11 +9,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install Java
-      uses: actions/setup-java@v1
-      with:
-        java-version: '17'
-
     - name: "Build"
       shell: bash
       run: |

@@ -39,19 +39,18 @@ class SourceSalesforce(AbstractSource):
     def generate_streams(
         cls,
         config: Mapping[str, Any],
-        stream_names: List[str],
+        stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
         state: Mapping[str, Any] = None,
-        stream_objects: List = None,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
         streams = []
-        for stream_name in stream_names:
-            streams_kwargs = {}
+        for stream_name, sobject_options in stream_objects.items():
+            streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
 
-            selected_properties = sf_object.generate_schema(stream_name, stream_objects).get("properties", {})
+            selected_properties = sf_object.generate_schema(stream_name, sobject_options).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
             properties_not_supported_by_bulk = {
                 key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
@@ -63,7 +62,6 @@ class SourceSalesforce(AbstractSource):
             else:
                 # Use BULK API
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
-                streams_kwargs["wait_timeout"] = config.get("wait_timeout")
 
             json_schema = sf_object.generate_schema(stream_name, stream_objects)
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
@@ -77,8 +75,8 @@ class SourceSalesforce(AbstractSource):
 
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_names, stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_names, sf, state=state, stream_objects=stream_objects)
+        stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
+        return self.generate_streams(config, stream_objects, sf, state=state)
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None

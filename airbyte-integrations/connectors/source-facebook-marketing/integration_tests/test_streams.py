@@ -4,20 +4,21 @@
 
 
 import copy
+import logging
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
 @pytest.fixture(scope="session", name="state")
 def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
+    cursor_value = "2021-02-19T10:42:40-0800"
     return {
-        "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "ad_sets": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "campaigns": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "ads": {"updated_time": cursor_value},
+        "ad_sets": {"updated_time": cursor_value},
+        "campaigns": {"updated_time": cursor_value},
     }
 
 
@@ -32,7 +33,7 @@ def state_with_include_deleted_fixture(state):
 
 @pytest.fixture(scope="session", name="configured_catalog")
 def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog.json")
+    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog_without_insights.json")
 
 
 class TestFacebookMarketingSource:
@@ -92,7 +93,7 @@ class TestFacebookMarketingSource:
     def _read_records(conf, catalog, state=None) -> Tuple[List[AirbyteMessage], List[AirbyteMessage]]:
         records = []
         states = []
-        for message in SourceFacebookMarketing().read(AirbyteLogger(), conf, catalog, state=state):
+        for message in SourceFacebookMarketing().read(logging.getLogger("airbyte"), conf, catalog, state=state):
             if message.type == Type.RECORD:
                 records.append(message)
             elif message.type == Type.STATE:
