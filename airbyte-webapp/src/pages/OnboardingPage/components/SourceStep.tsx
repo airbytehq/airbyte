@@ -73,7 +73,7 @@ const SourceStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
