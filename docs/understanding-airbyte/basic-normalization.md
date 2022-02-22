@@ -350,6 +350,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+| 0.35.32-alpha   | 0.1.68 | 2022-02-20 | [\#10485](https://github.com/airbytehq/airbyte/pull/10485) | Fix row size too large for table with numerous `string` fields |
 |                 | 0.1.66 | 2022-02-04 | [\#9341](https://github.com/airbytehq/airbyte/pull/9341) | Fix normalization for bigquery datasetId and tables |
 | 0.35.13-alpha   | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |
 | 0.35.12-alpha   | 0.1.64 | 2021-01-28 | [\#9793](https://github.com/airbytehq/airbyte/pull/9793) | Support PEM format for ssh-tunnel keys |
