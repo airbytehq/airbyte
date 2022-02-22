@@ -49,7 +49,7 @@ class InsightConfig(BaseModel):
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description="Time window in days to get statistic from.",
-        le=90,
+        exclusiveMaximum=90,
         default=1,
     )
 
