@@ -78,7 +78,7 @@ const DestinationStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstDestination"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode[]) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
