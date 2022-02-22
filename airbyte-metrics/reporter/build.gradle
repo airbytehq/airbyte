@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-config:models')
     implementation project(':airbyte-metrics:lib')
 }
 
