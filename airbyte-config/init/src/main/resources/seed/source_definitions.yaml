@@ -112,7 +112,7 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
@@ -157,6 +157,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
   icon: confluence.svg
+  sourceType: api
+- name: Customer.io
+  sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
+  dockerRepository: farosai/airbyte-customer-io-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/customer-io
+  icon: customer-io.svg
   sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
@@ -297,6 +304,13 @@
   dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
+  sourceType: api
+- name: Harness
+  sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
+  dockerRepository: farosai/airbyte-harness-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/harness
+  icon: harness.svg
   sourceType: api
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
@@ -519,6 +533,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/outreach
   icon: outreach.svg
   sourceType: api
+- name: PagerDuty
+  sourceDefinitionId: 2817b3f0-04e4-4c7a-9f32-7a5e8a83db95
+  dockerRepository: farosai/airbyte-pagerduty-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pagerduty
+  icon: pagerduty.svg
+  sourceType: api
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
@@ -669,7 +690,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -745,7 +766,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
@@ -783,6 +804,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-youtube-analytics
   icon: youtube.svg
+  sourceType: api
+- name: VictorOps
+  sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
+  dockerRepository: farosai/airbyte-victorops-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/victorops
+  icon: victorops.svg
   sourceType: api
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
