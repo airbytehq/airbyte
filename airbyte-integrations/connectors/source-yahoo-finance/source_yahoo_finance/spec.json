@@ -12,7 +12,7 @@
       "ticker": {
         "type": "string",
         "description": "Identifier for the stock to be queried,",
-        "examples": ["AAPL", "GOOGL", "SPY"]
+        "examples": ["AAPL, GOOGL, SPY"]
       }
     }
   }
