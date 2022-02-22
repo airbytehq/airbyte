@@ -109,7 +109,7 @@ public class WorkflowState {
 
   public void setQuarantined(final boolean quarantined) {
     final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.STUCK,
+        StateField.QUARANTINED,
         quarantined);
     stateChangedListener.addEvent(id, event);
     this.quarantined = quarantined;

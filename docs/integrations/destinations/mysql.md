@@ -59,6 +59,16 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Username**
 * **Password**
 * **Database**
+* **jdbc_url_params** (Optional)
+
+### Default JDBC URL Parameters
+
+The following JDBC URL parameters are set by Airbyte and cannot be overridden by the `jdbc_url_params` field:
+
+* `useSSL=true` (unless `ssl` is set to false)
+* `requireSSL=true` (unless `ssl` is set to false)
+* `verifyServerCertificate=false` (unless `ssl` is set to false)
+* `zeroDateTimeBehavior=convertToNull`
 
 ## Known Limitations
 
@@ -95,6 +105,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.17  | 2022-02-16 | [10362](https://github.com/airbytehq/airbyte/pull/10362) | Add jdbc_url_params support for optional JDBC parameters |
 | 0.1.16  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.15  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.1.14  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |

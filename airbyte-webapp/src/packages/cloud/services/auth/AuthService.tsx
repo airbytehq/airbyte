@@ -105,6 +105,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         authInited();
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentUser, loggedIn, authInited]);
 
   const queryClient = useQueryClient();
@@ -171,6 +172,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       user: state.currentUser,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state, queryClient, userService]
   );
 

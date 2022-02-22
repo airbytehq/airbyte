@@ -26,7 +26,7 @@ public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implem
                                     final List<AirbyteRecordMessage> records,
                                     final String schemaName,
                                     final String stage) {
-    LOGGER.info("actual size of batch for staging: {}", records.size());
+    LOGGER.info("Writing {} records to {}", records.size(), stage);
 
     if (records.isEmpty()) {
       return;

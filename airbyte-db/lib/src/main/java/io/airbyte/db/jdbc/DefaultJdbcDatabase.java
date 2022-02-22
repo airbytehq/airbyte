@@ -113,6 +113,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public void close() throws Exception {
+    // Close the source in case we are using a datasource implementation that requires closing.
+    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
     if (dataSource instanceof AutoCloseable autoCloseable) {
       autoCloseable.close();
     }

@@ -10,6 +10,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
+import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -51,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import lombok.val;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -478,6 +481,7 @@ public class KubePodProcess extends Process implements KubePod {
         .build();
 
     LOGGER.info("Creating pod...");
+    val start = System.currentTimeMillis();
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
     waitForInitPodToRun(fabricClient, podDefinition);
@@ -497,6 +501,7 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
+    DogStatsDMetricSingleton.recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -520,6 +525,13 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stdout socket server...");
         final var socket = stdoutServerSocket.accept(); // blocks until connected
+        // cat /proc/sys/net/ipv4/tcp_keepalive_time
+        // 300
+        // cat /proc/sys/net/ipv4/tcp_keepalive_probes
+        // 5
+        // cat /proc/sys/net/ipv4/tcp_keepalive_intvl
+        // 60
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stdout...");
         this.stdout = socket.getInputStream();
       } catch (final IOException e) {
@@ -531,6 +543,7 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stderr socket server...");
         final var socket = stderrServerSocket.accept(); // blocks until connected
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stderr...");
         this.stderr = socket.getInputStream();
       } catch (final IOException e) {
