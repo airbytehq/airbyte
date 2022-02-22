@@ -115,7 +115,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         # Convert `start_date` to timestamp(UTC).
         self._start_date = pendulum.parse(start_date).int_timestamp if start_date else None
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> str:
+    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> int:
         start_point = self._start_date
 
         if stream_state and stream_state.get(item_id, {}).get(self.cursor_field):
@@ -282,7 +282,7 @@ class AttachedItem(SemiIncrementalChargebeeStream):
 
 class Event(IncrementalChargebeeStream):
     """
-    API docs: https://apidocs.eu.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
+    API docs: https://apidocs.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
     """
 
     cursor_field = "occurred_at"
@@ -292,9 +292,14 @@ class Event(IncrementalChargebeeStream):
 
 class Coupon(IncrementalChargebeeStream):
     """
-    API docs: https://apidocs.eu.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
+    API docs: https://apidocs.chargebee.com/docs/api/coupons?prod_cat_ver=2#list_coupons
     """
 
     cursor_field = "updated_at"
 
     api = CouponModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "created_at"
+        return params
