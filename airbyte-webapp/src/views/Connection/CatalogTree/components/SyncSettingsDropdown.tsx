@@ -82,6 +82,7 @@ const Mode: React.FC<{
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Option: React.FC<any> = (props) => {
   const { syncMode, destinationSyncMode } = props.value;
 
