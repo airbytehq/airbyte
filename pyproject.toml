@@ -17,13 +17,15 @@ omit = [
 
 [tool.flake8]
 extend-exclude = [
- ".venv",
- "build",
- "models",
- ".eggs",
- "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
- ".tox",
- "airbyte_api_client"
+    "*/lib/*/site-packages",
+    ".venv",
+    "build",
+    "models",
+    ".eggs",
+    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    ".tox",
+    "airbyte_api_client",
+
 ]
 max-complexity = 20
 max-line-length = 140
