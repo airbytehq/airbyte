@@ -8,6 +8,8 @@ function removeNestedPaths(
   ignoreProp = true
 ): AirbyteJSONSchema {
   if (typeof schema === "boolean") {
+    // TODO: Types need to be corrected here
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return null as any;
   }
 

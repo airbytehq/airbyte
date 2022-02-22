@@ -7,9 +7,12 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
+from source_s3.source_files_abstract.file_info import FileInfo
 
 
 class AbstractFileParser(ABC):
+    logger = AirbyteLogger()
+
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
@@ -17,13 +20,13 @@ class AbstractFileParser(ABC):
         """
         self._format = format
         self._master_schema = (
-            master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
+            master_schema
+            # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
         )
-        self.logger = AirbyteLogger()
 
     @property
     @abstractmethod
-    def is_binary(self):
+    def is_binary(self) -> bool:
         """
         Override this per format so that file-like objects passed in are currently opened as binary or not
         """
@@ -39,12 +42,13 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
         Note: avoid loading the whole file into memory to avoid OOM breakages
 
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :yield: data record as a mapping of {columns:values}
         """
 
@@ -74,11 +78,11 @@ class AbstractFileParser(ABC):
         if not reverse:
             for json_type, pyarrow_types in map.items():
                 if str_typ.lower() == json_type:
-                    return getattr(
-                        pa, pyarrow_types[0]
-                    ).__call__()  # better way might be necessary when we decide to handle more type complexity
+                    return str(
+                        getattr(pa, pyarrow_types[0]).__call__()
+                    )  # better way might be necessary when we decide to handle more type complexity
             logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
-            return pa.large_string()
+            return str(pa.large_string())
         else:
             for json_type, pyarrow_types in map.items():
                 if any(str_typ.startswith(pa_type) for pa_type in pyarrow_types):

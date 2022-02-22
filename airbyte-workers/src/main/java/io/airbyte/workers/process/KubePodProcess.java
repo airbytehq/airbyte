@@ -10,6 +10,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
+import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -45,11 +47,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import lombok.val;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -95,7 +99,6 @@ public class KubePodProcess extends Process implements KubePod {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
-  public static final Duration DEFAULT_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
@@ -110,6 +113,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+  public static final String MAIN_CONTAINER_NAME = "main";
 
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
@@ -155,7 +159,7 @@ public class KubePodProcess extends Process implements KubePod {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.00001; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.1; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -198,7 +202,7 @@ public class KubePodProcess extends Process implements KubePod {
         .collect(Collectors.toList());
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
-        .withName("main")
+        .withName(MAIN_CONTAINER_NAME)
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
@@ -268,7 +272,7 @@ public class KubePodProcess extends Process implements KubePod {
         if (tmpFile != null) {
           try {
             tmpFile.toFile().delete();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             LOGGER.info("Caught exception when deleting temp file but continuing to allow process deletion.", e);
           }
         }
@@ -342,7 +346,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
                         final List<TolerationPOJO> tolerations,
-                        final Map<String, String> nodeSelectors,
+                        final Optional<Map<String, String>> nodeSelectors,
                         final Map<String, String> labels,
                         final String socatImage,
                         final String busyboxImage,
@@ -468,7 +472,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
-        .withNodeSelector(nodeSelectors.isEmpty() ? null : nodeSelectors)
+        .withNodeSelector(nodeSelectors.orElse(null))
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
@@ -477,6 +481,7 @@ public class KubePodProcess extends Process implements KubePod {
         .build();
 
     LOGGER.info("Creating pod...");
+    val start = System.currentTimeMillis();
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
     waitForInitPodToRun(fabricClient, podDefinition);
@@ -495,7 +500,8 @@ public class KubePodProcess extends Process implements KubePod {
     fabricClient.resource(podDefinition).waitUntilCondition(p -> {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
-    }, 10, TimeUnit.DAYS);
+    }, 20, TimeUnit.MINUTES);
+    DogStatsDMetricSingleton.recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -519,6 +525,13 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stdout socket server...");
         final var socket = stdoutServerSocket.accept(); // blocks until connected
+        // cat /proc/sys/net/ipv4/tcp_keepalive_time
+        // 300
+        // cat /proc/sys/net/ipv4/tcp_keepalive_probes
+        // 5
+        // cat /proc/sys/net/ipv4/tcp_keepalive_intvl
+        // 60
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stdout...");
         this.stdout = socket.getInputStream();
       } catch (final IOException e) {
@@ -530,6 +543,7 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stderr socket server...");
         final var socket = stderrServerSocket.accept(); // blocks until connected
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stderr...");
         this.stderr = socket.getInputStream();
       } catch (final IOException e) {
@@ -640,7 +654,7 @@ public class KubePodProcess extends Process implements KubePod {
       final ContainerStatus mainContainerStatus = pod.getStatus()
           .getContainerStatuses()
           .stream()
-          .filter(containerStatus -> containerStatus.getName().equals("main"))
+          .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
           .collect(MoreCollectors.onlyElement());
 
       return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
@@ -683,7 +697,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     final ContainerStatus mainContainerStatus = refreshedPod.getStatus().getContainerStatuses()
         .stream()
-        .filter(containerStatus -> containerStatus.getName().equals("main"))
+        .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
         .collect(MoreCollectors.onlyElement());
 
     if (mainContainerStatus.getState() == null || mainContainerStatus.getState().getTerminated() == null) {

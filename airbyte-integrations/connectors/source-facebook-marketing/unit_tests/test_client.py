@@ -10,39 +10,18 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, Campaigns
+from source_facebook_marketing.streams import AdCreatives, AdsInsights, Campaigns
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
-
-
-@pytest.fixture(scope="session", name="account_id")
-def account_id_fixture():
-    return "unknown_account"
-
-
-@pytest.fixture(scope="session", name="some_config")
-def some_config_fixture(account_id):
-    return {"start_date": "2021-01-23T00:00:00Z", "account_id": f"{account_id}", "access_token": "unknown_token"}
-
-
-@pytest.fixture(autouse=True)
-def mock_default_sleep_interval(mocker):
-    mocker.patch("source_facebook_marketing.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
-
-
-@pytest.fixture(name="api")
-def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
-    return api
 
 
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
     error = {
-        "message": "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting.",
+        "message": (
+            "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. "
+            "For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting."
+        ),
         "type": "OAuthException",
         "code": 80000,
         "error_subcode": 2446079,
@@ -60,25 +39,11 @@ def fb_call_rate_response_fixture():
     }
 
 
-@pytest.fixture(name="fb_account_response")
-def fb_account_response_fixture(account_id):
-    return {
-        "json": {
-            "data": [
-                {
-                    "account_id": account_id,
-                    "id": f"act_{account_id}",
-                }
-            ],
-            "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
-        },
-        "status_code": 200,
-    }
-
-
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
+    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
+        # turn Campaigns into non batch mode to test non batch logic
+        mocker.patch.object(Campaigns, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
         campaign_responses = [
             fb_call_rate_response,
             {
@@ -154,3 +119,14 @@ class TestBackoff:
         with pytest.raises(FacebookRequestError):
             stream = Campaigns(api=api, start_date=datetime.now(), end_date=datetime.now(), include_deleted=False)
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+
+    def test_connection_reset_error(self, requests_mock, api, account_id):
+        """Error once, check that we retry and not fail"""
+
+        responses = [{"json": {"error": {"code": 104}}}]
+
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/insights", responses)
+
+        with pytest.raises(FacebookRequestError):
+            stream = AdsInsights(api=api, start_date=datetime.now(), end_date=datetime.now())
+            list(stream.stream_slices(stream_state={}, sync_mode=None))

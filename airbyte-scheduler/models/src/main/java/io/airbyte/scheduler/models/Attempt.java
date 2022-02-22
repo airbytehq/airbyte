@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.models;
 
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobOutput;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -16,6 +17,7 @@ public class Attempt {
   private final long jobId;
   private final JobOutput output;
   private final AttemptStatus status;
+  private final AttemptFailureSummary failureSummary;
   private final Path logPath;
   private final long updatedAtInSecond;
   private final long createdAtInSecond;
@@ -26,6 +28,7 @@ public class Attempt {
                  final Path logPath,
                  final @Nullable JobOutput output,
                  final AttemptStatus status,
+                 final @Nullable AttemptFailureSummary failureSummary,
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
                  final @Nullable Long endedAtInSecond) {
@@ -33,6 +36,7 @@ public class Attempt {
     this.jobId = jobId;
     this.output = output;
     this.status = status;
+    this.failureSummary = failureSummary;
     this.logPath = logPath;
     this.updatedAtInSecond = updatedAtInSecond;
     this.createdAtInSecond = createdAtInSecond;
@@ -53,6 +57,10 @@ public class Attempt {
 
   public AttemptStatus getStatus() {
     return status;
+  }
+
+  public Optional<AttemptFailureSummary> getFailureSummary() {
+    return Optional.ofNullable(failureSummary);
   }
 
   public Path getLogPath() {
@@ -90,13 +98,14 @@ public class Attempt {
         createdAtInSecond == attempt.createdAtInSecond &&
         Objects.equals(output, attempt.output) &&
         status == attempt.status &&
+        Objects.equals(failureSummary, attempt.failureSummary) &&
         Objects.equals(logPath, attempt.logPath) &&
         Objects.equals(endedAtInSecond, attempt.endedAtInSecond);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, jobId, output, status, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
+    return Objects.hash(id, jobId, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
   }
 
   @Override
@@ -106,6 +115,7 @@ public class Attempt {
         ", jobId=" + jobId +
         ", output=" + output +
         ", status=" + status +
+        ", failureSummary=" + failureSummary +
         ", logPath=" + logPath +
         ", updatedAtInSecond=" + updatedAtInSecond +
         ", createdAtInSecond=" + createdAtInSecond +

@@ -3,56 +3,83 @@ line-length = 140
 target-version = ["py37"]
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 0
 skip_empty = true
 sort = "-cover"
 omit = [
-  "*_tests/**",
-  "setup.py"
-]
-[tool.flake8]
-extend-exclude = [
- ".venv",
- "build",
- "models",
- ".eggs",
- ".tox"
+    ".venv/*",
+    "main.py",
+    "setup.py",
+    "unit_tests/*",
+    "integration_tests/*",
+
 ]
 
-max-complexity = 10
+[tool.flake8]
+extend-exclude = [
+    "*/lib/*/site-packages",
+    ".venv",
+    "build",
+    "models",
+    ".eggs",
+    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    ".tox",
+    "airbyte_api_client",
+
+]
+max-complexity = 20
 max-line-length = 140
+
+extend-ignore = [
+  "E203",  # whitespace before ':' (conflicts with Black)
+  "E231",  # Bad trailing comma (conflicts with Black)
+  "E501",  # line too long (conflicts with Black)
+  "W503",  # line break before binary operator (conflicts with Black)
+]
 
 [tool.isort]
 profile = "black"
 color_output = false
 skip_gitignore = true
+line_length = 140
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+
 
 [tool.mypy]
 platform = "linux"
-exclude = "build"
+exclude = "build\nintegration_tests\nunit_tests"
+
+# Optionals
+no_implicit_optional = true
+ignore_missing_imports = true
 
 # Strictness
-ignore_missing_imports = true
-allow_redefinition = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
-no_implicit_reexport = true
-no_strict_optional = true
+allow_untyped_globals = false
+allow_redefinition = false
+implicit_reexport = false
 strict_equality = true
-# Output
-pretty = true
-show_column_numbers = true
-show_error_codes = true
-show_error_context = true
-# Warnings
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_ignores = true
 
-[[tool.mypy.overrides]]
-module = [
-    "integration_tests.*",
-    "unit_tests.*",
-]
-allow_incomplete_defs = true
+# Warnings
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_redundant_casts = true
+warn_unreachable = true
+
+# Error output
+show_column_numbers = true
+show_error_context = true
+show_error_codes = true
+show_traceback = true
+pretty = true
+color_output = true
+error_summary = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
+
+
