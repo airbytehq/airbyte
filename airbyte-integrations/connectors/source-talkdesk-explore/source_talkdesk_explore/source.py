@@ -30,8 +30,8 @@ class SourceTalkdeskExplore(AbstractSource):
 
         authenticator = TokenAuthenticator(token=talkdesk_auth_token)
 
-        start_date = config.get("START_DATE", None)
-        timezone = config.get("TIMEZONE", None)
+        start_date = config.get("start_date", None)
+        timezone = config.get("timezone", None)
 
         streams_ = [
             Calls(start_date=start_date, timezone=timezone, authenticator=authenticator),

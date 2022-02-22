@@ -4,10 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Talkdesk Explore API Spec",
     "type": "object",
-    "required": ["START_DATE", "AUTH_URL", "API_KEY"],
+    "required": ["start_date", "auth_url", "api_key"],
     "additionalProperties": false,
     "properties": {
-      "START_DATE": {
+      "start_date": {
         "type": "string",
         "title": "START DATE",
         "description": "The date from which you'd like to replicate data for Talkdesk Explore API, in the format YYYY-MM-DDT00:00:00. All data generated after this date will be replicated.",
@@ -15,7 +15,7 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
         "order": 0
       },
-      "TIMEZONE": {
+      "timezone": {
         "type": "string",
         "title": "TIMEZONE",
         "description": "Timezone to use when generating reports. Only IANA timezones are supported (https://nodatime.org/TimeZones)",
@@ -23,14 +23,14 @@
         "default": "UTC",
         "order": 1
       },
-      "AUTH_URL": {
+      "auth_url": {
         "title": "AUTH URL",
         "type": "string",
         "description": "Talkdesk Auth URL. Only 'client_credentials' auth type supported at the moment.",
         "examples": ["https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"],
         "order": 2
       },
-      "API_KEY": {
+      "api_key": {
         "title": "API KEY",
         "type": "string",
         "description": "Talkdesk API key.",

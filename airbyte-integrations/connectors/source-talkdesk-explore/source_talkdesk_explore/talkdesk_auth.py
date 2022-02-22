@@ -13,8 +13,8 @@ class TalkdeskAuth:
     
     """
     def __init__(self, config: Mapping[str, Any]):
-        self.api_key = config.get("API_KEY", None)
-        self.auth_url = config.get("AUTH_URL", None)
+        self.api_key = config.get("api_key", None)
+        self.auth_url = config.get("auth_url", None)
     
     def _encode_key(self, key: str) -> bytes:
         """Encode 'str' API key to bytes"""
