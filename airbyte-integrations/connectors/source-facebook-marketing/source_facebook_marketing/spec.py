@@ -23,6 +23,9 @@ ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdow
 class InsightConfig(BaseModel):
     """Config for custom insights"""
 
+    class Config:
+        use_enum_values = True
+
     name: str = Field(
         title="Name",
         description="The name value of insight",
