@@ -249,6 +249,7 @@ font-style: italic;
   <ul>
   <li><a href="#checkConnectionToDestination"><code><span class="http-method">post</span> /v1/destinations/check_connection</code></a></li>
   <li><a href="#checkConnectionToDestinationForUpdate"><code><span class="http-method">post</span> /v1/destinations/check_connection_for_update</code></a></li>
+  <li><a href="#cloneDestination"><code><span class="http-method">post</span> /v1/destinations/clone</code></a></li>
   <li><a href="#createDestination"><code><span class="http-method">post</span> /v1/destinations/create</code></a></li>
   <li><a href="#deleteDestination"><code><span class="http-method">post</span> /v1/destinations/delete</code></a></li>
   <li><a href="#getDestination"><code><span class="http-method">post</span> /v1/destinations/get</code></a></li>
@@ -320,6 +321,7 @@ font-style: italic;
   <ul>
   <li><a href="#checkConnectionToSource"><code><span class="http-method">post</span> /v1/sources/check_connection</code></a></li>
   <li><a href="#checkConnectionToSourceForUpdate"><code><span class="http-method">post</span> /v1/sources/check_connection_for_update</code></a></li>
+  <li><a href="#cloneSource"><code><span class="http-method">post</span> /v1/sources/clone</code></a></li>
   <li><a href="#createSource"><code><span class="http-method">post</span> /v1/sources/create</code></a></li>
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
@@ -2081,6 +2083,71 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="cloneDestination"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/clone</code></pre></div>
+    <div class="method-summary">Clone destination (<span class="nickname">cloneDestination</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationIdRequestBody <a href="#DestinationIdRequestBody">DestinationIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationRead">DestinationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connectionConfiguration" : {
+    "user" : "charles"
+  },
+  "destinationName" : "destinationName",
+  "name" : "name",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationRead">DestinationRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -4943,6 +5010,71 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="cloneSource"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/clone</code></pre></div>
+    <div class="method-summary">Clone source (<span class="nickname">cloneSource</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceRead">SourceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "connectionConfiguration" : {
+    "user" : "charles"
+  },
+  "name" : "name",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "sourceName" : "sourceName",
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>

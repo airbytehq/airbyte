@@ -34,6 +34,7 @@ export const OnboardingServiceProvider: React.FC = ({ children }) => {
       skipCase: (skipId: string) =>
         setUseCases(useCases?.filter((item) => item !== skipId)),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [feedbackPassed, useCases]
   );
 

@@ -112,7 +112,7 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
@@ -140,7 +140,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
@@ -157,6 +157,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/confluence
   icon: confluence.svg
+  sourceType: api
+- name: Customer.io
+  sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
+  dockerRepository: farosai/airbyte-customer-io-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/customer-io
+  icon: customer-io.svg
   sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
@@ -196,7 +203,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.34
+  dockerImageTag: 0.2.35
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -298,6 +305,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
+- name: Harness
+  sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
+  dockerRepository: farosai/airbyte-harness-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/harness
+  icon: harness.svg
+  sourceType: api
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
@@ -314,14 +328,14 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.40
+  dockerImageTag: 0.1.42
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -432,7 +446,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.3.16
+  dockerImageTag: 0.3.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -474,7 +488,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.5.5
+  dockerImageTag: 0.5.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -508,7 +522,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.13
+  dockerImageTag: 0.3.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -518,6 +532,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/outreach
   icon: outreach.svg
+  sourceType: api
+- name: PagerDuty
+  sourceDefinitionId: 2817b3f0-04e4-4c7a-9f32-7a5e8a83db95
+  dockerRepository: farosai/airbyte-pagerduty-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pagerduty
+  icon: pagerduty.svg
   sourceType: api
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
@@ -578,7 +599,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.7
+  dockerImageTag: 0.4.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -669,7 +690,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -704,7 +725,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -745,7 +766,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
@@ -783,6 +804,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-youtube-analytics
   icon: youtube.svg
+  sourceType: api
+- name: VictorOps
+  sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
+  dockerRepository: farosai/airbyte-victorops-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/victorops
+  icon: victorops.svg
   sourceType: api
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
