@@ -4,17 +4,43 @@
 
 
 import logging
-from functools import partial
 
 import pytest
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteCatalog, Type
-from source_hubspot.api import API, PROPERTIES_PARAM_MAX_LENGTH, split_properties
-from source_hubspot.client import Client
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.source import SourceHubspot
+from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Workflows, split_properties
 
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
+
+
+@pytest.fixture(name="oauth_config")
+def oauth_config_fixture():
+    return {
+        "start_date": "2021-10-10T00:00:00Z",
+        "credentials": {
+            "credentials_title": "OAuth Credentials",
+            "redirect_uri": "https://airbyte.io",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+            "access_token": "test_access_token",
+            "token_expires": "2021-05-30T06:00:00Z",
+        },
+    }
+
+
+@pytest.fixture(name="common_params")
+def common_params_fixture(config):
+    source = SourceHubspot()
+    common_params = source.get_common_params(config=config)
+    return common_params
+
+
+@pytest.fixture(name="config")
+def config_fixture():
+    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"}}
 
 
 @pytest.fixture(name="some_credentials")
@@ -32,7 +58,7 @@ def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
 
 
-def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
+def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
@@ -40,37 +66,33 @@ def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
     ]
 
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
-    alive, error = client.health_check()
+    source = SourceHubspot()
+    alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
     assert not error
 
 
-def test_client_backoff_on_server_error(requests_mock, some_credentials):
+def test_check_connection_backoff_on_server_error(requests_mock, config):
     """Error once, check that we retry and not fail"""
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
-    alive, error = client.health_check()
+    source = SourceHubspot()
+    alive, error = source.check_connection(logger=logger, config=config)
 
     assert alive
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
+def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params, caplog):
     """
     Error with API Key Permissions to particular stream,
     typically this issue raises along with calling `workflows` stream with API Key
     that doesn't have required permissions to read the stream.
     """
-    # Define stream name
-    stream_name = "workflows"
 
     # Mapping tipical response for mocker
     responses = [
@@ -92,29 +114,15 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
         },
     }
 
-    # create base parent instances
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=creds_with_wrong_permissions)
-    api = API(creds_with_wrong_permissions)
-
     # Create test_stream instance
-    test_stream = client._apis.get(stream_name)
+    test_stream = Workflows(**common_params)
 
     # Mocking Request
     requests_mock.register_uri("GET", test_stream.url, responses)
-
-    # Mock the getter method that handles requests.
-    def get(url=test_stream.url, params=None):
-        response = api._session.get(api.BASE_URL + url, params=params)
-        return api._parse_and_handle_errors(response)
-
-    # Define request params value
-    params = {"limit": 100, "properties": ""}
-
-    # Read preudo-output from generator object _read(), based on real scenario
-    list(test_stream._read(getter=get, params=params))
+    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
-    assert expected_warining_message
+    assert expected_warining_message["log"]["message"] in caplog.text
 
 
 class TestSplittingPropertiesFunctionality:
@@ -123,10 +131,6 @@ class TestSplittingPropertiesFunctionality:
         "updatedAt": "2021-07-31T08:18:58.954Z",
         "archived": False,
     }
-
-    @pytest.fixture
-    def client(self, some_credentials):
-        return Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
 
     @pytest.fixture
     def api(self, some_credentials):
@@ -158,18 +162,15 @@ class TestSplittingPropertiesFunctionality:
             slice_length = [len(item) for item in slice_property]
             assert sum(slice_length) <= PROPERTIES_PARAM_MAX_LENGTH
 
-    def test_stream_with_splitting_properties(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
-        # Define stream name
-        stream_name = "companies"
+        test_stream = Companies(**common_params)
 
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
-        # Create test_stream instance
-        test_stream = client._apis.get(stream_name)
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
         after_id = None
@@ -194,23 +195,23 @@ class TestSplittingPropertiesFunctionality:
                 )
             after_id = id_list[-1]
 
-        # Read preudo-output from generator object read(), based on real scenario
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        # Read preudo-output from generator object
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
-        stream_name = "products"
 
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
-        test_stream = client._apis.get(stream_name)
+
+        test_stream = Products(**common_params)
 
         for property_slice in parsed_properties:
             record_responses = [
@@ -227,23 +228,89 @@ class TestSplittingPropertiesFunctionality:
             ]
             requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
 
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         assert len(stream_records) == 5
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
-    def test_stream_with_splitting_properties_with_new_record(self, requests_mock, client, api, fake_properties_list):
+    def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
         """
         Check working stream `workflows` with large list of properties using new functionality with splitting properties
         """
-        stream_name = "deals"
 
         parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
-        # Create test_stream instance
-        test_stream = client._apis.get(stream_name)
+        test_stream = Deals(**common_params)
+
+        deal_stage_history_response = {
+            "deals": [
+                {
+                    "portalId": 123,
+                    "dealId": 111,
+                    "isDeleted": False,
+                    "associations": None,
+                    "properties": {
+                        "dealstage": {
+                            "value": "appointmentscheduled",
+                            "timestamp": 1610533842221,
+                            "source": "API",
+                            "sourceId": None,
+                            "updatedByUserId": None,
+                            "versions": [
+                                {
+                                    "name": "dealstage",
+                                    "value": "appointmentscheduled",
+                                    "timestamp": 1610533842221,
+                                    "source": "API",
+                                    "sourceVid": [],
+                                    "requestId": "19f07c43-b187-4ab6-9fab-4a0f261f0a8c",
+                                }
+                            ],
+                        }
+                    },
+                    "stateChanges": [],
+                },
+                {
+                    "portalId": 123,
+                    "dealId": 112,
+                    "isDeleted": False,
+                    "associations": None,
+                    "properties": {
+                        "dealstage": {
+                            "value": "appointmentscheduled",
+                            "timestamp": 1610533911154,
+                            "source": "API",
+                            "sourceId": None,
+                            "updatedByUserId": None,
+                            "versions": [
+                                {
+                                    "name": "dealstage",
+                                    "value": "appointmentscheduled",
+                                    "timestamp": 1610533911154,
+                                    "source": "API",
+                                    "sourceVid": [],
+                                    "requestId": "41a1eeff-569b-4193-ba80-238d3bd13f56",
+                                }
+                            ],
+                        }
+                    },
+                    "stateChanges": [],
+                },
+            ]
+        }
+
+        requests_mock.register_uri(
+            "GET",
+            test_stream._stage_history.path(),
+            [
+                {
+                    "json": deal_stage_history_response,
+                    "status_code": 200,
+                }
+            ],
+        )
 
         ids_list = ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
         for property_slice in parsed_properties:
@@ -262,25 +329,9 @@ class TestSplittingPropertiesFunctionality:
             requests_mock.register_uri("GET", f"{test_stream.url}?properties={','.join(property_slice)}", record_responses)
             ids_list.append("1092593513")
 
-        stream_records = list(test_stream.read(getter=partial(self.get, test_stream.url, api=api)))
+        stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
         assert len(stream_records) == 6
-
-
-@pytest.fixture(name="oauth_config")
-def oauth_config_fixture():
-    return {
-        "start_date": "2021-10-10T00:00:00Z",
-        "credentials": {
-            "credentials_title": "OAuth Credentials",
-            "redirect_uri": "https://airbyte.io",
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-            "access_token": "test_access_token",
-            "token_expires": "2021-05-30T06:00:00Z",
-        },
-    }
 
 
 @pytest.fixture(name="configured_catalog")

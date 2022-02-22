@@ -42,15 +42,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String USERNAME_KEY = "username";
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-  
+
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "useSSL", "true",
       "requireSSL", "true",
-      "verifyServerCertificate", "false"
-  );
+      "verifyServerCertificate", "false");
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "zeroDateTimeBehavior", "convertToNull"
-  );
+      "zeroDateTimeBehavior", "convertToNull");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), List.of(HOST_KEY), List.of(PORT_KEY));
@@ -148,7 +146,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                    final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);

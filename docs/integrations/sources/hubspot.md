@@ -112,7 +112,8 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.39  | 2022-02-10 | [10142](https://github.com/airbytehq/airbyte/pull/10142) | Add associations to ticket stream |
+| 0.1.41  | 2022-02-21 | [10177](https://github.com/airbytehq/airbyte/pull/10177) | Migrate to CDK |
+| 0.1.40  | 2022-02-10 | [10142](https://github.com/airbytehq/airbyte/pull/10142) | Add associations to ticket stream |
 | 0.1.39  | 2022-02-10 | [10055](https://github.com/airbytehq/airbyte/pull/10055) | Bug fix: reading not initialized stream |
 | 0.1.38  | 2022-02-03 | [9786](https://github.com/airbytehq/airbyte/pull/9786) | Add new streams for engagements(calls, emails, meetings, notes and tasks) |
 | 0.1.37  | 2022-01-27 | [9555](https://github.com/airbytehq/airbyte/pull/9555) | Getting form_submission for all forms |
