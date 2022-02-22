@@ -88,18 +88,18 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 
 <details><summary><strong>Unit</strong></summary>
 
-Put your unit tests output here.
+*Put your unit tests output here.*
 
 </details>
 
 <details><summary><strong>Integration</strong></summary>
 
-Put your integration tests output here.
+*Put your integration tests output here.*
 
 </details>
 
 <details><summary><strong>Acceptance</strong></summary>
 
-Put your acceptance tests output here.
+*Put your acceptance tests output here.*
 
 </details>
