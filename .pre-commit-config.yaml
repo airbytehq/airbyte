@@ -11,7 +11,7 @@ repos:
     rev: 22.1.0
     hooks:
       - id: black
-        args: [ "--config", "$GIT_DIR/pyproject.toml" ]
+        args: ["--config", "$GIT_DIR/pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
     rev: 5.6.4
     hooks:
@@ -41,14 +41,14 @@ repos:
     rev: 0.0.1a2
     hooks:
       - id: pyproject-flake8
-        args: [ "--config", "$GIT_DIR/pyproject.toml" ]
+        args: ["--config", "$GIT_DIR/pyproject.toml"]
         additional_dependencies: ["mccabe"]
         alias: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 0.930
     hooks:
       - id: mypy
-        args: [ "--config-file", "$GIT_DIR/pyproject.toml" ]
+        args: ["--config-file", "$GIT_DIR/pyproject.toml"]
         exclude: |
           (?x)^.*(
               octavia-cli/unit_tests/|
