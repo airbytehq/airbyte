@@ -92,6 +92,9 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
       // google also returns an access token the first time you complete oauth flow
       result.put("access_token", data.get("access_token").asText());
     }
+    if (data.has("expires_in")) {
+      result.put("expires_in", data.get("expires_in").asText());
+    }
     return result;
   }
 

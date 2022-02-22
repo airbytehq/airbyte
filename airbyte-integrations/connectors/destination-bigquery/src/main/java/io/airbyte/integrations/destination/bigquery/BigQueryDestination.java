@@ -4,16 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.Objects.isNull;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.common.base.Charsets;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -23,8 +17,8 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountKeysManager;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountManager;
+import io.airbyte.integrations.destination.bigquery.factory.BigQuerySecurityFactory;
+import io.airbyte.integrations.destination.bigquery.oauth.BigQueryBucketManager;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -36,7 +30,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +64,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
+        BigQueryBucketManager.createBucketWithStorageClassAndLocation(config);
         final GcsDestination gcsDestination = new GcsDestination();
         final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
         final AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
@@ -96,30 +90,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected BigQuery getBigQuery(final JsonNode config) {
-    final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    final String serviceAccountName = config.get(BigQueryConsts.SERVICE_ACCOUNT).asText();
-    BigQueryServiceAccountManager.createServiceAccount(projectId, serviceAccountName);
-    try {
-      final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-      ServiceAccountCredentials credentials = null;
-      if (BigQueryUtils.isUsingJsonCredentials(config)) {
-        // handle the credentials json being passed as a json object or a json object already serialized as
-        // a string.
-        final String credentialsString =
-            config.get(BigQueryConsts.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-                : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-        credentials = ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-      }
-      return bigQueryBuilder
-          .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
-          .build()
-          .getService();
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    return BigQuerySecurityFactory.createClient(config);
   }
+
+
 
   /**
    * Strategy:
@@ -127,32 +101,29 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * 1. Create a temporary table for each stream
    * </p>
    * <p>
-   * 2. Write records to each stream directly (the bigquery client handles managing when to push the
-   * records over the network)
+   * 2. Write records to each stream directly (the bigquery client handles managing when to push the records over the network)
    * </p>
    * <p>
-   * 4. Once all records have been written close the writers, so that any remaining records are
-   * flushed.
+   * 4. Once all records have been written close the writers, so that any remaining records are flushed.
    * </p>
    * <p>
    * 5. Copy the temp tables to the final table name (overwriting if necessary).
    * </p>
    *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
+   * @param config  - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @return consumer that writes singer messages to the database.
    */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     return getRecordConsumer(getUploaderMap(config, catalog), outputRecordCollector);
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
-                                                                                            final ConfiguredAirbyteCatalog catalog)
+      final ConfiguredAirbyteCatalog catalog)
       throws IOException {
     final BigQuery bigquery = getBigQuery(config);
 
@@ -179,9 +150,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * BigQuery might have different structure of the Temporary table. If this method returns TRUE,
-   * temporary table will have only three common Airbyte attributes. In case of FALSE, temporary table
-   * structure will be in line with Airbyte message JsonSchema.
+   * BigQuery might have different structure of the Temporary table. If this method returns TRUE, temporary table will have only three common Airbyte
+   * attributes. In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
    *
    * @return use default AirbyteSchema or build using JsonSchema
    */
@@ -200,7 +170,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
 

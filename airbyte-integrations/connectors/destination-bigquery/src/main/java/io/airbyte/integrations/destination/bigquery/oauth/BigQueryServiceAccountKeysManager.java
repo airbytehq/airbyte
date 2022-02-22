@@ -8,6 +8,7 @@ import com.google.api.services.iam.v1.IamScopes;
 import com.google.api.services.iam.v1.model.CreateServiceAccountKeyRequest;
 import com.google.api.services.iam.v1.model.ServiceAccountKey;
 import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -21,13 +22,13 @@ public class BigQueryServiceAccountKeysManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryServiceAccountKeysManager.class);
 
-  public static void createKey(String projectId, String serviceAccountName) {
+  public static ServiceAccountKey createKey(String projectId, String serviceAccountName, String tokenValue) {
     Iam service;
     try {
-      service = initService();
+      service = initService(tokenValue);
     } catch (IOException | GeneralSecurityException e) {
       LOGGER.error("Unable to initialize service: {}", e.toString());
-      return;
+      return null;
     }
 
     String serviceAccountEmail = getServiceAccountEmail(serviceAccountName, projectId);
@@ -40,19 +41,21 @@ public class BigQueryServiceAccountKeysManager {
               .create(
                   "projects/-/serviceAccounts/" + serviceAccountEmail,
                   new CreateServiceAccountKeyRequest())
-              .execute();
 
+              .execute();
       LOGGER.info("Created key: {}", key.getName());
+      return key;
     } catch (IOException e) {
       LOGGER.error("Unable to create service account key: {}", e.getMessage());
     }
+    return null;
   }
 
   // Lists all keys for a service account.
-  public static void listKeys(String projectId, String serviceAccountName) {
+  public static void listKeys(String projectId, String serviceAccountName, String tokenValue) {
     Iam service;
     try {
-      service = initService();
+      service = initService(tokenValue);
     } catch (IOException | GeneralSecurityException e) {
       LOGGER.error("Unable to initialize service: {}", e.getMessage());
       return;
@@ -80,12 +83,12 @@ public class BigQueryServiceAccountKeysManager {
     return serviceAccountName + "@" + projectId + ".iam.gserviceaccount.com";
   }
 
-  private static Iam initService() throws GeneralSecurityException, IOException {
+  private static Iam initService(String tokenValue) throws GeneralSecurityException, IOException {
     // Use the Application Default Credentials strategy for authentication. For more info, see:
     // https://cloud.google.com/docs/authentication/production#finding_credentials_automatically
+    AccessToken accessToken = new AccessToken(tokenValue, null);
     GoogleCredentials credential =
-        GoogleCredentials.getApplicationDefault()
-            .createScoped(Collections.singleton(IamScopes.CLOUD_PLATFORM));
+        GoogleCredentials.create(accessToken).createScoped(Collections.singleton(IamScopes.CLOUD_PLATFORM));
     // Initialize the IAM service, which can be used to send requests to the IAM API.
     return new Iam.Builder(
             GoogleNetHttpTransport.newTrustedTransport(),
