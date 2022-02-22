@@ -47,8 +47,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       // remove zero date values.
       // since zero dates are placeholders, we convert them to null by default
       "zeroDateTimeBehavior", "convertToNull",
-      "allowLoadLocalInfile", "true"
-  );
+      "allowLoadLocalInfile", "true");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), List.of(HOST_KEY), List.of(PORT_KEY));
@@ -85,12 +84,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     super(DRIVER_CLASS, new MySQLNameTransformer(), new MySQLSqlOperations());
   }
 
-  //Override for testing purposes...
+  // Override for testing purposes...
   @Override
   protected JdbcDatabase getDatabase(final JsonNode config) {
     return super.getDatabase(config);
   }
-
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {

@@ -120,4 +120,5 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
+
 }

@@ -24,8 +24,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
 
   private static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
-      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory"
-  );
+      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
   public RedshiftInsertDestination() {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());

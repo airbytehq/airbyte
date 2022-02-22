@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,8 +22,7 @@ public class AbstractJdbcDestinationTest {
         "host", "localhost",
         "port", 1337,
         "username", "user",
-        "database", "db"
-    ));
+        "database", "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
@@ -28,8 +31,7 @@ public class AbstractJdbcDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-        "jdbc_url_params", extraParam
-    ));
+        "jdbc_url_params", extraParam));
   }
 
   @Test
@@ -94,10 +96,8 @@ public class AbstractJdbcDestinationTest {
     final Map<String, String> defaultProperties = ImmutableMap.of("key1", "value0");
     final String extraParam = "key1=value1&key2=value2&key3=value3";
 
-    assertThrows(IllegalArgumentException.class, () ->
-        new TestJdbcDestination(defaultProperties).getConnectionProperties(
-            buildConfigWithExtraJdbcParameters(extraParam))
-    );
+    assertThrows(IllegalArgumentException.class, () -> new TestJdbcDestination(defaultProperties).getConnectionProperties(
+        buildConfigWithExtraJdbcParameters(extraParam)));
   }
 
   @Test
@@ -129,5 +129,7 @@ public class AbstractJdbcDestinationTest {
     public JsonNode toJdbcConfig(final JsonNode config) {
       return config;
     }
+
   }
+
 }

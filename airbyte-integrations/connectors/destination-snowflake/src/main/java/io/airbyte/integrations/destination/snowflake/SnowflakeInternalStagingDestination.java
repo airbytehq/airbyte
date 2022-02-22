@@ -57,7 +57,6 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     // verify we have permissions to create/drop stage
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     final String stageName = namingResolver.getStageName(outputSchema, outputTableName);
-    ;
     sqlOperations.createStageIfNotExists(database, stageName);
     sqlOperations.dropStageIfExists(database, stageName);
   }

@@ -28,8 +28,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   public static final List<String> PORT_KEY = List.of("port");
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "allowLoadLocalInfile", "true"
-  );
+      "allowLoadLocalInfile", "true");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MariadbColumnstoreDestination(), HOST_KEY, PORT_KEY);

@@ -17,8 +17,7 @@ public class MySQLDestinationTest {
 
   private static final Map<String, String> DEFAULT_PARAMETERS_WITH_SSL = MoreMaps.merge(
       MySQLDestination.DEFAULT_JDBC_PARAMETERS,
-      MySQLDestination.SSL_JDBC_PARAMETERS
-  );
+      MySQLDestination.SSL_JDBC_PARAMETERS);
 
   public static final String JDBC_URL = "jdbc:mysql://localhost:1337/db";
 

@@ -220,4 +220,5 @@ public class Databases {
   public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
     return new MongoDatabase(connectionString, databaseName);
   }
+
 }

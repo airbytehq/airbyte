@@ -51,14 +51,12 @@ public class ClickhouseDestinationTest {
       "host", "localhost",
       "port", "1337",
       "username", "user",
-      "database", "db"
-  );
+      "database", "db");
 
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
       CONFIG_WITH_SSL,
       ImmutableMap.of(
-          "ssl", "false"
-      ));
+          "ssl", "false"));
 
   @BeforeAll
   static void init() {
@@ -95,16 +93,14 @@ public class ClickhouseDestinationTest {
   @Test
   void testDefaultParamsNoSSL() {
     final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_NO_SSL)
-    );
+        Jsons.jsonNode(CONFIG_NO_SSL));
     assertEquals(new HashMap<>(), defaultProperties);
   }
 
   @Test
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_WITH_SSL)
-    );
+        Jsons.jsonNode(CONFIG_WITH_SSL));
     assertEquals(ClickhouseDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
