@@ -2,13 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import copy
 import logging
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
@@ -32,8 +31,16 @@ def state_with_include_deleted_fixture(state):
 
 
 @pytest.fixture(scope="session", name="configured_catalog")
-def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog.json")
+def configured_catalog_fixture(config) -> ConfiguredAirbyteCatalog:
+    catalog = SourceFacebookMarketing().discover(logger=logging.getLogger("airbyte"), config=config)
+    streams = [
+        ConfiguredAirbyteStream(
+            stream=stream,
+            sync_mode=stream.supported_sync_modes[0],
+            destination_sync_mode=DestinationSyncMode.append
+        ) for stream in catalog.streams
+    ]
+    return ConfiguredAirbyteCatalog(streams=streams)
 
 
 class TestFacebookMarketingSource:
@@ -41,7 +48,8 @@ class TestFacebookMarketingSource:
         "stream_name, deleted_id", [("ads", "23846756820320398"), ("campaigns", "23846541919710398"), ("ad_sets", "23846541706990398")]
     )
     def test_streams_with_include_deleted(self, stream_name, deleted_id, config_with_include_deleted, configured_catalog):
-        catalog = self.slice_catalog(configured_catalog, {stream_name})
+        catalog = self._slice_catalog(configured_catalog, {stream_name})
+        catalog.streams[0].sync_mode = SyncMode.incremental
         records, states = self._read_records(config_with_include_deleted, catalog)
         deleted_records = list(filter(self._deleted_record, records))
         is_specific_deleted_pulled = deleted_id in list(map(self._object_id, records))
@@ -56,7 +64,7 @@ class TestFacebookMarketingSource:
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("ad_sets", 1)])
     def test_streams_with_include_deleted_and_state(self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state):
         """Should ignore state because of include_deleted enabled"""
-        catalog = self.slice_catalog(configured_catalog, {stream_name})
+        catalog = self._slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog, state=state)
         deleted_records = list(filter(self._deleted_record, records))
 
@@ -67,7 +75,7 @@ class TestFacebookMarketingSource:
         self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state_with_include_deleted
     ):
         """Should keep state because of include_deleted enabled previously"""
-        catalog = self.slice_catalog(configured_catalog, {stream_name})
+        catalog = self._slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog, state=state_with_include_deleted)
         deleted_records = list(filter(self._deleted_record, records))
 
@@ -82,7 +90,7 @@ class TestFacebookMarketingSource:
         return str(record.record.data["id"])
 
     @staticmethod
-    def slice_catalog(catalog: ConfiguredAirbyteCatalog, streams: Set[str]) -> ConfiguredAirbyteCatalog:
+    def _slice_catalog(catalog: ConfiguredAirbyteCatalog, streams: Set[str]) -> ConfiguredAirbyteCatalog:
         sliced_catalog = ConfiguredAirbyteCatalog(streams=[])
         for stream in catalog.streams:
             if stream.stream.name in streams:
