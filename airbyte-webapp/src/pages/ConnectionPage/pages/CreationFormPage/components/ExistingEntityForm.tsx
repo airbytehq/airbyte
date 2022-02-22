@@ -88,6 +88,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         };
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
   if (!dropDownData.length) {

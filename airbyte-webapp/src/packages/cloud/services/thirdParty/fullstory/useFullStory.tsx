@@ -19,6 +19,7 @@ const useFullStory = (
         console.error("Failed to init Full Story");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const useFullStory = (
         FullStory.anonymize();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return inited;

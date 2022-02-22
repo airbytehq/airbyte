@@ -80,12 +80,12 @@ const ConnectionPageTitle: React.FC<IProps> = ({
         <FormattedMessage id="connection.title" />
       </H6>
       <Links>
-        <ConnectorsLink to={`../../../${RoutePaths.Source}/${source.sourceId}`}>
+        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
           {source.name}
         </ConnectorsLink>
         <FontAwesomeIcon icon={faArrowRight} />
         <ConnectorsLink
-          to={`../../../${RoutePaths.Destination}/${destination.destinationId}`}
+          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
         >
           {destination.name}
         </ConnectorsLink>
