@@ -3,7 +3,6 @@
 #
 
 import json
-from datetime import datetime
 
 import pendulum
 import pytest
@@ -11,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, Campaigns, AdAccount
+from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -144,10 +143,13 @@ class TestBackoff:
 
         assert records == [{"name": "creative 1"}, {"name": "creative 2"}]
 
-    @pytest.mark.parametrize("error_response", [
+    @pytest.mark.parametrize(
+        "error_response",
+        [
             {"json": {"error": {}}, "status_code": 500},
             {"json": {"error": {"code": 104}}},
-        ], ids=["server_error", "connection_reset_error"]
+        ],
+        ids=["server_error", "connection_reset_error"],
     )
     def test_common_error_retry(self, error_response, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
