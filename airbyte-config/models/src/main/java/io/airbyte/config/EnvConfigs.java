@@ -83,7 +83,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
-  private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
@@ -92,6 +92,8 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
+  private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
+  private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -655,6 +657,16 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getPublishMetrics() {
     return getEnvOrDefault(PUBLISH_METRICS, false);
+  }
+
+  @Override
+  public String getDDAgentHost() {
+    return getEnvOrDefault(DD_AGENT_HOST, "");
+  }
+
+  @Override
+  public String getDDDogStatsDPort() {
+    return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
   }
 
   @Override
