@@ -1329,7 +1329,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog = readCatalogFromFile(catalogFilename);
     final ConfiguredAirbyteCatalog configuredCatalog = getDefaultAirbyteCatalog(catalog);
-    final List<AirbyteMessage> messages = reedMessagesFromFile(messagesFilename);
+    final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
 
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
