@@ -137,7 +137,7 @@ class Orders(IncrementalDclLogisticsStream):
                                     carton_id=package_json.get("carton_id"),
                                     order_type=order_json.get("order_type"),
                                     tracking_number=package_json.get("tracking_number"),
-                                    updated_at=self.parse_string_to_utc_timestamp(order_json.get("modified_at"), default=datetime.utcnow())
+                                    updated_at=self.parse_string_to_utc_timestamp(order_json.get("modified_at"), default=datetime.utcnow()),
                                 ).__dict__
 
         else:
