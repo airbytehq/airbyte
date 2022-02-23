@@ -23,6 +23,14 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
+NOT_AUDIENCE_METRICS = [
+    "reach",
+    "cost_per_1000_reached",
+    "frequency",
+    "secondary_goal_result",
+    "cost_per_secondary_goal_result",
+    "secondary_goal_result_rate",
+]
 
 T = TypeVar("T")
 
@@ -457,6 +465,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
         if self.report_granularity and self.report_granularity in spec_time_dimensions:
             result.append(spec_time_dimensions[self.report_granularity])
+
         return result
 
     def _get_metrics(self):
@@ -574,3 +583,51 @@ class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
 
     report_level = ReportLevel.ADGROUP
+
+
+class AudienceReport(BasicReports):
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957217727489"""
+
+    audience_dimensions: List = ["gender", "age"]
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All reports have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("audience_reports")
+
+    def _get_metrics(self):
+        result = super()._get_metrics()
+        result = [e for e in result if e not in NOT_AUDIENCE_METRICS]
+        return result
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+
+        dimensions = self._get_reporting_dimensions()
+        dimensions += self.audience_dimensions
+        params["dimensions"] = json.dumps(dimensions)
+        params["report_type"] = "AUDIENCE"
+
+        return params
+
+
+class AdGroupAudienceReports(AudienceReport):
+    report_level = ReportLevel.ADGROUP
+
+
+class AdsAudienceReports(AudienceReport):
+
+    report_level = ReportLevel.AD
+
+
+class AdvertisersAudienceReports(AudienceReport):
+
+    report_level = ReportLevel.ADVERTISER
+
+
+class CampaignsAudienceReportsByCountry(AudienceReport):
+    """Custom reports for campaigns by country"""
+
+    report_level = ReportLevel.CAMPAIGN
+    audience_dimensions = ["country_code"]

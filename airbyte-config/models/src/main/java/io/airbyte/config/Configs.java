@@ -8,6 +8,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -238,6 +239,30 @@ public interface Configs {
 
   // Jobs - Kube only
   /**
+   * Define the check job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerCpuRequest();
+
+  /**
+   * Define the check job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerCpuLimit();
+
+  /**
+   * Define the job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerMemoryRequest();
+
+  /**
+   * Define the job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getCheckJobMainContainerMemoryLimit();
+
+  /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
    * contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
    */
@@ -293,6 +318,41 @@ public interface Configs {
    */
   String getJobKubeNamespace();
 
+  /**
+   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDefaultWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "get spec" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getSpecWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "check connection" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getCheckWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "discover" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getDiscoverWorkerStatusCheckInterval();
+
+  /**
+   * Define the interval for checking for "replication" Kubernetes pod statuses.
+   *
+   * In seconds if specified by environment variable. Airbyte internal use only.
+   */
+  Duration getReplicationWorkerStatusCheckInterval();
+
   // Logging/Monitoring/Tracking
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
@@ -315,6 +375,18 @@ public interface Configs {
    * Determine if Datadog tracking events should be published. Mainly for Airbyte internal use.
    */
   boolean getPublishMetrics();
+
+  /**
+   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDAgentHost();
+
+  /**
+   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDDogStatsDPort();
 
   /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
