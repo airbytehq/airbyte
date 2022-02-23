@@ -44,7 +44,6 @@ setup(
     install_requires=[
         "click~=8.0.3",
         f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
-        "datamodel-code-generator[http]~=0.11.17",
         "jinja2~=3.0.3",
     ],
     python_requires=">=3.8.12",

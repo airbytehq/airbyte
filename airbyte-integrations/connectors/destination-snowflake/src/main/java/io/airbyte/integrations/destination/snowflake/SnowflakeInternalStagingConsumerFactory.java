@@ -46,7 +46,7 @@ public class SnowflakeInternalStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingConsumerFactory.class);
 
-  private static final long MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mb
+  private static final long MAX_BATCH_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
   private final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,

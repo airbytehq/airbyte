@@ -1,0 +1,10 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-config:models')
+
+    implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
+}

@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -402,7 +403,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param columnType source data type
    * @return airbyte data type
    */
-  protected abstract JsonSchemaPrimitive getType(DataType columnType);
+  protected abstract JsonSchemaType getType(DataType columnType);
 
   /**
    * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
