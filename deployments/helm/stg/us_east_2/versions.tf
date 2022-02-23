@@ -8,9 +8,14 @@ terraform {
     }
 
     kustomization = {
-      source  = "kbst/kustomize"
-      version = "0.2.0-beta.3"
+      source  = "kbst/kustomization"
+      version = "0.7.2"
     }
+
+//    kustomization = {
+//      source  = "kbst/kustomize"
+//      version = "0.2.0-beta.3"
+//    }
 
     sops = {
       source  = "carlpett/sops"
