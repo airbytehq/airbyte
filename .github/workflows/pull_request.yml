@@ -10,20 +10,36 @@ env:
   AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-PlatformAdmin
 
 jobs:
+  branch_name:
+    name: branch_name
+    runs-on: self-hosted
+    outputs:
+      IMAGE_TAG: '${{ steps.image_tag.outputs.IMAGE_TAG }}'
+    steps:
+      - name: Set branch name
+        uses: nelonoel/branch-name@v1.0.1
+
+      - name: Print branch name
+        id: image_tag
+        run: |
+          IMAGE_TAG="$(echo $BRANCH_NAME | tr "/" "-")-$(date +%s)"
+          echo "IMAGE_TAG: $IMAGE_TAG"
+          echo "::set-output name=IMAGE_TAG::${IMAGE_TAG}"
+
   ecr_login:
     name: ecr_login
     runs-on: ubuntu-latest
     outputs:
-      ECR_PASSWORD: ${{ steps.ecr_login_pwd.outputs.ECR_PASSWORD }}
+      ECR_PASSWORD: '${{ steps.ecr_login_pwd.outputs.ECR_PASSWORD }}'
 
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::856154240248:role/PlatformAdmin
+          role-to-assume: 'arn:aws:iam::856154240248:role/PlatformAdmin'
           role-duration-seconds: 1200
           role-skip-session-tagging: true
 
