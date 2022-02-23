@@ -214,6 +214,9 @@ spec:
         {{- if .Values.server.resources }}
         resources: {{- toYaml .Values.server.resources | nindent 10 }}
         {{- end }}
+        {{- if .Values.server.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.server.containerSecurityContext | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: airbyte-data
           mountPath: /configs
@@ -224,6 +227,9 @@ spec:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+        {{- if .Values.server.extraVolumeMounts }}
+  {{ toYaml .Values.server.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       volumes:
       - name: airbyte-data
         persistentVolumeClaim:
@@ -231,3 +237,6 @@ spec:
       - name: gcs-log-creds-volume
         secret:
           secretName: gcs-log-creds
+      {{- if .Values.server.extraVolumes }}
+{{ toYaml .Values.server.extraVolumes | nindent 6 }}
+      {{- end }}
