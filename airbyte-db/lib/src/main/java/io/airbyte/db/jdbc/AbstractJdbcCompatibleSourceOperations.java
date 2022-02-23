@@ -143,13 +143,21 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
     // value in the following format
     try {
-      var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
-      var nanos = micro + "000";
-      var valueWithoutMicros = value.replace("." + micro, "");
+      var valueWithoutMicros = value;
+      StringBuilder nanos = new StringBuilder();
+      var dotIndex = value.indexOf(".");
+      if (dotIndex > 0) {
+        var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+        nanos.append(micro);
+        valueWithoutMicros = value.replace("." + micro, "");
+      }
+      while (nanos.length() != 9) {
+        nanos.append("0");
+      }
 
       var timestamp = Timestamp
           .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
-      timestamp.setNanos(Integer.parseInt(nanos));
+      timestamp.setNanos(Integer.parseInt(nanos.toString()));
       preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
       throw new RuntimeException(e);

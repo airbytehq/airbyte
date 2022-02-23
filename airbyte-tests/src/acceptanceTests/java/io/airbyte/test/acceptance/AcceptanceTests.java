@@ -838,8 +838,6 @@ public class AcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
   @Order(16)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
