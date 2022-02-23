@@ -9,11 +9,13 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.1"
+]
 
 setup(
     name="destination_scaffold_destination_python",
-    description="Destination implementation for Scaffold Destination Python.",
+    description="Destination implementation for Scaffold-Destination-Python.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
