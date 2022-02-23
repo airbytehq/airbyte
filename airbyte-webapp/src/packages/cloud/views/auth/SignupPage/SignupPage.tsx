@@ -186,7 +186,7 @@ const SignupPage: React.FC = () => {
                       <FormattedMessage
                         id="login.security"
                         values={{
-                          terms: (...terms: React.ReactNode[]) => (
+                          terms: (terms: React.ReactNode) => (
                             <Link
                               $clear
                               target="_blank"
@@ -196,7 +196,7 @@ const SignupPage: React.FC = () => {
                               {terms}
                             </Link>
                           ),
-                          privacy: (...privacy: React.ReactNode[]) => (
+                          privacy: (privacy: React.ReactNode) => (
                             <Link
                               $clear
                               target="_blank"

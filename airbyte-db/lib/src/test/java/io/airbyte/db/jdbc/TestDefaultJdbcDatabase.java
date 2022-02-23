@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,31 +35,33 @@ public class TestDefaultJdbcDatabase {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
-  private JsonNode config;
+  private JdbcDatabase database;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-
   }
 
   @BeforeEach
   void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
-    config = getConfig(PSQL_DB, dbName);
-
+    final JsonNode config = getConfig(PSQL_DB, dbName);
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
-    final JdbcDatabase database = getDatabaseFromConfig(config);
+    database = getDatabaseFromConfig(config);
     database.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
     });
+  }
+
+  @AfterEach
+  void close() throws Exception {
     database.close();
   }
 
@@ -69,7 +72,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testBufferedResultQuery() throws SQLException {
-    final List<JsonNode> actual = getDatabaseFromConfig(config).bufferedResultSetQuery(
+    final List<JsonNode> actual = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
 
@@ -78,7 +81,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testResultSetQuery() throws SQLException {
-    final Stream<JsonNode> actual = getDatabaseFromConfig(config).resultSetQuery(
+    final Stream<JsonNode> actual = database.resultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
@@ -89,7 +92,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testQuery() throws SQLException {
-    final Stream<JsonNode> actual = getDatabaseFromConfig(config).query(
+    final Stream<JsonNode> actual = database.query(
         connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
 
