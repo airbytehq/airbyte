@@ -22,7 +22,6 @@ import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -202,41 +201,17 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve and update sync
-    // retrieve and update sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
 
-    ConnectionHelper.updateConnectionObject(workspaceHelper, persistedSync, ApiPojoConverters.connectionUpdateToInternal(connectionUpdate));
-    ConnectionHelper.validateWorkspace(workspaceHelper, persistedSync.getSourceId(), persistedSync.getDestinationId(),
+    final StandardSync newConnection = ConnectionHelper.updateConnectionObject(
+        workspaceHelper,
+        persistedSync,
+        ApiPojoConverters.connectionUpdateToInternal(connectionUpdate));
+    ConnectionHelper.validateWorkspace(
+        workspaceHelper,
+        persistedSync.getSourceId(),
+        persistedSync.getDestinationId(),
         new HashSet<>(connectionUpdate.getOperationIds()));
-
-    final StandardSync newConnection = Jsons.clone(persistedSync)
-        .withNamespaceDefinition(Enums.convertTo(connectionUpdate.getNamespaceDefinition(), NamespaceDefinitionType.class))
-        .withNamespaceFormat(connectionUpdate.getNamespaceFormat())
-        .withPrefix(connectionUpdate.getPrefix())
-        .withOperationIds(connectionUpdate.getOperationIds())
-        .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
-        .withStatus(ApiPojoConverters.toPersistenceStatus(connectionUpdate.getStatus()));
-
-    // update Resource Requirements
-    if (connectionUpdate.getResourceRequirements() != null) {
-      newConnection.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpuRequest(connectionUpdate.getResourceRequirements().getCpuRequest())
-          .withCpuLimit(connectionUpdate.getResourceRequirements().getCpuLimit())
-          .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
-          .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
-    } else {
-      newConnection.withResourceRequirements(persistedSync.getResourceRequirements());
-    }
-
-    // update sync schedule
-    if (connectionUpdate.getSchedule() != null) {
-      final Schedule newSchedule = new Schedule()
-          .withTimeUnit(ApiPojoConverters.toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
-          .withUnits(connectionUpdate.getSchedule().getUnits());
-      newConnection.withManual(false).withSchedule(newSchedule);
-    } else {
-      newConnection.withManual(true).withSchedule(null);
-    }
 
     configRepository.writeStandardSync(newConnection);
     return buildConnectionRead(connectionUpdate.getConnectionId());

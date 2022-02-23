@@ -29,7 +29,7 @@ public class ConnectionHelper {
   private final WorkspaceHelper workspaceHelper;
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSync update = Jsons.clone(configRepository.getStandardSync(connectionId));
+    final StandardSync update = Jsons.clone(configRepository.getStandardSync(connectionId).withStatus(StandardSync.Status.DEPRECATED));
     updateConnection(update);
   }
 
@@ -72,11 +72,7 @@ public class ConnectionHelper {
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {
-      newConnection.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpuRequest(update.getResourceRequirements().getCpuRequest())
-          .withCpuLimit(update.getResourceRequirements().getCpuLimit())
-          .withMemoryRequest(update.getResourceRequirements().getMemoryRequest())
-          .withMemoryLimit(update.getResourceRequirements().getMemoryLimit()));
+      newConnection.withResourceRequirements(Jsons.clone(update.getResourceRequirements()));
     } else {
       newConnection.withResourceRequirements(original.getResourceRequirements());
     }
