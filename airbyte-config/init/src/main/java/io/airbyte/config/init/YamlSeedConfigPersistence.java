@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -57,7 +58,9 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> fullSourceDefinitionConfigs = sourceDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
           final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          return mergeSpecIntoDefinition(withTombstone, sourceSpecConfigs);
+          final JsonNode output = mergeSpecIntoDefinition(withTombstone, sourceSpecConfigs);
+          AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_SOURCE_DEFINITION, output);
+          return output;
         }));
 
     final Map<String, JsonNode> destinationDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION);
@@ -65,7 +68,9 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> fullDestinationDefinitionConfigs = destinationDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
           final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          return mergeSpecIntoDefinition(withTombstone, destinationSpecConfigs);
+          final JsonNode output = mergeSpecIntoDefinition(withTombstone, destinationSpecConfigs);
+          AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_DESTINATION_DEFINITION, output);
+          return output;
         }));
 
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
