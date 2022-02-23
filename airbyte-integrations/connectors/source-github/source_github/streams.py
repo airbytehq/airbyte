@@ -331,6 +331,10 @@ class Organizations(GithubStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        return record
+
 
 class Repositories(Organizations):
     """
@@ -343,10 +347,6 @@ class Repositories(Organizations):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
 
 
 class Tags(GithubStream):
@@ -372,10 +372,6 @@ class Teams(Organizations):
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
-
 
 class Users(Organizations):
     """
@@ -388,10 +384,6 @@ class Users(Organizations):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
 
 
 # Below are semi incremental streams
