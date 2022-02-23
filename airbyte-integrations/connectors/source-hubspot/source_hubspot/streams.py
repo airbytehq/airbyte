@@ -360,9 +360,9 @@ class Stream(HttpStream, ABC):
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None):
-        if declared_format == 'date':
+        if declared_format == "date":
             return dt.to_date_string()
-        elif declared_format == 'date-time':
+        elif declared_format == "date-time":
             return dt.to_datetime_string()
 
     @classmethod
@@ -384,10 +384,8 @@ class Stream(HttpStream, ABC):
         try:
             dt = pendulum.from_timestamp(int(field_value) / 1000)
             return cls._convert_datetime_to_string(dt, declared_format=declared_format)
-        except (ValueError, TypeError):
-            logger.warning(
-                f"Couldn't parse timestamp in {field_name}. Field value: {field_value}. Ex: {ex}"
-            )
+        except (ValueError, TypeError) as ex:
+            logger.warning(f"Couldn't parse timestamp in {field_name}. Field value: {field_value}. Ex: {ex}")
 
         return field_value
 
