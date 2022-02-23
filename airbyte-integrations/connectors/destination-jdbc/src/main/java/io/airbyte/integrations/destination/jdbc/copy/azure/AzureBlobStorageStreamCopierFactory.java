@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.azure;
 
-import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
-import com.azure.storage.common.StorageSharedKeyCredential;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -32,41 +30,27 @@ public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopie
       DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
       String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       String streamName = stream.getName();
-//      AppendBlobClient appendBlobClient = AzureBlobStorageStreamCopier.getAppendBlobClient(azureBlobConfig, streamName);
-      // Init the client itself here
-//      StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-//          azureBlobConfig.getAccountName(),
-//          azureBlobConfig.getAccountKey()
-//      );
 
-      AppendBlobClient appendBlobClient = new SpecializedBlobClientBuilder()
+      final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
           .endpoint(azureBlobConfig.getEndpointUrl())
           .sasToken(azureBlobConfig.getSasToken())
-//          .credential(credential)
-          .containerName(azureBlobConfig.getContainerName())
-          .blobName(streamName)
-          .buildAppendBlobClient();
+          .containerName(azureBlobConfig.getContainerName());
 
-      appendBlobClient.create(true); // overwrite if exists
-      return create(stagingFolder, syncMode, schema, streamName, appendBlobClient, db, azureBlobConfig, nameTransformer, sqlOperations);
+      return create(stagingFolder, syncMode, schema, streamName, specializedBlobClientBuilder, db, azureBlobConfig, nameTransformer, sqlOperations);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * For specific copier suppliers to implement.
-   */
   public abstract StreamCopier create(String stagingFolder,
       DestinationSyncMode syncMode,
       String schema,
       String streamName,
-      AppendBlobClient appendBlobClient,
+      SpecializedBlobClientBuilder specializedBlobClientBuilder,
       JdbcDatabase db,
       AzureBlobStorageConfig azureBlobConfig,
       ExtendedNameTransformer nameTransformer,
       SqlOperations sqlOperations)
       throws Exception;
-
 }
 

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 import com.azure.storage.blob.specialized.AppendBlobClient;;
 
+import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -22,7 +23,7 @@ public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStora
       DestinationSyncMode syncMode,
       String schema,
       String streamName,
-      AppendBlobClient client,
+      SpecializedBlobClientBuilder specializedBlobClientBuilder,
       JdbcDatabase db,
       AzureBlobStorageConfig azureBlobConfig,
       ExtendedNameTransformer nameTransformer,
@@ -32,7 +33,7 @@ public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStora
         syncMode,
         schema,
         streamName,
-        client,
+        specializedBlobClientBuilder,
         db,
         azureBlobConfig,
         nameTransformer,
