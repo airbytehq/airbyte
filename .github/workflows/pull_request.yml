@@ -12,7 +12,7 @@ env:
 jobs:
   branch_name:
     name: branch_name
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       IMAGE_TAG: '${{ steps.image_tag.outputs.IMAGE_TAG }}'
     steps:
@@ -52,6 +52,43 @@ jobs:
         run: |
           PWD=$(aws ecr get-login-password --region us-east-1)
           echo "::set-output name=ECR_PASSWORD::${PWD}"
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    environment: dev
+    needs:
+      - ecr_login
+    container:
+      image: 856154240248.dkr.ecr.us-east-2.amazonaws.com/docker-aws-cli:latest
+      credentials:
+        username: AWS
+        password: ${{ needs.ecr_login.outputs.ECR_PASSWORD }}
+    env:
+      DOCKER_REGISTRY: 856154240248.dkr.ecr.us-east-2.amazonaws.com
+      DOCKER_FILE_PATH: ./Dockerfile
+      IMAGE_NAME: airbyte
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::856154240248:role/PlatformAdmin
+
+      - name: Login to AWS ECR
+        run: |
+          docker login -u AWS -p "${{ needs.ecr_login.outputs.ECR_PASSWORD }}" 856154240248.dkr.ecr.us-east-2.amazonaws.com
+      - name: Build, tag, and push image to AWS ECR
+        run: |
+          IMAGE_NAME=${IMAGE_NAME} \
+          IDENTIFIER=${SHA} \
+          APP_VERSION=master \
+          DOCKER_FILE_PATH=${DOCKER_FILE_PATH} \
+          sh ./bin/ci/build_push.sh
 
   plan_stg:
     name: plan-stg
