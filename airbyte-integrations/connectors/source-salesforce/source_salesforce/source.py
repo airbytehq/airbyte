@@ -3,7 +3,7 @@
 #
 
 import copy
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
@@ -11,7 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from requests import codes, exceptions
+from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
@@ -24,16 +24,17 @@ class SourceSalesforce(AbstractSource):
         sf.login()
         return sf
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         try:
             _ = self._get_sf_object(config)
-            return True, None
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
                 return False, "API Call limit is exceeded"
+
+        return True, None
 
     @classmethod
     def generate_streams(
@@ -80,7 +81,11 @@ class SourceSalesforce(AbstractSource):
         return self.generate_streams(config, stream_objects, sf, state=state)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self,
+        logger: AirbyteLogger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains

@@ -4,6 +4,7 @@
 
 import base64
 import json
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -71,6 +72,8 @@ def get_stream_state():
 
 def test_update_for_deleted_record(stream):
     headers = stream.authenticator.get_auth_header()
+    stream_state = get_stream_state()
+    time.sleep(1)
     response = create_note(stream, headers)
     assert response.status_code == 201, "Note was note created"
 
@@ -79,7 +82,6 @@ def test_update_for_deleted_record(stream):
     notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
     assert created_note_id in notes, "No created note during the sync"
 
-    stream_state = get_stream_state()
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
 
@@ -94,6 +96,7 @@ def test_update_for_deleted_record(stream):
     assert is_deleted, "Wrong field value for deleted note during the sync"
 
     stream_state = get_stream_state()
+    time.sleep(1)
     response = update_note(stream, created_note_id, headers)
     assert response.status_code == 404, "Note was updated, but should not"
 

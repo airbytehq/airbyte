@@ -5,11 +5,11 @@
 import concurrent.futures
 from typing import Any, List, Mapping, Optional, Tuple
 
-import requests
+import requests  # type: ignore[import]
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests import adapters as request_adapters
-from requests.exceptions import HTTPError, RequestException
+from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -185,14 +185,14 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
-        self.instance_url = None
+        self.instance_url = ""
         self.session = requests.Session()
         # Change the connection pool size. Default value is not enough for parallel tasks
         adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
@@ -203,7 +203,7 @@ class Salesforce:
             self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
 
-    def _get_standard_headers(self):
+    def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
 
     def get_streams_black_list(self) -> List[str]:
@@ -287,22 +287,23 @@ class Salesforce:
         resp = self._make_request("GET", url, headers=headers)
         if resp.status_code == 404 and sobject:
             self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
-        return resp.json()
+        resp_json: Mapping[str, Any] = resp.json()
+        return resp_json
 
     def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
-            schema["properties"][field["name"]] = self.field_to_property_schema(field)
+            schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
         return schema
 
     def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
-        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[Mapping[str, Any], Optional[str]]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
             try:
                 result = self.generate_schema(stream_name=name, stream_options=stream_options)
             except RequestException as e:
-                return None, str(e)
-            return result, None
+                return name, None, str(e)
+            return name, result, None
 
         stream_names = list(stream_objects.keys())
         # try to split all requests by chunks
@@ -310,11 +311,8 @@ class Salesforce:
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
-                for stream_name, (schema, err) in zip(
-                    chunk_stream_names,
-                    executor.map(
-                        lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
-                    ),
+                for stream_name, schema, err in executor.map(
+                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
@@ -347,13 +345,16 @@ class Salesforce:
         if sf_type in STRING_TYPES:
             property_schema["type"] = ["string", "null"]
         elif sf_type in DATE_TYPES:
-            property_schema = {"type": ["string", "null"], "format": "date-time" if sf_type == "datetime" else "date"}
+            property_schema = {
+                "type": ["string", "null"],
+                "format": "date-time" if sf_type == "datetime" else "date",  # type: ignore[dict-item]
+            }
         elif sf_type in NUMBER_TYPES:
             property_schema["type"] = ["number", "null"]
         elif sf_type == "address":
             property_schema = {
                 "type": ["object", "null"],
-                "properties": {
+                "properties": {  # type: ignore[dict-item]
                     "street": {"type": ["null", "string"]},
                     "state": {"type": ["null", "string"]},
                     "postalCode": {"type": ["null", "string"]},
@@ -365,7 +366,7 @@ class Salesforce:
                 },
             }
         elif sf_type == "base64":
-            property_schema = {"type": ["string", "null"], "format": "base64"}
+            property_schema = {"type": ["string", "null"], "format": "base64"}  # type: ignore[dict-item]
         elif sf_type == "int":
             property_schema["type"] = ["integer", "null"]
         elif sf_type == "boolean":
@@ -379,7 +380,10 @@ class Salesforce:
         elif sf_type == "location":
             property_schema = {
                 "type": ["object", "null"],
-                "properties": {"longitude": {"type": ["null", "number"]}, "latitude": {"type": ["null", "number"]}},
+                "properties": {  # type: ignore[dict-item]
+                    "longitude": {"type": ["null", "number"]},
+                    "latitude": {"type": ["null", "number"]},
+                },
             }
         else:
             raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))
