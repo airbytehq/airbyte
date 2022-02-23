@@ -5,7 +5,9 @@
 package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorType;
 import io.airbyte.config.Configs;
+import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -15,6 +17,7 @@ import io.airbyte.workers.ReplicationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.helper.ResourceRequirementsUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
@@ -72,7 +75,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getResourceRequirements());
+        ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.SOURCE, JobType.SYNC, workerConfigs));
 
     log.info("Setting up destination launcher...");
     final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
@@ -80,7 +83,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
         destinationLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getResourceRequirements());
+        ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.DESTINATION, JobType.SYNC, workerConfigs));
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
