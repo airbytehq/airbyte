@@ -189,12 +189,15 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:
+    # this is our first example of setting these requirements. they are guesses, not data driven.
+    # setting default cpu higher, because we have found that check and discover can be cpu constrained for dbs.
     default:
       cpu_limit: "1.0"
       cpu_request: "1.0"
       memory_limit: "300Mi"
       memory_request: "300Mi"
     jobSpecific:
+      # sync jobs are generally IO and memory bound and not cpu.
       - jobType: sync
         resourceRequirements:
           cpu_limit: "0.5"
