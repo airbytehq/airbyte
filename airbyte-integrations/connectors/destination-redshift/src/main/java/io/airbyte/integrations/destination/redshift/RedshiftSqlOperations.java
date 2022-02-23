@@ -52,7 +52,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    final String recordQueryComponent = "(?, ?, ?),\n";
+    final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
