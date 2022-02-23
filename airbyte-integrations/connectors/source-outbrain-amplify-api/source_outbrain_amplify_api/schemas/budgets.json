@@ -13,58 +13,13 @@
                 },
                 "budgets": {
                     "type": "array",
-                    "items": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "id": {
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "shared": {
-                                    "type": "boolean"
-                                },
-                                "amount": {
-                                    "type": "number"
-                                },
-                                "currency": {
-                                    "type": "string"
-                                },
-                                "amountRemaining": {
-                                    "type": "number"
-                                },
-                                "amountSpent": {
-                                    "type": "number"
-                                },
-                                "creationTime": {
-                                    "type": "string"
-                                },
-                                "lastModified": {
-                                    "type": "string"
-                                },
-                                "startDate": {
-                                    "type": "string"
-                                },
-                                "runForever": {
-                                    "type": "boolean"
-                                },
-                                "type": {
-                                    "type": "string"
-                                },
-                                "pacing": {
-                                    "type": "string"
-                                },
-                                "dailyTarget": {
-                                    "type": "number"
-                                },
-                                "maximumAmount": {
-                                    "type": "number"
-                                }
-                            }
-                        }
-                    ]
+                    "items": {
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ]
+                    }
                 }
             }
         }
