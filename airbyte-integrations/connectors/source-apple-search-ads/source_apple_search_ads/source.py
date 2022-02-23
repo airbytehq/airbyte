@@ -5,6 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib import request
 
 import jwt
 import requests
@@ -106,6 +107,8 @@ class AppleSearchAdsStream(HttpStream, ABC):
 
     limit = 1000
 
+    org_id: str
+
     def __init__(
         self,
         org_id: str,
@@ -113,6 +116,7 @@ class AppleSearchAdsStream(HttpStream, ABC):
         **kwargs,
     ):
         self.org_id = org_id
+
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -122,14 +126,6 @@ class AppleSearchAdsStream(HttpStream, ABC):
             return {"limit": self.limit, "offset": ((pagination["startIndex"] + 1) * self.limit) + 1 }
         else:
             return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "limit": self.limit,
-            "offset": 0
-        }
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -147,10 +143,57 @@ class AppleSearchAdsStream(HttpStream, ABC):
 class Campaigns(AppleSearchAdsStream):
     primary_key = "id"
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "limit": self.limit,
+            "offset": 0
+        }
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "campaigns"
+
+class IncrementalAppleSearchAdsStream(AppleSearchAdsStream, ABC):
+    cursor_field = "date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {}
+
+    def _chunk_campaigns_range(self) -> List[Mapping[str, any]]:
+        response = requests.request(
+                "GET",
+                url=f"{self.url_base}campaigns",
+                headers={
+                    "X-AP-Context": f"orgId={self.org_id}",
+                    **self.authenticator.get_auth_header()
+                },
+                params={
+                    "limit": self.limit
+                }
+            )
+
+        campaign_ids = []
+
+        for campaign in response.json()["data"]:
+            campaign_ids.append({"campaign_id": campaign["id"]})
+
+        return campaign_ids
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+
+        return self._chunk_campaigns_range()
+
+class Adgroups(IncrementalAppleSearchAdsStream):
+    primary_key = ["id"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
 
 class SourceAppleSearchAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -189,4 +232,7 @@ class SourceAppleSearchAds(AbstractSource):
             private_key=config["private_key"]
         )
 
-        return [Campaigns(org_id=config["org_id"], authenticator=auth)]
+        return [
+            Campaigns(org_id=config["org_id"], authenticator=auth),
+            Adgroups(org_id=config["org_id"], authenticator=auth)
+        ]
