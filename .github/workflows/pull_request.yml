@@ -12,7 +12,7 @@ env:
 jobs:
   ecr_login:
     name: ecr_login
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       ECR_PASSWORD: ${{ steps.ecr_login_pwd.outputs.ECR_PASSWORD }}
 
@@ -39,7 +39,7 @@ jobs:
 
   plan_stg:
     name: plan-stg
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: stg
     needs:
       - ecr_login
