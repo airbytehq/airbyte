@@ -125,7 +125,8 @@ public class ConnectionsHandler {
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withOperationIds(connectionCreate.getOperationIds())
-        .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()));
+        .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
+        .withSourceCatalogId(connectionCreate.getSourceCatalogId());
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }

@@ -2738,6 +2738,9 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        catalogId:
+          type: string
+          format: uuid
     SourceSearch:
       type: object
       properties:
@@ -3088,6 +3091,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3129,6 +3135,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperationCreate"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionUpdate:
       type: object
       required:
