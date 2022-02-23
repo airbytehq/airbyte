@@ -27,9 +27,10 @@ class Price(HttpStream, ABC):
     url_base = "https://query1.finance.yahoo.com/"
     primary_key = None
 
-    def __init__(self, ticker: str, interval: str, range: str, **kwargs):
+    def __init__(self, tickers: str, interval: str, range: str, **kwargs):
         super().__init__(**kwargs)
-        self.ticker = ticker
+        self.tickers = tickers
+        self.next_index = 0
         self.interval = interval
         self.range = range
 
@@ -39,11 +40,18 @@ class Price(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v8/finance/chart/{self.ticker}"
+        next_index = next_page_token or 0  # At the first request next_page_token is None
+        return f"v8/finance/chart/{self.tickers[next_index]}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Yahoo Finance API does not offer pagination for the chart endpoint
-        return None
+        """
+        We re-use pagination functionality to get one ticker history at a time.
+        Updates the next_index counter to the next ticker in the list.
+        """
+        self.next_index += 1
+        if self.next_index >= len(self.tickers):
+            return None
+        return self.next_index
 
     def request_params(
         self,
@@ -51,8 +59,9 @@ class Price(HttpStream, ABC):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        next_index = next_page_token or 0  # At the first request next_page_token is None
         return {
-            "symbol": self.ticker,
+            "symbol": self.tickers[next_index],
             "interval": self.interval,
             "range": self.range,
         }
@@ -66,35 +75,7 @@ class Price(HttpStream, ABC):
         return {**base_headers, **headers}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
-
-# Basic incremental stream
-class IncrementalPriceStream(Price, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-        if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        yield from [response.json()]
 
 
 # Source
@@ -102,13 +83,14 @@ class SourceYahooFinancePrice(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         # Check that the range parameter is configured according to the interval parameter
         # If the range DOES NOT end in "d" we cannot use minute intervals (end in "m")
-        if config["interval"][-1] == "m" and config["range"][-1] != "d":
-            return False, "Range parameter must end in 'd' for minute intervals"
+        if "interval" in config and "range" in config:
+            if config["interval"][-1] == "m" and config["range"][-1] != "d":
+                return False, "Range parameter must end in 'd' for minute intervals"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {
-            "ticker": config["ticker"],
+            "tickers": config["tickers"],
             "interval": config.get("interval", "7d"),
             "range": config.get("range", "1m")
         }

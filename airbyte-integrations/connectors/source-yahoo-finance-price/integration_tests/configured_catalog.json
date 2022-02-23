@@ -7,7 +7,10 @@
           "type": "object",
           "properties": {
             "ticker": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         },
