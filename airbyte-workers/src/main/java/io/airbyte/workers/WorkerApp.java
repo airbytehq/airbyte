@@ -23,6 +23,9 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
@@ -91,14 +94,22 @@ public class WorkerApp {
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
   private final Path workspaceRoot;
-  private final ProcessFactory jobProcessFactory;
+  private final ProcessFactory defaultProcessFactory;
+  private final ProcessFactory specProcessFactory;
+  private final ProcessFactory checkProcessFactory;
+  private final ProcessFactory discoverProcessFactory;
+  private final ProcessFactory replicationProcessFactory;
   private final SecretsHydrator secretsHydrator;
   private final WorkflowServiceStubs temporalService;
   private final ConfigRepository configRepository;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final WorkerConfigs workerConfigs;
+  private final WorkerConfigs defaultWorkerConfigs;
+  private final WorkerConfigs specWorkerConfigs;
+  private final WorkerConfigs checkWorkerConfigs;
+  private final WorkerConfigs discoverWorkerConfigs;
+  private final WorkerConfigs replicationWorkerConfigs;
   private final String airbyteVersion;
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
@@ -126,7 +137,7 @@ public class WorkerApp {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
-        new SpecActivityImpl(workerConfigs, jobProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
+        new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
             airbyteVersion));
 
     final Worker checkConnectionWorker =
@@ -134,21 +145,22 @@ public class WorkerApp {
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
     checkConnectionWorker
         .registerActivitiesImplementations(
-            new CheckConnectionActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
+            new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
                 jobPersistence, airbyteVersion));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
         .registerActivitiesImplementations(
-            new DiscoverCatalogActivityImpl(workerConfigs, jobProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
+            new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
+                logConfigs,
                 jobPersistence, airbyteVersion));
 
     final NormalizationActivityImpl normalizationActivity =
         new NormalizationActivityImpl(
             containerOrchestratorConfig,
-            workerConfigs,
-            jobProcessFactory,
+            defaultWorkerConfigs,
+            defaultProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,
@@ -158,8 +170,8 @@ public class WorkerApp {
     final DbtTransformationActivityImpl dbtTransformationActivity =
         new DbtTransformationActivityImpl(
             containerOrchestratorConfig,
-            workerConfigs,
-            jobProcessFactory,
+            defaultWorkerConfigs,
+            defaultProcessFactory,
             secretsHydrator,
             workspaceRoot,
             workerEnvironment,
@@ -171,8 +183,8 @@ public class WorkerApp {
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(
         containerOrchestratorConfig,
-        workerConfigs,
-        jobProcessFactory,
+        replicationWorkerConfigs,
+        replicationProcessFactory,
         secretsHydrator,
         workspaceRoot,
         workerEnvironment,
@@ -183,7 +195,7 @@ public class WorkerApp {
 
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
 
-    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements());
+    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
@@ -238,9 +250,7 @@ public class WorkerApp {
         airbyteVersion);
   }
 
-  private static ProcessFactory getJobProcessFactory(final Configs configs) throws IOException {
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
+  private static ProcessFactory getJobProcessFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
@@ -295,7 +305,20 @@ public class WorkerApp {
 
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
+
+    final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
+    final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
+    final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
+    final WorkerConfigs discoverWorkerConfigs = WorkerConfigs.buildDiscoverWorkerConfigs(configs);
+    final WorkerConfigs replicationWorkerConfigs = WorkerConfigs.buildReplicationWorkerConfigs(configs);
+
+    final ProcessFactory defaultProcessFactory = getJobProcessFactory(configs, defaultWorkerConfigs);
+    final ProcessFactory specProcessFactory = getJobProcessFactory(configs, specWorkerConfigs);
+    final ProcessFactory checkProcessFactory = getJobProcessFactory(configs, checkWorkerConfigs);
+    final ProcessFactory discoverProcessFactory = getJobProcessFactory(configs, discoverWorkerConfigs);
+    final ProcessFactory replicationProcessFactory = getJobProcessFactory(configs, replicationWorkerConfigs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
@@ -312,8 +335,6 @@ public class WorkerApp {
       KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
     }
 
-    final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
-
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
     TemporalUtils.configureTemporalNamespace(temporalService);
@@ -326,7 +347,8 @@ public class WorkerApp {
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
 
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -343,7 +365,7 @@ public class WorkerApp {
         configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
-        new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()),
+        new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
@@ -361,10 +383,7 @@ public class WorkerApp {
         configRepository,
         jobPersistence);
 
-    final ConnectionHelper connectionHelper = new ConnectionHelper(
-        configRepository,
-        workspaceHelper,
-        workerConfigs);
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
@@ -378,14 +397,22 @@ public class WorkerApp {
 
     new WorkerApp(
         workspaceRoot,
-        jobProcessFactory,
+        defaultProcessFactory,
+        specProcessFactory,
+        checkProcessFactory,
+        discoverProcessFactory,
+        replicationProcessFactory,
         secretsHydrator,
         temporalService,
         configRepository,
         configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        workerConfigs,
+        defaultWorkerConfigs,
+        specWorkerConfigs,
+        checkWorkerConfigs,
+        discoverWorkerConfigs,
+        replicationWorkerConfigs,
         configs.getAirbyteVersionOrWarning(),
         jobFactory,
         jobPersistence,

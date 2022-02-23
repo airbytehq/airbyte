@@ -29,7 +29,9 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.metrics.MetricSingleton;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -248,7 +250,8 @@ public class SchedulerApp {
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(
@@ -272,8 +275,7 @@ public class SchedulerApp {
         TrackingClientSingleton.get());
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(

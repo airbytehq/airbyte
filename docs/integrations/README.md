@@ -34,6 +34,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |
+| [Customer.io](sources/customer-io.md) | Alpha |
 | [Db2](sources/db2.md) | Beta |
 | [Dixa](sources/dixa.md) | Alpha |
 | [Drift](sources/drift.md) | Beta |
@@ -55,6 +56,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Google Sheets](sources/google-sheets.md) | Certified |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Certified |
 | [Greenhouse](sources/greenhouse.md) | Beta |
+| [Harness](sources/harness.md) | Alpha |
 | [HubSpot](sources/hubspot.md) | Certified |
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
@@ -89,6 +91,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
 | [Outreach](./sources/outreach.md)| Alpha |
+| [PagerDuty](sources/pagerduty.md) | Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
 | [PersistIq](sources/persistiq.md) | Alpha |
@@ -100,7 +103,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
 | [Qualaroo](sources/qualaroo.md) | Beta |
-| [Quickbooks](sources/quickbooks.md) | Beta |
+| [QuickBooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
 | [Redshift](sources/redshift.md) | Certified |
@@ -127,6 +130,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Trello](sources/trello.md) | Beta |
 | [Twilio](sources/twilio.md) | Beta |
 | [US Census](sources/us-census.md) | Alpha |
+| [VictorOps](sources/victorops.md) | Alpha |
 | [WooCommerce](sources/woocommerce.md) | Beta |
 | [Wordpress](sources/wordpress.md) | Beta |
 | [YouTube Analytics](sources/youtube-analytics.md) | Beta |
