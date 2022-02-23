@@ -502,14 +502,16 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
-    final ActorDefinitionResourceRequirements sourceResourceReqs = new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
+    final ActorDefinitionResourceRequirements sourceResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(source.getSourceDefinitionId())
             .withResourceRequirements(sourceResourceReqs));
-    final ActorDefinitionResourceRequirements destResourceReqs = new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
+    final ActorDefinitionResourceRequirements destResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(new StandardDestinationDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
