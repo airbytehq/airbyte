@@ -72,7 +72,7 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
         # Test casting fields with format specified
         (["null", "string"], "some_field", "", "date-time", None),
         (["string"], "some_field", "", "date-time", ""),
-        (["null", "string"], "some_field", "2020", "date-time", "2020"),
+        (["null", "string"], "some_field", "2020", "date-time", "2020-01-01 00:00:00"),
     ],
 )
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
@@ -99,5 +99,5 @@ def test_cast_type_if_needed(declared_field_types, field_name, field_value, form
     ],
 )
 def test_cast_timestamp_to_date(field_value, declared_format, expected_casted_value):
-    casted_value = Stream._cast_timestamp_to_date("hs_recurring_billing_end_date", field_value, declared_format=declared_format)
+    casted_value = Stream._cast_datetime("hs_recurring_billing_end_date", field_value, declared_format=declared_format)
     assert casted_value == expected_casted_value

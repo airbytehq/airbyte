@@ -366,9 +366,9 @@ class Stream(HttpStream, ABC):
             return dt.to_datetime_string()
 
     @classmethod
-    def _cast_timestamp_to_date(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+    def _cast_datetime(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
         """
-        Convert timestamp to date / datetime string
+        If format is date/date-time, but actual value is timestamp, convert timestamp to date/date-time string.
         """
         if not field_value:
             return field_value
@@ -409,7 +409,7 @@ class Stream(HttpStream, ABC):
                 return None
 
         if declared_format in ["date", "date-time"]:
-            field_value = cls._cast_timestamp_to_date(field_name, field_value, declared_format=declared_format)
+            field_value = cls._cast_datetime(field_name, field_value, declared_format=declared_format)
 
         actual_field_type = type(field_value)
         actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
