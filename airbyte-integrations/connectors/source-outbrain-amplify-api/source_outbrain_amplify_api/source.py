@@ -59,7 +59,7 @@ class Budgets(OutbrainAmplifyApiStream):
     ) -> str:
 
         marketer_id = self.marketer_id
-        return 'https://api.outbrain.com/amplify/v0.1/marketers/' +marketer_id + '/budgets?detachedOnly=false'
+        return 'marketers/' +marketer_id + '/budgets?detachedOnly=false'
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
@@ -82,7 +82,7 @@ class Campaigns(OutbrainAmplifyApiStream):
         should return "customers". Required.
         """
         marketer_id = self.marketer_id
-        return 'https://api.outbrain.com/amplify/v0.1/marketers/' +marketer_id + '/campaigns'
+        return 'marketers/' +marketer_id + '/campaigns'
     
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -114,29 +114,20 @@ class Campaigns(OutbrainAmplifyApiStream):
         return response.json().get("campaigns")
     
 class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-    
+
     primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
+
         marketer_id = self.marketer_id
 
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections'
+        return 'reports/marketers/' +marketer_id + '/campaigns/sections'
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
+
 
 
         return response.json().get("campaignResults")
@@ -155,21 +146,13 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
     
 
 class PerformanceByCountry(OutbrainAmplifyApiStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     
     primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
+
         marketer_id = self.marketer_id
 
 
@@ -177,20 +160,13 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
 
         return response.json().get("results")
     
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
+
         start_date = self.start_date
         end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
         params = {"from": start_date, "to": end_date}
@@ -199,13 +175,8 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
 
 # Basic incremental stream
 class IncrementalOutbrainAmplifyApiStream(OutbrainAmplifyApiStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    cursor_field_date = []
+
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -244,7 +215,7 @@ class PerformanceByCountry(IncrementalOutbrainAmplifyApiStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         marketer_id = self.marketer_id
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?breakdown=country'
+        return 'reports/marketers/' +marketer_id + '/geo?breakdown=country'
 
     def parse_response(
         self,
@@ -269,7 +240,7 @@ class PublisherSectionByCampaignPerformance(IncrementalOutbrainAmplifyApiStream)
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         marketer_id = self.marketer_id
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/campaigns/sections'
+        return 'reports/marketers/' + marketer_id + '/campaigns/sections'
 
     def parse_response(
         self,
@@ -289,7 +260,7 @@ class PublisherSectionByCampaignPerformance(IncrementalOutbrainAmplifyApiStream)
 
 # Source
 class SourceOutbrainAmplifyApi(AbstractSource):
-
+    url = 'https://api.outbrain.com/amplify/v0.1/login'
     @property
     def retry_factor(self) -> int:
          # For python backoff package expo backoff delays calculated according to formula:
@@ -300,10 +271,8 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         return 1800
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        url = 'https://api.outbrain.com/amplify/v0.1/login'
-    
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
-        check_connection_respone = (requests.get(url, auth=auth))
+        check_connection_respone = (requests.get(self.url, auth=auth))
 
         if check_connection_respone.ok ==  True:
             return True, None
@@ -314,11 +283,9 @@ class SourceOutbrainAmplifyApi(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
-        url = 'https://api.outbrain.com/amplify/v0.1/login'
          
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
-        response = (requests.get(url, auth=auth))
+        response = (requests.get(self.url, auth=auth))
         token = response.json()['OB-TOKEN-V1']
         
         authenticator = NoAuth()
