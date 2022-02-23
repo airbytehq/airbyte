@@ -45,7 +45,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ public class WebBackendConnectionsHandler {
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
-  private final ConnectionHelper connectionHelper;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -259,7 +257,7 @@ public class WebBackendConnectionsHandler {
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
 
     ConnectionRead connectionRead;
-    boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
+    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
     if (!featureFlags.usesNewScheduler()) {
       connectionRead = connectionsHandler.updateConnection(connectionUpdate);
       if (needReset) {
@@ -271,14 +269,18 @@ public class WebBackendConnectionsHandler {
         schedulerHandler.syncConnection(connectionId);
       }
     } else {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate, needReset);
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
       if (needReset) {
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
+        temporalWorkerRunFactory.update(connectionUpdate);
+
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
         temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
 
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
         temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-
-        connectionRead = connectionHelper.buildConnectionRead(connectionUpdate.getConnectionId());
+        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }
 
