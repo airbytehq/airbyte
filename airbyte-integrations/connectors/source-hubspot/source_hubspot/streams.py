@@ -359,7 +359,14 @@ class Stream(HttpStream, ABC):
             yield from []
 
     @staticmethod
-    def _cast_timestamp_to_date(field_name: str, field_value: Any, declared_format: str = None) -> Any:
+    def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None):
+        if declared_format == 'date':
+            return dt.to_date_string()
+        elif declared_format == 'date-time':
+            return dt.to_datetime_string()
+
+    @classmethod
+    def _cast_timestamp_to_date(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
         """
         Convert timestamp to date / datetime string
         """
@@ -367,8 +374,8 @@ class Stream(HttpStream, ABC):
             return field_value
 
         try:
-            pendulum.parse(field_value)
-            return field_value
+            dt = pendulum.parse(field_value)
+            return cls._convert_datetime_to_string(dt, declared_format=declared_format)
         except (ValueError, TypeError) as ex:
             logger.warning(
                 f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: {ex}"
@@ -376,16 +383,13 @@ class Stream(HttpStream, ABC):
 
         try:
             dt = pendulum.from_timestamp(int(field_value) / 1000)
+            return cls._convert_datetime_to_string(dt, declared_format=declared_format)
         except (ValueError, TypeError):
             logger.warning(
                 f"Couldn't parse timestamp in {field_name}. Field value: {field_value}. Ex: {ex}"
             )
-            return field_value
 
-        if declared_format == 'date':
-            return dt.to_date_string()
-        elif declared_format == 'date-time':
-            return dt.to_datetime_string()
+        return field_value
 
     @classmethod
     def _cast_value(cls, declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
