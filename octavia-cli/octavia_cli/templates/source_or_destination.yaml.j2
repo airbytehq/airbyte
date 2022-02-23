@@ -12,7 +12,15 @@ definition_version: {{ definition.docker_image_tag }}
 
 {%- macro render_sub_fields(sub_fields, is_commented) %}
 {%- for f in sub_fields %}
+{%- if f.type == "object" and not f.oneOf %}
+{{- render_object_field(f)|indent(2, False) }}
+{%- elif f.oneOf %}}
+{{- render_one_of(f) }}
+{%- elif f.is_array_of_objects %}}
+{{- render_array_of_objects(f) }}
+{%- else %}
 {{ render_field(f, is_commented) }}
+{%- endif %}
 {%- endfor %}
 {%- endmacro %}
 
@@ -52,7 +60,7 @@ definition_version: {{ definition.docker_image_tag }}
   {{- render_object_field(f)|indent(2, False) }}
   {%- elif f.oneOf %}
   {{- render_one_of(f)|indent(2, False) }}
-  {%- elif f._is_array_of_objects %}
+  {%- elif f.is_array_of_objects %}
   {{- render_array_of_objects(f)|indent(2, False) }}
   {%- else %}
   {{ render_field(f, is_commented=is_commented) }}

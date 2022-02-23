@@ -60,6 +60,7 @@ EXPECTED_RENDERED_YAML_PATH = "tests/integration/test_generate/expected_rendered
     [
         ("my_postgres_source", "source", "source_postgres/input_spec.yaml", "source_postgres/expected.yaml"),
         ("my_postgres_destination", "destination", "destination_postgres/input_spec.yaml", "destination_postgres/expected.yaml"),
+        ("my_s3_destination", "destination", "destination_s3/input_spec.yaml", "destination_s3/expected.yaml"),
     ],
 )
 def test_expected_output(resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker):

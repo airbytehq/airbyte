@@ -51,7 +51,7 @@ class FieldToRender:
             return self.field_metadata.get(name)
 
     @property
-    def _is_array_of_objects(self) -> bool:
+    def is_array_of_objects(self) -> bool:
         if self.type == "array" and self.items:
             if self.items["type"] == "object":
                 return True
@@ -77,7 +77,7 @@ class FieldToRender:
         Returns:
             [list]: List of fields
         """
-        if self._is_array_of_objects:
+        if self.is_array_of_objects:
             required_fields = self.items.get("required", [])
             return parse_fields(required_fields, self.items["properties"])
         return []
@@ -151,7 +151,6 @@ class ConnectionSpecificationRenderer:
     def write_yaml(self, project_path: str) -> str:
         output_path = self._get_output_path(project_path)
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
-
         rendered = self.TEMPLATE.render(
             {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
         )

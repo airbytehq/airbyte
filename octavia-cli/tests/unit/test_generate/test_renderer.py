@@ -39,14 +39,14 @@ class TestFieldToRender:
         assert field_to_render.foo == "bar"
         assert field_to_render.not_existing is None
 
-    def test__is_array_of_objects(self):
+    def test_is_array_of_objects(self):
         field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.type = "array"
         field_to_render.items = {"type": "object"}
-        assert field_to_render._is_array_of_objects
+        assert field_to_render.is_array_of_objects
         field_to_render.type = "array"
         field_to_render.items = {"type": "int"}
-        assert not field_to_render._is_array_of_objects
+        assert not field_to_render.is_array_of_objects
 
     def test__get_one_of_values(self, mocker):
         field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
@@ -62,12 +62,12 @@ class TestFieldToRender:
 
     def test__get_array_items(self, mocker):
         mocker.patch.object(renderer, "parse_fields")
-        mocker.patch.object(renderer.FieldToRender, "_is_array_of_objects", False)
+        mocker.patch.object(renderer.FieldToRender, "is_array_of_objects", False)
 
         field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
         assert field_to_render._get_array_items() == []
         field_to_render.items = {"required": [], "properties": []}
-        mocker.patch.object(renderer.FieldToRender, "_is_array_of_objects", True)
+        mocker.patch.object(renderer.FieldToRender, "is_array_of_objects", True)
         assert field_to_render._get_array_items() == renderer.parse_fields.return_value
         renderer.parse_fields.assert_called_with([], [])
 
