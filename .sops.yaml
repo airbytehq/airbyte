@@ -1,0 +1,10 @@
+creation_rules:
+  - path_regex: \.dev\.yaml$
+    kms: 'arn:aws:kms:us-east-2:580776257674:key/beac726e-bd4a-4857-863d-b9e0119d25d2'
+    aws_profile: 'prd-data-dev-iam-PlatformAdmin'
+  - path_regex: \.stg\.yaml$
+    kms: 'arn:aws:kms:us-east-2:074505835657:key/9d7b852e-a731-4b6d-b65a-e4d5fa28a78e'
+    aws_profile: 'prd-data-stg-iam-PlatformAdmin'
+  - path_regex: \.prd\.yaml$
+    kms: 'arn:aws:kms:us-east-2:375060456233:key/1b75193e-3860-41d5-aee7-82c6dae0cb58'
+    aws_profile: 'prd-data-prd-iam-PlatformAdmin'

@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/actions.ssl-redirect: |
+      {"type": "redirect", "redirectConfig": { "protocol": "HTTPS", "port": "443", "statusCode": "HTTP_301"}}
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:074505835657:certificate/aebd899e-d846-4d74-bf5d-d4e3b6fd2536
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/success-codes: 200-301
+    alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: airbyte.data-stg.prd.us-east-2.vts.com
+    kubernetes.io/ingress.class: alb
+  name: airbyte-webapp
+  namespace: airbyte
+spec:
+  defaultBackend:
+    service:
+      name: airbyte-webapp-svc
+      port:
+        number: 80
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: ssl-redirect
+                port:
+                  name: use-annotation
+            path: /*
+            pathType: ImplementationSpecific
