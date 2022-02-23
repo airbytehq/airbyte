@@ -38,3 +38,7 @@ tests:
       configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"
     - config_path: "secrets/connected_account_config.json"
       configured_catalog_path: "integration_tests/connected_account_configured_catalog.json"
+      ignored_fields:
+        "invoices":
+          - invoice_pdf
+          - hosted_invoice_url

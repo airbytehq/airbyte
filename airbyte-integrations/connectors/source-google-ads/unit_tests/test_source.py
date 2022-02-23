@@ -96,16 +96,22 @@ def test_get_updated_state(config):
     client = AdGroupAdReport(
         start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], time_zone="local"
     )
+    client._customer_id = "1234567890"
+
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
-
     new_stream_state = client.get_updated_state(current_state_stream, latest_record)
-    assert new_stream_state == {"segments.date": "2020-01-01"}
+    assert new_stream_state == {"1234567890": {"segments.date": "2020-01-01"}}
 
     current_state_stream = {"segments.date": "2020-01-01"}
     latest_record = {"segments.date": "2020-02-01"}
     new_stream_state = client.get_updated_state(current_state_stream, latest_record)
-    assert new_stream_state == {"segments.date": "2020-02-01"}
+    assert new_stream_state == {"1234567890": {"segments.date": "2020-02-01"}}
+
+    current_state_stream = {"1234567890": {"segments.date": "2020-02-01"}}
+    latest_record = {"segments.date": "2021-03-03"}
+    new_stream_state = client.get_updated_state(current_state_stream, latest_record)
+    assert new_stream_state == {"1234567890": {"segments.date": "2021-03-03"}}
 
 
 def get_instance_from_config(config, query):

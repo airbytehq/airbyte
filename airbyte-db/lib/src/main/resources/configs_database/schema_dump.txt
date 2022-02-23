@@ -15,6 +15,26 @@ create table "public"."actor"(
   constraint "actor_pkey"
     primary key ("id")
 );
+create table "public"."actor_catalog"(
+  "id" uuid not null,
+  "catalog" jsonb not null,
+  "catalog_hash" varchar(32) not null,
+  "created_at" timestamptz(35) not null,
+  "modified_at" timestamptz(35) not null default null,
+  constraint "actor_catalog_pkey"
+    primary key ("id")
+);
+create table "public"."actor_catalog_fetch_event"(
+  "id" uuid not null,
+  "actor_catalog_id" uuid not null,
+  "actor_id" uuid not null,
+  "config_hash" varchar(32) not null,
+  "actor_version" varchar(256) not null,
+  "created_at" timestamptz(35) not null default null,
+  "modified_at" timestamptz(35) not null default null,
+  constraint "actor_catalog_fetch_event_pkey"
+    primary key ("id")
+);
 create table "public"."actor_definition"(
   "id" uuid not null,
   "name" varchar(256) not null,
@@ -30,6 +50,7 @@ create table "public"."actor_definition"(
   "tombstone" bool not null default false,
   "release_stage" release_stage null,
   "release_date" date null,
+  "resource_requirements" jsonb null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -73,6 +94,7 @@ create table "public"."connection"(
   "resource_requirements" jsonb null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "source_catalog_id" uuid null,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -142,10 +164,22 @@ alter table "public"."actor"
   add constraint "actor_workspace_id_fkey"
     foreign key ("workspace_id")
     references "public"."workspace" ("id");
+alter table "public"."actor_catalog_fetch_event"
+  add constraint "actor_catalog_fetch_event_actor_catalog_id_fkey"
+    foreign key ("actor_catalog_id")
+    references "public"."actor_catalog" ("id");
+alter table "public"."actor_catalog_fetch_event"
+  add constraint "actor_catalog_fetch_event_actor_id_fkey"
+    foreign key ("actor_id")
+    references "public"."actor" ("id");
 alter table "public"."actor_oauth_parameter"
   add constraint "actor_oauth_parameter_actor_definition_id_fkey"
     foreign key ("actor_definition_id")
     references "public"."actor_definition" ("id");
+alter table "public"."connection"
+  add constraint "connection_actor_catalog_id_fk"
+    foreign key ("source_catalog_id")
+    references "public"."actor_catalog" ("id");
 alter table "public"."connection"
   add constraint "connection_destination_id_fkey"
     foreign key ("destination_id")
@@ -172,6 +206,11 @@ alter table "public"."state"
     references "public"."connection" ("id");
 create index "actor_actor_definition_id_idx" on "public"."actor"("actor_definition_id" asc);
 create unique index "actor_pkey" on "public"."actor"("id" asc);
+create index "actor_catalog_catalog_hash_id_idx" on "public"."actor_catalog"("catalog_hash" asc);
+create unique index "actor_catalog_pkey" on "public"."actor_catalog"("id" asc);
+create index "actor_catalog_fetch_event_actor_catalog_id_idx" on "public"."actor_catalog_fetch_event"("actor_catalog_id" asc);
+create index "actor_catalog_fetch_event_actor_id_idx" on "public"."actor_catalog_fetch_event"("actor_id" asc);
+create unique index "actor_catalog_fetch_event_pkey" on "public"."actor_catalog_fetch_event"("id" asc);
 create unique index "actor_definition_pkey" on "public"."actor_definition"("id" asc);
 create unique index "actor_oauth_parameter_pkey" on "public"."actor_oauth_parameter"("id" asc);
 create unique index "airbyte_configs_migrations_pk" on "public"."airbyte_configs_migrations"("installed_rank" asc);

@@ -80,7 +80,7 @@ public class BootloaderAppTest {
         mockedConfigs.getConfigDatabaseUrl())
             .getAndInitialize();
     val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
-    assertEquals("0.35.15.001", configsMigrator.getLatestMigration().getVersion().getVersion());
+    assertEquals("0.35.32.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);
     assertEquals(version, jobsPersistence.getVersion().get());
@@ -112,7 +112,7 @@ public class BootloaderAppTest {
 
   @Test
   void testPostLoadExecutionExecutes() throws Exception {
-    var testTriggered = new AtomicBoolean();
+    final var testTriggered = new AtomicBoolean();
 
     val container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("public")

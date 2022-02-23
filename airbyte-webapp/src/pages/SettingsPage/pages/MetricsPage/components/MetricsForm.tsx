@@ -58,7 +58,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
         <FormattedMessage
           id={"preferences.collectData"}
           values={{
-            docs: (...docs: React.ReactNode[]) => (
+            docs: (docs: React.ReactNode) => (
               <DocsLink target="_blank" href={config.ui.docsLink}>
                 {docs}
               </DocsLink>
