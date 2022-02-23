@@ -514,8 +514,14 @@ class SchedulerHandlerTest {
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(getOperation(operationId));
-    when(schedulerJobClient.createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE, operations))
-        .thenReturn(completedJob);
+    when(schedulerJobClient.createOrGetActiveSyncJob(
+        source,
+        destination,
+        standardSync,
+        SOURCE_DOCKER_IMAGE,
+        DESTINATION_DOCKER_IMAGE,
+        operations))
+            .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
     when(completedJob.getConfig()).thenReturn(jobConfig);
@@ -527,7 +533,13 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE, operations);
+    verify(schedulerJobClient).createOrGetActiveSyncJob(
+        source,
+        destination,
+        standardSync,
+        SOURCE_DOCKER_IMAGE,
+        DESTINATION_DOCKER_IMAGE,
+        operations);
   }
 
   @Test
