@@ -1,0 +1,42 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Apple Search Ads Spec",
+    "type": "object",
+    "required": ["client_id", "team_id", "key_id", "org_id", "private_key"],
+    "additionalProperties": false,
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "Client ID",
+        "order": 0
+      },
+      "team_id": {
+        "type": "string",
+        "title": "Team ID",
+        "description": "Team ID",
+        "order": 1
+      },
+      "key_id": {
+        "type": "string",
+        "title": "Key ID",
+        "description": "Key ID",
+        "order": 2
+      },
+      "org_id": {
+        "type": "string",
+        "title": "Organisation ID",
+        "description": "Organisation ID",
+        "order": 3
+      },
+      "private_key": {
+        "type": "string",
+        "description": "RSA private key to use for Client Secret generation",
+        "airbyte_secret": true,
+        "multiline": true
+      }
+    }
+  }
+}
