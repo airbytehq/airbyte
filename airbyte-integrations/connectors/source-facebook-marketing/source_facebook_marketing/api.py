@@ -93,6 +93,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
             max_pause_interval = self.pause_interval_minimum
 
             for record in response.json():
+                if "headers" not in record:
+                    continue
                 headers = {header["name"].lower(): header["value"] for header in record["headers"]}
                 usage, pause_interval = self._parse_call_rate_header(headers)
                 max_usage = max(max_usage, usage)
