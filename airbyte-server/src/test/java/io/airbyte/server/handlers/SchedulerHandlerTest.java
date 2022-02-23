@@ -39,12 +39,14 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -500,16 +502,20 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
+    final ActorDefinitionResourceRequirements sourceResourceReqs = new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withResourceRequirements(sourceResourceReqs));
+    final ActorDefinitionResourceRequirements destResourceReqs = new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(new StandardDestinationDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+            .withResourceRequirements(destResourceReqs));
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
@@ -520,7 +526,9 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations))
+        operations,
+        sourceResourceReqs,
+        destResourceReqs))
             .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
@@ -539,7 +547,9 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations);
+        operations,
+        sourceResourceReqs,
+        destResourceReqs);
   }
 
   @Test
