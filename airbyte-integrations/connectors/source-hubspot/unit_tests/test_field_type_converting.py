@@ -87,8 +87,12 @@ def test_cast_type_if_needed(declared_field_types, field_name, field_value, form
 @pytest.mark.parametrize("field_value, declared_format, expected_casted_value",
                          [('1653696000000', 'date', '2022-05-28'),
                           ('1645608465000', 'date-time', '2022-02-23 09:27:45'),
+                          (1645608465000, 'date-time', '2022-02-23 09:27:45'),
                           ('2022-05-28', 'date', '2022-05-28'),
-                          ('2022-02-23 09:27:45', 'date-time', '2022-02-23 09:27:45')],)
+                          ('2022-02-23 09:27:45', 'date-time', '2022-02-23 09:27:45'),
+                          ('', 'date', ''),
+                          (None, 'date', None)
+                          ],)
 def test_cast_timestamp_to_date(field_value, declared_format, expected_casted_value):
     casted_value = Stream._cast_timestamp_to_date("hs_recurring_billing_end_date", field_value, declared_format=declared_format)
     assert casted_value == expected_casted_value
