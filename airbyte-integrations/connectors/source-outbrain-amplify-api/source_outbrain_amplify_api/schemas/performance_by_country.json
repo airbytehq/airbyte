@@ -29,19 +29,19 @@
             "type": "object",
             "properties": {
                 "impressions": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "clicks": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "totalConversions": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "conversions": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "viewConversions": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "spend": {
                     "type": "number"
@@ -56,7 +56,7 @@
                     "type": "number"
                 },
                 "viewConversionRate": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "cpa": {
                     "type": "number"
@@ -65,31 +65,31 @@
                     "type": "number"
                 },
                 "totalValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "totalSumValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "sumValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "viewSumValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "totalAverageValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "averageValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "viewAverageValue": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "roas": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "totalRoas": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "conversionMetrics": {
                     "type": "array",
@@ -101,19 +101,19 @@
                                     "type": "string"
                                 },
                                 "totalConversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "conversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewConversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "conversionRate": {
                                     "type": "number"
                                 },
                                 "viewConversionRate": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalCpa": {
                                     "type": "number"
@@ -122,31 +122,31 @@
                                     "type": "number"
                                 },
                                 "totalValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalSumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "sumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewSumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalAverageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "averageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewAverageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "roas": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalRoas": {
-                                    "type": "integer"
+                                    "type": "number"
                                 }
                             }
                         },
@@ -157,19 +157,19 @@
                                     "type": "string"
                                 },
                                 "totalConversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "conversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewConversions": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "conversionRate": {
                                     "type": "number"
                                 },
                                 "viewConversionRate": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalCpa": {
                                     "type": "number"
@@ -178,31 +178,31 @@
                                     "type": "number"
                                 },
                                 "totalValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalSumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "sumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewSumValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalAverageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "averageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "viewAverageValue": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "roas": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "totalRoas": {
-                                    "type": "integer"
+                                    "type": "number"
                                 }
                             }
                         }

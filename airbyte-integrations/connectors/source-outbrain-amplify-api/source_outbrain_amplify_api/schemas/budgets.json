@@ -3,13 +3,13 @@
     "type": "object",
     "properties": {
         "count": {
-            "type": "integer"
+            "type": "number"
         },
         "budgets": {
             "type": "object",
             "properties": {
                 "count": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "budgets": {
                     "type": "array",
@@ -27,16 +27,16 @@
                                     "type": "boolean"
                                 },
                                 "amount": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "currency": {
                                     "type": "string"
                                 },
                                 "amountRemaining": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "amountSpent": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "creationTime": {
                                     "type": "string"
@@ -57,10 +57,10 @@
                                     "type": "string"
                                 },
                                 "dailyTarget": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "maximumAmount": {
-                                    "type": "integer"
+                                    "type": "number"
                                 }
                             }
                         }

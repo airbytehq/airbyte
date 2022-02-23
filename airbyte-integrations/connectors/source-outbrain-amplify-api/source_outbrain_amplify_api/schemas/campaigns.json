@@ -3,7 +3,7 @@
     "type": "object",
     "properties": {
         "count": {
-            "type": "integer"
+            "type": "number"
         },
         "campaigns": {
             "type": "array",
@@ -45,7 +45,7 @@
                             "type": "number"
                         },
                         "amountSpent": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "targeting": {
                             "type": "object",
@@ -110,16 +110,16 @@
                                     "type": "boolean"
                                 },
                                 "amount": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "currency": {
                                     "type": "string"
                                 },
                                 "amountRemaining": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "amountSpent": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "creationTime": {
                                     "type": "string"
@@ -140,10 +140,10 @@
                                     "type": "string"
                                 },
                                 "dailyTarget": {
-                                    "type": "integer"
+                                    "type": "number"
                                 },
                                 "maximumAmount": {
-                                    "type": "integer"
+                                    "type": "number"
                                 }
                             }
                         },
