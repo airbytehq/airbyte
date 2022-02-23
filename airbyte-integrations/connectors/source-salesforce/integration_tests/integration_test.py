@@ -99,7 +99,7 @@ def test_update_for_deleted_record(stream):
     time.sleep(1)
     response = update_note(stream, created_note_id, headers)
     assert response.status_code == 404, "Note was updated, but should not"
-
+    time.sleep(1)
     notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state))
     assert created_note_id not in notes, "Note was updated, but should not"
 
