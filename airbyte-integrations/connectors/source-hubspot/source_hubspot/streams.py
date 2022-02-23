@@ -359,7 +359,7 @@ class Stream(HttpStream, ABC):
             yield from []
 
     @staticmethod
-    def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None):
+    def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
         if declared_format == "date":
             return dt.to_date_string()
         elif declared_format == "date-time":
