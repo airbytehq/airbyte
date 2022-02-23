@@ -7152,7 +7152,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.32"
+- dockerImage: "airbyte/source-shopify:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
