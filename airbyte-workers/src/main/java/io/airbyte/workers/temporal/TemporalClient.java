@@ -42,6 +42,10 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Builder;
@@ -221,6 +225,22 @@ public class TemporalClient {
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
+
+    try {
+      CompletableFuture.supplyAsync(() -> {
+        try {
+          do {
+            Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+          } while (!isWorkflowRunning(getConnectionManagerName(connectionId)));
+        } catch (InterruptedException e) {}
+
+        return null;
+      }).get(60, TimeUnit.SECONDS);
+    } catch (InterruptedException | ExecutionException e) {
+      log.error("Failed to create a new connection manager workflow", e);
+    } catch (TimeoutException e) {
+      log.error("Can't create a new connection manager workflow due to timeout", e);
+    }
   }
 
   public void deleteConnection(final UUID connectionId) {
@@ -448,37 +468,18 @@ public class TemporalClient {
   }
 
   /**
-   * Check if a workflow is currently running. It is using the temporal pagination (see:
-   * https://temporalio.slack.com/archives/CTRCR8RBP/p1638926310308200)
+   * Check if a workflow is currently running. Running means that it is query-able, thus we check that
+   * we can properly launch a query
    */
   public boolean isWorkflowRunning(final String workflowName) {
-    ByteString token;
-    ListOpenWorkflowExecutionsRequest openWorkflowExecutionsRequest =
-        ListOpenWorkflowExecutionsRequest.newBuilder()
-            .setNamespace(client.getOptions().getNamespace())
-            .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
-            .build();
-    do {
-      final ListOpenWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
-          service.blockingStub().listOpenWorkflowExecutions(openWorkflowExecutionsRequest);
-      final long matchingWorkflowCount = listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
-          .filter((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId().equals(workflowName)))
-          .count();
-      if (matchingWorkflowCount != 0) {
-        return true;
-      }
-      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
+    try {
+      ConnectionManagerWorkflow connectionManagerWorkflow = getExistingWorkflow(ConnectionManagerWorkflow.class, workflowName);
+      connectionManagerWorkflow.getState();
 
-      openWorkflowExecutionsRequest =
-          ListOpenWorkflowExecutionsRequest.newBuilder()
-              .setNamespace(client.getOptions().getNamespace())
-              .setNextPageToken(token)
-              .setMaximumPageSize(MAXIMUM_SEARCH_PAGE_SIZE)
-              .build();
-
-    } while (token != null && token.size() > 0);
-
-    return false;
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   @VisibleForTesting
