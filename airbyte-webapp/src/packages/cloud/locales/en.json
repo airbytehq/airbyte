@@ -43,6 +43,7 @@
   "workspaces.subtitle": "Workspaces let you collaborate with team members and share sources across your team under a shared billing account.",
   "workspaces.create": "Create workspace",
   "workspaces.createNew": "Create new workspace",
+  "workspaces.loading": "Loading…",
 
   "settings.accountSettings.logoutLabel": "Sign out",
   "settings.accountSettings.logoutText": "Sign out",
@@ -100,6 +101,10 @@
   "credits.connection": "Connection",
   "credits.usage": "Usage",
   "credits.noData": "Data is empty",
+  "credits.creditsProblem.negative_within_grace_period": "Your workspace is out of credits! Please add more credits to make sure your syncs keep running!",
+  "credits.creditsProblem.negative_beyond_grace_period": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
+  "credits.creditsProblem.negative_max_threshold": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
+  "credits.creditsProblem.link": "Visit credits page",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",
