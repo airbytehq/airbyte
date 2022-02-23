@@ -49,13 +49,12 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    def _execute_batch(self, batch: FacebookAdsApiBatch) -> FacebookAdsApiBatch:
+    def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
         """Execute batch, retry in case of failures"""
         while batch:
             batch = batch.execute()
             if batch:
                 logger.info("Retry failed requests in batch")
-        return batch
 
     def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
@@ -71,9 +70,10 @@ class FBMarketingStream(Stream, ABC):
         for request in pending_requests:
             api_batch.add_request(request, success=success, failure=failure)
             if len(api_batch) == MAX_BATCH_SIZE:
-                api_batch = self._execute_batch(api_batch)
+                self._execute_batch(api_batch)
                 yield from records
                 records = []
+                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
 
         self._execute_batch(api_batch)
         yield from records
