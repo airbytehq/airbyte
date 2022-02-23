@@ -242,13 +242,13 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point_map = {repo: self.get_starting_point(stream_state=stream_state, repository=repo) for repo in self.repositories}
+        start_point = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record.get(self.cursor_field) > start_point_map[stream_slice["repository"]]:
+            if record[self.cursor_field] > start_point:
                 yield record
-            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["repository"]]:
+            elif self.is_sorted_descending and record[self.cursor_field] < start_point:
                 break
 
 
@@ -642,17 +642,15 @@ class Commits(IncrementalGithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        repository = stream_slice["repository"]
-        start_point_map = {
-            branch: self.get_starting_point(stream_state=stream_state, repository=repository, branch=branch)
-            for branch in self.branches_to_pull.get(repository, [])
-        }
+        start_point = self.get_starting_point(
+            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
+        )
         for record in super(SemiIncrementalGithubStream, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record.get(self.cursor_field) > start_point_map[stream_slice["branch"]]:
+            if record[self.cursor_field] > start_point:
                 yield record
-            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["branch"]]:
+            elif self.is_sorted_descending and record[self.cursor_field] < start_point:
                 break
 
 
