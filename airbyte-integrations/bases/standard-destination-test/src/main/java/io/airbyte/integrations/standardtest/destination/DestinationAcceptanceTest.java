@@ -1328,7 +1328,7 @@ public abstract class DestinationAcceptanceTest {
       return;
 
     final AirbyteCatalog catalog = readCatalogFromFile(catalogFilename);
-    final ConfiguredAirbyteCatalog configuredCatalog = getDefaultAirbyteCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
 
     if (supportsNormalization()) {
@@ -1344,11 +1344,7 @@ public abstract class DestinationAcceptanceTest {
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private ConfiguredAirbyteCatalog getDefaultAirbyteCatalog(AirbyteCatalog catalog) {
-    return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-  }
-
-  private List<AirbyteMessage> reedMessagesFromFile(String messagesFilename) throws IOException {
+  private List<AirbyteMessage> readMessagesFromFile(String messagesFilename) throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
   }
