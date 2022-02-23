@@ -3,7 +3,7 @@ locals {
 }
 
 data "aws_eks_cluster" "cluster" {
-  provider = aws
+  provider = aws.workload_us_east_2
   name     = "main"
 }
 
