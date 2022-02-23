@@ -182,8 +182,19 @@ class TestConnectionSpecificationRenderer:
         renderer.parse_fields.assert_called_with(["free"], {"free": "beer"})
 
     def test__get_output_path(self, mocker):
+        mocker.patch.object(renderer, "os")
+        renderer.os.path.exists.return_value = False
         spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        assert spec_renderer._get_output_path(".") == "./sources/my_resource_name.yaml"
+        renderer.os.path.join.side_effect = ["./source/my_resource_name", "./source/my_resource_name/configuration.yaml"]
+        output_path = spec_renderer._get_output_path(".")
+        renderer.os.makedirs.assert_called_once()
+        renderer.os.path.join.assert_has_calls(
+            [
+                mocker.call(".", "sources", "my_resource_name"),
+                mocker.call("./source/my_resource_name", "configuration.yaml"),
+            ]
+        )
+        assert output_path == "./source/my_resource_name/configuration.yaml"
 
     def test_write_yaml(self, mocker):
         mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_get_output_path")
