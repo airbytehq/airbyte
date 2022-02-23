@@ -1,7 +1,9 @@
-name: airbyte_pull_request
+name: airbyte_push_main
 
 on:
-  pull_request:
+  push:
+    branches:
+      - master
 env:
   IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: airbyte
@@ -53,8 +55,8 @@ jobs:
           PWD=$(aws ecr get-login-password --region us-east-2)
           echo "::set-output name=ECR_PASSWORD::${PWD}"
 
-  plan_stg:
-    name: plan-stg
+  deploy_stg:
+    name: deploy-stg
     runs-on: ubuntu-latest
     environment: stg
     needs:
@@ -97,4 +99,4 @@ jobs:
           export TF_VAR_image_tag=${IMAGE_TAG}
           cd deployments/helm/stg/us_east_2
           terraform init
-          terraform plan -lock=false
+          terraform apply -auto-approve
