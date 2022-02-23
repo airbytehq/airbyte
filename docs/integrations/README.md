@@ -35,6 +35,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |
 | [Customer.io](sources/customer-io.md) | Alpha |
+| [DCL Logistics](sources/dcl-logistics.md) | Alpha |
 | [Db2](sources/db2.md) | Beta |
 | [Dixa](sources/dixa.md) | Alpha |
 | [Drift](sources/drift.md) | Beta |
