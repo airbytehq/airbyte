@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
