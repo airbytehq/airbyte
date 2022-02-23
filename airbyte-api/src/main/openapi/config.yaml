@@ -3490,7 +3490,7 @@ components:
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object
-      additionalProperties: true
+      additionalProperties: false
       properties:
         default:
           "$ref": "#/definitions/ResourceRequirements"
@@ -3501,6 +3501,10 @@ components:
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
+      additionalProperties: false
+      required:
+        - jobType
+        - resourceRequirements
       properties:
         jobType:
           "$ref": "#/definitions/JobType"
