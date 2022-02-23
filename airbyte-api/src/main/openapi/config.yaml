@@ -3509,12 +3509,14 @@ components:
     JobType:
       description: enum that describes the different types of jobs that the platform runs.
       type: string
-      # todo (cgardens) - sync naming with java
       enum:
+        - get_spec
+        - check_connection
+        - discover_schema
         - sync
-        - check
-        - discover
-        - spec
+        - reset_connection
+        - connection_updater
+        - replicate
     ResourceRequirements:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object
