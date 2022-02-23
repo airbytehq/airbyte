@@ -115,6 +115,30 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
+  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // read source configuration from db
+    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceIdRequestBody.getSourceId());
+
+    // persist
+    final UUID sourceId = uuidGenerator.get();
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceIdRequestBody.getSourceId());
+    final ConnectorSpecification spec = sourceDef.getSpec();
+    final String copyText = " (Copy)";
+    final String sourceName = sourceToClone.getName() + copyText;
+    persistSourceConnection(
+        sourceName,
+        sourceToClone.getSourceDefinitionId(),
+        sourceToClone.getWorkspaceId(),
+        sourceId,
+        false,
+        sourceToClone.getConnectionConfiguration(),
+        spec);
+
+    // read configuration from db
+    return buildSourceRead(sourceId, spec);
+  }
+
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
@@ -217,6 +241,15 @@ public class SourceHandler {
     final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
         sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
+    return toSourceRead(sourceConnection, standardSourceDefinition);
+  }
+
+  private SourceRead buildSourceReadWithSecrets(final UUID sourceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    // read configuration from db
+    final SourceConnection sourceConnection = configRepository.getSourceConnectionWithSecrets(sourceId);
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 

@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -112,7 +113,8 @@ public class MockData {
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
         .withSpec(connectorSpecification)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withSourceType(SourceType.DATABASE)
@@ -148,7 +150,8 @@ public class MockData {
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
         .withSpec(connectorSpecification)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withName("random-destination-2")

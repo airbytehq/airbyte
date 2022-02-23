@@ -102,18 +102,18 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
       <FormattedMessage
         id="onboarding.synchronizationProgress"
         values={{
-          sr: (...sr: React.ReactNode[]) => (
+          sr: (sr: React.ReactNode) => (
             <>
               <Lnk to={`${RoutePaths.Source}/${connection.sourceId}`}>{sr}</Lnk>{" "}
               <FontAwesomeIcon icon={faChevronRight} />
             </>
           ),
-          ds: (...ds: React.ReactNode[]) => (
+          ds: (ds: React.ReactNode) => (
             <Lnk to={`${RoutePaths.Destination}/${connection.destinationId}`}>
               {ds}
             </Lnk>
           ),
-          sync: (...sync: React.ReactNode[]) => (
+          sync: (sync: React.ReactNode) => (
             <Lnk to={`${RoutePaths.Connections}/${connection.connectionId}`}>
               {sync}
             </Lnk>
