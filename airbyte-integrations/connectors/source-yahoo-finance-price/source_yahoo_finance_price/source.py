@@ -75,12 +75,37 @@ class Price(HttpStream, ABC):
         return {**base_headers, **headers}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code != 200:
+            return []
         yield from [response.json()]
 
 
 # Source
 class SourceYahooFinancePrice(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        # Check that the tickers are valid
+        tickers = list(map(str.strip, config["tickers"].split(',')))
+        if len(tickers) == 0:
+            return False, "No valid tickers provided"
+        for ticker in tickers:
+            # Check that yahoo finance has the ticker
+            response = requests.get(
+                url=f"https://query1.finance.yahoo.com/v6/finance/autocomplete?query={ticker}&lang=en",
+                headers={
+                    "Accept": "application/json",
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)" # Required to avoid 403 response
+                }
+            )
+            if response.status_code != 200:
+                return False, f"Ticker {ticker} not found"
+            response_json = response.json()
+            if "ResultSet" not in response_json:
+                return False, f"Invalid check response format for ticker {ticker}"
+            if "Result" not in response_json["ResultSet"]:
+                return False, f"Invalid check response format for ticker {ticker}"
+            if len(response_json["ResultSet"]["Result"]) == 0:
+                return False, f"Ticker {ticker} not found"
+            
         # Check that the range parameter is configured according to the interval parameter
         # If the range DOES NOT end in "d" we cannot use minute intervals (end in "m")
         if "interval" in config and "range" in config:
