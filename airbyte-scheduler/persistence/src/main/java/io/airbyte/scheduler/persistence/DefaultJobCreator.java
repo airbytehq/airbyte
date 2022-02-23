@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class DefaultJobCreator implements JobCreator {
 
@@ -43,8 +44,8 @@ public class DefaultJobCreator implements JobCreator {
                                       final String sourceDockerImageName,
                                       final String destinationDockerImageName,
                                       final List<StandardSyncOperation> standardSyncOperations,
-                                      final ActorDefinitionResourceRequirements sourceResourceReqs,
-                                      final ActorDefinitionResourceRequirements destinationResourceReqs)
+                                      @Nullable final ActorDefinitionResourceRequirements sourceResourceReqs,
+                                      @Nullable final ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()

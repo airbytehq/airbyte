@@ -12,6 +12,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.scheduler.models.Job;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Exposes a way of executing short-lived jobs as RPC calls. If it returns successfully, it
@@ -26,8 +27,8 @@ public interface SchedulerJobClient {
                                String sourceDockerImage,
                                String destinationDockerImage,
                                List<StandardSyncOperation> standardSyncOperations,
-                               ActorDefinitionResourceRequirements sourceResourceRequirements,
-                               ActorDefinitionResourceRequirements destinationResourceRequirements)
+                               @Nullable ActorDefinitionResourceRequirements sourceResourceRequirements,
+                               @Nullable ActorDefinitionResourceRequirements destinationResourceRequirements)
       throws IOException;
 
   Job createOrGetActiveResetConnectionJob(DestinationConnection destination,

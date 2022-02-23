@@ -12,6 +12,7 @@ import io.airbyte.config.StandardSyncOperation;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public interface JobCreator {
 
@@ -31,8 +32,8 @@ public interface JobCreator {
                                String sourceDockerImage,
                                String destinationDockerImage,
                                List<StandardSyncOperation> standardSyncOperations,
-                               ActorDefinitionResourceRequirements sourceResourceReqs,
-                               ActorDefinitionResourceRequirements destinationResourceReqs)
+                               @Nullable ActorDefinitionResourceRequirements sourceResourceReqs,
+                               @Nullable ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException;
 
   /**

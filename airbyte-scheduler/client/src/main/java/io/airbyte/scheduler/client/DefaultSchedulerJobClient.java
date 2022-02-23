@@ -15,6 +15,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +38,8 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
                                       final String sourceDockerImage,
                                       final String destinationDockerImage,
                                       final List<StandardSyncOperation> standardSyncOperations,
-                                      final ActorDefinitionResourceRequirements sourceResourceRequirements,
-                                      final ActorDefinitionResourceRequirements destinationResourceRequirements)
+                                      @Nullable final ActorDefinitionResourceRequirements sourceResourceRequirements,
+                                      @Nullable final ActorDefinitionResourceRequirements destinationResourceRequirements)
       throws IOException {
     final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
         source,
