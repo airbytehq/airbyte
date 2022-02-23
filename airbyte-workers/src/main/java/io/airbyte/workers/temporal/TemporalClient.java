@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
@@ -235,7 +236,8 @@ public class TemporalClient {
   }
 
   @Value
-  public class ManualSyncSubmissionResult {
+  @Builder
+  public static class ManualSyncSubmissionResult {
 
     final Optional<String> failingReason;
     final Optional<Long> jobId;
