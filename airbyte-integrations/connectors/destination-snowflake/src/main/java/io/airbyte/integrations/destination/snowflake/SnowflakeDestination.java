@@ -16,6 +16,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   enum DestinationType {
     COPY_S3,
     COPY_GCS,
+    COPY_AZURE_BLOB,
     INTERNAL_STAGING
   }
 
@@ -28,6 +29,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
+    } else if(isAzureBlobCopy(config)){
+      return DestinationType.COPY_AZURE_BLOB;
     } else {
       return DestinationType.INTERNAL_STAGING;
     }
@@ -40,15 +43,20 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   public static boolean isGcsCopy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
+  public static boolean isAzureBlobCopy(final JsonNode config) {
+    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("azure_blob_storage_account_name");
+  }
 
   private static Map<DestinationType, Destination> getTypeToDestination() {
     final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
     final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
+    final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination();
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
 
     return ImmutableMap.of(
         DestinationType.COPY_S3, copyS3Destination,
         DestinationType.COPY_GCS, copyGcsDestination,
+        DestinationType.COPY_AZURE_BLOB, azureBlobStorageDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 

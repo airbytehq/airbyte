@@ -60,6 +60,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier implements Snowfla
         schemaName,
         tmpTableName,
         generateBucketPath());
+    LOGGER.error("COPY QUERY :"+ copyQuery);
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }

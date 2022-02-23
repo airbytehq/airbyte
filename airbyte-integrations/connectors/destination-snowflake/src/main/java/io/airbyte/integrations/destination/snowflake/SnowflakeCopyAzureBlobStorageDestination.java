@@ -4,14 +4,17 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig.getAzureBlobConfig;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageConnectionChecker;
+import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -26,7 +29,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        AzureBlobStorageConfig.getAzureBlobConfig(config.get("loading_method")),
+        getAzureBlobConfig(config.get("loading_method")),
         catalog,
         new SnowflakeAzureBlobStorageStreamCopierFactory(),
         getConfiguredSchema(config));
@@ -34,7 +37,9 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
   @Override
   public void checkPersistence(JsonNode config) throws Exception {
-
+    final AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config.get("loading_method")));
+    client.attemptWriteAndDelete();
   }
 
   @Override

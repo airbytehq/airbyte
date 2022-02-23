@@ -30,6 +30,8 @@ dependencies {
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
+//    implementation 'com.azure:azure-storage-blob:12.12.0'
+
     implementation 'com.azure:azure-storage-blob:12.14.4'
 
     implementation project(':airbyte-config:models')
@@ -37,6 +39,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
+    implementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
     implementation project(':airbyte-protocol:models')
 
 

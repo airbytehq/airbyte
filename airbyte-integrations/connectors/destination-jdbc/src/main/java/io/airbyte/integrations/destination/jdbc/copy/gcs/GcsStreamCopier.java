@@ -132,6 +132,8 @@ public abstract class GcsStreamCopier implements StreamCopier {
   public void closeStagingUploader(final boolean hasFailed) throws Exception {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     for (final var csvPrinter : csvPrinters.values()) {
+      LOGGER.error("CSVPrinters1:"+ csvPrinters.values().toString());
+
       csvPrinter.close();
     }
     for (final var channel : channels.values()) {

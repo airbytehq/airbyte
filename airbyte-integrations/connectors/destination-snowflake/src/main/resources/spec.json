@@ -291,6 +291,13 @@
                 "description": "The name of the Snowflake Azure External Stage. In Snowflake, 'azure://<account name>.<endpiont domain name>/<container name>' needs to be added to the 'allowed path' of the Storage Integration AND 'azure://<account name>.<endpiont domain name>/<container name>/' needs to be set as the 'url' of the Stage.  See Snowflake details for creating a Storage Integration and External Stage here: https://docs.snowflake.com/en/user-guide/data-load-azure-config.html",
                 "examples": ["AIRBYTE_AZURE_STAGE"],
                 "order": 5
+              }, "azure_blob_storage_sas_token": {
+                "title": "SAS Token",
+                "type": "string",
+                "airbyte_secret": true,
+                "description": "Shared access signature(SAS) token to grant Snowflake limited access to objects in your storage account. See more https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token",
+                "examples": ["?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"],
+                "order": 6
               }
             }
           }
