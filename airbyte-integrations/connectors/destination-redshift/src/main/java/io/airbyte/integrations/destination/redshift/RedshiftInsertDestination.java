@@ -11,23 +11,20 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftInsertDestination extends AbstractJdbcDestination  {
+public class RedshiftInsertDestination extends AbstractJdbcDestination implements Destination {
 
-  private static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
-  private static final String SCHEMA = "schema";
-  private static final String JDBC_URL = "jdbc_url";
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
-  public RedshiftInsertDestination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+
+  public RedshiftInsertDestination() {
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
@@ -50,24 +47,25 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination  {
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
     addSsl(additionalProperties);
     return Databases.createJdbcDatabase(
-        jdbcConfig.get(USERNAME).asText(),
-        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-        jdbcConfig.get(JDBC_URL).asText(),
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
         String.join(";", additionalProperties));
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(USERNAME, redshiftConfig.get(USERNAME).asText())
-        .put(PASSWORD, redshiftConfig.get(PASSWORD).asText())
-        .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
+        .put("username", redshiftConfig.get("username").asText())
+        .put("password", redshiftConfig.get("password").asText())
+        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
             redshiftConfig.get("database").asText()))
-        .put(SCHEMA, schema)
+        .put("schema", schema)
         .build());
   }
+
 }
