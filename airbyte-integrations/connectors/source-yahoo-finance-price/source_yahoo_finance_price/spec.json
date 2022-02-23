@@ -10,21 +10,16 @@
     "additionalProperties": false,
     "properties": {
       "tickers": {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 1000,
-        "items": {
-          "type": "string"
-        },
-        "description": "Identifier for the stocks to be queried.",
+        "type": "string",
+        "order": 0,
+        "description": "Comma-separated identifiers for the stocks to be queried. Whitespaces are allowed.",
         "examples": [
-          "AAPL",
-          "GOOGL",
-          "GEO.MI"
+          "AAPL, GOOGL, GEO.MI"
         ]
       },
       "interval": {
         "title": "Interval",
+        "order": 1,
         "description": "The interval of between prices queried.",
         "type": "string",
         "enum": [
@@ -43,6 +38,7 @@
       },
       "range": {
         "title": "Range",
+        "order": 2,
         "description": "The range of prices to be queried.",
         "type": "string",
         "enum": [

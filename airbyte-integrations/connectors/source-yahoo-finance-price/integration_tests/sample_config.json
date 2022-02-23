@@ -1,8 +1,5 @@
 {
-  "tickers": [
-    "MSFT",
-    "GEO.MI"
-  ],
+  "tickers": "MSFT, GEO.MI",
   "interval": "5m",
   "range": "1d"
 }

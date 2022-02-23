@@ -90,7 +90,8 @@ class SourceYahooFinancePrice(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {
-            "tickers": config["tickers"],
+            # Split tickers by comma and strip whitespaces
+            "tickers": list(map(str.strip, config["tickers"].split(','))),
             "interval": config.get("interval", "7d"),
             "range": config.get("range", "1m")
         }
