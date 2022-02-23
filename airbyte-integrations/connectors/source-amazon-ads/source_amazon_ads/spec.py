@@ -65,6 +65,12 @@ class AmazonAdsConfig(BaseModel):
         description="profile Ids you want to fetch data for",
     )
 
+    report_wait_timeout: int = Field(
+        None,
+        name="Report Wait Timeout",
+        description="Timeout duration for Reports"
+    )
+
     @classmethod
     def schema(cls, **kvargs):
         schema = super().schema(**kvargs)

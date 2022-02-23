@@ -10,6 +10,7 @@ from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing_extensions import Self
 from urllib.parse import urljoin
 
 import backoff
@@ -98,7 +99,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # Async report generation time is 15 minutes according to docs:
     # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=120).total_seconds
+    REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -107,6 +108,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
+        if(config and config.report_wait_timeout and config.report_wait_timeout > 30):
+            self.REPORT_WAIT_TIMEOUT = timedelta(minutes=config.report_wait_timeout).total_seconds
         # Set start date from config file, should be in UTC timezone.
         self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
         super().__init__(config, profiles)
