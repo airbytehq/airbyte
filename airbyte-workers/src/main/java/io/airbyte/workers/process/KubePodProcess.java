@@ -119,10 +119,10 @@ public class KubePodProcess extends Process implements KubePod {
   private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
 
-  // init container should fail if SUCCESS_FILE_NAME is not copied within INIT_RETRY_TIMEOUT_MINUTES
+  // init container should fail if no new data copied into the init container within INIT_RETRY_TIMEOUT_MINUTES
   private static final double INIT_SLEEP_PERIOD_SECONDS = 0.1;
-  private static final Duration INIT_RETRY_TIMEOUT_MINUTES = Duration.ofMinutes(5);
-  private static final double INIT_RETRY_MAX_ITERATIONS = INIT_RETRY_TIMEOUT_MINUTES.toSeconds() / INIT_SLEEP_PERIOD_SECONDS;
+  private static final Duration INIT_RETRY_TIMEOUT_MINUTES = Duration.ofMinutes(1);
+  private static final int INIT_RETRY_MAX_ITERATIONS = (int) (INIT_RETRY_TIMEOUT_MINUTES.toSeconds() / INIT_SLEEP_PERIOD_SECONDS);
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
@@ -156,30 +156,23 @@ public class KubePodProcess extends Process implements KubePod {
   }
 
   private static Container getInit(final boolean usesStdin,
-                                   final List<VolumeMount> mainVolumeMounts,
-                                   final String busyboxImage) {
-    var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
+      final List<VolumeMount> mainVolumeMounts,
+      final String busyboxImage) throws IOException {
 
-    if (usesStdin) {
-      initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
-    }
-
-    initEntrypointStr = initEntrypointStr +
-        String.format(
-            " ITERATION=0 && MAX_ITERATION=%s && "
-                + "until [ -f %s -o $ITERATION -ge $MAX_ITERATION ]; "
-                + "do ((ITERATION=ITERATION+1)) && sleep %s; done; "
-                + "if [ -f %s ]; then exit 0; else exit 1; fi",
-            INIT_RETRY_MAX_ITERATIONS,
-            SUCCESS_FILE_NAME,
-            INIT_SLEEP_PERIOD_SECONDS,
-            SUCCESS_FILE_NAME);
+    final var initCommand = MoreResources.readResource("entrypoints/sync/init.sh")
+        .replaceAll("USES_STDIN_VALUE", String.valueOf(usesStdin))
+        .replaceAll("STDOUT_PIPE_FILE_VALUE", STDOUT_PIPE_FILE)
+        .replaceAll("STDERR_PIPE_FILE_VALUE", STDERR_PIPE_FILE)
+        .replaceAll("STDIN_PIPE_FILE_VALUE", STDIN_PIPE_FILE)
+        .replaceAll("MAX_ITERATION_VALUE", String.valueOf(INIT_RETRY_MAX_ITERATIONS))
+        .replaceAll("SUCCESS_FILE_NAME_VALUE", SUCCESS_FILE_NAME)
+        .replaceAll("SLEEP_PERIOD_VALUE", String.valueOf(INIT_SLEEP_PERIOD_SECONDS));
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
         .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
-        .withCommand("sh", "-c", initEntrypointStr)
+        .withCommand("sh", "-c", initCommand)
         .withVolumeMounts(mainVolumeMounts)
         .build();
   }
