@@ -8,7 +8,7 @@ data "aws_eks_cluster" "cluster" {
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  provider = aws
+  provider = aws.workload_us_east_2
   name     = "main"
 }
 
