@@ -12,11 +12,6 @@ terraform {
       version = "0.7.2"
     }
 
-//    kustomization = {
-//      source  = "kbst/kustomize"
-//      version = "0.2.0-beta.3"
-//    }
-
     sops = {
       source  = "carlpett/sops"
       version = "~> 0.6.2"

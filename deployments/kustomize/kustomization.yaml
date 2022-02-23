@@ -6,11 +6,7 @@ namespace: airbyte
 bases:
   - resources
 
-#commonLabels:
-#  app.kubernetes.io/name: airbyte
-
 resources:
-#  - namespace.yaml
   - ingress.yaml
 
 images:
@@ -36,11 +32,3 @@ configMapGenerator:
 
 patchesStrategicMerge:
   - service_patch.yaml
-
-#secretGenerator:
-#  - name: airbyte-secrets
-#    envs:
-#      - .secrets
-
-#generators:
-#  - secret-generator.yaml
