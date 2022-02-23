@@ -139,6 +139,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       workflowInternalState.setAttemptId(createAttemptId(workflowInternalState.getJobId()));
 
+      restartIfNewTemporalVersion(connectionUpdaterInput);
+
       final GeneratedJobInput jobInputs = getJobInput();
 
       reportJobStarting();
@@ -515,4 +517,19 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
+  private static final int CURRENT_VERSION = 1;
+
+  /**
+   * This is checking if there was a version bump when the workflow is being reloaded.
+   * If so, it will set the job as fail and continue with a new run.
+   */
+  private void restartIfNewTemporalVersion(ConnectionUpdaterInput connectionUpdaterInput) {
+    int version = Workflow.getVersion("connection_manager_workflow", Workflow.DEFAULT_VERSION, CURRENT_VERSION);
+
+    if (version != CURRENT_VERSION) {
+      log.error("A version change happened, we will restart the workflow for the connection: {} ", connectionId);
+      reportFailure(connectionUpdaterInput, null);
+      prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+    }
+  }
 }
