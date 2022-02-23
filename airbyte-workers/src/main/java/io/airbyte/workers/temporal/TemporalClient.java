@@ -236,9 +236,9 @@ public class TemporalClient {
         return null;
       }).get(60, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException e) {
-      log.error("Can't create a new workflow because of the exception bellow", e);
+      log.error("Failed to create a new connection manager workflow", e);
     } catch (TimeoutException e) {
-      log.error("Can't create a new workflow within a minute", e);
+      log.error("Can't create a new connection manager workflow due to timeout", e);
     }
   }
 
