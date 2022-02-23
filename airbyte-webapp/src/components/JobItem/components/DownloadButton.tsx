@@ -1,17 +1,10 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
-
-const Download = styled(Button)`
-  position: absolute;
-  top: 9px;
-  right: 11px;
-`;
 
 type IProps = {
   logs: string[];
@@ -34,7 +27,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
   };
 
   return (
-    <Download
+    <Button
       onClick={downloadFileWithLogs}
       secondary
       title={formatMessage({
@@ -42,7 +35,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
       })}
     >
       <FontAwesomeIcon icon={faFileDownload} />
-    </Download>
+    </Button>
   );
 };
 
