@@ -23,6 +23,7 @@ import useConnection from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 import { ContentCard, H4 } from "components";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 type TransformationViewProps = {
   connection: Connection;
@@ -111,6 +112,11 @@ const TransformationView: React.FC<TransformationViewProps> = ({
   );
   const { updateConnection } = useConnection();
   const workspace = useCurrentWorkspace();
+  const { hasFeature } = useFeatureService();
+
+  const supportsNormalization = definition.supportsNormalization;
+  const supportsDbt =
+    hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
   const onSubmit = async (values: {
     transformations?: Transformation[];
@@ -150,19 +156,19 @@ const TransformationView: React.FC<TransformationViewProps> = ({
 
   return (
     <Content>
-      {definition.supportsNormalization && (
+      {supportsNormalization && (
         <NormalizationCard
           operations={connection.operations}
           onSubmit={onSubmit}
         />
       )}
-      {definition.supportsDbt && (
+      {supportsDbt && (
         <CustomTransformationsCard
           operations={connection.operations}
           onSubmit={onSubmit}
         />
       )}
-      {!definition.supportsNormalization && !definition.supportsDbt && (
+      {!supportsNormalization && !supportsDbt && (
         <NoSupportedTransformationCard>
           <H4 center>
             <FormattedMessage id="connectionForm.operations.notSupported" />
