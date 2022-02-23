@@ -15,20 +15,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
-
 class AppleSearchAdsException(Exception):
     pass
 
@@ -195,6 +181,14 @@ class Adgroups(IncrementalAppleSearchAdsStream):
     ) -> str:
         return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
 
+class CampaignNegativeKeywords(IncrementalAppleSearchAdsStream):
+    primary_key = ["id"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
+
 class SourceAppleSearchAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth = AppleSearchAdsAuthenticator(
@@ -234,5 +228,6 @@ class SourceAppleSearchAds(AbstractSource):
 
         return [
             Campaigns(org_id=config["org_id"], authenticator=auth),
-            Adgroups(org_id=config["org_id"], authenticator=auth)
+            Adgroups(org_id=config["org_id"], authenticator=auth),
+            CampaignNegativeKeywords(org_id=config["org_id"], authenticator=auth)
         ]
