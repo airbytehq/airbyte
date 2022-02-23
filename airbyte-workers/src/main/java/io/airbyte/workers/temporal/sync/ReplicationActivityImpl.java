@@ -126,8 +126,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
             containerOrchestratorConfig.get(),
             sourceLauncherConfig,
             destinationLauncherConfig,
-            jobRunConfig,
-            syncInput);
+            jobRunConfig);
       } else {
         workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
       }
@@ -210,8 +209,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                     final JobRunConfig jobRunConfig,
-                                                                                                                     final StandardSyncInput syncInput)
+                                                                                                                     final JobRunConfig jobRunConfig)
       throws IOException {
 
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
@@ -223,7 +221,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         sourceLauncherConfig,
         destinationLauncherConfig,
         jobRunConfig,
-        ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.DESTINATION, JobType.SYNC, workerConfigs));
+        workerConfigs);
   }
 
 }
