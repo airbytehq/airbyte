@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from functools import partial
 from typing import Any, Iterable, Mapping
