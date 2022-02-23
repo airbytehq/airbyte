@@ -35,7 +35,7 @@ public class ResourceRequirementsUtils {
                                                              final WorkerConfigs workerConfigs) {
     final ActorDefinitionResourceRequirements actorDefResourceReqs = getResourceRequirementsForActorType(input, actorType);
     final ResourceRequirements jobTypeResourceReqs = getResourceRequirementsForJobType(actorDefResourceReqs, jobType).orElse(null);
-    return mergeResourceRequirements(jobTypeResourceReqs, input.getResourceRequirements(), workerConfigs.getResourceRequirements());
+    return mergeResourceRequirements(input.getResourceRequirements(), jobTypeResourceReqs, workerConfigs.getResourceRequirements());
   }
 
   /**
