@@ -96,7 +96,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 
   EXEC sys.sp_cdc_enable_table
   @source_schema = N'{schema name}',
-  @source_name   = N'{table name}', 
+  @source_name   = N'{table name}',
   @role_name     = N'{role name}',  [1]
   @filegroup_name = N'{fiilegroup name}', [2]
   @supports_net_changes = 0 [3]
@@ -127,7 +127,7 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 
   ```text
   USE {database name};
-  CREATE LOGIN {user name}   
+  CREATE LOGIN {user name}
     WITH PASSWORD = '{password}';
   CREATE USER {user name} FOR LOGIN {user name};
   EXEC sp_addrolemember 'db_datareader', '{user name}';
@@ -294,6 +294,9 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 |:------- | :--------- | :----------------------------------------------------- | :------------------------------------- |
+| 0.3.17  | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
+| 0.3.16  | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
+| 0.3.15  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.3.14  | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC |
 | 0.3.13  | 2022-01-07 | [9094](https://github.com/airbytehq/airbyte/pull/9094) | Added support for missed data types |
 | 0.3.12  | 2021-12-30 | [9206](https://github.com/airbytehq/airbyte/pull/9206) | Update connector fields title/description |

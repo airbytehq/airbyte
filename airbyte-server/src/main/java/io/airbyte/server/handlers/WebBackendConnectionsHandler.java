@@ -255,23 +255,35 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-    final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog())) {
-      final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
-
-      if (featureFlags.usesNewScheduler()) {
-        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-
-        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      } else {
+    ConnectionRead connectionRead;
+    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
+    if (!featureFlags.usesNewScheduler()) {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+      if (needReset) {
+        final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
         // wait for this to execute
         schedulerHandler.resetConnection(connectionId);
 
         // just create the job
         schedulerHandler.syncConnection(connectionId);
       }
+    } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+      if (needReset) {
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
+        temporalWorkerRunFactory.update(connectionUpdate);
+
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
+        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+
+        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
+        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
+      }
     }
+
     return buildWebBackendConnectionRead(connectionRead);
   }
 
