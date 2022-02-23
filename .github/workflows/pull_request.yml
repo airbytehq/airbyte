@@ -85,7 +85,7 @@ jobs:
       - name: Build, tag, and push image to AWS ECR
         run: |
           IMAGE_NAME=${IMAGE_NAME} \
-          IDENTIFIER=${SHA} \
+          IDENTIFIER=${IMAGE_TAG} \
           APP_VERSION=master \
           DOCKER_FILE_PATH=${DOCKER_FILE_PATH} \
           sh ./bin/ci/build_push.sh
