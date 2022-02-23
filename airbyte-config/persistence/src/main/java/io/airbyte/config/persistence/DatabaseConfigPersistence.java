@@ -27,6 +27,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
@@ -398,7 +399,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardSourceDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString());
+            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
+        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<StandardDestinationDefinition>> listStandardDestinationDefinitionWithMetadata() throws IOException {
@@ -442,7 +446,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString());
+            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
+        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<SourceConnection>> listSourceConnectionWithMetadata() throws IOException {
@@ -887,6 +894,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
                 : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
+            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
+                standardSourceDefinition.getResourceRequirements() == null ? null
+                    : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -912,6 +922,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
                 : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
+            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
+                standardSourceDefinition.getResourceRequirements() == null ? null
+                    : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();
@@ -949,6 +962,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardDestinationDefinition.getReleaseDate() == null ? null
                 : LocalDate.parse(standardDestinationDefinition.getReleaseDate()))
+            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
+                standardDestinationDefinition.getResourceRequirements() == null ? null
+                    : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
@@ -970,6 +986,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
             .set(ACTOR_DEFINITION.RELEASE_DATE, standardDestinationDefinition.getReleaseDate() == null ? null
                 : LocalDate.parse(standardDestinationDefinition.getReleaseDate()))
+            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
+                standardDestinationDefinition.getResourceRequirements() == null ? null
+                    : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();
