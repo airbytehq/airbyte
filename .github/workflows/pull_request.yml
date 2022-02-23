@@ -50,7 +50,7 @@ jobs:
       - name: retrieve ecr password and store as output
         id: ecr_login_pwd
         run: |
-          PWD=$(aws ecr get-login-password --region us-east-1)
+          PWD=$(aws ecr get-login-password --region us-east-2)
           echo "::set-output name=ECR_PASSWORD::${PWD}"
 
   build:
