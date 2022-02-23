@@ -8,10 +8,21 @@ import json
 import os
 import pkgutil
 import socket
+from enum import Enum
 from typing import Any, Dict
 
 import yaml
-from normalization.destination_type import DestinationType
+
+
+class DestinationType(Enum):
+    bigquery = "bigquery"
+    postgres = "postgres"
+    redshift = "redshift"
+    snowflake = "snowflake"
+    mysql = "mysql"
+    oracle = "oracle"
+    mssql = "mssql"
+    clickhouse = "clickhouse"
 
 
 class TransformConfig:
@@ -49,14 +60,14 @@ class TransformConfig:
         base_profile = yaml.load(data, Loader=yaml.FullLoader)
 
         transformed_integration_config = {
-            DestinationType.BIGQUERY.value: self.transform_bigquery,
-            DestinationType.POSTGRES.value: self.transform_postgres,
-            DestinationType.REDSHIFT.value: self.transform_redshift,
-            DestinationType.SNOWFLAKE.value: self.transform_snowflake,
-            DestinationType.MYSQL.value: self.transform_mysql,
-            DestinationType.ORACLE.value: self.transform_oracle,
-            DestinationType.MSSQL.value: self.transform_mssql,
-            DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
+            DestinationType.bigquery.value: self.transform_bigquery,
+            DestinationType.postgres.value: self.transform_postgres,
+            DestinationType.redshift.value: self.transform_redshift,
+            DestinationType.snowflake.value: self.transform_snowflake,
+            DestinationType.mysql.value: self.transform_mysql,
+            DestinationType.oracle.value: self.transform_oracle,
+            DestinationType.mssql.value: self.transform_mssql,
+            DestinationType.clickhouse.value: self.transform_clickhouse,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
