@@ -55,5 +55,8 @@
   },
   "fulfillments": {
     "updated_at": "2024-07-08T05:40:38-07:00"
+  },
+  "tender_transactions": {
+    "processed_at": "2024-07-08T05:40:38-07:00"
   }
 }

@@ -11,12 +11,14 @@ export type IProps = {
 
 export type IDataItem = {
   label?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
   groupValue?: string;
   groupValueText?: string;
   img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: any;
 };
 
@@ -45,10 +47,16 @@ export const OptionView = styled.div<{
 `;
 
 const Option: React.FC<IProps> = (props) => {
+  const dataTestId = props.data.testId
+    ? props.data.testId
+    : !["object", "array"].includes(typeof props.data.label)
+    ? props.data.label
+    : `select_value_${props.data.value}`;
+
   return (
     <components.Option {...props}>
       <OptionView
-        data-testid={props.data.label}
+        data-testid={dataTestId}
         isSelected={props.isSelected && !props.isMulti}
         isDisabled={props.isDisabled}
       >

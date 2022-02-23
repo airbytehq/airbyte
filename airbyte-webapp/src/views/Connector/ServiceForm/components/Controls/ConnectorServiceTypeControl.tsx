@@ -165,6 +165,7 @@ const ConnectorServiceTypeControl: React.FC<{
           releaseStage: item.releaseStage,
         }))
         .sort(defaultDataItemSort),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
 
