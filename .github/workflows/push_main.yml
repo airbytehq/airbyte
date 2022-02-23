@@ -90,7 +90,7 @@ jobs:
         shell: bash
         run: git config --global url."https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/viewthespace".insteadOf "https://github.com/viewthespace"
 
-      - name: plan
+      - name: deploy-stg
         shell: bash
         run: |
           set -e
@@ -99,4 +99,5 @@ jobs:
           export TF_VAR_image_tag=${IMAGE_TAG}
           cd deployments/helm/stg/us_east_2
           terraform init
+          aws eks update-kubeconfig --region us-east-2 --name main --alias data-stg-main
           terraform apply -auto-approve

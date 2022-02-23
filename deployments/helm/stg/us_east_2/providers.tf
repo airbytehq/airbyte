@@ -22,5 +22,6 @@ data "terraform_remote_state" "customization" {
 }
 
 provider "kustomization" {
-  kubeconfig_raw = data.terraform_remote_state.customization.outputs.kubeconfig
+//  kubeconfig_raw = data.terraform_remote_state.customization.outputs.kubeconfig
+  kubeconfig_path = "~/.kube/config"
 }
