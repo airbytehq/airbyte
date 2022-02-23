@@ -13,6 +13,7 @@
       },
       "PASSWORD": {
         "type": "string",
+        "airbyte_secret": true,
         "description": "Outbrain Password"
       },
       "MARKETER_ID": {
