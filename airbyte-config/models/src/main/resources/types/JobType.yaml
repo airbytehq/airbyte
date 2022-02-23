@@ -4,9 +4,11 @@
 title: JobType
 description: enum that describes the different types of jobs that the platform runs.
 type: string
-# todo (cgardens) - sync naming with java
 enum:
+  - get_spec
+  - check_connection
+  - discover_schema
   - sync
-  - check
-  - discover
-  - spec
+  - reset_connection
+  - connection_updater
+  - replicate

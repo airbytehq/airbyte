@@ -21,10 +21,10 @@ public class V0_35_32_001__AddConnectorDefinitionResourceLimits extends BaseJava
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
     final DSLContext ctx = DSL.using(context.getConnection());
-    addTombstoneColumn(ctx);
+    addResourceReqsToActorDefs(ctx);
   }
 
-  public static void addTombstoneColumn(final DSLContext ctx) {
+  public static void addResourceReqsToActorDefs(final DSLContext ctx) {
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field("resource_requirements", SQLDataType.JSONB.nullable(true)))
         .execute();
