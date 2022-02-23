@@ -60,13 +60,13 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     standardDestinationDefinition();
     sourceConnection();
     destinationConnection();
-    // sourceOauthParam();
-    // destinationOauthParam();
+    sourceOauthParam();
+    destinationOauthParam();
     standardSyncOperation();
     standardSync();
-    // standardSyncState();
-    // standardActorCatalog();
-    // deletion();
+    standardSyncState();
+    standardActorCatalog();
+    deletion();
   }
 
   private void deletion() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -134,12 +134,6 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
       configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC,
           standardSync.getConnectionId().toString(),
           standardSync);
-      configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC,
-          standardSync.getConnectionId().toString(),
-          standardSync.withResourceRequirements(null));
-      configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC,
-          standardSync.getConnectionId().toString(),
-          standardSync.withResourceRequirements(new ResourceRequirements()));
       final StandardSync standardSyncFromDB = configPersistence.getConfig(ConfigSchema.STANDARD_SYNC,
           standardSync.getConnectionId().toString(),
           StandardSync.class);
