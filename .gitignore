@@ -65,3 +65,7 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
+
+# Scaffolded connectors
+/airbyte-integrations/connectors/source-scaffold*
+/airbyte-integrations/connectors/destination-scaffold*
