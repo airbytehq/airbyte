@@ -12,10 +12,9 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
 #      Unable to use 'state_path' because Zendesk Chat API returns an error when specifying a date in the future.
 #      future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:

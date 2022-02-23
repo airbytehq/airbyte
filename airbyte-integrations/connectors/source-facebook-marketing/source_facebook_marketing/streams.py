@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -29,39 +9,45 @@ from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
-from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
+from .async_job import AsyncJob
+from .common import FacebookAPIException, JobException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url, params):
-    parsed_url = urlparse.urlparse(url)
-    res_query = []
-    for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
-
-    parse_result = parsed_url._replace(query="&".join(res_query))
-    return urlparse.urlunparse(parse_result)
+def remove_params_from_url(url: str, params: List[str]) -> str:
+    """
+    Parses a URL and removes the query parameters specified in params
+    :param url: URL
+    :param params: list of query parameters
+    :return: URL with params removed
+    """
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
 
 
 class FBMarketingStream(Stream, ABC):
     """Base stream class"""
 
     primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     page_size = 100
 
@@ -158,9 +144,10 @@ class FBMarketingStream(Stream, ABC):
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date)
+        self._end_date = pendulum.instance(end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -292,10 +279,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    MAX_WAIT_TO_START = pendulum.duration(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 3
+    MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -305,10 +290,32 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     breakdowns = []
 
-    def __init__(self, buffer_days, days_per_job, **kwargs):
+    def __init__(
+        self,
+        buffer_days,
+        days_per_job,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        **kwargs,
+    ):
+
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
+        self._fields = fields
+        self.action_breakdowns = action_breakdowns or self.action_breakdowns
+        self.breakdowns = breakdowns or self.breakdowns
+        self._new_class_name = name
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        name = self._new_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
 
     def read_records(
         self,
@@ -318,10 +325,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        result = self.wait_for_job(stream_slice["job"])
+        job = self.wait_for_job(stream_slice["job"])
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
-        for obj in result.get_result():
+        for obj in job.get_result():
             yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -336,7 +343,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         date_ranges = list(self._date_ranges(stream_state=stream_state))
         for params in date_ranges:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            job = self._create_insights_job(params)
+            job = AsyncJob(api=self._api, params=params)
+            job.start()
             running_jobs.append(job)
             if len(running_jobs) >= self.MAX_ASYNC_JOBS:
                 yield {"job": running_jobs.popleft()}
@@ -344,39 +352,20 @@ class AdsInsights(FBMarketingIncrementalStream):
         while running_jobs:
             yield {"job": running_jobs.popleft()}
 
-    @backoff_policy
-    def wait_for_job(self, job) -> AdReportRun:
+    @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
+    def wait_for_job(self, job: AsyncJob) -> AsyncJob:
+        if job.failed:
+            job.restart()
+
         factor = 2
-        start_time = pendulum.now()
         sleep_seconds = factor
-        while True:
-            job = job.api_get()
-            job_progress_pct = job["async_percent_completion"]
-            job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
-            runtime = pendulum.now() - start_time
-
-            if job["async_status"] == "Job Completed":
-                return job
-            elif job["async_status"] == "Job Failed":
-                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
-            elif job["async_status"] == "Job Skipped":
-                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
-
-            if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
-            elif runtime > self.MAX_WAIT_TO_FINISH:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
-            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job_id} to complete")
+        while not job.completed:
+            self.logger.info(f"{job}: sleeping {sleep_seconds} seconds while waiting for completion")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= factor
+
+        return job
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -403,12 +392,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return: A dict of the JSON schema representing this stream.
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        if self._fields:
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
+        if self._fields:
+            return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
 
@@ -442,7 +435,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
-        end_date = pendulum.now()
+        end_date = self._end_date
         start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
         for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):
@@ -450,14 +443,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield {
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
             }
-
-    @backoff_policy
-    def _create_insights_job(self, params) -> AdReportRun:
-        job = self._api.account.get_insights(params=params, is_async=True)
-        job_id = job["report_run_id"]
-        time_range = params["time_range"]
-        self.logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {self.breakdowns}")
-        return job
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
@@ -479,3 +464,8 @@ class AdsInsightsDma(AdsInsights):
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+
+
+class AdsInsightsActionType(AdsInsights):
+    breakdowns = []
+    action_breakdowns = ["action_type"]

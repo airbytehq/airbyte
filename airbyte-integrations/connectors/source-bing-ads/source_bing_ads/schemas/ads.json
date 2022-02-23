@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AdFormatPreference": {
+      "type": ["null", "string"]
+    },
+    "DevicePreference": {
+      "type": ["null", "integer"]
+    },
+    "EditorialStatus": {
+      "type": ["null", "string"]
+    },
+    "FinalAppUrls": {
+      "type": "null"
+    },
+    "FinalMobileUrls": {
+      "type": ["null", "object"],
+      "properties": {
+        "string": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "FinalUrlSuffix": {
+      "type": ["null", "string"]
+    },
+    "FinalUrls": {
+      "type": ["null", "object"],
+      "properties": {
+        "string": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "ForwardCompatibilityMap": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "TrackingUrlTemplate": {
+      "type": ["null", "string"]
+    },
+    "Type": {
+      "type": ["null", "string"]
+    },
+    "UrlCustomParameters": {
+      "type": ["null", "object"],
+      "properties": {
+        "Parameters": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "key": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Descriptions": {
+      "type": ["null", "object"],
+      "properties": {
+        "AssetLink": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Asset": {
+                "type": ["null", "object"],
+                "properties": {
+                  "Id": {
+                    "type": ["null", "integer"]
+                  },
+                  "Name": {
+                    "type": ["null", "string"]
+                  },
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "Text": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "AssetPerformanceLabel": {
+                "type": ["null", "string"]
+              },
+              "EditorialStatus": {
+                "type": ["null", "string"]
+              },
+              "PinnedField": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Domain": {
+      "type": ["null", "string"]
+    },
+    "Headlines": {
+      "type": ["null", "object"],
+      "properties": {
+        "AssetLink": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Asset": {
+                "type": ["null", "object"],
+                "properties": {
+                  "Id": {
+                    "type": ["null", "integer"]
+                  },
+                  "Name": {
+                    "type": ["null", "string"]
+                  },
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "Text": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "AssetPerformanceLabel": {
+                "type": ["null", "string"]
+              },
+              "EditorialStatus": {
+                "type": ["null", "string"]
+              },
+              "PinnedField": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Path1": {
+      "type": ["null", "string"]
+    },
+    "Path2": {
+      "type": ["null", "string"]
+    }
+  }
+}

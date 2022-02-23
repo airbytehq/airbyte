@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -35,14 +15,24 @@ class BaseSchemaModel(BaseModel):
 
         @staticmethod
         def schema_extra(schema: MutableMapping[str, Any], model) -> None:
-            # Pydantic adds title to every attribute, this is too much, so we manually drop them
-            for prop in schema.get("properties", {}).values():
+            # Pydantic adds a title to each attribute, that is not needed, so we manually drop them.
+            # Also pydantic does not add a "null" option to a field marked as optional,
+            # so we add this functionality manually. Same for "$ref"
+            schema.pop("title", None)
+            for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
+                allow_none = model.__fields__[name].allow_none
+                if allow_none:
+                    if "type" in prop:
+                        prop["type"] = ["null", prop["type"]]
+                    elif "$ref" in prop:
+                        ref = prop.pop("$ref")
+                        prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     object: str
 
 
-class PersonList(BaseModel):
+class PersonList(BaseSchemaModel):
     id: str
     name: str
     created: datetime

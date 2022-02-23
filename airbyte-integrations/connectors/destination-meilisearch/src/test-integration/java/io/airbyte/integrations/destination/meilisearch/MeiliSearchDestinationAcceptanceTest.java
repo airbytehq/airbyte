@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.meilisearch;
@@ -37,6 +17,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.testcontainers.containers.GenericContainer;
@@ -54,7 +35,7 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   private JsonNode config;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws IOException {
+  protected void setup(final TestDestinationEnv testEnv) throws IOException {
     final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
     meiliSearchDataDir.toFile().deleteOnExit();
 
@@ -71,7 +52,7 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     genericContainer.stop();
   }
 
@@ -93,10 +74,10 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     final Index index = meiliSearchClient.index(Names.toAlphanumericAndUnderscore(streamName));
     final String responseString = index.getDocuments();
@@ -104,7 +85,12 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     return MoreStreams.toStream(response.iterator())
         // strip out the airbyte primary key because the test cases only expect the data, no the airbyte
         // metadata column.
+        // We also sort the data by "emitted_at" and then remove that column, because the test cases only
+        // expect data,
+        // not the airbyte metadata column.
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
+        .sorted(Comparator.comparing(o -> o.get(MeiliSearchDestination.AB_EMITTED_AT_COLUMN).asText()))
+        .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_EMITTED_AT_COLUMN))
         .collect(Collectors.toList());
   }
 

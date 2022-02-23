@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<disputes type="collection">
+    <current-page-number type="integer">1</current-page-number>
+    <page-size type="integer">50</page-size>
+    <total-items type="integer">1</total-items>
+    <dispute>
+        <id>yxnc73mfsvc9bzt3</id>
+        <global-id>ZGlzcHV0ZV95eG5jNzNtZnN2YzlienQz</global-id>
+        <amount>666.00</amount>
+        <amount-disputed>666.00</amount-disputed>
+        <amount-won>0.00</amount-won>
+        <case-number>CB173337554006</case-number>
+        <created-at type="dateTime">2021-08-10T14:32:40Z</created-at>
+        <currency-iso-code>USD</currency-iso-code>
+        <date-opened type="date">2021-08-10</date-opened>
+        <date-won nil="true"/>
+        <processor-comments nil="true"/>
+        <kind>chargeback</kind>
+        <merchant-account-id>airbyte</merchant-account-id>
+        <reason>fraud</reason>
+        <reason-code>62</reason-code>
+        <reason-description nil="true"/>
+        <received-date type="date">2021-08-10</received-date>
+        <reference-number nil="true"/>
+        <reply-by-date type="date">2021-08-16</reply-by-date>
+        <processor-reply-by-date type="date">2021-08-20</processor-reply-by-date>
+        <response-deadline type="dateTime">2021-08-15T04:59:59Z</response-deadline>
+        <status>open</status>
+        <updated-at type="dateTime">2021-08-10T14:32:40Z</updated-at>
+        <original-dispute-id nil="true"/>
+        <paypal-messages type="array"/>
+        <evidence type="array"/>
+        <status-history type="array">
+            <status-history>
+                <disbursement-date type="date">2021-08-10</disbursement-date>
+                <effective-date type="date">2021-08-10</effective-date>
+                <status>open</status>
+                <timestamp type="dateTime">2021-08-10T14:32:40Z</timestamp>
+            </status-history>
+        </status-history>
+        <transaction>
+            <id>rb476y0x</id>
+            <global-id>dHJhbnNhY3Rpb25fcmI0NzZ5MHg</global-id>
+            <amount>666.00</amount>
+            <created-at>2021-08-10T14:32:39Z</created-at>
+            <installment-count nil="true"/>
+            <order-id></order-id>
+            <purchase-order-number></purchase-order-number>
+            <payment-instrument-subtype>Visa</payment-instrument-subtype>
+        </transaction>
+        <chargeback-protection-level nil="true"/>
+    </dispute>
+</disputes>

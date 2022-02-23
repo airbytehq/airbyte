@@ -1,10 +1,10 @@
 import React from "react";
-import { useIntl } from "react-intl";
 import { FieldArray, useField } from "formik";
 
 import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
 import ConfirmationControl from "./ConfirmationControl";
 import { FormBaseItem } from "core/form/types";
+import { isDefined } from "utils/common";
 
 type IProps = {
   property: FormBaseItem;
@@ -21,7 +21,6 @@ const Control: React.FC<IProps> = ({
   removeUnfinishedFlow,
   unfinishedFlows,
 }) => {
-  const formatMessage = useIntl().formatMessage;
   const [field, meta, form] = useField(name);
 
   // TODO: think what to do with other cases
@@ -84,9 +83,6 @@ const Control: React.FC<IProps> = ({
       <DropDown
         {...field}
         placeholder={placeholder}
-        filterPlaceholder={formatMessage({
-          id: "form.searchName",
-        })}
         options={property.enum.map((dataItem) => ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
@@ -110,7 +106,7 @@ const Control: React.FC<IProps> = ({
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
-    const isFormInEditMode = !!meta.initialValue;
+    const isFormInEditMode = isDefined(meta.initialValue);
     return (
       <ConfirmationControl
         component={

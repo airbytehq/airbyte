@@ -200,7 +200,7 @@
           "type": ["null", "integer"]
         },
         "avg": {
-          "type": ["null", "number", "integer"]
+          "type": ["null", "number"]
         }
       },
       "type": ["null", "object"],
@@ -233,7 +233,7 @@
       "type": ["null", "string"]
     },
     "unread": {
-      "type": ["null", "boolean", "integer"]
+      "type": ["null", "boolean"]
     },
     "visitor": {
       "properties": {

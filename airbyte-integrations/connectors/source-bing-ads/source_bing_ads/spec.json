@@ -1,0 +1,125 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bing Ads Spec",
+    "type": "object",
+    "required": [
+      "accounts",
+      "client_id",
+      "client_secret",
+      "customer_id",
+      "developer_token",
+      "refresh_token",
+      "user_id",
+      "reports_start_date",
+      "hourly_reports",
+      "daily_reports",
+      "weekly_reports",
+      "monthly_reports"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "accounts": {
+        "title": "Accounts",
+        "type": "object",
+        "description": "Account selection strategy.",
+        "oneOf": [
+          {
+            "title": "All accounts assigned to your user",
+            "additionalProperties": false,
+            "description": "Fetch data for all available accounts.",
+            "required": ["selection_strategy"],
+            "properties": {
+              "selection_strategy": {
+                "type": "string",
+                "enum": ["all"],
+                "const": "all"
+              }
+            }
+          },
+          {
+            "title": "Subset of your accounts",
+            "additionalProperties": false,
+            "description": "Fetch data for subset of account ids.",
+            "required": ["ids", "selection_strategy"],
+            "properties": {
+              "selection_strategy": {
+                "type": "string",
+                "enum": ["subset"],
+                "const": "subset"
+              },
+              "ids": {
+                "type": "array",
+                "description": "List of accounts from which data will be fetched.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          }
+        ]
+      },
+      "client_id": {
+        "type": "string",
+        "description": "ID of your Microsoft Advertising client application.",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Secret of your Microsoft Advertising client application.",
+        "airbyte_secret": true
+      },
+      "customer_id": {
+        "type": "string",
+        "description": "User's customer ID."
+      },
+      "developer_token": {
+        "type": "string",
+        "description": "Developer token associated with user.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
+        "airbyte_secret": true
+      },
+      "user_id": {
+        "type": "string",
+        "description": "Unique user identifier."
+      },
+      "reports_start_date": {
+        "type": "string",
+        "format": "date",
+        "default": "2020-01-01",
+        "description": "From which date perform initial sync for report related streams. In YYYY-MM-DD format"
+      },
+      "hourly_reports": {
+        "title": "Hourly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each hour of the day.",
+        "default": false
+      },
+      "daily_reports": {
+        "title": "Daily reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each day.",
+        "default": false
+      },
+      "weekly_reports": {
+        "title": "Weekly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each week running from Sunday through Saturday.",
+        "default": false
+      },
+      "monthly_reports": {
+        "title": "Monthly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each month.",
+        "default": false
+      }
+    }
+  }
+}

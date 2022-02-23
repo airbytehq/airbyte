@@ -1,0 +1,55 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/braintree",
+  "connectionSpecification": {
+    "title": "Braintree Spec",
+    "type": "object",
+    "properties": {
+      "merchant_id": {
+        "title": "Merchant Id",
+        "description": "<a href=\"https://docs.airbyte.io/integrations/sources/braintree\">Merchant ID</a> is the unique identifier for entire gateway account.",
+        "name": "Merchant ID",
+        "type": "string"
+      },
+      "public_key": {
+        "title": "Public Key",
+        "description": "This is your user-specific public identifier for Braintree.",
+        "name": "Public key",
+        "type": "string"
+      },
+      "private_key": {
+        "title": "Private Key",
+        "description": "This is your user-specific private identifier.",
+        "name": "Private Key",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "start_date": {
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for Braintree API for UTC timezone, All data generated after this date will be replicated.",
+        "name": "Start date",
+        "examples": ["2020", "2020-12-30", "2020-11-22 20:20:05"],
+        "type": "string",
+        "format": "date-time"
+      },
+      "environment": {
+        "description": "Environment specifies where the data will come from.",
+        "name": "Environment",
+        "examples": ["sandbox", "production", "qa", "development"],
+        "allOf": [
+          {
+            "$ref": "#/definitions/Environment"
+          }
+        ]
+      }
+    },
+    "required": ["merchant_id", "public_key", "private_key", "environment"],
+    "definitions": {
+      "Environment": {
+        "title": "Environment",
+        "description": "An enumeration.",
+        "enum": ["Development", "Sandbox", "Qa", "Production"],
+        "type": "string"
+      }
+    }
+  }
+}

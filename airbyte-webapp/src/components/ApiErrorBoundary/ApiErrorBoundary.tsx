@@ -9,6 +9,7 @@ type BoundaryState = { errorId?: string; message?: string };
 enum ErrorId {
   VersionMismatch = "version.mismatch",
   ServerUnavailable = "server.unavailable",
+  UnknownError = "unknown",
 }
 
 class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
@@ -34,7 +35,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
       return { errorId: ErrorId.ServerUnavailable };
     }
 
-    return {};
+    return { errorId: ErrorId.UnknownError };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -53,7 +54,11 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
       );
     }
 
-    return this.props.children;
+    return !this.state.errorId ? (
+      this.props.children
+    ) : (
+      <ErrorOccurredView message={"Unknown error occurred"} />
+    );
   }
 }
 

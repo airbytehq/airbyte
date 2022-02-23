@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -31,7 +11,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -49,17 +29,17 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  private JsonNode config;
-  private JdbcDatabase database;
-  private String schemaName;
-  private String streamName;
+  protected JsonNode config;
+  protected JdbcDatabase database;
+  protected String schemaName;
+  protected String streamName;
 
-  private static JsonNode getStaticConfig() {
+  protected static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -78,21 +58,21 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     });
 
     streamName = "customer";
-    final String fqTableName = SourceJdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
-    String createTestTable =
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
+    final String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(createTestTable);
     });
 
-    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
     });
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
     database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
   }

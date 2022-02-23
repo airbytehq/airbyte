@@ -1,0 +1,634 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "about": {
+      "type": ["null", "string"]
+    },
+    "access_token": {
+      "type": ["null", "string"]
+    },
+    "ad_campaign": {
+      "type": ["null", "object"]
+    },
+    "affiliation": {
+      "type": ["null", "string"]
+    },
+    "app_id": {
+      "type": ["null", "string"]
+    },
+    "artists_we_like": {
+      "type": ["null", "string"]
+    },
+    "attire": {
+      "type": ["null", "string"]
+    },
+    "awards": {
+      "type": ["null", "string"]
+    },
+    "band_interests": {
+      "type": ["null", "string"]
+    },
+    "band_members": {
+      "type": ["null", "string"]
+    },
+    "best_page": {
+      "type": ["null", "object"]
+    },
+    "bio": {
+      "type": ["null", "string"]
+    },
+    "birthday": {
+      "type": ["null", "string"]
+    },
+    "booking_agent": {
+      "type": ["null", "string"]
+    },
+    "built": {
+      "type": ["null", "string"]
+    },
+    "can_checkin": {
+      "type": ["null", "boolean"]
+    },
+    "can_post": {
+      "type": ["null", "boolean"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "category_list": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "checkins": {
+      "type": ["null", "integer"]
+    },
+    "company_overview": {
+      "type": ["null", "string"]
+    },
+    "connected_instagram_account": {
+      "type": ["null", "object"]
+    },
+    "connected_page_backed_instagram_account": {
+      "type": ["null", "object"]
+    },
+    "contact_address": {
+      "type": ["null", "object"]
+    },
+    "copyright_attribution_insights": {
+      "type": ["null", "object"]
+    },
+    "copyright_whitelisted_ig_partners": {
+      "type": ["null", "object"]
+    },
+    "country_page_likes": {
+      "type": ["null", "integer"]
+    },
+    "cover": {
+      "type": ["null", "object"]
+    },
+    "culinary_team": {
+      "type": ["null", "string"]
+    },
+    "current_location": {
+      "type": ["null", "string"]
+    },
+    "delivery_and_pickup_option_info": {
+      "type": ["null", "object"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "description_html": {
+      "type": ["null", "string"]
+    },
+    "differently_open_offerings": {
+      "type": ["null", "object"]
+    },
+    "directed_by": {
+      "type": ["null", "string"]
+    },
+    "display_subtext": {
+      "type": ["null", "string"]
+    },
+    "displayed_message_response_time": {
+      "type": ["null", "string"]
+    },
+    "emails": {
+      "type": ["null", "array", "string"]
+    },
+    "engagement": {
+      "type": ["null", "object"]
+    },
+    "fan_count": {
+      "type": ["null", "integer"]
+    },
+    "featured_video": {
+      "type": ["null", "object"]
+    },
+    "features": {
+      "type": ["null", "string"]
+    },
+    "followers_count": {
+      "type": ["null", "integer"]
+    },
+    "food_styles": {
+      "type": ["null", "object"]
+    },
+    "founded": {
+      "type": ["null", "string"]
+    },
+    "general_info": {
+      "type": ["null", "string"]
+    },
+    "general_manager": {
+      "type": ["null", "string"]
+    },
+    "genre": {
+      "type": ["null", "string"]
+    },
+    "global_brand_page_name": {
+      "type": ["null", "string"]
+    },
+    "global_brand_root_id": {
+      "type": ["null", "string"]
+    },
+    "has_added_app": {
+      "type": ["null", "boolean"]
+    },
+    "has_transitioned_to_new_page_experience": {
+      "type": ["null", "boolean"]
+    },
+    "has_whatsapp_business_number": {
+      "type": ["null", "boolean"]
+    },
+    "has_whatsapp_number": {
+      "type": ["null", "boolean"]
+    },
+    "hometown": {
+      "type": ["null", "string"]
+    },
+    "hours": {
+      "type": ["null", "object"]
+    },
+    "impressum": {
+      "type": ["null", "string"]
+    },
+    "influences": {
+      "type": ["null", "string"]
+    },
+    "instagram_business_account": {
+      "type": ["null", "object"]
+    },
+    "instant_articles_review_status": {
+      "type": ["null", "array", "string"]
+    },
+    "is_always_open": {
+      "type": ["null", "boolean"]
+    },
+    "is_chain": {
+      "type": ["null", "boolean"]
+    },
+    "is_community_page": {
+      "type": ["null", "boolean"]
+    },
+    "is_eligible_for_branded_content": {
+      "type": ["null", "boolean"]
+    },
+    "is_messenger_bot_get_started_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "is_messenger_platform_bot": {
+      "type": ["null", "boolean"]
+    },
+    "is_owned": {
+      "type": ["null", "boolean"]
+    },
+    "is_permanently_closed": {
+      "type": ["null", "boolean"]
+    },
+    "is_published": {
+      "type": ["null", "boolean"]
+    },
+    "is_unclaimed": {
+      "type": ["null", "boolean"]
+    },
+    "is_webhooks_subscribed": {
+      "type": ["null", "boolean"]
+    },
+    "leadgen_tos_acceptance_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "leadgen_tos_accepted": {
+      "type": ["null", "boolean"]
+    },
+    "leadgen_tos_accepting_user": {
+      "type": ["null", "object"]
+    },
+    "link": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "object"]
+    },
+    "members": {
+      "type": ["null", "string"]
+    },
+    "merchant_id": {
+      "type": ["null", "string"]
+    },
+    "merchant_review_status": {
+      "type": ["null", "array", "string"]
+    },
+    "messenger_ads_default_icebreakers": {
+      "type": ["null", "array"]
+    },
+    "messenger_ads_default_page_welcome_message": {
+      "type": ["null", "object"]
+    },
+    "messenger_ads_default_quick_replies": {
+      "type": ["null", "object"]
+    },
+    "messenger_ads_quick_replies_type": {
+      "type": ["null", "array", "string"]
+    },
+    "mission": {
+      "type": ["null", "string"]
+    },
+    "mpg": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "name_with_location_descriptor": {
+      "type": ["null", "string"]
+    },
+    "network": {
+      "type": ["null", "string"]
+    },
+    "new_like_count": {
+      "type": ["null", "integer"]
+    },
+    "offer_eligible": {
+      "type": ["null", "boolean"]
+    },
+    "overall_star_rating": {
+      "type": ["null", "number"]
+    },
+    "page_token": {
+      "type": ["null", "string"]
+    },
+    "parent_page": {
+      "type": ["null", "object"]
+    },
+    "parking": {
+      "type": ["null", "object"]
+    },
+    "payment_options": {
+      "type": ["null", "object"]
+    },
+    "personal_info": {
+      "type": ["null", "string"]
+    },
+    "personal_interests": {
+      "type": ["null", "string"]
+    },
+    "pharma_safety_info": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "pickup_options": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "array", "string"]
+      }
+    },
+    "place_type": {
+      "type": ["null", "array", "string"]
+    },
+    "plot_outline": {
+      "type": ["null", "string"]
+    },
+    "preferred_audience": {
+      "type": ["null", "object"]
+    },
+    "press_contact": {
+      "type": ["null", "string"]
+    },
+    "price_range": {
+      "type": ["null", "string"]
+    },
+    "privacy_info_url": {
+      "type": ["null", "string"]
+    },
+    "produced_by": {
+      "type": ["null", "string"]
+    },
+    "products": {
+      "type": ["null", "string"]
+    },
+    "promotion_eligible": {
+      "type": ["null", "boolean"]
+    },
+    "promotion_ineligible_reason": {
+      "type": ["null", "string"]
+    },
+    "public_transit": {
+      "type": ["null", "string"]
+    },
+    "rating_count": {
+      "type": ["null", "integer"]
+    },
+    "recipient": {
+      "type": ["null", "string"]
+    },
+    "record_label": {
+      "type": ["null", "string"]
+    },
+    "release_date": {
+      "type": ["null", "string"]
+    },
+    "restaurant_services": {
+      "type": ["null", "object"]
+    },
+    "restaurant_specialties": {
+      "type": ["null", "object"]
+    },
+    "schedule": {
+      "type": ["null", "string"]
+    },
+    "screenplay_by": {
+      "type": ["null", "string"]
+    },
+    "season": {
+      "type": ["null", "string"]
+    },
+    "single_line_address": {
+      "type": ["null", "string"]
+    },
+    "starring": {
+      "type": ["null", "string"]
+    },
+    "start_info": {
+      "type": ["null", "object"]
+    },
+    "store_code": {
+      "type": ["null", "string"]
+    },
+    "store_location_descriptor": {
+      "type": ["null", "string"]
+    },
+    "store_number": {
+      "type": ["null", "integer"]
+    },
+    "studio": {
+      "type": ["null", "string"]
+    },
+    "supports_donate_button_in_live_video": {
+      "type": ["null", "boolean"]
+    },
+    "supports_instant_articles": {
+      "type": ["null", "boolean"]
+    },
+    "talking_about_count": {
+      "type": ["null", "integer"]
+    },
+    "temporary_status": {
+      "type": ["null", "array", "string"]
+    },
+    "unread_message_count": {
+      "type": ["null", "integer"]
+    },
+    "unread_notif_count": {
+      "type": ["null", "integer"]
+    },
+    "unseen_message_count": {
+      "type": ["null", "integer"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "verification_status": {
+      "type": ["null", "string"]
+    },
+    "voip_info": {
+      "type": ["null", "object"]
+    },
+    "website": {
+      "type": ["null", "string"]
+    },
+    "were_here_count": {
+      "type": ["null", "integer"]
+    },
+    "whatsapp_number": {
+      "type": ["null", "string"]
+    },
+    "written_by": {
+      "type": ["null", "string"]
+    },
+    "admin_notes": {
+      "type": ["null", "object"]
+    },
+    "ads_posts": {
+      "type": ["null", "object"]
+    },
+    "agencies": {
+      "type": ["null", "object"]
+    },
+    "albums": {
+      "type": ["null", "object"]
+    },
+    "assigned_users": {
+      "type": ["null", "object"]
+    },
+    "audio_media_copyrights": {
+      "type": ["null", "object"]
+    },
+    "blocked": {
+      "type": ["null", "object"]
+    },
+    "call_to_actions": {
+      "type": ["null", "object"]
+    },
+    "canvas_elements": {
+      "type": ["null", "object"]
+    },
+    "canvases": {
+      "type": ["null", "object"]
+    },
+    "claimed_urls": {
+      "type": ["null", "object"]
+    },
+    "commerce_merchant_settings": {
+      "type": ["null", "object"]
+    },
+    "commerce_orders": {
+      "type": ["null", "object"]
+    },
+    "commerce_payouts": {
+      "type": ["null", "object"]
+    },
+    "commerce_transactions": {
+      "type": ["null", "object"]
+    },
+    "conversations": {
+      "type": ["null", "object"]
+    },
+    "copyright_whitelisted_partners": {
+      "type": ["null", "object"]
+    },
+    "crosspost_whitelisted_pages": {
+      "type": ["null", "object"]
+    },
+    "custom_labels": {
+      "type": ["null", "object"]
+    },
+    "custom_user_settings": {
+      "type": ["null", "object"]
+    },
+    "events": {
+      "type": ["null", "object"]
+    },
+    "feed": {
+      "type": ["null", "object"]
+    },
+    "global_brand_children": {
+      "type": ["null", "object"]
+    },
+    "groups": {
+      "type": ["null", "object"]
+    },
+    "image_copyrights": {
+      "type": ["null", "object"]
+    },
+    "indexed_videos": {
+      "type": ["null", "object"]
+    },
+    "insights": {
+      "type": ["null", "object"]
+    },
+    "insights_exports": {
+      "type": ["null", "object"]
+    },
+    "instagram_accounts": {
+      "type": ["null", "object"]
+    },
+    "instant_articles": {
+      "type": ["null", "object"]
+    },
+    "instant_articles_insights": {
+      "type": ["null", "object"]
+    },
+    "leadgen_forms": {
+      "type": ["null", "object"]
+    },
+    "likes": {
+      "type": ["null", "object"]
+    },
+    "live_encoders": {
+      "type": ["null", "object"]
+    },
+    "live_videos": {
+      "type": ["null", "object"]
+    },
+    "locations": {
+      "type": ["null", "object"]
+    },
+    "media_fingerprints": {
+      "type": ["null", "object"]
+    },
+    "messaging_feature_review": {
+      "type": ["null", "object"]
+    },
+    "messenger_profile": {
+      "type": ["null", "object"]
+    },
+    "nativeoffers": {
+      "type": ["null", "object"]
+    },
+    "page_backed_instagram_accounts": {
+      "type": ["null", "object"]
+    },
+    "personas": {
+      "type": ["null", "object"]
+    },
+    "photos": {
+      "type": ["null", "object"]
+    },
+    "picture": {
+      "type": ["null", "object"]
+    },
+    "posts": {
+      "type": ["null", "object"]
+    },
+    "product_catalogs": {
+      "type": ["null", "object"]
+    },
+    "published_posts": {
+      "type": ["null", "object"]
+    },
+    "ratings": {
+      "type": ["null", "object"]
+    },
+    "roles": {
+      "type": ["null", "object"]
+    },
+    "rtb_dynamic_posts": {
+      "type": ["null", "object"]
+    },
+    "scheduled_posts": {
+      "type": ["null", "object"]
+    },
+    "secondary_receivers": {
+      "type": ["null", "object"]
+    },
+    "settings": {
+      "type": ["null", "object"]
+    },
+    "shop_setup_status": {
+      "type": ["null", "object"]
+    },
+    "subscribed_apps": {
+      "type": ["null", "object"]
+    },
+    "tabs": {
+      "type": ["null", "object"]
+    },
+    "tagged": {
+      "type": ["null", "object"]
+    },
+    "thread_owner": {
+      "type": ["null", "object"]
+    },
+    "threads": {
+      "type": ["null", "object"]
+    },
+    "video_copyright_rules": {
+      "type": ["null", "object"]
+    },
+    "video_copyrights": {
+      "type": ["null", "object"]
+    },
+    "video_lists": {
+      "type": ["null", "object"]
+    },
+    "video_media_copyrights": {
+      "type": ["null", "object"]
+    },
+    "videos": {
+      "type": ["null", "object"]
+    },
+    "visitor_posts": {
+      "type": ["null", "object"]
+    }
+  }
+}

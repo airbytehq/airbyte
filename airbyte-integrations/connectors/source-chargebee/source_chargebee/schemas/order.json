@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "maxLength": 40
     },
     "document_number": {
@@ -24,7 +24,7 @@
       "maxLength": 50
     },
     "status": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "enum": [
         "new",
         "processing",
@@ -38,13 +38,10 @@
         "shipped",
         "partially_delivered",
         "returned"
-      ],
-      "items": {
-        "property": "string"
-      }
+      ]
     },
     "cancellation_reason": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "enum": [
         "shipping_cut_off_passed",
         "product_unsatisfactory",
@@ -60,31 +57,19 @@
         "product_not_available",
         "others",
         "order_resent"
-      ],
-      "items": {
-        "property": "string"
-      }
+      ]
     },
     "payment_status": {
-      "type": ["array", "null"],
-      "enum": ["not_paid", "paid"],
-      "items": {
-        "property": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["not_paid", "paid"]
     },
     "order_type": {
-      "type": ["array", "null"],
-      "enum": ["manual", "system_generated"],
-      "items": {
-        "property": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["manual", "system_generated"]
     },
     "price_type": {
-      "type": ["array", "null"],
-      "enum": ["tax_inclusive", "tax_exclusive"],
-      "items": {
-        "property": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["tax_inclusive", "tax_exclusive"]
     },
     "reference_id": {
       "type": ["string", "null"],
@@ -108,9 +93,13 @@
       "type": ["string", "null"],
       "maxLength": 50
     },
-    "batch_id": {
+    "tracking_url": {
       "type": ["string", "null"],
       "maxLength": 255
+    },
+    "batch_id": {
+      "type": ["string", "null"],
+      "maxLength": 50
     },
     "created_by": {
       "type": ["string", "null"],
@@ -120,6 +109,7 @@
       "type": ["string", "null"],
       "maxLength": 50
     },
+
     "invoice_round_off_amount": {
       "type": ["integer", "null"],
       "minimum": 0
@@ -154,7 +144,7 @@
       "type": ["integer", "null"]
     },
     "created_at": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "status_update_at": {
       "type": ["integer", "null"]
@@ -175,14 +165,11 @@
       "type": ["integer", "null"]
     },
     "resent_status": {
-      "type": ["array", "null"],
-      "enum": ["fully_resent", "partially_resent"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["fully_resent", "partially_resent"]
     },
     "is_resent": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "original_order_id": {
       "type": ["string", "null"],
@@ -201,7 +188,7 @@
       "minimum": 0
     },
     "deleted": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "currency_code": {
       "type": ["string", "null"],
@@ -225,18 +212,18 @@
     "order_line_items": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 40
           },
           "invoice_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 50
           },
           "invoice_line_item_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 40
           },
           "unit_price": {
@@ -244,7 +231,7 @@
             "minimum": 0
           },
           "description": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 250
           },
           "amount": {
@@ -284,10 +271,11 @@
           },
           "sku": {
             "type": ["string", "null"],
-            "maxLength": 100
+            "maxLength": 250
           },
+
           "status": {
-            "type": ["array", "null"],
+            "type": ["string", "null"],
             "enum": [
               "queued",
               "awaiting_shipment",
@@ -297,17 +285,21 @@
               "partially_delivered",
               "returned",
               "cancelled"
-            ],
-            "items": {
-              "type": "string"
-            }
+            ]
           },
           "entity_type": {
-            "type": "array",
-            "enum": ["adhoc"],
-            "items": {
-              "type": "string"
-            }
+            "type": ["string", "null"],
+            "enum": [
+              "adhoc",
+
+              "plan_setup",
+              "plan",
+              "addon",
+
+              "plan_item_price",
+              "addon_item_price",
+              "charge_item_price"
+            ]
           },
           "item_level_discount_amount": {
             "type": ["integer", "null"],
@@ -319,13 +311,13 @@
           },
           "entity_id": {
             "type": ["string", "null"],
-            "maxLength": 100
+            "maxLength": 50
           }
         }
       }
     },
     "shipping_address": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "first_name": {
           "type": ["string", "null"],
@@ -337,7 +329,6 @@
         },
         "email": {
           "type": ["string", "null"],
-          "format": "email",
           "maxLength": 70
         },
         "company": {
@@ -381,16 +372,13 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": "array",
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"],
-          "items": {
-            "type": "string"
-          }
+          "type": ["string", "null"],
+          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
         }
       }
     },
     "billing_address": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "first_name": {
           "type": ["string", "null"],
@@ -402,7 +390,6 @@
         },
         "email": {
           "type": ["string", "null"],
-          "format": "email",
           "maxLength": 70
         },
         "company": {
@@ -415,7 +402,7 @@
         },
         "line1": {
           "type": ["string", "null"],
-          "maxLength": 180
+          "maxLength": 150
         },
         "line2": {
           "type": ["string", "null"],
@@ -446,25 +433,22 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": "array",
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"],
-          "items": {
-            "type": "string"
-          }
+          "type": ["string", "null"],
+          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
         }
       }
     },
     "line_item_taxes": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "line_item_id": {
             "type": ["string", "null"],
             "maxLength": 40
           },
           "tax_name": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 100
           },
           "tax_rate": {
@@ -479,15 +463,15 @@
             "type": ["boolean", "null"]
           },
           "taxable_amount": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "tax_amount": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "tax_juris_type": {
-            "type": ["array", "null"],
+            "type": ["string", "null"],
             "enum": [
               "country",
               "federal",
@@ -497,10 +481,7 @@
               "special",
               "unincorporated",
               "other"
-            ],
-            "items": {
-              "type": "string"
-            }
+            ]
           },
           "tax_juris_name": {
             "type": ["string", "null"],
@@ -512,11 +493,10 @@
           },
           "tax_amount_in_local_currency": {
             "type": ["integer", "null"],
-            "minumum": 0
+            "minimum": 0
           },
           "local_currency-code": {
-            "type": ["string", "null"],
-            "maxLength": 3
+            "type": ["string", "null"]
           }
         }
       }
@@ -524,31 +504,29 @@
     "line_item_discounts": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": "string",
-            "maxLength": 40
+            "type": ["string", "null"],
+            "maxLength": 50
           },
           "discount_type": {
-            "type": "array",
+            "type": ["string", "null"],
             "enum": [
               "item_level_coupon",
               "document_level_coupon",
               "promotional_credits",
-              "prorated_credits"
-            ],
-            "items": {
-              "type": "string"
-            }
+              "prorated_credits",
+              "custom_discount"
+            ]
           },
           "coupon_id": {
             "type": ["string", "null"],
             "maxLength": 50
           },
           "discount_amount": {
-            "type": "integer",
-            "minumum": 0
+            "type": ["integer", "null"],
+            "minimum": 0
           }
         }
       }
@@ -556,29 +534,23 @@
     "linked_credit_notes": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "amount": {
             "type": ["integer", "null"],
             "minimum": 0
           },
           "type": {
-            "type": "array",
-            "enum": ["adjustment", "refundable"],
-            "items": {
-              "type": "string"
-            }
+            "type": ["string", "null"],
+            "enum": ["adjustment", "refundable"]
           },
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 50
           },
           "status": {
-            "type": ["array", "null"],
-            "enum": ["adjusted", "refunded", "refund_due", "voided"],
-            "items": {
-              "type": "string"
-            }
+            "type": ["string", "null"],
+            "enum": ["adjusted", "refunded", "refund_due", "voided"]
           },
           "amount_adjusted": {
             "type": ["integer", "null"],
@@ -594,10 +566,10 @@
     "resent_orders": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "order_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 40
           },
           "reason": {

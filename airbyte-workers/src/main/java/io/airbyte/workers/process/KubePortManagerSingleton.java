@@ -1,31 +1,9 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.EnvConfigs;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -40,36 +18,59 @@ import org.slf4j.LoggerFactory;
  * Although this data structure can do without the wrapper class, this class allows easier testing
  * via the {@link #getNumAvailablePorts()} function.
  *
- * The singleton pattern clarifies that only one copy of this class is intended to exists per
+ * The singleton pattern clarifies that only one copy of this class is intended to exist per
  * scheduler deployment.
  */
 public class KubePortManagerSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePortManagerSingleton.class);
-  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
-  private static BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(new EnvConfigs().getTemporalWorkerPorts());
 
-  public static Integer take() throws InterruptedException {
+  private static KubePortManagerSingleton instance;
+
+  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
+  private final BlockingQueue<Integer> workerPorts;
+
+  private KubePortManagerSingleton(final Set<Integer> ports) {
+    workerPorts = new LinkedBlockingDeque<>(ports);
+  }
+
+  /**
+   * Make sure init(ports) is called once prior to repeatedly using getInstance().
+   */
+  public static synchronized KubePortManagerSingleton getInstance() {
+    if (instance == null) {
+      throw new RuntimeException("Must initialize with init(ports) before using.");
+    }
+    return instance;
+  }
+
+  /**
+   * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
+   * getInstance().
+   */
+  public static synchronized void init(final Set<Integer> ports) {
+    if (instance != null) {
+      throw new RuntimeException("Cannot initialize twice!");
+    }
+    instance = new KubePortManagerSingleton(ports);
+  }
+
+  public Integer take() throws InterruptedException {
     return workerPorts.poll(10, TimeUnit.MINUTES);
   }
 
-  public static void offer(Integer port) {
+  public void offer(final Integer port) {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
     }
   }
 
-  public static int getNumAvailablePorts() {
+  public int getNumAvailablePorts() {
     return workerPorts.size();
   }
 
-  public static int getSupportedWorkers() {
+  public int getSupportedWorkers() {
     return workerPorts.size() / MAX_PORTS_PER_WORKER;
-  }
-
-  @VisibleForTesting
-  protected static void setWorkerPorts(Set<Integer> ports) {
-    workerPorts = new LinkedBlockingDeque<>(ports);
   }
 
 }

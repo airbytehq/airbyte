@@ -23,7 +23,7 @@ redirects:
   changelog: ./project-overview/changelog.md
   changelog/platform: ./project-overview/changelog/platform.md
   changelog/connectors: ./project-overview/changelog/connectors.md
-  license: ./project-overview/license.md
+  license: ./project-overview/licenses/README.md
   tutorials/postgres-replication: ./examples/postgres-replication.md
   tutorials/build-a-slack-activity-dashboard: ./examples/build-a-slack-activity-dashboard.md
   tutorials/zoom-activity-dashboard: ./examples/zoom-activity-dashboard.md
@@ -51,3 +51,25 @@ redirects:
   tutorials/tutorials/building-a-python-source: ./contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source.md
   upgrading-airbyte: ./operator-guides/upgrading-airbyte.md
   tutorials/upgrading-airbyte: ./operator-guides/upgrading-airbyte.md
+  contributing-to-airbyte/python: ./connector-development/cdk-python.md
+  contributing-to-airbyte/python/concepts/basic-concepts: ./connector-development/cdk-python/basic-concepts.md
+  contributing-to-airbyte/python/concepts/schemas: ./connector-development/cdk-python/schemas.md
+  contributing-to-airbyte/python/concepts/full-refresh-stream: ./connector-development/cdk-python/full-refresh-stream.md
+  contributing-to-airbyte/python/concepts/incremental-stream: ./connector-development/cdk-python/incremental-stream.md
+  contributing-to-airbyte/python/concepts/http-streams: ./connector-development/cdk-python/http-streams.md
+  contributing-to-airbyte/python/concepts/python-concepts: ./connector-development/cdk-python/python-concepts.md
+  contributing-to-airbyte/python/concepts/stream_slices: ./connector-development/cdk-python/stream-slices.md
+  contributing-to-airbyte/python/tutorials: ./connector-development/tutorials.md
+  contributing-to-airbyte/python/tutorials/cdk-speedrun: ./connector-development/tutorials/cdk-speedrun.md
+  contributing-to-airbyte/python/tutorials/cdk-tutorial-python-http: ./connector-development/tutorials/cdk-tutorial-python-http.md
+  contributing-to-airbyte/building-new-connector: ./connector-development.md
+  contributing-to-airbyte/building-new-connector/best-practices: ./connector-development.md/best-practices.md
+  contributing-to-airbyte/building-new-connector/monorepo-python-development: ./contributing-to-airbyte/monorepo-python-development.md
+  contributing-to-airbyte/building-new-connector/testing-connectors: ./connector-development/testing-connectors.md
+  contributing-to-airbyte/building-new-connector/source-acceptance-tests: ./connector-development/testing-connectors/source-acceptance-tests-reference.md
+  contributing-to-airbyte/building-new-connector/tutorials: ./connector-development/tutorials.md
+  contributing-to-airbyte/building-new-connector/tutorials/beginners-guide-to-catalog: ./understanding-airbyte/beginners-guide-to-catalog.md
+  contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source: ./connector-development/tutorials/building-a-python-source.md
+  contributing-to-airbyte/building-new-connector/tutorials/building-a-python-destination: ./connector-development/tutorials/building-a-python-destination.md
+  contributing-to-airbyte/building-new-connector/tutorials/building-a-java-destination: ./connector-development/tutorials/building-a-java-destination.md
+  project-overview/code-of-conduct: ./project-overview/slack-code-of-conduct

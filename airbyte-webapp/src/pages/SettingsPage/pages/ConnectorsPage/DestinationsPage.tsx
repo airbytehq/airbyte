@@ -3,24 +3,25 @@ import { useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { DestinationResource } from "core/resources/Destination";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const DestinationsPage: React.FC = () => {
+  const { workspace } = useWorkspace();
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});

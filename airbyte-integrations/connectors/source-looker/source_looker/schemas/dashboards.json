@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "content_metadata_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "description": {
       "type": ["null", "string"]
@@ -17,16 +17,16 @@
           "type": ["null", "integer"]
         },
         "content_metadata_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "creator_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "external_id": {
           "type": ["null", "string"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "is_embed": {
           "type": ["null", "boolean"]
@@ -53,29 +53,27 @@
           "type": ["null", "string"]
         },
         "parent_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "hidden": {
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "model": {
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "label": {
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "query_timezone": {
       "type": ["null", "string"]
@@ -95,16 +93,16 @@
           "type": ["null", "integer"]
         },
         "content_metadata_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "creator_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "external_id": {
           "type": ["null", "string"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "is_embed": {
           "type": ["null", "boolean"]
@@ -131,17 +129,16 @@
           "type": ["null", "string"]
         },
         "parent_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "title": {
       "type": ["null", "string"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     }
   }
 }

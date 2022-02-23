@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -75,7 +55,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
-  private StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -109,22 +89,23 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
+  protected String getDefaultSchema(final JsonNode config) {
     return config.get(CONFIG_DATASET_ID).asText();
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
@@ -134,14 +115,14 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     result.add(identifier);
     result.add(namingResolver.getIdentifier(identifier));
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
@@ -149,15 +130,15 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 
-    TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
-    FieldList fields = queryResults.getSchema().getFields();
+    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final FieldList fields = queryResults.getSchema().getFields();
 
     return StreamSupport
         .stream(queryResults.iterateAll().spliterator(), false)
         .map(row -> {
-          Map<String, Object> jsonMap = Maps.newHashMap();
-          for (Field field : fields) {
-            Object value = getTypedFieldValue(row, field);
+          final Map<String, Object> jsonMap = Maps.newHashMap();
+          for (final Field field : fields) {
+            final Object value = getTypedFieldValue(row, field);
             jsonMap.put(field.getName(), value);
           }
           return jsonMap;
@@ -166,8 +147,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .collect(Collectors.toList());
   }
 
-  private Object getTypedFieldValue(FieldValueList row, Field field) {
-    FieldValue fieldValue = row.get(field.getName());
+  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
+    final FieldValue fieldValue = row.get(field.getName());
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
@@ -182,16 +163,15 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
-
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
@@ -199,13 +179,14 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
+        .put(CONFIG_CREDS, credentialsJson.toString())
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
         .setCredentials(credentials)
@@ -228,7 +209,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
   }
 
@@ -248,13 +229,13 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  private static ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  private static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       throw new RuntimeException("Job no longer exists");
@@ -267,10 +248,10 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     return ImmutablePair.of(completedJob, null);
   }
 
-  private static Job waitForQuery(Job queryJob) {
+  private static Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

@@ -12,12 +12,18 @@
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": "2021-01-01T00:00:00.000000Z"
+        "examples": ["2021-01-01T00:00:00Z"]
       },
       "api_key": {
         "type": "string",
         "airbyte_secret": true,
         "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/posthog\">docs</a> for information on how to generate this key."
+      },
+      "base_url": {
+        "type": "string",
+        "default": "https://app.posthog.com",
+        "description": "Base PostHog url. Defaults to PostHog Cloud (https://app.posthog.com).",
+        "examples": ["https://posthog.example.com"]
       }
     }
   }

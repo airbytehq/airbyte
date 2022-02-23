@@ -23,7 +23,7 @@
       "description": "The description of the notification scheme."
     },
     "notificationSchemeEvents": {
-      "type": "array",
+      "type": ["array", "null"],
       "description": "The notification events and associated recipients.",
       "items": {
         "type": "object",
@@ -594,7 +594,7 @@
     },
     "scope": {
       "description": "The scope of the notification scheme.",
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "type": {
           "type": "string",

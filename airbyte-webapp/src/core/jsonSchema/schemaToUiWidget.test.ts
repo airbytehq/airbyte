@@ -1,9 +1,8 @@
-import { JSONSchema7 } from "json-schema";
-
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
+import { AirbyteJSONSchemaDefinition } from "./types";
 
 test("should reformat jsonSchema to internal widget representation", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["host", "port", "user", "dbname"],
     properties: {
@@ -21,8 +20,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         airbyte_secret: true,
         type: "string",
         description: "Password associated with the username.",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any, // Because airbyte_secret is not part of json_schema
+      },
     },
   };
 
@@ -67,6 +65,8 @@ test("should reformat jsonSchema to internal widget representation", () => {
         path: "key.host",
         fieldKey: "host",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "string",
       },
       {
@@ -75,6 +75,8 @@ test("should reformat jsonSchema to internal widget representation", () => {
         path: "key.port",
         fieldKey: "port",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "integer",
       },
       {
@@ -83,6 +85,8 @@ test("should reformat jsonSchema to internal widget representation", () => {
         path: "key.user",
         fieldKey: "user",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "string",
       },
       {
@@ -91,6 +95,8 @@ test("should reformat jsonSchema to internal widget representation", () => {
         path: "key.dbname",
         fieldKey: "dbname",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "string",
       },
       {
@@ -100,6 +106,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldKey: "password",
         isRequired: false,
         isSecret: true,
+        multiline: false,
         type: "string",
       },
     ],
@@ -109,7 +116,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
 });
 
 test("should reformat jsonSchema to internal widget representation with parent schema", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
@@ -145,6 +152,8 @@ test("should reformat jsonSchema to internal widget representation with parent s
         fieldKey: "host",
         path: "key.host",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "string",
       },
     ],
@@ -155,7 +164,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
 });
 
 test("should reformat jsonSchema to internal widget representation when has oneOf", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["start_date", "credentials"],
     properties: {
@@ -164,6 +173,8 @@ test("should reformat jsonSchema to internal widget representation when has oneO
       },
       credentials: {
         type: "object",
+        title: "Credentials Condition",
+        description: "Credentials Condition Description",
         oneOf: [
           {
             title: "api key",
@@ -202,6 +213,8 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         start_date: { type: "string" },
         credentials: {
           type: "object",
+          description: "Credentials Condition Description",
+          title: "Credentials Condition",
           oneOf: [
             {
               title: "api key",
@@ -230,11 +243,15 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         path: "key.start_date",
         fieldKey: "start_date",
         isRequired: true,
+        isSecret: false,
+        multiline: false,
         type: "string",
       },
       {
         _type: "formCondition",
         path: "key.credentials",
+        description: "Credentials Condition Description",
+        title: "Credentials Condition",
         fieldKey: "credentials",
         conditions: {
           "api key": {
@@ -243,6 +260,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
             jsonSchema: {
               title: "api key",
               required: ["api_key"],
+              type: "object",
               properties: { api_key: { type: "string" } },
             },
             path: "key.credentials",
@@ -253,6 +271,8 @@ test("should reformat jsonSchema to internal widget representation when has oneO
                 path: "key.credentials.api_key",
                 fieldKey: "api_key",
                 isRequired: true,
+                isSecret: false,
+                multiline: false,
                 type: "string",
               },
             ],
@@ -264,6 +284,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
             jsonSchema: {
               title: "oauth",
               required: ["redirect_uri"],
+              type: "object",
               properties: {
                 redirect_uri: {
                   type: "string",
@@ -280,6 +301,8 @@ test("should reformat jsonSchema to internal widget representation when has oneO
                 path: "key.credentials.redirect_uri",
                 fieldKey: "redirect_uri",
                 isRequired: true,
+                isSecret: false,
+                multiline: false,
                 type: "string",
               },
             ],

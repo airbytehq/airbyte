@@ -12,10 +12,10 @@
       "type": ["null", "boolean"]
     },
     "total_amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "billable_amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "currency": {
       "type": ["null", "string"]

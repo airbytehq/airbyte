@@ -78,7 +78,7 @@
       }
     },
     "cost_budget": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "cost_budget_include_expenses": {
       "type": ["null", "boolean"]
@@ -87,7 +87,7 @@
       "type": ["null", "number"]
     },
     "fee": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     }
   }
 }

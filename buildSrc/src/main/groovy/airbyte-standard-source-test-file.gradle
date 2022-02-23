@@ -73,7 +73,7 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
         }
 
         // make sure we create the integrationTest task once in case a java integration test was already initialized
-        if (!project.hasProperty('integrationTest')) {
+        if (!project.tasks.findByName('integrationTest')) {
             project.task('integrationTest')
         }
 

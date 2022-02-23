@@ -20,7 +20,7 @@ jobs:
           java-version: '14'
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
@@ -37,15 +37,9 @@ jobs:
           docker tag airbyte/webapp:dev blotout/airbyte-webapp:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-webapp:${{ env.DOCKER_TAG }}
       - name: Push Server Docker
-
         run: |
           docker tag airbyte/server:dev blotout/airbyte-server:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-server:${{ env.DOCKER_TAG }}
-      - name: Push Seed Docker
-        run: |
-
-          docker tag airbyte/seed:dev blotout/airbyte-seed:${{ env.DOCKER_TAG }}
-          docker push blotout/airbyte-seed:${{ env.DOCKER_TAG }}
       - name: Push Scheduler Docker
         run: |
           docker tag airbyte/scheduler:dev blotout/airbyte-scheduler:${{ env.DOCKER_TAG }}
@@ -54,3 +48,11 @@ jobs:
         run: |
           docker tag airbyte/db:dev blotout/airbyte-db:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-db:${{ env.DOCKER_TAG }}
+      - name: Push Worker Docker
+        run: |
+          docker tag airbyte/worker:dev blotout/airbyte-worker:${{ env.DOCKER_TAG }}
+          docker push blotout/airbyte-worker:${{ env.DOCKER_TAG }}
+      - name: Push Temporal Docker
+        run: |
+          docker tag airbyte/temporal:dev blotout/airbyte-temporal:${{ env.DOCKER_TAG }}
+          docker push blotout/airbyte-temporal:${{ env.DOCKER_TAG }}

@@ -29,30 +29,30 @@
       "description": "Email address for a subscriber."
     },
     "action": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "action",
       "enum": ["open", "click", "bounce"],
       "description": "One of the following actions: 'open', 'click', or 'bounce'"
     },
     "type": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "Type",
       "enum": ["hard", "soft"],
       "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
     },
     "timestamp": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "Action date and time",
       "description": "The date and time recorded for the action in ISO 8601 format.",
       "format": "date-time"
     },
     "url": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "The IP address.",
       "description": "The IP address recorded for the action."
     },
     "ip": {
-      "type": "string",
+      "type": ["string", "null"],
       "title": "Action ip address",
       "description": "The IP address recorded for the action."
     }

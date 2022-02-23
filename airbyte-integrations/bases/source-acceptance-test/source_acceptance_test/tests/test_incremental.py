@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -93,7 +73,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         except KeyError:
             # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
             state_value = cursor_field.parse(record=state, path=state_cursor_paths[stream_name])
-        yield record_value, state_value
+        yield record_value, state_value, stream_name
 
 
 @pytest.mark.default_timeout(20 * 60)
@@ -109,18 +89,18 @@ class TestIncremental(BaseTest):
         assert records_1, "Should produce at least one record"
 
         latest_state = states_1[-1].state.data
-        for record_value, state_value in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
             assert (
                 record_value <= state_value
-            ), "First incremental sync should produce records younger or equal to cursor value from the state"
+            ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)
         records_2 = filter_output(output, type_=Type.RECORD)
 
-        for record_value, state_value in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
             assert (
                 record_value >= state_value
-            ), "Second incremental sync should produce records older or equal to cursor value from the state"
+            ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
 
     def test_state_with_abnormally_large_values(self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner):
         configured_catalog = incremental_only_catalog(configured_catalog)

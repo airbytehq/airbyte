@@ -1,31 +1,12 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from argparse import Namespace
 from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
+from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk import AirbyteEntrypoint
@@ -59,6 +40,14 @@ def _as_arglist(cmd: str, named_args: Mapping[str, Any]) -> List[str]:
         out.append(f"--{k}")
         out.append(v)
     return out
+
+
+@pytest.fixture
+def spec_mock(mocker):
+    expected = ConnectorSpecification(connectionSpecification={})
+    mock = MagicMock(return_value=expected)
+    mocker.patch.object(MockSource, "spec", mock)
+    return mock
 
 
 @pytest.fixture
@@ -121,40 +110,67 @@ def test_run_spec(entrypoint: AirbyteEntrypoint, mocker):
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
 
 
-def test_run_check(entrypoint: AirbyteEntrypoint, mocker):
-    parsed_args = Namespace(command="check", config="config_path")
-    config = {"username": "fake"}
-    check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
+@pytest.fixture
+def config_mock(mocker, request):
+    config = request.param if hasattr(request, "param") else {"username": "fake"}
     mocker.patch.object(MockSource, "read_config", return_value=config)
     mocker.patch.object(MockSource, "configure", return_value=config)
+    return config
+
+
+@pytest.mark.parametrize(
+    "config_mock, schema, config_valid",
+    [
+        ({"username": "fake"}, {"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": False}, False),
+        ({"username": "fake"}, {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False}, True),
+        ({"username": "fake"}, {"type": "object", "properties": {"user": {"type": "string"}}}, True),
+        (
+            {"username": "fake", "_limit": 22},
+            {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False},
+            True,
+        ),
+    ],
+    indirect=["config_mock"],
+)
+def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, schema, config_valid):
+    parsed_args = Namespace(command="check", config="config_path")
+    check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    mocker.patch.object(MockSource, "check", return_value=check_value)
+    mocker.patch.object(MockSource, "spec", return_value=ConnectorSpecification(connectionSpecification=schema))
+    if config_valid:
+        messages = list(entrypoint.run(parsed_args))
+        assert [_wrap_message(check_value)] == messages
+    else:
+        with pytest.raises(Exception, match=r"(?i)Config Validation Error:.*"):
+            list(entrypoint.run(parsed_args))
+
+
+def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="check", config="config_path")
+    check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
     assert [_wrap_message(check_value)] == list(entrypoint.run(parsed_args))
+    assert spec_mock.called
 
 
-def test_run_discover(entrypoint: AirbyteEntrypoint, mocker):
+def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
-    config = {"username": "fake"}
     expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"})])
-    mocker.patch.object(MockSource, "read_config", return_value=config)
-    mocker.patch.object(MockSource, "configure", return_value=config)
     mocker.patch.object(MockSource, "discover", return_value=expected)
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
+    assert spec_mock.called
 
 
-def test_run_read(entrypoint: AirbyteEntrypoint, mocker):
+def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="read", config="config_path", state="statepath", catalog="catalogpath")
-    config = {"username": "fake"}
     expected = AirbyteRecordMessage(stream="stream", data={"data": "stuff"}, emitted_at=1)
-    mocker.patch.object(MockSource, "read_config", return_value=config)
-    mocker.patch.object(MockSource, "configure", return_value=config)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     mocker.patch.object(MockSource, "read", return_value=[AirbyteMessage(record=expected, type=Type.RECORD)])
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
+    assert spec_mock.called
 
 
-def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker):
+def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker, config_mock):
     with pytest.raises(Exception):
-        mocker.patch.object(MockSource, "read_config", return_value={})
-        mocker.patch.object(MockSource, "configure", return_value={})
         list(entrypoint.run(Namespace(command="invalid", config="conf")))

@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "query_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "history_created_date": {
       "type": ["null", "string"]
@@ -15,16 +15,16 @@
       "type": ["null", "string"]
     },
     "space_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "look_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "history_query_run_count": {
       "type": ["null", "integer"]

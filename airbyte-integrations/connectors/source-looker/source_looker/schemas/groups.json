@@ -15,7 +15,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "include_by_default": {
       "type": ["null", "boolean"]

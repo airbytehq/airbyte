@@ -40,7 +40,7 @@
     },
     "scope": {
       "description": "The scope of the field.",
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "type": {
           "type": "string",
@@ -182,6 +182,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details about a field."
 }

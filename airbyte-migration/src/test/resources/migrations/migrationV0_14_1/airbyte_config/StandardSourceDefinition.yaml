@@ -11,7 +11,7 @@ required:
   - dockerImageTag
   - documentationUrl
   - foo
-additionalProperties: false
+additionalProperties: true
 properties:
   sourceDefinitionId:
     type: string

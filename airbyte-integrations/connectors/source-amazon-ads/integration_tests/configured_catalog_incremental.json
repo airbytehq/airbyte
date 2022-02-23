@@ -1,0 +1,15 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sponsored_products_report_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["reportDate"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": true
+    }
+  ]
+}

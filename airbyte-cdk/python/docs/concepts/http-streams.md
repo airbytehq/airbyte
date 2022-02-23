@@ -72,7 +72,12 @@ errors. It is not currently possible to specify a rate limit Airbyte should adhe
 
 When implementing [stream slicing](incremental-stream.md#streamstream_slices) in an `HTTPStream` each Slice is equivalent to a HTTP request; the stream will make one request per element returned by the `stream_slices` function. The current slice being read is passed into every other method in `HttpStream` e.g: `request_params`, `request_headers`, `path`, etc.. to be injected into a request. This allows you to dynamically determine the output of the `request_params`, `path`, and other functions to read the input slice and return the appropriate value. 
 
+### Caching
+
+When we are dealing with streams that depend on the results of another stream, we can use caching to write the data of the parent stream to a file in order to use this data when the child stream synchronizes, rather than performing a full HTTP request again. We can turn on caching by overriding use_cache property, and use HttpSubStream class as base class of child stream.
+
 ### Network Adapter Keyword arguments
+
 If you need to set any network-adapter keyword args on the outgoing HTTP requests such as `allow_redirects`, `stream`, `verify`, `cert`, etc..
 override the `request_kwargs` method. Any option listed in [BaseAdapter.send](https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send) can 
 be returned as a keyword argument. 

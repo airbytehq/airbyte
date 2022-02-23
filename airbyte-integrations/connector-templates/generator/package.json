@@ -8,6 +8,7 @@
   "devDependencies": {
     "handlebars": "^4.7.7",
     "plop": "^2.7.4",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "set-value": ">=4.0.1"
   }
 }

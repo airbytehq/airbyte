@@ -24,13 +24,13 @@
       "type": ["null", "boolean"]
     },
     "budget": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "budget_spent": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "budget_remaining": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "from": {
       "type": ["null", "string"]

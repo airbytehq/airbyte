@@ -1,28 +1,23 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import config from "config";
 import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
-import { SourceResource } from "core/resources/Source";
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
+import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
+import { useSourceList } from "hooks/services/useSourceHook";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
+
   const formatMessage = useIntl().formatMessage;
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
-  });
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: config.ui.workspaceId,
-    }
-  );
+  const { sources } = useSourceList();
+  const { sourceDefinitions } = useSourceDefinitionList();
 
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
@@ -30,7 +25,6 @@ const SourcesPage: React.FC = () => {
 
   const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
-  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {

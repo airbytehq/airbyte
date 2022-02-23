@@ -9,7 +9,8 @@
     "properties": {
       "x-api-key": {
         "type": "string",
-        "description": "This is Authorization Header for Xola API"
+        "description": "This is Authorization Header for Xola API",
+        "airbyte_secret": true
       },
       "seller-id": {
         "type": "string",

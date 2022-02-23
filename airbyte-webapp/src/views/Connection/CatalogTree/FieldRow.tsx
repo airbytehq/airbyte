@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo } from "react";
 import styled from "styled-components";
 import { Cell } from "components/SimpleTableComponents";
 import { CheckBox, RadioButton } from "components";
@@ -6,6 +6,7 @@ import DataTypeCell from "./components/DataTypeCell";
 
 interface FieldRowProps {
   name: string;
+  path: string[];
   type: string;
   nullable?: boolean;
   destinationName: string;
@@ -35,17 +36,12 @@ const RadiobuttonContainer = styled.div<{ depth?: number }>`
   padding-right: ${({ depth }) => (depth ? depth * 38 : 0)}px;
 `;
 
-const FieldRowInner: React.FC<FieldRowProps> = (props) => {
-  const { name: fieldName, onPrimaryKeyChange, onCursorChange } = props;
-  const handlePkChange = useCallback(
-    () => onPrimaryKeyChange(fieldName.split(".")),
-    [fieldName, onPrimaryKeyChange]
-  );
-
-  const handleCursorChange = useCallback(
-    () => onCursorChange(fieldName.split(".")),
-    [fieldName, onCursorChange]
-  );
+const FieldRowInner: React.FC<FieldRowProps> = ({
+  onPrimaryKeyChange,
+  onCursorChange,
+  path,
+  ...props
+}) => {
   return (
     <>
       <FirstCell ellipsis depth={props.depth} flex={1.5}>
@@ -61,7 +57,10 @@ const FieldRowInner: React.FC<FieldRowProps> = (props) => {
       <Cell flex={1.5} />
       <Cell>
         {props.isPrimaryKeyEnabled && (
-          <CheckBox checked={props.isPrimaryKey} onChange={handlePkChange} />
+          <CheckBox
+            checked={props.isPrimaryKey}
+            onChange={() => onPrimaryKeyChange(path)}
+          />
         )}
       </Cell>
       <LastCell depth={props.depth}>
@@ -69,7 +68,7 @@ const FieldRowInner: React.FC<FieldRowProps> = (props) => {
           <RadiobuttonContainer depth={props.depth}>
             <RadioButton
               checked={props.isCursor}
-              onChange={handleCursorChange}
+              onChange={() => onCursorChange(path)}
             />
           </RadiobuttonContainer>
         )}

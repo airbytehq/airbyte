@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.test_helpers;
@@ -44,9 +24,13 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
-  public static String getEntrypointEnvVariable(ProcessFactory processFactory, String jobId, int jobAttempt, Path jobRoot, String imageName)
+  public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
+                                                final String jobId,
+                                                final int jobAttempt,
+                                                final Path jobRoot,
+                                                final String imageName)
       throws IOException, InterruptedException, WorkerException {
-    Process process = processFactory.create(
+    final Process process = processFactory.create(
         jobId,
         jobAttempt,
         jobRoot,
@@ -54,9 +38,10 @@ public class EntrypointEnvChecker {
         false,
         Collections.emptyMap(),
         "printenv",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        Collections.emptyMap());
 
-    BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
     String outputLine = null;
 
@@ -70,7 +55,7 @@ public class EntrypointEnvChecker {
     process.waitFor();
 
     if (outputLine != null) {
-      String[] splits = outputLine.split("=", 2);
+      final String[] splits = outputLine.split("=", 2);
       if (splits.length != 2) {
         throw new RuntimeException("String could not be split into multiple segments: " + outputLine);
       } else {

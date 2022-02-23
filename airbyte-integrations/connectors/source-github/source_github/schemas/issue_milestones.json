@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "_ab_github_repository": {
-      "type": ["null", "string"]
+    "repository": {
+      "type": ["string"]
     },
     "url": {
       "type": ["null", "string"]
@@ -32,8 +32,8 @@
     "description": {
       "type": ["null", "string"]
     },
-    "creator_id": {
-      "type": ["null", "integer"]
+    "creator": {
+      "$ref": "user.json"
     },
     "open_issues": {
       "type": ["null", "integer"]

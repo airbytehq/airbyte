@@ -1,11 +1,11 @@
-FROM golang:1.14
+ARG ALPINE_IMAGE=alpine:3.4
+FROM ${ALPINE_IMAGE}
 
-ENV GO111MODULE=on
-
-
-# todo (cgardens) - replace this forked commit with an official version when a fix is released.
-#RUN go get -u github.com/danielgtaylor/restish@v0.7.0
-RUN go get -u github.com/cgardens/restish@e6f8ddda7fb5a3a989537272292c8321022cdb54
+RUN apk --no-cache add curl tar \
+    && if [[ `uname -m` == "aarch64" ]] ; then ARCH=arm64  ; else ARCH=`uname -m` ; fi \
+    && curl -OL https://github.com/danielgtaylor/restish/releases/download/v0.9.0/restish-0.9.0-linux-${ARCH}.tar.gz \
+    && tar -C /usr/local/bin -xzf restish-0.9.0-linux-${ARCH}.tar.gz \
+    && rm -rf restish-0.9.0-linux-${ARCH}.tar.gz
 
 ENTRYPOINT ["restish"]
 

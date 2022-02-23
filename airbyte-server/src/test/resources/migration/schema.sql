@@ -1,9 +1,3 @@
--- database
- CREATE
-    DATABASE airbyte;
-
-\connect airbyte;
-
 -- extensions
  CREATE
     EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -86,7 +80,3 @@ CREATE
         'server_uuid',
         uuid_generate_v4()
     );
-
--- grants
- GRANT ALL ON
-DATABASE airbyte TO docker;

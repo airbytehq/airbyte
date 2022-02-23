@@ -1,36 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -58,10 +32,10 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public S3Consumer(S3DestinationConfig s3DestinationConfig,
-                    ConfiguredAirbyteCatalog configuredCatalog,
-                    S3WriterFactory writerFactory,
-                    Consumer<AirbyteMessage> outputRecordCollector) {
+  public S3Consumer(final S3DestinationConfig s3DestinationConfig,
+                    final ConfiguredAirbyteCatalog configuredCatalog,
+                    final S3WriterFactory writerFactory,
+                    final Consumer<AirbyteMessage> outputRecordCollector) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -71,47 +45,23 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
+    final AmazonS3 s3Client = s3DestinationConfig.getS3Client();
+    final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    var endpoint = s3DestinationConfig.getEndpoint();
-
-    AWSCredentials awsCreds = new BasicAWSCredentials(s3DestinationConfig.getAccessKeyId(), s3DestinationConfig.getSecretAccessKey());
-    AmazonS3 s3Client = null;
-
-    if (endpoint.isEmpty()) {
-      s3Client = AmazonS3ClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(s3DestinationConfig.getBucketRegion())
-          .build();
-
-    } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
-      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-      s3Client = AmazonS3ClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, s3DestinationConfig.getBucketRegion()))
-          .withPathStyleAccessEnabled(true)
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
-    }
-
-    Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
-
-    for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3Writer writer = writerFactory
+    for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
+      final S3Writer writer = writerFactory
           .create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
-      AirbyteStream stream = configuredStream.getStream();
-      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
+      final AirbyteStream stream = configuredStream.getStream();
+      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
           .fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
+  protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == Type.STATE) {
       this.lastStateMessage = airbyteMessage;
       return;
@@ -119,8 +69,8 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
       return;
     }
 
-    AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
+    final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
@@ -134,8 +84,8 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
-    for (S3Writer handler : streamNameAndNamespaceToWriters.values()) {
+  protected void close(final boolean hasFailed) throws Exception {
+    for (final S3Writer handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // S3 stream uploader is all or nothing if a failure happens in the destination.

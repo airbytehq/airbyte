@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -60,7 +40,7 @@ public class StateManager {
     return new DbState();
   }
 
-  public StateManager(DbState serialized, ConfiguredAirbyteCatalog catalog) {
+  public StateManager(final DbState serialized, final ConfiguredAirbyteCatalog catalog) {
     this.cdcStateManager = new CdcStateManager(serialized.getCdcState());
     this.isCdc = serialized.getCdc();
     if (serialized.getCdc() == null) {
@@ -71,7 +51,8 @@ public class StateManager {
         new ImmutableMap.Builder<AirbyteStreamNameNamespacePair, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(DbState serialized, ConfiguredAirbyteCatalog catalog) {
+  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(final DbState serialized,
+                                                                                     final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
@@ -95,15 +76,15 @@ public class StateManager {
     return localMap;
   }
 
-  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(DbStreamState state) {
+  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(final DbStreamState state) {
     return new AirbyteStreamNameNamespacePair(state.getStreamName(), state.getStreamNamespace());
   }
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static CursorInfo createCursorInfoForStream(AirbyteStreamNameNamespacePair pair,
-                                              Optional<DbStreamState> stateOptional,
-                                              Optional<ConfiguredAirbyteStream> streamOptional) {
+  static CursorInfo createCursorInfoForStream(final AirbyteStreamNameNamespacePair pair,
+                                              final Optional<DbStreamState> stateOptional,
+                                              final Optional<ConfiguredAirbyteStream> streamOptional) {
     final String originalCursorField = stateOptional
         .map(DbStreamState::getCursorField)
         .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
@@ -150,27 +131,27 @@ public class StateManager {
     return new CursorInfo(originalCursorField, originalCursor, cursorField, cursor);
   }
 
-  private Optional<CursorInfo> getCursorInfo(AirbyteStreamNameNamespacePair pair) {
+  private Optional<CursorInfo> getCursorInfo(final AirbyteStreamNameNamespacePair pair) {
     return Optional.ofNullable(pairToCursorInfo.get(pair));
   }
 
-  public Optional<String> getOriginalCursorField(AirbyteStreamNameNamespacePair pair) {
+  public Optional<String> getOriginalCursorField(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getOriginalCursorField);
   }
 
-  public Optional<String> getOriginalCursor(AirbyteStreamNameNamespacePair pair) {
+  public Optional<String> getOriginalCursor(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getOriginalCursor);
   }
 
-  public Optional<String> getCursorField(AirbyteStreamNameNamespacePair pair) {
+  public Optional<String> getCursorField(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getCursorField);
   }
 
-  public Optional<String> getCursor(AirbyteStreamNameNamespacePair pair) {
+  public Optional<String> getCursor(final AirbyteStreamNameNamespacePair pair) {
     return getCursorInfo(pair).map(CursorInfo::getCursor);
   }
 
-  synchronized public AirbyteStateMessage updateAndEmit(AirbyteStreamNameNamespacePair pair, String cursor) {
+  synchronized public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
       final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
@@ -181,7 +162,7 @@ public class StateManager {
     return toState();
   }
 
-  public void setIsCdc(boolean isCdc) {
+  public void setIsCdc(final boolean isCdc) {
     if (this.isCdc == null) {
       this.isCdc = isCdc;
     } else {

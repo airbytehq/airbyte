@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -31,8 +11,10 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
@@ -45,13 +27,15 @@ public class JobHistoryHandler {
 
   public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
+  private final JobConverter jobConverter;
 
-  public JobHistoryHandler(JobPersistence jobPersistence) {
+  public JobHistoryHandler(final JobPersistence jobPersistence, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+    jobConverter = new JobConverter(workerEnvironment, logConfigs);
     this.jobPersistence = jobPersistence;
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
+  public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
     Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
 
@@ -67,15 +51,14 @@ public class JobHistoryHandler {
             : DEFAULT_PAGE_SIZE,
         (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
         .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
+        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
         .collect(Collectors.toList());
     return new JobReadList().jobs(jobReads);
   }
 
-  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
+  public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
-
-    return JobConverter.getJobInfoRead(job);
+    return jobConverter.getJobInfoRead(job);
   }
 
 }

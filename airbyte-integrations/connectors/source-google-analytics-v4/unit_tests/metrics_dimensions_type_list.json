@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "id": "ga:users",
+      "kind": "analytics#column",
+      "attributes": {
+        "type": "METRIC",
+        "dataType": "INTEGER",
+        "group": "User",
+        "status": "PUBLIC",
+        "uiName": "Users",
+        "description": "The total number of users for the requested time period.",
+        "addedInApiVersion": "3"
+      }
+    },
+    {
+      "id": "ga:newUsers",
+      "kind": "analytics#column",
+      "attributes": {
+        "type": "METRIC",
+        "dataType": "INTEGER",
+        "group": "User",
+        "status": "DEPRECATED",
+        "uiName": "New Users",
+        "description": "The number of sessions marked as a user's first sessions.",
+        "allowedInSegments": "true",
+        "addedInApiVersion": "3"
+      }
+    },
+    {
+      "id": "ga:date",
+      "kind": "analytics#column",
+      "attributes": {
+        "type": "DIMENSION",
+        "dataType": "STRING",
+        "group": "Time",
+        "status": "PUBLIC",
+        "uiName": "Date",
+        "description": "The date of the session formatted as YYYYMMDD.",
+        "addedInApiVersion": "3"
+      }
+    },
+    {
+      "id": "ga:country",
+      "kind": "analytics#column",
+      "attributes": {
+        "type": "DIMENSION",
+        "dataType": "STRING",
+        "group": "Geo Network",
+        "status": "PUBLIC",
+        "uiName": "Country",
+        "description": "Users' country, derived from their IP addresses or Geographical IDs.",
+        "allowedInSegments": "true",
+        "addedInApiVersion": "3"
+      }
+    }
+  ]
+}

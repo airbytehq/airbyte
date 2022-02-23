@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app.worker_run;
@@ -47,12 +27,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class TemporalWorkerRunFactoryTest {
 
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final long JOB_ID = 10L;
   private static final int ATTEMPT_ID = 20;
 
@@ -63,13 +45,14 @@ class TemporalWorkerRunFactoryTest {
 
   @BeforeEach
   void setup() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
+    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
     jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
     temporalClient = mock(TemporalClient.class);
-    workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
+    workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, "unknown airbyte version");
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
+    when(job.getScope()).thenReturn(CONNECTION_ID.toString());
   }
 
   @SuppressWarnings("unchecked")
@@ -77,11 +60,11 @@ class TemporalWorkerRunFactoryTest {
   void testSync() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.SYNC);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
-    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync())).thenReturn(mockResponse);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID)).thenReturn(mockResponse);
 
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
-    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
+    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID);
     assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
@@ -103,13 +86,13 @@ class TemporalWorkerRunFactoryTest {
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
-    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig)).thenReturn(mockResponse);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID)).thenReturn(mockResponse);
 
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
 
     final ArgumentCaptor<JobSyncConfig> argument = ArgumentCaptor.forClass(JobSyncConfig.class);
-    verify(temporalClient).submitSync(eq(JOB_ID), eq(ATTEMPT_ID), argument.capture());
+    verify(temporalClient).submitSync(eq(JOB_ID), eq(ATTEMPT_ID), argument.capture(), eq(CONNECTION_ID));
     assertEquals(syncConfig, argument.getValue());
     assertEquals(jobRoot, workerRun.getJobRoot());
   }

@@ -4,14 +4,77 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pipedrive Spec",
     "type": "object",
-    "required": ["api_token", "replication_start_date"],
-    "additionalProperties": false,
+    "required": ["replication_start_date"],
+    "additionalProperties": true,
     "properties": {
-      "api_token": {
-        "title": "API Token",
-        "description": "Pipedrive API Token",
-        "airbyte_secret": true,
-        "type": "string"
+      "authorization": {
+        "type": "object",
+        "title": "Authentication Type",
+        "oneOf": [
+          {
+            "title": "Sign in via Pipedrive (OAuth)",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your developer application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your developer application",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "An access token generated using the above client ID and secret",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "API Key Authentication",
+            "required": ["auth_type", "api_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
+              "api_token": {
+                "title": "API Token",
+                "type": "string",
+                "description": "Pipedrive API Token",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
       "replication_start_date": {
         "title": "Replication Start Date",

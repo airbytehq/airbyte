@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "cc88c43f-6f53-4e8a-8c4d-b284baaf9635",
+  "name": "Delighted",
+  "dockerRepository": "airbyte/source-delighted",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/delighted"
+}

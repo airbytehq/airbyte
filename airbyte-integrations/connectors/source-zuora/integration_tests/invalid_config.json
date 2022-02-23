@@ -1,0 +1,8 @@
+{
+  "start_date": "2020-01-01",
+  "window_in_days": "30",
+  "tenant_endpoint": "US Cloud API Sandbox",
+  "data_query": "Live",
+  "client_id": "some_client_id",
+  "client_secret": "some_client_secret"
+}

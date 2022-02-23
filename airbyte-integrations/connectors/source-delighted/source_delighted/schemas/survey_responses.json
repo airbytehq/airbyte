@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "person": {
+      "type": "string"
+    },
+    "survey_type": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer"
+    },
+    "comment": {
+      "type": ["null", "string"]
+    },
+    "permalink": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    },
+    "person_properties": {
+      "type": "object"
+    },
+    "notes": {
+      "type": "array",
+      "items": {}
+    },
+    "tags": {
+      "type": "array",
+      "items": {}
+    },
+    "additional_answers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "free_response": {
+                "type": ["null", "string"]
+              },
+              "scale": {
+                "type": ["null", "integer"]
+              },
+              "select_one": {
+                "type": ["object", "null"],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              },
+              "select_many": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["id", "text"]
+                }
+              }
+            },
+            "required": ["free_response", "scale", "select_one", "select_many"]
+          },
+          "question": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "type", "text"]
+          }
+        },
+        "required": ["id", "value", "question"]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "person",
+    "survey_type",
+    "score",
+    "comment",
+    "permalink",
+    "created_at",
+    "updated_at",
+    "person_properties",
+    "notes",
+    "tags",
+    "additional_answers"
+  ]
+}

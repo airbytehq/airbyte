@@ -3,144 +3,7 @@
     {
       "stream": {
         "name": "campaigns",
-        "json_schema": {
-          "title": "Campaign",
-          "type": "object",
-          "properties": {
-            "object": {
-              "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "created": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "updated": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "status": {
-              "type": "string"
-            },
-            "status_id": {
-              "type": "integer"
-            },
-            "status_label": {
-              "type": "string"
-            },
-            "from_name": {
-              "type": "string"
-            },
-            "from_email": {
-              "type": "string"
-            },
-            "num_recipients": {
-              "type": "integer"
-            },
-            "lists": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/PersonList"
-              }
-            },
-            "excluded_lists": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/PersonList"
-              }
-            },
-            "is_segmented": {
-              "type": "boolean"
-            },
-            "send_time": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "sent_at": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "campaign_type": {
-              "type": "string"
-            },
-            "subject": {
-              "type": "string"
-            },
-            "message_type": {
-              "type": "string"
-            },
-            "template_id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "object",
-            "id",
-            "name",
-            "status",
-            "status_id",
-            "status_label",
-            "from_name",
-            "from_email",
-            "num_recipients",
-            "lists",
-            "excluded_lists",
-            "is_segmented",
-            "campaign_type",
-            "message_type"
-          ],
-          "definitions": {
-            "PersonList": {
-              "title": "PersonList",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "title": "Id",
-                  "type": "string"
-                },
-                "name": {
-                  "title": "Name",
-                  "type": "string"
-                },
-                "created": {
-                  "title": "Created",
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "updated": {
-                  "title": "Updated",
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "person_count": {
-                  "title": "Person Count",
-                  "type": "integer"
-                },
-                "list_type": {
-                  "title": "List Type",
-                  "type": "string"
-                },
-                "folder": {
-                  "title": "Folder",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "name",
-                "created",
-                "updated",
-                "person_count",
-                "list_type"
-              ]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
@@ -155,50 +18,7 @@
     {
       "stream": {
         "name": "events",
-        "json_schema": {
-          "title": "Event",
-          "type": "object",
-          "properties": {
-            "object": {
-              "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "uuid": {
-              "type": "string"
-            },
-            "event_name": {
-              "type": "string"
-            },
-            "timestamp": {
-              "type": "integer"
-            },
-            "datetime": {
-              "type": "string"
-            },
-            "statistic_id": {
-              "type": "string"
-            },
-            "event_properties": {
-              "type": "object"
-            },
-            "person": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "object",
-            "id",
-            "uuid",
-            "event_name",
-            "timestamp",
-            "datetime",
-            "statistic_id",
-            "event_properties",
-            "person"
-          ]
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["timestamp"],
@@ -213,26 +33,7 @@
     {
       "stream": {
         "name": "global_exclusions",
-        "json_schema": {
-          "title": "GlobalExclusion",
-          "type": "object",
-          "properties": {
-            "object": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "reason": {
-              "type": "string"
-            },
-            "timestamp": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "required": ["object", "email", "reason", "timestamp"]
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
@@ -247,50 +48,7 @@
     {
       "stream": {
         "name": "lists",
-        "json_schema": {
-          "title": "PersonList",
-          "type": "object",
-          "properties": {
-            "id": {
-              "title": "Id",
-              "type": "string"
-            },
-            "name": {
-              "title": "Name",
-              "type": "string"
-            },
-            "created": {
-              "title": "Created",
-              "type": "string",
-              "format": "date-time"
-            },
-            "updated": {
-              "title": "Updated",
-              "type": "string",
-              "format": "date-time"
-            },
-            "person_count": {
-              "title": "Person Count",
-              "type": "integer"
-            },
-            "list_type": {
-              "title": "List Type",
-              "type": "string"
-            },
-            "folder": {
-              "title": "Folder",
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "created",
-            "updated",
-            "person_count",
-            "list_type"
-          ]
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,

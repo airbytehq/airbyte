@@ -1,4 +1,0 @@
-{
-  "access_token": "<your access token>",
-  "repository": "airbytehq/airbyte singer-io/tap-github singer-io/getting-started"
-}

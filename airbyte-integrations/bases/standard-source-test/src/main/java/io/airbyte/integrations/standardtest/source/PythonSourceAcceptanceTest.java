@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
@@ -90,13 +70,13 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     runExecutableVoid(Command.TEARDOWN);
   }
 
@@ -110,19 +90,19 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     TEARDOWN
   }
 
-  private <T> T runExecutable(Command cmd, Class<T> klass) throws IOException {
+  private <T> T runExecutable(final Command cmd, final Class<T> klass) throws IOException {
     return Jsons.object(runExecutable(cmd), klass);
   }
 
-  private JsonNode runExecutable(Command cmd) throws IOException {
+  private JsonNode runExecutable(final Command cmd) throws IOException {
     return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
-  private void runExecutableVoid(Command cmd) throws IOException {
+  private void runExecutableVoid(final Command cmd) throws IOException {
     runExecutableInternal(cmd);
   }
 
-  private Path runExecutableInternal(Command cmd) throws IOException {
+  private Path runExecutableInternal(final Command cmd) throws IOException {
     LOGGER.info("testRoot = " + testRoot);
     final List<String> dockerCmd =
         Lists.newArrayList(
@@ -147,7 +127,7 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
-    int exitCode = process.exitValue();
+    final int exitCode = process.exitValue();
     if (exitCode != 0) {
       throw new RuntimeException("python execution failed");
     }

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -68,19 +48,19 @@ def logger() -> AirbyteLogger:
 
 
 def test_successful_check():
-    """ Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned """
+    """Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned"""
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert expected == MockSource(check_lambda=lambda: (True, None)).check(logger, {})
 
 
 def test_failed_check():
-    """ Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned """
+    """Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
     assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
 
 
 def test_raising_check():
-    """ Tests that if a source raises an unexpected exception the connection check the appropriate connectionStatus failure message is returned """
+    """Tests that if a source raises an unexpected exception the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="Exception('this should fail')")
     assert expected == MockSource(check_lambda=lambda: exec('raise Exception("this should fail")')).check(logger, {})
 
@@ -110,7 +90,7 @@ class MockStream(Stream):
 
 
 def test_discover(mocker):
-    """ Tests that the appropriate AirbyteCatalog is returned from the discover method """
+    """Tests that the appropriate AirbyteCatalog is returned from the discover method"""
     airbyte_stream1 = AirbyteStream(
         name="1",
         json_schema={},
@@ -133,7 +113,7 @@ def test_discover(mocker):
 
 
 def test_read_nonexistent_stream_raises_exception(mocker, logger):
-    """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception """
+    """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
     s1 = MockStream(name="s1")
     s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
 

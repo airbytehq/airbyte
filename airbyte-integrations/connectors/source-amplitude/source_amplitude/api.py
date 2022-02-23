@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -157,7 +137,17 @@ class Events(IncrementalAmplitudeStream):
         # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
         if pendulum.parse(params["start"]).add(hours=6) > pendulum.parse(params["end"]):
             return []
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
+        # for example, if there is no data from the specified time period, a 404 exception is thrown
+        # https://developers.amplitude.com/docs/export-api#status-codes
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except requests.exceptions.HTTPError as error:
+            if error.response.status_code == 404:
+                self.logger.warn(f"Error during syncing {self.name} stream - {error}")
+                return []
+            else:
+                raise
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs

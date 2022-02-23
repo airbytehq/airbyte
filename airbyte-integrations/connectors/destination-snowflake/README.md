@@ -20,3 +20,4 @@
 
 ## For Airbyte employees
 Put the contents of the `Snowflake Integration Test Config` secret on Rippling under the `Engineering` folder into `secrets/config.json` to be able to run integration tests locally.
+The query timeout for insert data to table has been updated from 30 minutes to 3 hours.

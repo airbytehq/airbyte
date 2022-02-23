@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "primary_contact_id": { "type": ["null", "integer"] },
+    "line1": { "type": ["null", "string"] },
+    "city": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "zipcode": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] }
+  }
+}

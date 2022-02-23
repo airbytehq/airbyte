@@ -1,5 +1,5 @@
-describe("Onboarding actions", () => {
-  it("Skip onboardding", () => {
+describe("Preferences actions", () => {
+  it("Should redirect to onboarding after email is entered", () => {
     cy.visit("/");
     cy.url().should("include", `${Cypress.config().baseUrl}/preferences`);
 
@@ -8,9 +8,6 @@ describe("Onboarding actions", () => {
 
     cy.submit();
 
-    cy.url().should("include", `${Cypress.config().baseUrl}/onboarding`);
-    cy.get("button[data-id='skip-onboarding']").click();
-
-    cy.url().should("equal", `${Cypress.config().baseUrl}/`);
+    cy.url().should("equal", `${Cypress.config().baseUrl}/onboarding`);
   });
 });

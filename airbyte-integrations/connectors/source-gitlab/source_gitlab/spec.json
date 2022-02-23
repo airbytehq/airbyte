@@ -10,8 +10,7 @@
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
-        "description": "Please enter your basic URL from Gitlab instance",
-        "pattern": ["^gitlab[a-zA-Z0-9._-]*\\.com$"]
+        "description": "Please enter your basic URL from Gitlab instance"
       },
       "private_token": {
         "type": "string",
@@ -34,14 +33,6 @@
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
-    },
-    "anyOf": [
-      {
-        "required": ["groups"]
-      },
-      {
-        "required": ["projects"]
-      }
-    ]
+    }
   }
 }

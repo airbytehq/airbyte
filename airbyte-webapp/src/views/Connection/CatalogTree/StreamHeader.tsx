@@ -10,6 +10,7 @@ import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
   DestinationSyncMode,
   SyncMode,
+  SyncSchemaField,
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { Popout } from "components/base/Popout";
@@ -44,7 +45,7 @@ interface StreamHeaderProps {
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
 
-  primitiveFields: string[];
+  primitiveFields: SyncSchemaField[];
 
   pkType: null | "required" | "sourceDefined";
   onPrimaryKeyChange: (pkPath: string[][]) => void;
@@ -89,8 +90,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   );
 
   const dropdownFields = primitiveFields.map((field) => ({
-    value: field.split("."),
-    label: field,
+    value: field.path,
+    label: field.path.join("."),
   }));
 
   return (

@@ -1,7 +1,7 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-    id "org.openapi.generator" version "5.0.0-beta"
+    id "org.openapi.generator" version "5.2.0"
     id "java-library"
 }
 

@@ -1,30 +1,9 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
 
-import io.airbyte.workers.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;
@@ -55,10 +34,9 @@ public interface CancellationHandler {
      *
      * @param onCancellationCallback a runnable that will only run when Temporal indicates the activity
      *        should be killed (cancellation or timeout).
-     * @throws WorkerException
      */
     @Override
-    public void checkAndHandleCancellation(Runnable onCancellationCallback) {
+    public void checkAndHandleCancellation(final Runnable onCancellationCallback) {
       try {
         // Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
         // context and
@@ -66,7 +44,7 @@ public interface CancellationHandler {
         // function
         // is available as a field in thrown ActivityCompletionExceptions, which we aren't using for now.
         context.heartbeat(null);
-      } catch (ActivityCompletionException e) {
+      } catch (final ActivityCompletionException e) {
         onCancellationCallback.run();
         LOGGER.warn("Job either timeout-ed or was cancelled.");
       }

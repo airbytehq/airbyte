@@ -3,20 +3,20 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { Routes } from "../../../routes";
+import { Routes } from "pages/routes";
 import PageTitle from "components/PageTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import SourcesTable from "./components/SourcesTable";
-import config from "config";
 import SourceResource from "core/resources/Source";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);

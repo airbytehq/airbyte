@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.automaticMigrationAcceptance;
@@ -58,7 +38,7 @@ public class ImportApi {
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
 
-  public ImportApi(ApiClient apiClient) {
+  public ImportApi(final ApiClient apiClient) {
     memberVarHttpClient = apiClient.getHttpClient();
     memberVarObjectMapper = apiClient.getObjectMapper();
     memberVarBaseUri = apiClient.getBaseUri();
@@ -67,15 +47,15 @@ public class ImportApi {
     memberVarResponseInterceptor = apiClient.getResponseInterceptor();
   }
 
-  public ImportRead importArchive(File body) throws ApiException {
-    ApiResponse<ImportRead> localVarResponse = importArchiveWithHttpInfo(body);
+  public ImportRead importArchive(final File body) throws ApiException {
+    final ApiResponse<ImportRead> localVarResponse = importArchiveWithHttpInfo(body);
     return localVarResponse.getData();
   }
 
-  public ApiResponse<ImportRead> importArchiveWithHttpInfo(File body) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = importArchiveRequestBuilder(body);
+  public ApiResponse<ImportRead> importArchiveWithHttpInfo(final File body) throws ApiException {
+    final HttpRequest.Builder localVarRequestBuilder = importArchiveRequestBuilder(body);
     try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+      final HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
           HttpResponse.BodyHandlers.ofInputStream());
       if (memberVarResponseInterceptor != null) {
@@ -92,24 +72,24 @@ public class ImportApi {
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
           memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<ImportRead>() {}));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ApiException(e);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new ApiException(e);
     }
   }
 
-  private HttpRequest.Builder importArchiveRequestBuilder(File body) throws ApiException {
+  private HttpRequest.Builder importArchiveRequestBuilder(final File body) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
       throw new ApiException(400,
           "Missing the required parameter 'body' when calling importArchive");
     }
 
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+    final HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/v1/deployment/import";
+    final String localVarPath = "/v1/deployment/import";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -118,7 +98,7 @@ public class ImportApi {
 
     try {
       localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofFile(body.toPath()));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {

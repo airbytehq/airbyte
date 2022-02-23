@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "8ccd8909-4e99-4141-b48d-4984b70b2d89",
+  "name": "DynamoDB",
+  "dockerRepository": "airbyte/destination-dynamodb",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/dynamodb"
+}

@@ -17,6 +17,15 @@
         "type": "string",
         "description": "The API Token for a Typeform account.",
         "airbyte_secret": true
+      },
+      "form_ids": {
+        "title": "Form IDs to replicate",
+        "description": "When this parameter is set, the connector will replicate data only from the input forms. Otherwise, all forms in your Typeform account will be replicated. You can find form IDs in your form URLs. For example, in the URL \"https://mysite.typeform.com/to/u6nXL7\" the form_id is u6nXL7. You can find form URLs on Share panel",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
       }
     }
   }

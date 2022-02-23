@@ -8,9 +8,12 @@ class OperationService extends AirbyteRequestService {
   }
 
   public async check(
-    body: Operation
+    operation: Operation
   ): Promise<{ status: "succeeded" | "failed"; message: string }> {
-    const rs = ((await this.fetch(`${this.url}/check`, body)) as any) as {
+    const rs = ((await this.fetch(
+      `${this.url}/check`,
+      operation.operatorConfiguration
+    )) as any) as {
       status: "succeeded" | "failed";
       message: string;
     };
@@ -24,4 +27,4 @@ class OperationService extends AirbyteRequestService {
   }
 }
 
-export const operationService = new OperationService();
+export { OperationService };

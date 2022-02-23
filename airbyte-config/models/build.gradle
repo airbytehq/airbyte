@@ -1,19 +1,17 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'airbyte-integration-test-java'
     id "com.github.eirnym.js2p" version "1.0"
 }
 
 dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
-
-    integrationTestJavaImplementation project(':airbyte-config:models')
+    implementation project(':airbyte-commons')
 }
 
 jsonSchema2Pojo {
-	sourceType = SourceType.YAMLSCHEMA
+    sourceType = SourceType.YAMLSCHEMA
     source = files("${sourceSets.main.output.resourcesDir}/types")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
 
@@ -26,4 +24,31 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
     serializable = true
+}
+
+test {
+    useJUnitPlatform {
+        excludeTags 'log4j2-config', 'logger-client'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+task log4j2IntegrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'log4j2-config'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+task logClientsIntegrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'logger-client'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

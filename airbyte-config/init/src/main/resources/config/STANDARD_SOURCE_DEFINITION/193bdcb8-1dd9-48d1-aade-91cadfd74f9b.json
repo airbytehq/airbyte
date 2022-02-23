@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "193bdcb8-1dd9-48d1-aade-91cadfd74f9b",
+  "name": "Paystack",
+  "dockerRepository": "airbyte/source-paystack",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paystack"
+}

@@ -1,0 +1,46 @@
+{
+  "campaigns": {
+    "updated_time": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ad_creatives": {
+    "updated_time": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ad_sets": {
+    "updated_time": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads": {
+    "updated_time": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_age_and_gender": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_country": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_dma": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_platfrom_and_device": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_region": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "ads_insights_action_types": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  }
+}

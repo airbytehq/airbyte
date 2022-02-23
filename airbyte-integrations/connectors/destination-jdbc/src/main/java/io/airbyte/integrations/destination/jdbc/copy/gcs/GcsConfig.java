@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -32,7 +12,7 @@ public class GcsConfig {
   private final String bucketName;
   private final String credentialsJson;
 
-  public GcsConfig(String projectId, String bucketName, String credentialsJson) {
+  public GcsConfig(final String projectId, final String bucketName, final String credentialsJson) {
     this.projectId = projectId;
     this.bucketName = bucketName;
     this.credentialsJson = credentialsJson;
@@ -50,7 +30,7 @@ public class GcsConfig {
     return credentialsJson;
   }
 
-  public static GcsConfig getGcsConfig(JsonNode config) {
+  public static GcsConfig getGcsConfig(final JsonNode config) {
     return new GcsConfig(
         config.get("loading_method").get("project_id").asText(),
         config.get("loading_method").get("bucket_name").asText(),

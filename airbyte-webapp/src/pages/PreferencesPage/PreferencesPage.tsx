@@ -4,17 +4,20 @@ import styled from "styled-components";
 
 import { PageViewContainer } from "components/CenteredPageComponents";
 import { H1 } from "components";
-import HeadTitle from "components/HeadTitle";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import HeadTitle from "components/HeadTitle";
+import { useAnalytics } from "hooks/useAnalytics";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Title = styled(H1)`
   margin-bottom: 47px;
 `;
 
 const PreferencesPage: React.FC = () => {
-  useEffect(() => AnalyticsService.page("Preferences Page"), []);
+  const analyticsService = useAnalytics();
+  useEffect(() => analyticsService.page("Preferences Page"), [
+    analyticsService,
+  ]);
 
   const { setInitialSetupConfig } = useWorkspace();
 
@@ -26,7 +29,7 @@ const PreferencesPage: React.FC = () => {
   }) => {
     await setInitialSetupConfig(data);
 
-    AnalyticsService.track("Specified Preferences", {
+    analyticsService.track("Specified Preferences", {
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,

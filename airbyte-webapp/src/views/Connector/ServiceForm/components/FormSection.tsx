@@ -12,6 +12,9 @@ import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
+import { IDataItem } from "components/base/DropDown/components/Option";
+import { AuthButton } from "./AuthButton";
+import { FeatureItem, WithFeature } from "hooks/services/Feature";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
   const aIsNumber = Number.isInteger(a.order);
@@ -60,8 +63,7 @@ const ConditionSection: React.FC<{
     [formField.conditions]
   );
   const onOptionChange = useCallback(
-    (selectedItem: any) =>
-      selectedItem &&
+    (selectedItem: IDataItem) =>
       setUiWidgetsInfo(formField.path, {
         selectedItem: selectedItem.value,
       }),
@@ -160,62 +162,75 @@ const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
-}> = ({ blocks, path, skipAppend }) => {
+  hasOauth?: boolean;
+}> = ({ blocks = [], path, skipAppend, hasOauth }) => {
   const sections = useMemo(() => {
-    const bl = [blocks].flat();
+    const flattenedBlocks = [blocks].flat();
 
-    if (bl.some((b) => Number.isInteger(b.order))) {
-      return bl.sort(OrderComparator);
+    if (flattenedBlocks.some((b) => Number.isInteger(b.order))) {
+      return flattenedBlocks.sort(OrderComparator);
     }
 
-    return bl;
+    return flattenedBlocks;
   }, [blocks]);
 
   return (
     <>
-      {sections.map((formField) => {
-        const sectionPath = path
-          ? skipAppend
-            ? path
-            : `${path}.${formField.fieldKey}`
-          : formField.fieldKey;
+      {hasOauth && (
+        <WithFeature featureId={FeatureItem.AllowOAuthConnector}>
+          {
+            <SectionContainer>
+              <AuthButton />
+            </SectionContainer>
+          }
+        </WithFeature>
+      )}
+      {sections
+        .filter((formField) => !formField.airbyte_hidden)
+        .map((formField) => {
+          const sectionPath = path
+            ? skipAppend
+              ? path
+              : `${path}.${formField.fieldKey}`
+            : formField.fieldKey;
 
-        if (formField._type === "formGroup") {
+          if (formField._type === "formGroup") {
+            return (
+              <FormSection
+                key={sectionPath}
+                blocks={formField.properties}
+                path={sectionPath}
+                hasOauth={formField.hasOauth}
+              />
+            );
+          } else if (formField._type === "formCondition") {
+            return (
+              <ConditionSection
+                key={sectionPath}
+                formField={formField}
+                path={sectionPath}
+              />
+            );
+          } else if (formField._type === "objectArray") {
+            return (
+              <ArraySection
+                key={sectionPath}
+                formField={formField}
+                path={sectionPath}
+              />
+            );
+          }
+
+          if (formField.const !== undefined) {
+            return null;
+          }
+
           return (
-            <FormSection
-              key={sectionPath}
-              blocks={formField.properties}
-              path={sectionPath}
-            />
+            <SectionContainer key={`form-field-${formField.fieldKey}`}>
+              <PropertySection property={formField} path={sectionPath} />
+            </SectionContainer>
           );
-        }
-
-        if (formField._type === "formCondition") {
-          return (
-            <ConditionSection
-              key={sectionPath}
-              formField={formField}
-              path={sectionPath}
-            />
-          );
-        }
-
-        if (formField._type === "objectArray") {
-          return (
-            <ArraySection
-              key={sectionPath}
-              formField={formField}
-              path={sectionPath}
-            />
-          );
-        }
-
-        return (
-          <SectionContainer key={`form-field-${formField.fieldKey}`}>
-            <PropertySection property={formField} path={sectionPath} />
-          </SectionContainer>
-        );
-      })}
+        })}
     </>
   );
 };

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -51,7 +31,7 @@ public class TemporalUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
 
-  public static WorkflowServiceStubs createTemporalService(String temporalHost) {
+  public static WorkflowServiceStubs createTemporalService(final String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
         // todo move to env.
         .setTarget(temporalHost)
@@ -62,7 +42,7 @@ public class TemporalUtils {
     return temporalService;
   }
 
-  public static WorkflowClient createTemporalClient(String temporalHost) {
+  public static WorkflowClient createTemporalClient(final String temporalHost) {
     final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
     return WorkflowClient.newInstance(temporalService);
   }
@@ -78,7 +58,7 @@ public class TemporalUtils {
 
   }
 
-  public static WorkflowOptions getWorkflowOptions(TemporalJobType jobType) {
+  public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
         .setRetryOptions(NO_RETRY)
         .setTaskQueue(jobType.name())
@@ -87,15 +67,15 @@ public class TemporalUtils {
         .build();
   }
 
-  public static JobRunConfig createJobRunConfig(UUID jobId, int attemptId) {
+  public static JobRunConfig createJobRunConfig(final UUID jobId, final int attemptId) {
     return createJobRunConfig(String.valueOf(jobId), attemptId);
   }
 
-  public static JobRunConfig createJobRunConfig(long jobId, int attemptId) {
+  public static JobRunConfig createJobRunConfig(final long jobId, final int attemptId) {
     return createJobRunConfig(String.valueOf(jobId), attemptId);
   }
 
-  public static JobRunConfig createJobRunConfig(String jobId, int attemptId) {
+  public static JobRunConfig createJobRunConfig(final String jobId, final int attemptId) {
     return new JobRunConfig()
         .withJobId(jobId)
         .withAttemptId((long) attemptId);
@@ -118,17 +98,17 @@ public class TemporalUtils {
    * @return pair of the workflow execution (contains metadata on the asynchronously running job) and
    *         future that can be used to await the result of the workflow stub's function
    */
-  public static <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(STUB workflowStub,
-                                                                                                  Functions.Func1<A1, R> function,
-                                                                                                  A1 arg1,
-                                                                                                  Class<R> outputType) {
+  public static <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(final STUB workflowStub,
+                                                                                                  final Functions.Func1<A1, R> function,
+                                                                                                  final A1 arg1,
+                                                                                                  final Class<R> outputType) {
     final WorkflowStub untyped = WorkflowStub.fromTyped(workflowStub);
     final WorkflowExecution workflowExecution = WorkflowClient.start(function, arg1);
     final CompletableFuture<R> resultAsync = untyped.getResultAsync(outputType);
     return ImmutablePair.of(workflowExecution, resultAsync);
   }
 
-  public static void waitForTemporalServerAndLog(WorkflowServiceStubs temporalService) {
+  public static void waitForTemporalServerAndLog(final WorkflowServiceStubs temporalService) {
     LOGGER.info("Waiting for temporal server...");
 
     boolean temporalStatus = false;
@@ -139,7 +119,7 @@ public class TemporalUtils {
 
       try {
         temporalStatus = getNamespaces(temporalService).contains("default");
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // Ignore the exception because this likely means that the Temporal service is still initializing.
         LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
       }
@@ -151,7 +131,7 @@ public class TemporalUtils {
     LOGGER.info("Found temporal default namespace!");
   }
 
-  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+  protected static Set<String> getNamespaces(final WorkflowServiceStubs temporalService) {
     return temporalService.blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()

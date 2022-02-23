@@ -1,0 +1,124 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "profiles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_brands_report_stream",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_display_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_display_ad_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_display_product_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_display_targetings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_ad_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_negative_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    },
+    {
+      "stream": {
+        "name": "sponsored_product_targetings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_cursor": false
+    }
+  ]
+}

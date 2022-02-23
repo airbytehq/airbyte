@@ -32,6 +32,12 @@
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true
+      },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": true
       }
     }
   }

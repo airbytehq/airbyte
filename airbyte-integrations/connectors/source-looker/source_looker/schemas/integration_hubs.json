@@ -12,7 +12,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "label": {
       "type": ["null", "string"]

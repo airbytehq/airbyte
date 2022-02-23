@@ -3,60 +3,7 @@
     {
       "stream": {
         "name": "cohorts",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "appId": {
-              "type": ["null", "integer"]
-            },
-            "archived": {
-              "type": ["null", "boolean"]
-            },
-            "definition": {
-              "type": ["null", "object"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "finished": {
-              "type": ["null", "boolean"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "owners": {
-              "type": ["null", "object"]
-            },
-            "published": {
-              "type": ["null", "boolean"]
-            },
-            "size": {
-              "type": ["null", "integer"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "lastMod": {
-              "type": ["null", "integer"]
-            },
-            "lastComputed": {
-              "type": ["null", "integer"]
-            },
-            "hidden": {
-              "type": ["null", "boolean"]
-            },
-            "is_predictive": {
-              "type": ["null", "boolean"]
-            },
-            "is_official_content": {
-              "type": ["null", "boolean"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -66,25 +13,7 @@
     {
       "stream": {
         "name": "annotations",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "details": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "label": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -94,19 +23,7 @@
     {
       "stream": {
         "name": "active_users",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "statistics": {
-              "type": ["null", "object"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"],
@@ -119,19 +36,7 @@
     {
       "stream": {
         "name": "average_session_length",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "length": {
-              "type": ["null", "number"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"],

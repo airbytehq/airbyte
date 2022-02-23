@@ -1,0 +1,69 @@
+import { ActionType, createAction, createReducer } from "typesafe-actions";
+import { User } from "packages/cloud/lib/domain/users";
+
+export const actions = {
+  authInited: createAction("AUTH_INITED")<void>(),
+  loggedIn: createAction("LOGGED_IN")<{ user: User; emailVerified: boolean }>(),
+  emailVerified: createAction("EMAIL_VERIFIED")<boolean>(),
+  loggedOut: createAction("LOGGED_OUT")<void>(),
+};
+
+type Actions = ActionType<typeof actions>;
+
+export type AuthServiceState = {
+  inited: boolean;
+  currentUser: User | null;
+  emailVerified: boolean;
+  loading: boolean;
+};
+
+export const initialState: AuthServiceState = {
+  inited: false,
+  currentUser: null,
+  emailVerified: false,
+  loading: false,
+};
+
+export const authStateReducer = createReducer<AuthServiceState, Actions>(
+  initialState
+)
+  .handleAction(
+    actions.authInited,
+    (state): AuthServiceState => {
+      return {
+        ...state,
+        inited: true,
+      };
+    }
+  )
+  .handleAction(
+    actions.loggedIn,
+    (state, action): AuthServiceState => {
+      return {
+        ...state,
+        currentUser: action.payload.user,
+        emailVerified: action.payload.emailVerified,
+        inited: true,
+        loading: false,
+      };
+    }
+  )
+  .handleAction(
+    actions.emailVerified,
+    (state, action): AuthServiceState => {
+      return {
+        ...state,
+        emailVerified: action.payload,
+      };
+    }
+  )
+  .handleAction(
+    actions.loggedOut,
+    (state): AuthServiceState => {
+      return {
+        ...state,
+        currentUser: null,
+        emailVerified: false,
+      };
+    }
+  );

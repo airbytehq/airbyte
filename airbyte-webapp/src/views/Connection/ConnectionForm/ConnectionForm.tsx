@@ -8,7 +8,8 @@ import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
-import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
+import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { TransformationField } from "./components/TransformationField";
 import { NormalizationField } from "./components/NormalizationField";
@@ -16,7 +17,7 @@ import { NamespaceField } from "./components/NamespaceField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
-  DEFAULT_TRANSFORMATION,
+  useDefaultTransformation,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
   useFrequencyDropdownData,
@@ -28,6 +29,7 @@ import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -92,16 +94,20 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
   const formatMessage = useIntl().formatMessage;
+  const { hasFeature } = useFeatureService();
 
   const { source, destination, operations } = connection;
   const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations = destDefinition.supportsDbt;
+  const supportsTransformations =
+    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
 
   const initialValues = useInitialValues(
     connection,
     destDefinition,
     isEditMode
   );
+
+  const { workspace } = useWorkspace();
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
@@ -112,7 +118,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         }
       ) as any;
 
-      const newOperations = mapFormPropsToOperation(values, operations);
+      const newOperations = mapFormPropsToOperation(
+        values,
+        operations,
+        workspace.workspaceId
+      );
 
       if (newOperations.length > 0) {
         formValues.operations = newOperations;
@@ -139,11 +149,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       isEditMode,
       onSubmit,
       operations,
+      workspace.workspaceId,
     ]
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
   const frequencies = useFrequencyDropdownData();
+  const defaultTransformation = useDefaultTransformation();
 
   return (
     <Formik
@@ -240,7 +252,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <FieldArray name="transformations">
               {(formProps) => (
                 <TransformationField
-                  defaultTransformation={DEFAULT_TRANSFORMATION}
+                  defaultTransformation={defaultTransformation}
                   {...formProps}
                 />
               )}

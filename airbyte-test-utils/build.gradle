@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
 
-    implementation 'org.testcontainers:postgresql:1.15.1'
+    implementation 'org.testcontainers:postgresql:1.15.3'
     implementation "org.testcontainers:cockroachdb:1.15.3"
 }

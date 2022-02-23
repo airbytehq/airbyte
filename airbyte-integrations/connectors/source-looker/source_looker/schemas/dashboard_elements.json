@@ -12,13 +12,13 @@
       "type": ["null", "string"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "edit_uri": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "look": {
       "properties": {
@@ -99,8 +99,7 @@
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "folder_id": {
           "type": ["null", "string"]
@@ -137,8 +136,7 @@
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "public": {
           "type": ["null", "boolean"]
@@ -177,16 +175,14 @@
             },
             "filter_config": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "filter_expression": {
               "type": ["null", "string"]
             },
             "filters": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "has_table_calculations": {
               "type": ["null", "boolean"]
@@ -242,15 +238,13 @@
             },
             "vis_config": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "visible_ui_sections": {
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "query_id": {
           "type": ["null", "string"]
@@ -303,8 +297,7 @@
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "space_id": {
           "type": ["null", "string"]
@@ -325,8 +318,7 @@
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "user_id": {
           "type": ["null", "string"]
@@ -335,8 +327,7 @@
           "type": ["null", "integer"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "look_id": {
       "type": ["null", "string"]
@@ -387,16 +378,14 @@
         },
         "filter_config": {
           "properties": {},
-          "type": ["null", "object"],
-          "additionalProperties": true
+          "type": ["null", "object"]
         },
         "filter_expression": {
           "type": ["null", "string"]
         },
         "filters": {
           "properties": {},
-          "type": ["null", "object"],
-          "additionalProperties": true
+          "type": ["null", "object"]
         },
         "has_table_calculations": {
           "type": ["null", "boolean"]
@@ -452,15 +441,13 @@
         },
         "vis_config": {
           "properties": {},
-          "type": ["null", "object"],
-          "additionalProperties": true
+          "type": ["null", "object"]
         },
         "visible_ui_sections": {
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "query_id": {
       "type": ["null", "string"]
@@ -489,8 +476,7 @@
                       "type": ["null", "string"]
                     }
                   },
-                  "type": ["null", "object"],
-                  "additionalProperties": false
+                  "type": ["null", "object"]
                 },
                 "type": ["null", "array"]
               },
@@ -504,16 +490,15 @@
                 "type": ["null", "string"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": false
+            "type": ["null", "object"]
           },
           "type": ["null", "array"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "merge_result_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "query": {
           "properties": {
@@ -543,22 +528,20 @@
             },
             "filter_config": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "filter_expression": {
               "type": ["null", "string"]
             },
             "filters": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "has_table_calculations": {
               "type": ["null", "boolean"]
             },
             "id": {
-              "type": ["null", "string"]
+              "type": ["null", "integer"]
             },
             "limit": {
               "type": ["null", "string"]
@@ -608,18 +591,16 @@
             },
             "vis_config": {
               "properties": {},
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "visible_ui_sections": {
               "type": ["null", "string"]
             }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
+          "type": ["null", "object"]
         },
         "query_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "sorts": {
           "items": {},
@@ -630,15 +611,13 @@
         },
         "vis_config": {
           "properties": {},
-          "type": ["null", "object"],
-          "additionalProperties": true
+          "type": ["null", "object"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "result_maker_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "subtitle_text": {
       "type": ["null", "string"]

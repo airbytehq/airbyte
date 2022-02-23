@@ -26,7 +26,6 @@
     },
     "create_time": {
       "type": "string",
-      "format": "date-time",
       "title": "Create Time",
       "description": "The date and time the campaign was created in ISO 8601 format.",
       "readOnly": true
@@ -54,7 +53,6 @@
     },
     "send_time": {
       "type": "string",
-      "format": "date-time",
       "title": "Send Time",
       "description": "The date and time a campaign was sent.",
       "readOnly": true
@@ -260,8 +258,7 @@
           "title": "Send Times",
           "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
           "items": {
-            "type": "string",
-            "format": "date-time"
+            "type": "string"
           }
         },
         "from_names": {
@@ -504,7 +501,6 @@
         },
         "last_sent": {
           "type": "string",
-          "format": "date-time",
           "title": "Last Sent",
           "description": "The date the campaign was last sent.",
           "readOnly": true
@@ -584,13 +580,11 @@
         },
         "send_time_a": {
           "type": "string",
-          "format": "date-time",
           "title": "Send Time Group A",
           "description": "The send time for Group A."
         },
         "send_time_b": {
           "type": "string",
-          "format": "date-time",
           "title": "Send Time Group B",
           "description": "The send time for Group B."
         },

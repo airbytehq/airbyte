@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -49,6 +29,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in header_values},
             },
+            supported_sync_modes=["full_refresh"],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -79,6 +60,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
+            supported_sync_modes=["full_refresh"],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -96,6 +78,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {"h1": {"type": "string"}},
             },
+            supported_sync_modes=["full_refresh"],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
@@ -133,12 +116,12 @@ class TestHelpers(unittest.TestCase):
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema),
+                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema),
+                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema, supported_sync_modes=["full_refresh"]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),

@@ -2,6 +2,6 @@
   "sourceDefinitionId": "2cfcd96e-72ab-11ec-90d6-0242ac120003",
   "name": "Xola",
   "dockerRepository": "blotout/source-xola",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.2",
   "documentationUrl": "https://github.com/blotoutio/source-xola/README.md"
 }

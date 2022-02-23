@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence.job_tracker;
@@ -27,6 +7,7 @@ package io.airbyte.scheduler.persistence.job_tracker;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -40,7 +21,7 @@ import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
 
-  public static ImmutableMap<String, Object> generateSyncMetadata(StandardSync standardSync) {
+  public static ImmutableMap<String, Object> generateSyncMetadata(final StandardSync standardSync) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", standardSync.getConnectionId());
 
@@ -55,19 +36,33 @@ public class TrackingMetadata {
 
     final int operationCount = standardSync.getOperationIds() != null ? standardSync.getOperationIds().size() : 0;
     metadata.put("operation_count", operationCount);
-    metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    if (standardSync.getNamespaceDefinition() != null) {
+      metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    }
+
     final boolean isUsingPrefix = standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
     metadata.put("table_prefix", isUsingPrefix);
-    if (standardSync.getResourceRequirements() != null) {
-      metadata.put("sync_cpu_request", standardSync.getResourceRequirements().getCpuRequest());
-      metadata.put("sync_cpu_limit", standardSync.getResourceRequirements().getCpuLimit());
-      metadata.put("sync_memory_request", standardSync.getResourceRequirements().getMemoryRequest());
-      metadata.put("sync_memory_limit", standardSync.getResourceRequirements().getMemoryLimit());
+
+    final ResourceRequirements resourceRequirements = standardSync.getResourceRequirements();
+
+    if (resourceRequirements != null) {
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+        metadata.put("sync_cpu_request", resourceRequirements.getCpuRequest());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+        metadata.put("sync_cpu_limit", resourceRequirements.getCpuLimit());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+        metadata.put("sync_memory_request", resourceRequirements.getMemoryRequest());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+        metadata.put("sync_memory_limit", resourceRequirements.getMemoryLimit());
+      }
     }
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(StandardDestinationDefinition destinationDefinition) {
+  public static ImmutableMap<String, Object> generateDestinationDefinitionMetadata(final StandardDestinationDefinition destinationDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
@@ -78,7 +73,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(StandardSourceDefinition sourceDefinition) {
+  public static ImmutableMap<String, Object> generateSourceDefinitionMetadata(final StandardSourceDefinition sourceDefinition) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
@@ -89,7 +84,7 @@ public class TrackingMetadata {
     return metadata.build();
   }
 
-  public static ImmutableMap<String, Object> generateJobAttemptMetadata(Job job) {
+  public static ImmutableMap<String, Object> generateJobAttemptMetadata(final Job job) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     if (job != null) {
       final List<Attempt> attempts = job.getAttempts();

@@ -1,11 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Toggle } from "components/base";
+import { CheckBox, Toggle } from "components/base";
 
 type IProps = {
   message?: React.ReactNode;
   label?: React.ReactNode;
+  checkbox?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ToggleContainer = styled.div`
@@ -35,7 +36,12 @@ const AdditionMessage = styled.span`
 
 const LabeledToggle: React.FC<IProps> = (props) => (
   <ToggleContainer>
-    <Toggle {...props} id={`toggle-${props.name}`} />
+    {props.checkbox ? (
+      <CheckBox {...props} id={`toggle-${props.name}`} />
+    ) : (
+      <Toggle {...props} id={`toggle-${props.name}`} />
+    )}
+
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
       {props.label}
       <AdditionMessage>{props.message}</AdditionMessage>

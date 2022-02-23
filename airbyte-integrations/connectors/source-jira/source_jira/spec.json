@@ -5,7 +5,7 @@
     "title": "Jira Spec",
     "type": "object",
     "required": ["api_token", "domain", "email"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_token": {
         "type": "string",
@@ -15,12 +15,43 @@
       "domain": {
         "type": "string",
         "examples": ["domainname.atlassian.net"],
-        "pattern": ["^[a-zA-Z0-9._-]*\\.atlassian\\.net$"],
+        "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
         "description": "Domain for your Jira account, e.g. airbyteio.atlassian.net"
       },
       "email": {
         "type": "string",
         "description": "The user email for your Jira account"
+      },
+      "projects": {
+        "type": "array",
+        "title": "Projects",
+        "items": {
+          "type": "string"
+        },
+        "examples": ["PROJ1", "PROJ2"],
+        "description": "Comma-separated list of Jira project keys to replicate data for"
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for Jira in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: issues.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "additional_fields": {
+        "type": "array",
+        "title": "Additional Fields",
+        "items": {
+          "type": "string"
+        },
+        "description": "Comma-separated list of additional fields to include in replicating issues",
+        "examples": ["Field A", "Field B"]
+      },
+      "expand_issue_changelog": {
+        "type": "boolean",
+        "title": "Expand Issue Changelog",
+        "description": "Expand the changelog when replicating issues",
+        "default": false
       }
     }
   }
