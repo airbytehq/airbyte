@@ -359,7 +359,25 @@ class Stream(HttpStream, ABC):
             yield from []
 
     @staticmethod
-    def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+    def _cast_timestamp_to_date(field_name: str, field_value: Any, declared_format: str = None) -> Any:  # TODO
+        """
+        Convert timestamp to date / datetime string
+        """
+        try:
+            pendulum.parse(field_value)
+        except ValueError:
+            logger.warning(f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}")
+
+            dt = pendulum.from_timestamp(int(field_value) / 1000)
+            if declared_format == 'date':
+                return dt.to_date_string()
+            elif declared_format == 'date-time':
+                return dt.to_datetime_string()
+
+        return field_value
+
+    @classmethod
+    def _cast_value(cls, declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
         """
         Convert record's received value according to its declared catalog json schema type / format / attribute name.
         :param declared_field_types type from catalog schema
@@ -376,6 +394,9 @@ class Stream(HttpStream, ABC):
             # Set it to null to avoid errors on destination' normalization stage.
             if declared_format and field_value == "":
                 return None
+
+        if declared_format in ["date", "date-time"]:
+            field_value = cls._cast_timestamp_to_date(field_name, field_value, declared_format=declared_format)
 
         actual_field_type = type(field_value)
         actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
