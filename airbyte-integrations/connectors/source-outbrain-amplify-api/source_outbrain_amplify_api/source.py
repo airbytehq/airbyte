@@ -156,7 +156,7 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
         marketer_id = self.marketer_id
 
 
-        return 'https://api.outbrain.com/amplify/v0.1/reports/marketers/' +marketer_id + '/geo?breakdown=country'
+        return 'reports/marketers/' +marketer_id + '/geo?breakdown=country'
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
