@@ -5,9 +5,9 @@ on:
 env:
   IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: airbyte
-  AWS_PROFILE_ACCOUNT_DEV: prd-data-dev-PlatformAdmin
-  AWS_PROFILE_ACCOUNT_STG: prd-data-stg-PlatformAdmin
-  AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_DEV: prd-data-dev-iam-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_STG: prd-data-stg-iam-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-iam-PlatformAdmin
 
 jobs:
   branch_name:
