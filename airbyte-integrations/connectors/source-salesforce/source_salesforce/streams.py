@@ -19,6 +19,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .exceptions import SalesforceException
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
@@ -134,16 +135,6 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @transformer.registerCustomTransform
-    def transform_empty_string_to_none(instance, schema):
-        """
-        BULK API returns a `csv` file, where all values are initially as string type.
-        This custom transformer replaces empty lines with `None` value.
-        """
-        if isinstance(instance, str) and not instance.strip():
-            instance = None
-        return instance
-
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
@@ -221,9 +212,7 @@ class BulkSalesforceStream(SalesforceStream):
                     if not error_message:
                         # not all failed response can have "errorMessage" and we need to print full response body
                         error_message = job_info
-                    self.logger.error(
-                        f"JobStatus: {job_status}, " f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
+                    self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
 
                 return job_status
 
@@ -234,7 +223,7 @@ class BulkSalesforceStream(SalesforceStream):
             time.sleep(delay_timeout)
             job_id = job_info["id"]
             self.logger.info(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id}" f" to complete. Current state: {job_status}"
+                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
             )
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
@@ -332,7 +321,7 @@ class BulkSalesforceStream(SalesforceStream):
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )
                     return
-                raise Exception(f"Job for {self.name} stream using BULK API was failed.")
+                raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
 
             count = 0
             record: Mapping[str, Any] = {}
@@ -365,6 +354,18 @@ class BulkSalesforceStream(SalesforceStream):
             new_cls = IncrementalSalesforceStream
 
         return new_cls(**stream_kwargs)
+
+
+@BulkSalesforceStream.transformer.registerCustomTransform
+def transform_empty_string_to_none(instance: Any, schema: Any):
+    """
+    BULK API returns a `csv` file, where all values are initially as string type.
+    This custom transformer replaces empty lines with `None` value.
+    """
+    if isinstance(instance, str) and not instance.strip():
+        instance = None
+
+    return instance
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
