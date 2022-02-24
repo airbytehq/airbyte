@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcDatabase;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -18,6 +19,7 @@ import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +34,10 @@ import java.util.function.Consumer;
  * Alpha characters and on a collision the batch is appended to the existing file.
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
+
+  public final static Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
