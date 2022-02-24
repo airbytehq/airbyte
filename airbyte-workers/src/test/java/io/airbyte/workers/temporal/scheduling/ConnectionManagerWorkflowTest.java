@@ -123,7 +123,7 @@ public class ConnectionManagerWorkflowTest {
   }
 
   @Nested
-  @DisplayName("Test which without a long running child workflow")
+  @DisplayName("Test which without a long running child workflow ")
   class AsynchronousWorkflow {
 
     @BeforeEach
