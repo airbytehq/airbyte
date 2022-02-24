@@ -6,7 +6,7 @@ describe("Connection main actions", () => {
     cy.get("div").contains("Test destination cypress").should("exist");
   });
 
-  it("Update connection", () => {
+  it.only("Update connection", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     cy.createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
@@ -15,11 +15,11 @@ describe("Connection main actions", () => {
     cy.get("div").contains("Test update connection source cypress").click();
     cy.get("div").contains("Test update connection destination cypress").click();
 
-    cy.get("div[data-id='settings-step']").click();
+    cy.get("div[data-id='replication-step']").click();
 
     cy.get("div[data-testid='schedule']").click();
     cy.get("div[data-testid='Every 5 min']").click();
-    cy.submitButtonClick();
+    cy.get("button[type=submit]").first().click();
     cy.wait("@updateConnection");
     cy.get("span[data-id='success-result']").should("exist");
 

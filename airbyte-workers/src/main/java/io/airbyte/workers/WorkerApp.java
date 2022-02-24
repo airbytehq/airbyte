@@ -23,6 +23,9 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
@@ -303,6 +306,8 @@ public class WorkerApp {
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
 
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
+
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
     final WorkerConfigs checkWorkerConfigs = WorkerConfigs.buildCheckWorkerConfigs(configs);
@@ -378,10 +383,7 @@ public class WorkerApp {
         configRepository,
         jobPersistence);
 
-    final ConnectionHelper connectionHelper = new ConnectionHelper(
-        configRepository,
-        workspaceHelper,
-        defaultWorkerConfigs);
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 

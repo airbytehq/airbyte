@@ -8,7 +8,27 @@ The GitHub `master` and branch builds will build the core Airbyte infrastructure
 
 First, you can run the image locally. Connectors should have instructions in the connector's README on how to create or pull credentials necessary for the test. Also, during local development, there is usually a `main` entrypoint for Java integrations or `main_dev.py` for Python integrations that let you run your connector without containerization, which is fastest for iteration.
 
-### 2. Requesting GitHub PR Integration Test Runs
+### 2. Code Static Checkers
+
+#### Python Code
+Using the following tools:
+1. flake8
+2. black
+3. isort
+4. mypy
+
+Airbyte CI/CD workflows use them during "test/publish" commands obligatorily. 
+All their settings are aggregated into the single file `pyproject.toml` into Airbyte project root.
+Locally all these tools can be launched by the following gradle command:
+```
+ ./gradlew --no-daemon  :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+For instance:
+```
+./gradlew --no-daemon  :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+./gradlew --no-daemon  :airbyte-integrations:connectors:source-salesforce:airbytePythonFormat
+```
+### 3. Requesting GitHub PR Integration Test Runs
 
 {% hint style="warning" %}
 This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
@@ -30,7 +50,7 @@ Once the integration test workflow launches, it will append a link to the workfl
 
 Integration tests can also be manually requested by clicking "[Run workflow](https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test)" and specifying the connector and GitHub ref.
 
-### 3. Requesting GitHub PR publishing Docker Images
+### 4. Requesting GitHub PR publishing Docker Images
 
 In order for users to reference the new versions of a connector, it needs to be published and available in the [dockerhub](https://hub.docker.com/r/airbyte/source-sendgrid/tags?page=1&ordering=last_updated) with the latest tag updated.
 
@@ -41,7 +61,7 @@ Note that integration tests can be triggered with a slightly different syntax fo
 * `/test connector=connectors/source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
 * `/publish connector=connectors/source-sendgrid` - Publish the docker image if it doesn't exist for a single connector on the latest PR commit.
 
-### 4. Automatically Run From `master`
+### 5. Automatically Run From `master`
 
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
 

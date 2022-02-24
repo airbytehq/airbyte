@@ -77,6 +77,7 @@ export const useAnalyticsIdentifyUser = (userId?: string): void => {
     if (userId) {
       analyticsService.identify(userId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 };
 
@@ -101,6 +102,7 @@ export const useAnalyticsRegisterValues = (
     }
 
     return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
 
