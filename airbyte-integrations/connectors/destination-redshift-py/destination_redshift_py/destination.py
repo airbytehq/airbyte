@@ -114,15 +114,28 @@ class DestinationRedshiftPy(Destination):
                 for node in nodes:
                     table = stream.final_tables[PARENT_CHILD_SPLITTER.join(node)]
 
-                    records = reduce(getattr, [nested_record] + node)
+                    def get_records(parent, method):
+                        if not isinstance(parent, list):
+                            parent = [parent]
+
+                        child_records = []
+                        for item in parent:
+                            child = getattr(item, method)
+                            if not isinstance(child, list):
+                                child = [child]
+
+                            for child_item in child:
+                                if child_item and table.references and method == node[-1]:
+                                    child_item[table.reference_key.name] = item[AIRBYTE_ID_NAME]
+
+                                child_records.append(child_item)
+
+                        return child_records
+
+                    records = reduce(get_records, [nested_record] + node)
                     records = list(filter(None.__ne__, [records] if not isinstance(records, list) else records))
 
                     if records:
-                        if table.references:
-                            parent_record = reduce(getattr, [nested_record] + node[0:-1])
-                            reference_id = parent_record[AIRBYTE_ID_NAME]
-                            self._assign_reference_id(records=records, reference_key=table.reference_key.name, reference_id=reference_id)
-
                         # Choose primary keys (other than the Airbyte auto generated ID). If there are no primary keys (except the auto
                         # generated Airbyte ID, this happens with children), then choose all the fields as hash keys to generate the ID.
                         hashing_keys = [pk for pk in table.primary_keys if pk != AIRBYTE_ID_NAME] or table.field_names
