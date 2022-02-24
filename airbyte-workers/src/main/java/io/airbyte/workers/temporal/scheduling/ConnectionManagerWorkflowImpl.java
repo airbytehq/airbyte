@@ -54,6 +54,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public static final long NON_RUNNING_JOB_ID = -1;
   public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
+  private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
+
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
   private final WorkflowInternalState workflowInternalState = new WorkflowInternalState();
@@ -441,7 +443,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
+   * <<<<<<< HEAD Start the child SyncWorkflow ======= Start the child {@link SyncWorkflow}. We are
+   * using a child workflow here for two main reason:
    * <p>
    * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
    * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
@@ -449,13 +452,22 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * <p>
    * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow}
    * since the latter is a long running workflow, in the future, using a different Node pool would
-   * make sense.
+   * make sense. >>>>>>> 76e969f2e5e1b869648142c3565b7375b1892999
    */
   private StandardSyncOutput runChildWorkflow(GeneratedJobInput jobInputs) {
+    int taskQueueChangeVersion =
+        Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+
+    String taskQueue = TemporalJobType.SYNC.name();
+
+    if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
+      taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
+    }
+
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())
-            .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
+            .setTaskQueue(taskQueue)
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_REQUEST_CANCEL)
             .build());
