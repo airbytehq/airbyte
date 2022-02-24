@@ -97,7 +97,7 @@ jobs:
           export TF_VAR_image_tag=${IMAGE_TAG}
           cd deployments/helm/stg/us_east_2
           terraform init
-#          aws sts get-caller-identity --profile prd-data-stg-iam-PlatformAdmin
+          aws sts get-caller-identity
           aws eks update-kubeconfig --region us-east-2 --name main --alias data-stg-main
           terraform apply -auto-approve
 #          terraform plan -lock=false
