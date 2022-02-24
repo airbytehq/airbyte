@@ -965,35 +965,66 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    for (final var input : List.of("KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
+      LOGGER.info("Checking " + input);
 
-    Thread.sleep(5000);
+      final UUID connectionId =
+          createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
 
-    LOGGER.info("Scaling down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-    Thread.sleep(1000);
+      JobInfoRead connectionSyncRead = null;
 
-    LOGGER.info("Scaling up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+      while (connectionSyncRead == null) {
 
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(false);
+        try {
+          connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        } catch (Exception e) {
+          LOGGER.error("retrying after error", e);
+        }
+      }
 
-    final long numAttempts = apiClient.getJobsApi()
-        .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-        .getAttempts()
-        .size();
+      Thread.sleep(10000);
 
-    // it should be able to accomplish the resume without an additional attempt!
-    assertEquals(1, numAttempts);
+      switch (input) {
+        case "KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST" -> {
+          LOGGER.info("Scaling down both workers at roughly the same time...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up both workers...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_SYNC" -> {
+          LOGGER.info("Scaling down only sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_NON_SYNC" -> {
+          LOGGER.info("Scaling down only non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+          LOGGER.info("Scaling up non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        }
+      }
+
+      waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+
+      final long numAttempts = apiClient.getJobsApi()
+          .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
+          .getAttempts()
+          .size();
+
+      // it should be able to accomplish the resume without an additional attempt!
+      assertEquals(1, numAttempts);
+    }
   }
 
   @Test
