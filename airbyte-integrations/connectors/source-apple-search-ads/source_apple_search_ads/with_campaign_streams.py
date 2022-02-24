@@ -86,3 +86,34 @@ class CreativeSets(WithCampaignAppleSearchAdsStream):
         }
 
         return post_json
+
+class AdgroupCreativeSets(WithCampaignAppleSearchAdsStream):
+    primary_key = ["id"]
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"campaigns/{stream_slice.get('campaign_id')}/adgroupcreativesets/find"
+
+    def request_body_json(
+        self, stream_slice: Mapping[str, Any] = None, **kwargs: Any
+    ) -> Optional[Mapping]:
+        post_json = {
+            "selector": {
+                "conditions": [
+                    {
+                        "field": "campaignId",
+                        "operator": "EQUALS",
+                        "values": [
+                            stream_slice.get('campaign_id')
+                        ]
+                    }
+                ]
+            }
+        }
+
+        return post_json

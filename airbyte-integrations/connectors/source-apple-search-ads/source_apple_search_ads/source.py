@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from .authenticator import AppleSearchAdsAuthenticator
 
 from .basic_streams import Campaigns
-from .with_campaign_streams import Adgroups, CampaignNegativeKeywords, CreativeSets
+from .with_campaign_streams import Adgroups, CampaignNegativeKeywords, CreativeSets, AdgroupCreativeSets
 
 class SourceAppleSearchAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -58,5 +58,6 @@ class SourceAppleSearchAds(AbstractSource):
             Campaigns(org_id=config["org_id"], authenticator=auth),
             Adgroups(org_id=config["org_id"], authenticator=auth),
             CampaignNegativeKeywords(org_id=config["org_id"], authenticator=auth),
-            CreativeSets(org_id=config["org_id"], authenticator=auth)
+            CreativeSets(org_id=config["org_id"], authenticator=auth),
+            AdgroupCreativeSets(org_id=config["org_id"], authenticator=auth)
         ]
