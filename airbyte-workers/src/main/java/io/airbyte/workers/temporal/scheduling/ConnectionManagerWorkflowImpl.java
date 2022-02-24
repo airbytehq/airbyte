@@ -177,11 +177,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               workflowInternalState.getJobId(),
               workflowInternalState.getAttemptId()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
+          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptId()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
+          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
       }
     });
