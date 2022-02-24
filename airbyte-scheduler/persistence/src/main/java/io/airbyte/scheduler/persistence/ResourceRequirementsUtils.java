@@ -2,15 +2,13 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.helper;
+package io.airbyte.scheduler.persistence;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.ActorType;
 import io.airbyte.config.JobTypeResourceLimit;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardSyncInput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,17 +27,16 @@ public class ResourceRequirementsUtils {
    * @param jobType - type of job to extract resource requirements for
    * @return resource requirements, if present, otherwise an empty ResourceRequirements object.
    */
-  public static ResourceRequirements getResourceRequirements(final StandardSyncInput input,
-                                                             final ActorType actorType,
+  public static ResourceRequirements getResourceRequirements(final ResourceRequirements connectionResourceReqs,
+                                                             final ActorDefinitionResourceRequirements actorDefinitionResourceReqs,
+                                                             final ResourceRequirements workerDefaultResourceReqs,
                                                              final JobType jobType) {
-    final Optional<ActorDefinitionResourceRequirements> actorDefResourceReqs = getResourceRequirementsForActorType(input, actorType);
-    final ResourceRequirements defaultActorDefResourceReqs = actorDefResourceReqs
-        .map(ActorDefinitionResourceRequirements::getDefault)
-        .orElse(null);
-    final ResourceRequirements jobTypeResourceReqs = actorDefResourceReqs
-        .flatMap(reqs -> getResourceRequirementsForJobType(reqs, jobType))
-        .orElse(null);
-    return mergeResourceRequirements(input.getResourceRequirements(), jobTypeResourceReqs, defaultActorDefResourceReqs);
+    final ResourceRequirements jobSpecificDefinitionResourceReqs =
+        getResourceRequirementsForJobType(actorDefinitionResourceReqs, jobType).orElse(null);
+    final ResourceRequirements defaultDefinitionResourceReqs =
+        Optional.ofNullable(actorDefinitionResourceReqs).map(ActorDefinitionResourceRequirements::getDefault).orElse(null);
+    return mergeResourceRequirements(connectionResourceReqs, jobSpecificDefinitionResourceReqs, defaultDefinitionResourceReqs,
+        workerDefaultResourceReqs);
   }
 
   /**
@@ -89,23 +86,6 @@ public class ResourceRequirementsUtils {
     return jobTypeResourceRequirement.isEmpty()
         ? Optional.empty()
         : Optional.of(jobTypeResourceRequirement.get(0));
-  }
-
-  private static Optional<ActorDefinitionResourceRequirements> getResourceRequirementsForActorType(final StandardSyncInput input,
-                                                                                                   final ActorType actorType) {
-    ActorDefinitionResourceRequirements actorDefinitionResourceRequirements = null;
-    switch (actorType) {
-      case SOURCE -> {
-        actorDefinitionResourceRequirements = input.getSourceResourceRequirements();
-      }
-      case DESTINATION -> {
-        actorDefinitionResourceRequirements = input.getDestinationResourceRequirements();
-      }
-      default -> {
-        throw new IllegalArgumentException("Unrecognized actor type.");
-      }
-    }
-    return Optional.ofNullable(actorDefinitionResourceRequirements);
   }
 
 }

@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.config.ActorType;
-import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSyncInput;
@@ -14,7 +12,6 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.helper.ResourceRequirementsUtils;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
@@ -59,7 +56,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           final NormalizationInput normalizationInput = new NormalizationInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
               .withCatalog(run.getOutputCatalog())
-              .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.DESTINATION, JobType.SYNC));
+              .withResourceRequirements(syncInput.getDestinationResourceRequirements());
 
           normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {

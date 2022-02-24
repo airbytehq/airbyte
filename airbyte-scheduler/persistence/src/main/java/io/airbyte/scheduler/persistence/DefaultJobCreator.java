@@ -10,6 +10,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -59,9 +60,19 @@ public class DefaultJobCreator implements JobCreator {
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null)
-        .withResourceRequirements(getJobResourceRequirements(standardSync))
-        .withSourceResourceRequirements(sourceResourceReqs)
-        .withDestinationResourceRequirements(destinationResourceReqs);
+        .withResourceRequirements(ResourceRequirementsUtils.mergeResourceRequirements(
+            standardSync.getResourceRequirements(),
+            workerResourceRequirements))
+        .withSourceResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
+            standardSync.getResourceRequirements(),
+            sourceResourceReqs,
+            workerResourceRequirements,
+            JobType.SYNC))
+        .withDestinationResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
+            standardSync.getResourceRequirements(),
+            destinationResourceReqs,
+            workerResourceRequirements,
+            JobType.SYNC));
 
     configRepository.getConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
@@ -97,34 +108,14 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
-        .withResourceRequirements(getJobResourceRequirements(standardSync));
+        .withResourceRequirements(ResourceRequirementsUtils.mergeResourceRequirements(
+            standardSync.getResourceRequirements(),
+            workerResourceRequirements));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
-  }
-
-  private ResourceRequirements getJobResourceRequirements(final StandardSync standardSync) {
-    if (standardSync.getResourceRequirements() == null) {
-      return workerResourceRequirements;
-    }
-
-    final ResourceRequirements jobResourceRequirements = standardSync.getResourceRequirements();
-    if (jobResourceRequirements.getCpuRequest() == null) {
-      jobResourceRequirements.setCpuRequest(workerResourceRequirements.getCpuRequest());
-    }
-    if (jobResourceRequirements.getCpuLimit() == null) {
-      jobResourceRequirements.setCpuLimit(workerResourceRequirements.getCpuLimit());
-    }
-    if (jobResourceRequirements.getMemoryRequest() == null) {
-      jobResourceRequirements.setMemoryRequest(workerResourceRequirements.getMemoryRequest());
-    }
-    if (jobResourceRequirements.getMemoryLimit() == null) {
-      jobResourceRequirements.setMemoryLimit(workerResourceRequirements.getMemoryLimit());
-    }
-
-    return jobResourceRequirements;
   }
 
 }

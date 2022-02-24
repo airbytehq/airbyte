@@ -41,10 +41,14 @@ properties:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml
   resourceRequirements:
-    description: optional resource requirements to run sync workers (confusing - overrides source and destination). takes precedence over source and destination resource requirements.
+    description: optional resource requirements to run sync workers - this is used for containers other than the source/dest containers
     type: object
     "$ref": ResourceRequirements.yaml
   sourceResourceRequirements:
-    "$ref": ActorDefinitionResourceRequirements.yaml
+    description: optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container
+    type: object
+    "$ref": ResourceRequirements.yaml
   destinationResourceRequirements:
-    "$ref": ActorDefinitionResourceRequirements.yaml
+    description: optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container
+    type: object
+    "$ref": ResourceRequirements.yaml

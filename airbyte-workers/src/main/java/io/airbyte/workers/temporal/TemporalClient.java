@@ -143,7 +143,9 @@ public class TemporalClient {
         .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState())
-        .withResourceRequirements(config.getResourceRequirements());
+        .withResourceRequirements(config.getResourceRequirements())
+        .withSourceResourceRequirements(config.getSourceResourceRequirements())
+        .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
@@ -374,8 +376,8 @@ public class TemporalClient {
    * The way to do so is to wait for the jobId to change, either to a new job id or the default id
    * that signal that a workflow is waiting to be submitted
    */
-  public ManualSyncSubmissionResult synchronousResetConnection(UUID connectionId) {
-    ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
+  public ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId) {
+    final ManualSyncSubmissionResult resetResult = resetConnection(connectionId);
     if (resetResult.getFailingReason().isPresent()) {
       return resetResult;
     }
