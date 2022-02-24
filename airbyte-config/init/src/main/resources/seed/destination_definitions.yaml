@@ -13,7 +13,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.8
+  dockerImageTag: 0.6.9
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
 - name: BigQuery (denormalized typed struct)
@@ -60,7 +60,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
 - name: Google Firestore
@@ -173,7 +173,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
@@ -185,9 +185,25 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.14
+  dockerImageTag: 0.4.15
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
+  resourceRequirements:
+    # this is our first example of setting these requirements. they are guesses, not data driven.
+    # setting default cpu higher, because we have found that check and discover can be cpu constrained for dbs.
+    default:
+      cpu_limit: "1.0"
+      cpu_request: "1.0"
+      memory_limit: "300Mi"
+      memory_request: "300Mi"
+    jobSpecific:
+      # sync jobs are generally IO and memory bound and not cpu.
+      - jobType: sync
+        resourceRequirements:
+          cpu_limit: "0.5"
+          cpu_request: "0.5"
+          memory_limit: "600Mi"
+          memory_request: "600Mi"
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
   dockerRepository: airbyte/destination-mariadb-columnstore

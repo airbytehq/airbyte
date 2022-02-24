@@ -377,6 +377,18 @@ public interface Configs {
   boolean getPublishMetrics();
 
   /**
+   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDAgentHost();
+
+  /**
+   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDDogStatsDPort();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();
@@ -388,6 +400,32 @@ public interface Configs {
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
    */
   MaxWorkersConfig getMaxWorkers();
+
+  /**
+   * Define if the worker should run get spec workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunGetSpecWorkflows();
+
+  /**
+   * Define if the worker should run check connection workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunCheckConnectionWorkflows();
+
+  /**
+   * Define if the worker should run discover workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunDiscoverWorkflows();
+
+  /**
+   * Define if the worker should run sync workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunSyncWorkflows();
+
+  /**
+   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use
+   * only.
+   */
+  boolean shouldRunConnectionManagerWorkflows();
 
   // Worker - Kube only
   /**

@@ -33,7 +33,7 @@ def state_with_include_deleted_fixture(state):
 
 @pytest.fixture(scope="session", name="configured_catalog")
 def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog.json")
+    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog_without_insights.json")
 
 
 class TestFacebookMarketingSource:

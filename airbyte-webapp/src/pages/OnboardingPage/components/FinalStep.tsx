@@ -95,7 +95,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (...name: React.ReactNode[]) => (
+            name: (name: React.ReactNode[]) => (
               <HighlightedText>{name}</HighlightedText>
             ),
           }}
