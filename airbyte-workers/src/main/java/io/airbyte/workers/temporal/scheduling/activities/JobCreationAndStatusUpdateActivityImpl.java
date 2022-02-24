@@ -20,8 +20,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.metrics.lib.MetricsQueries;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -85,20 +86,24 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final long jobId = jobFactory.create(input.getConnectionId());
 
         log.info("New job created, with id: " + jobId);
-        final var srcId = standardSync.getSourceId();
-        final var destId = standardSync.getDestinationId();
-
-        final var releaseStages = configRepository.getDatabase().query(ctx -> MetricsQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, destId));
-        if (releaseStages != null) {
-          for (final ReleaseStage stage : releaseStages) {
-            DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
-          }
-        }
+        emitJobToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, standardSync.getSourceId(),
+            standardSync.getDestinationId());
 
         return new JobCreationOutput(jobId);
       }
     } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
       throw new RetryableException(e);
+    }
+  }
+
+  private void emitJobToReleaseStagesMetric(final AirbyteMetricsRegistry metric, final UUID srcId, final UUID dstId) throws IOException {
+    final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
+    if (releaseStages == null) {
+      return;
+    }
+
+    for (final ReleaseStage stage : releaseStages) {
+      DogStatsDMetricSingleton.count(metric, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
     }
   }
 
@@ -191,11 +196,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
-  }
-
-  // job -> connection -> source_id & destination_id -> actor_definition -> release stage
-  private void jobToReleaseStages() {
-    // config repository might be related to this.
   }
 
 }
