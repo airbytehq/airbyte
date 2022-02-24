@@ -7,7 +7,7 @@
           "type": "object",
           "properties": {
             "timestamp": {
-              "type": "number"
+              "type": "integer"
             },
             "base": {
               "type": "string"

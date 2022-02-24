@@ -3,7 +3,7 @@
   "required": ["timestamp", "base", "rates"],
   "properties": {
     "timestamp": {
-      "type": "number"
+      "type": "integer"
     },
     "base": {
       "type": "string"
