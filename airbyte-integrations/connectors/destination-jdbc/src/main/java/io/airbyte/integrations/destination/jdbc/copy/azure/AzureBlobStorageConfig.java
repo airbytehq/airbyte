@@ -15,10 +15,10 @@ public class AzureBlobStorageConfig {
   private final String sasToken;
 
   public AzureBlobStorageConfig(
-      String endpointDomainName,
-      String accountName,
-      String containerName,
-      String sasToken) {
+                                String endpointDomainName,
+                                String accountName,
+                                String containerName,
+                                String sasToken) {
     this.endpointDomainName = endpointDomainName;
     this.accountName = accountName;
     this.containerName = containerName;

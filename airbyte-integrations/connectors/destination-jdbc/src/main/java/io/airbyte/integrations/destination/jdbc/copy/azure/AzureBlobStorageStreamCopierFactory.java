@@ -16,15 +16,14 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 
 public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopierFactory<AzureBlobStorageConfig> {
 
-
   @Override
   public StreamCopier create(String configuredSchema,
-      AzureBlobStorageConfig azureBlobConfig,
-      String stagingFolder,
-      ConfiguredAirbyteStream configuredStream,
-      ExtendedNameTransformer nameTransformer,
-      JdbcDatabase db,
-      SqlOperations sqlOperations) {
+                             AzureBlobStorageConfig azureBlobConfig,
+                             String stagingFolder,
+                             ConfiguredAirbyteStream configuredStream,
+                             ExtendedNameTransformer nameTransformer,
+                             JdbcDatabase db,
+                             SqlOperations sqlOperations) {
     try {
       AirbyteStream stream = configuredStream.getStream();
       DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
@@ -43,14 +42,14 @@ public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopie
   }
 
   public abstract StreamCopier create(String stagingFolder,
-      DestinationSyncMode syncMode,
-      String schema,
-      String streamName,
-      SpecializedBlobClientBuilder specializedBlobClientBuilder,
-      JdbcDatabase db,
-      AzureBlobStorageConfig azureBlobConfig,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations)
+                                      DestinationSyncMode syncMode,
+                                      String schema,
+                                      String streamName,
+                                      SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                                      JdbcDatabase db,
+                                      AzureBlobStorageConfig azureBlobConfig,
+                                      ExtendedNameTransformer nameTransformer,
+                                      SqlOperations sqlOperations)
       throws Exception;
-}
 
+}

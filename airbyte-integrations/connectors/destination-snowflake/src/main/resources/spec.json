@@ -279,7 +279,9 @@
                 "type": "string",
                 "airbyte_secret": true,
                 "description": "Shared access signature(SAS) token to grant Snowflake limited access to objects in your storage account. See more https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token",
-                "examples": ["?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"],
+                "examples": [
+                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
+                ],
                 "order": 4
               }
             }

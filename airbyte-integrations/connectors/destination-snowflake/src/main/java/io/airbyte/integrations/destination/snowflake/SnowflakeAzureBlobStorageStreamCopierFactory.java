@@ -3,7 +3,6 @@
  */
 
 package io.airbyte.integrations.destination.snowflake;
-import com.azure.storage.blob.specialized.AppendBlobClient;;
 
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -20,14 +19,14 @@ public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStora
 
   @Override
   public StreamCopier create(String stagingFolder,
-      DestinationSyncMode syncMode,
-      String schema,
-      String streamName,
-      SpecializedBlobClientBuilder specializedBlobClientBuilder,
-      JdbcDatabase db,
-      AzureBlobStorageConfig azureBlobConfig,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations)
+                             DestinationSyncMode syncMode,
+                             String schema,
+                             String streamName,
+                             SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                             JdbcDatabase db,
+                             AzureBlobStorageConfig azureBlobConfig,
+                             ExtendedNameTransformer nameTransformer,
+                             SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeAzureBlobStorageStreamCopier(stagingFolder,
         syncMode,

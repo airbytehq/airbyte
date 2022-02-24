@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageConnectionChecker;
-import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;

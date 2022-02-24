@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StreamCopier.MAX_FILES_PER_COPY;
@@ -23,15 +27,15 @@ public class SnowflakeAzureBlobStorageStreamCopier extends AzureBlobStorageStrea
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAzureBlobStorageStreamCopier.class);
 
   public SnowflakeAzureBlobStorageStreamCopier(String stagingFolder,
-      DestinationSyncMode destSyncMode,
-      String schema,
-      String streamName,
-      SpecializedBlobClientBuilder specializedBlobClientBuilder,
-      JdbcDatabase db,
-      AzureBlobStorageConfig azureBlobConfig,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations,
-      StagingFilenameGenerator stagingFilenameGenerator) {
+                                               DestinationSyncMode destSyncMode,
+                                               String schema,
+                                               String streamName,
+                                               SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                                               JdbcDatabase db,
+                                               AzureBlobStorageConfig azureBlobConfig,
+                                               ExtendedNameTransformer nameTransformer,
+                                               SqlOperations sqlOperations,
+                                               StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, specializedBlobClientBuilder, db, azureBlobConfig, nameTransformer, sqlOperations);
     this.filenameGenerator = stagingFilenameGenerator;
   }
@@ -48,17 +52,17 @@ public class SnowflakeAzureBlobStorageStreamCopier extends AzureBlobStorageStrea
 
   @Override
   public void copyAzureBlobCsvFileIntoTable(
-      JdbcDatabase database,
-      String snowflakeAzureExternalStageName,
-      String schema,
-      String tableName,
-      AzureBlobStorageConfig config) throws SQLException {
+                                            JdbcDatabase database,
+                                            String snowflakeAzureExternalStageName,
+                                            String schema,
+                                            String tableName,
+                                            AzureBlobStorageConfig config)
+      throws SQLException {
     throw new RuntimeException("Snowflake Azure Stream Copier should not copy individual files without use of a parallel copy");
   }
 
   @Override
   public void copyIntoStage(List<String> files) {
-    LOGGER.error("COPY QUERY WITH SAS7: ");
 
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s'"
@@ -69,7 +73,6 @@ public class SnowflakeAzureBlobStorageStreamCopier extends AzureBlobStorageStrea
         tmpTableName,
         generateBucketPath(),
         azureBlobConfig.getSasToken());
-    LOGGER.error("COPY QUERY :" + copyQuery);
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
@@ -79,4 +82,5 @@ public class SnowflakeAzureBlobStorageStreamCopier extends AzureBlobStorageStrea
     return "azure://" + azureBlobConfig.getAccountName() + "." + azureBlobConfig.getEndpointDomainName()
         + "/" + azureBlobConfig.getContainerName() + "/" + stagingFolder + "/" + schemaName + "/";
   }
+
 }
