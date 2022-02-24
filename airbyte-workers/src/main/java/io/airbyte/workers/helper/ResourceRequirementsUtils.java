@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public class ResourceRequirementsUtils {
 
@@ -32,10 +33,10 @@ public class ResourceRequirementsUtils {
   public static ResourceRequirements getResourceRequirements(final StandardSyncInput input,
                                                              final ActorType actorType,
                                                              final JobType jobType,
-                                                             final WorkerConfigs workerConfigs) {
+                                                             @Nullable final ResourceRequirements defaultWorkerRequirements) {
     final ActorDefinitionResourceRequirements actorDefResourceReqs = getResourceRequirementsForActorType(input, actorType);
     final ResourceRequirements jobTypeResourceReqs = getResourceRequirementsForJobType(actorDefResourceReqs, jobType).orElse(null);
-    return mergeResourceRequirements(input.getResourceRequirements(), jobTypeResourceReqs, workerConfigs.getResourceRequirements());
+    return mergeResourceRequirements(input.getResourceRequirements(), jobTypeResourceReqs, defaultWorkerRequirements);
   }
 
   /**
