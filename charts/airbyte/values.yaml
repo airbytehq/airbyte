@@ -24,9 +24,7 @@ fullnameOverride: ""
 ##
 serviceAccount:
   create: true
-  annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: "-10"
+  annotations: {}
   name: airbyte-admin
 
 ## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
