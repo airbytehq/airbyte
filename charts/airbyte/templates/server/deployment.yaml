@@ -21,11 +21,15 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.server.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:
+      serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
       {{- if .Values.server.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.server.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.server.tolerations }}
       tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.server.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.server.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.server.affinity "context" $) | nindent 8 }}
       {{- end }}
       containers:
       - name: airbyte-server-container
@@ -122,16 +126,32 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: S3_LOG_BUCKET_REGION
+        {{- if and .Values.logs.accessKey.existingSecret .Values.logs.accessKey.existingSecretKey }}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.logs.accessKey.existingSecret }}
+              key: {{ .Values.logs.accessKey.existingSecretKey }}
+        {{- else }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: AWS_ACCESS_KEY_ID
+        {{- end }}
+        {{- if and .Values.logs.secretKey.existingSecret .Values.logs.secretKey.existingSecretKey }}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.logs.secretKey.existingSecret }}
+              key: {{ .Values.logs.secretKey.existingSecretKey }}
+        {{- else }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: AWS_SECRET_ACCESS_KEY
+        {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
@@ -194,6 +214,9 @@ spec:
         {{- if .Values.server.resources }}
         resources: {{- toYaml .Values.server.resources | nindent 10 }}
         {{- end }}
+        {{- if .Values.server.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.server.containerSecurityContext | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: airbyte-data
           mountPath: /configs
@@ -204,6 +227,9 @@ spec:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+        {{- if .Values.server.extraVolumeMounts }}
+  {{ toYaml .Values.server.extraVolumeMounts | nindent 8 }}
+        {{- end }}
       volumes:
       - name: airbyte-data
         persistentVolumeClaim:
@@ -211,3 +237,6 @@ spec:
       - name: gcs-log-creds-volume
         secret:
           secretName: gcs-log-creds
+      {{- if .Values.server.extraVolumes }}
+{{ toYaml .Values.server.extraVolumes | nindent 6 }}
+      {{- end }}

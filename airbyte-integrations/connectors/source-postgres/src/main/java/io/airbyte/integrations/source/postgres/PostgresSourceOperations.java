@@ -16,7 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -131,13 +131,13 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaPrimitive getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(JDBCType jdbcType) {
     return switch (jdbcType) {
-      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaPrimitive.NUMBER;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
-      case ARRAY -> JsonSchemaPrimitive.ARRAY;
-      default -> JsonSchemaPrimitive.STRING;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      default -> JsonSchemaType.STRING;
     };
   }
 

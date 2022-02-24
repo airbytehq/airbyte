@@ -66,13 +66,13 @@ class ShopifyStream(HttpStream, ABC):
         if isinstance(records, dict):
             # for cases when we have a single record as dict
             # add shop_url to the record to make querying easy
-            records['shop_url'] = self.config["shop"]
+            records["shop_url"] = self.config["shop"]
             yield self._transformer.transform(records)
         else:
             # for other cases
             for record in records:
                 # add shop_url to the record to make querying easy
-                record['shop_url'] = self.config["shop"]
+                record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
     @property
@@ -322,6 +322,15 @@ class Transactions(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
+class TenderTransactions(IncrementalShopifyStream):
+    data_field = "tender_transactions"
+    cursor_field = "processed_at"
+    filter_field = "processed_at_min"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class Pages(IncrementalShopifyStream):
     data_field = "pages"
 
@@ -473,6 +482,7 @@ class SourceShopify(AbstractSource):
             Collects(config),
             OrderRefunds(config),
             OrderRisks(config),
+            TenderTransactions(config),
             Transactions(config),
             Pages(config),
             PriceRules(config),

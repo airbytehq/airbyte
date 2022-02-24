@@ -98,6 +98,10 @@ class FBMarketingStream(Stream, ABC):
 
         return records
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account in self._api.accounts:
+            yield {"account": account}
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -106,10 +110,12 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        for record in self._read_records(params=self.request_params(stream_state=stream_state)):
+        for record in self._read_records(
+            stream_slice=stream_slice, params=self.request_params(stream_slice=stream_slice, stream_state=stream_state)
+        ):
             yield self._extend_record(record, fields=self.fields)
 
-    def _read_records(self, params: Mapping[str, Any]) -> Iterable:
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
         We have default implementation because we still can override read_records so this method is not mandatory.
         """
@@ -157,6 +163,7 @@ class FBMarketingStream(Stream, ABC):
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
+    partition_field = "account_id"
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
@@ -167,28 +174,38 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
-        state_value = current_stream_state.get(self.cursor_field) or record_value
+        partition_value = latest_record[self.partition_field] if self.partition_field in latest_record else None
+
+        _current_stream_state = current_stream_state.get(partition_value, current_stream_state)
+
+        state_value = _current_stream_state.get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
         if potentially_new_records_in_the_past:
             max_cursor = record_value
 
-        return {
+        updated_state = {
             self.cursor_field: str(max_cursor),
             "include_deleted": self._include_deleted,
         }
+        partitionned_current_stream_state = {partition_value: updated_state} if partition_value else updated_state
+        result = deep_merge(current_stream_state, partitionned_current_stream_state)
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        return result
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: dict, **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
-        params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
+        params = deep_merge(params, self._state_filter(stream_slice=stream_slice or {}, stream_state=stream_state or {}))
         return params
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
-        state_value = stream_state.get(self.cursor_field)
+        account_id = stream_slice.get("account", {}).get("account_id")
+        account_stream_state = stream_state.get(account_id, {})
+        state_value = account_stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
 
-        potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
+        potentially_new_records_in_the_past = self._include_deleted and not account_stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             filter_value = self._start_date
@@ -224,7 +241,9 @@ class AdCreatives(FBMarketingStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read records using batch API"""
-        records = self._read_records(params=self.request_params(stream_state=stream_state))
+        records = self._read_records(
+            stream_slice=stream_slice, params=self.request_params(stream_slice=stream_slice, stream_state=stream_state)
+        )
         # "thumbnail_data_url" is a field in our stream's schema because we
         # output it (see fix_thumbnail_urls below), but it's not a field that
         # we can request from Facebook
@@ -245,8 +264,8 @@ class AdCreatives(FBMarketingStream):
         return record
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
-        return self._api.account.get_ad_creatives(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]) -> Iterator:
+        return stream_slice.get("account").get_ad_creatives(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -256,8 +275,8 @@ class Ads(FBMarketingIncrementalStream):
     enable_deleted = True
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        return self._api.account.get_ads(params=params, fields=[self.cursor_field])
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        return stream_slice.get("account").get_ads(params=params, fields=[self.cursor_field])
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -267,8 +286,8 @@ class AdSets(FBMarketingIncrementalStream):
     enable_deleted = True
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        return self._api.account.get_ad_sets(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        return stream_slice.get("account").get_ad_sets(params=params)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -278,8 +297,8 @@ class Campaigns(FBMarketingIncrementalStream):
     enable_deleted = True
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        return self._api.account.get_campaigns(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        return stream_slice.get("account").get_campaigns(params=params)
 
 
 class Videos(FBMarketingIncrementalStream):
@@ -289,8 +308,8 @@ class Videos(FBMarketingIncrementalStream):
     enable_deleted = True
 
     @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
-        return self._api.account.get_ad_videos(params=params)
+    def _read_records(self, stream_slice: Mapping[str, Any], params: Mapping[str, Any]):
+        return stream_slice.get("account").get_ad_videos(params=params)
 
 
 class AdsInsights(FBMarketingIncrementalStream):
@@ -375,14 +394,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         stream_state = stream_state or {}
         running_jobs = deque()
-        date_ranges = list(self._date_ranges(stream_state=stream_state))
-        for params in date_ranges:
-            params = deep_merge(params, self.request_params(stream_state=stream_state))
-            job = AsyncJob(api=self._api, params=params)
-            job.start()
-            running_jobs.append(job)
-            if len(running_jobs) >= self.MAX_ASYNC_JOBS:
-                yield {"job": running_jobs.popleft()}
+        for account in self._api.accounts:
+            single_stream_state = stream_state.get(
+                account["account_id"], {"date_start": str(self._start_date), "include_deleted": self._include_deleted}
+            )
+
+            date_ranges = list(self._date_ranges(stream_state=single_stream_state))
+            for params in date_ranges:
+                params = deep_merge(params, self.request_params(stream_state=single_stream_state))
+                job = AsyncJob(account=account, params=params)
+                job.start()
+                running_jobs.append(job)
+                if len(running_jobs) >= self.MAX_ASYNC_JOBS:
+                    yield {"job": running_jobs.popleft()}
 
         while running_jobs:
             yield {"job": running_jobs.popleft()}
@@ -403,7 +427,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         return job
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=None, **kwargs)
         params = deep_merge(
             params,
             {
@@ -418,7 +442,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         return params
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
         return {}
 
@@ -442,6 +466,28 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
+
+    def _schema_for_breakdowns(self) -> Mapping[str, Any]:
+        """Breakdown fields and their type"""
+
+        # TODO: Add support for all breakdown schemas (https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights#parameters)
+        schemas = {
+            "age": {"type": ["null", "integer", "string"]},
+            "gender": {"type": ["null", "string"]},
+            "country": {"type": ["null", "string"]},
+            "dma": {"type": ["null", "string"]},
+            "region": {"type": ["null", "string"]},
+            "impression_device": {"type": ["null", "string"]},
+            "placement": {"type": ["null", "string"]},
+            "platform_position": {"type": ["null", "string"]},
+            "publisher_platform": {"type": ["null", "string"]},
+            "device_platform": {"type": ["null", "string"]},
+        }
+        breakdowns = self.breakdowns[:]
+        if "platform_position" in breakdowns:
+            breakdowns.append("placement")
+
+        return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
     def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
         """Iterate over period between start_date/state and now

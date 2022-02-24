@@ -3,6 +3,8 @@
 #
 
 
+from typing import Mapping
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_s3.s3file import S3File
@@ -26,5 +28,5 @@ class TestS3File:
             ({"storage": "S3", "bucket": "dummy", "aws_secret_access_key": "key", "path_prefix": "dummy"}, False),
         ],
     )
-    def test_use_aws_account(self, provider, return_true):
+    def test_use_aws_account(self, provider: Mapping[str, str], return_true: bool) -> None:
         assert S3File.use_aws_account(provider) is return_true

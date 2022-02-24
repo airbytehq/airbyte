@@ -4,27 +4,48 @@
 
 import json
 import logging
+from dataclasses import dataclass
 from time import sleep
+from typing import List, Set, Type
 
+import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import FacebookAPIException
+from source_facebook_marketing.common import ConnectorConfig, FacebookAPIException, retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    call_rate_threshold = 90  # maximum percentage of call limit utilization
+    call_rate_threshold = 95  # maximum percentage of call limit utilization
     pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
+    @dataclass
+    class Throttle:
+        """Utilization of call rate in %, from 0 to 100"""
+
+        per_application: float
+        per_account: float
+
+    # Insights async jobs throttle
+    _ads_insights_throttle: Throttle
+
+    @property
+    def ads_insights_throttle(self) -> Throttle:
+        return self._ads_insights_throttle
+
     @staticmethod
-    def parse_call_rate_header(headers):
+    def _parse_call_rate_header(headers):
         usage = 0
         pause_interval = pendulum.duration()
 
@@ -69,8 +90,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
             max_pause_interval = self.pause_interval_minimum
 
             for record in response.json():
+                # there are two types of failures: 
+                # 1. no response (we execute batch until all inner requests has response)
+                # 2. response with error (we crash loudly)
+                # in case it is failed inner request the headers might not be present
+                if "headers" not in record:
+                    continue
                 headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-                usage, pause_interval = self.parse_call_rate_header(headers)
+                usage, pause_interval = self._parse_call_rate_header(headers)
                 max_usage = max(max_usage, usage)
                 max_pause_interval = max(max_pause_interval, pause_interval)
 
@@ -80,12 +107,28 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 sleep(max_pause_interval.total_seconds())
         else:
             headers = response.headers()
-            usage, pause_interval = self.parse_call_rate_header(headers)
+            usage, pause_interval = self._parse_call_rate_header(headers)
             if usage > self.call_rate_threshold or pause_interval:
                 pause_interval = max(pause_interval, self.pause_interval_minimum)
                 logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
+    def _update_insights_throttle_limit(self, response: FacebookResponse):
+        """
+        For /insights call every response contains x-fb-ads-insights-throttle
+        header representing current throttle limit parameter for async insights
+        jobs for current app/account.  We need this information to adjust
+        number of running async jobs for optimal performance.
+        """
+        ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
+        if ads_insights_throttle:
+            ads_insights_throttle = json.loads(ads_insights_throttle)
+            self._ads_insights_throttle = self.Throttle(
+                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
+                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+            )
+
+    @backoff_policy
     def call(
         self,
         method,
@@ -98,6 +141,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
+        self._update_insights_throttle_limit(response)
         self.handle_call_rate_limit(response, params)
         return response
 
@@ -105,26 +149,37 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
-        self._account_id = account_id
+    def __init__(self, config: ConnectorConfig):
+
+        self.__config = config
+
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=self.__config.access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
-    def account(self) -> AdAccount:
-        """Find current account"""
-        return self._find_account(self._account_id)
+    def accounts(self) -> List[Type[AdAccount]]:
+        """Find current accounts"""
+        return self._find_accounts()
 
-    @staticmethod
-    def _find_account(account_id: str) -> AdAccount:
-        """Actual implementation of find account"""
+    def _find_accounts(self) -> List[Type[AdAccount]]:
+        """Actual implementation of find accounts"""
         try:
-            accounts = fb_user.User(fbid="me").get_ad_accounts()
-            for account in accounts:
-                if account["account_id"] == account_id:
-                    return account
+            accounts_found = list(fb_user.User(fbid="me").get_ad_accounts())
+            if self.__config.account_selection_strategy_is_subset:
+                account_ids = self.__config.accounts.ids
+                accounts_found = list(filter(lambda x: not account_ids or x["account_id"] in account_ids, accounts_found))
+
+                accounts_missing = self._accounts_missing_from_config(accounts_found)
+                if accounts_missing:
+                    raise FacebookAPIException(f"Couldn't find account(s) with id {accounts_missing}")
+
+            return accounts_found
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
+    def _accounts_missing_from_config(self, accounts: List[Type[AdAccount]]) -> Set[str]:
+        """Returns a list of account ids missing from config accounts"""
+        config_account_ids = set(self.__config.accounts.ids)
+        account_ids = set(map(lambda x: x.get("account_id"), accounts))
+        return config_account_ids.difference(account_ids)

@@ -27,7 +27,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   @Override
-  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(JsonNode jsonSchema) {
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
     return Map.of(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()),
         UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()));
   }
@@ -47,9 +47,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDenormalizedDestination();
-    LOGGER.info("starting destination: {}", BigQueryDenormalizedDestination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", BigQueryDenormalizedDestination.class);
   }
 
 }
