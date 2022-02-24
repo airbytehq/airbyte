@@ -59,7 +59,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           final NormalizationInput normalizationInput = new NormalizationInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
               .withCatalog(run.getOutputCatalog())
-              .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.DESTINATION, JobType.SYNC, null));
+              .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(syncInput, ActorType.DESTINATION, JobType.SYNC));
 
           normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
