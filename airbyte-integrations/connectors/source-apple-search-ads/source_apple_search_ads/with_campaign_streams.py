@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import request
 
 import requests
@@ -67,6 +67,23 @@ class CreativeSets(WithCampaignAppleSearchAdsStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"creativesets/find"
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+
+        data_slices = super().stream_slices(sync_mode, cursor_field, stream_state)
+
+        new_slices = []
+        adam_id_slices = set()
+
+        for slice in data_slices:
+            if slice["adam_id"] in adam_id_slices:
+                next
+            else:
+                new_slices.append(slice)
+                adam_id_slices.add(slice["adam_id"])
+
+        return new_slices
 
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, **kwargs: Any
