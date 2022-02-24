@@ -38,12 +38,12 @@ class SourceSalesforce(AbstractSource):
     @staticmethod
     def get_user_excluded_fields(config: Mapping[str, Any], stream_name: str) -> List[str]:
         excluded_fields = []
-        if config.get("exclude_fields") and stream_name is not None:
-            for stream_field in config["exclude_fields"]:
+        if stream_name:
+            for stream_field in config.get("exclude_fields", []):
                 try:
                     exclude_stream_name, exclude_field_name = stream_field.split(".")
                 except ValueError:
-                    raise f"Format for excluded field [{stream_field}] is incorrect. Expected format is Stream.Field"
+                    raise Exception(f"Format for excluded field [{stream_field}] is incorrect. Expected format is Stream.Field")
                 if exclude_stream_name == stream_name:
                     excluded_fields.append(exclude_field_name)
         return excluded_fields
