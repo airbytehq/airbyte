@@ -15,13 +15,13 @@ from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Coupon as CouponModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Event as EventModel
-from chargebee.models import Transactions as TransactionModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
+from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
 
@@ -283,18 +283,29 @@ class AttachedItem(SemiIncrementalChargebeeStream):
 
 class Event(IncrementalChargebeeStream):
     """
-    API docs: https://apidocs.eu.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
+    API docs: https://apidocs.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
     """
 
     cursor_field = "occurred_at"
 
     api = EventModel
 
-class Transactions(IncrementalChargebeeStream):
+
+class Transaction(IncrementalChargebeeStream):
     """
-    API docs: https://apidocs.eu.chargebee.com/docs/api/transaction?prod_cat_ver=2#list_transactions
+    API docs: https://apidocs.chargebee.com/docs/api/transactions?lang=curl&prod_cat_ver=2
     """
 
-    cursor_field = "occurred_at"
+    cursor_field = "updated_at"
 
     api = TransactionModel
+
+
+class Coupon(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/coupon?prod_cat_ver=2#list_coupon
+    """
+
+    cursor_field = "updated_at"
+
+    api = CouponModel
