@@ -958,7 +958,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(-1800000)
+  @Order(18)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
