@@ -163,7 +163,7 @@ public class WorkerApp {
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SyncWorkflowImpl.class);
+    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
             jobPersistence),
