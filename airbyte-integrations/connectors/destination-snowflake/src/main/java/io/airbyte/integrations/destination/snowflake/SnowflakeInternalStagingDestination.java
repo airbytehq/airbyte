@@ -14,7 +14,7 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -68,7 +68,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return new HashMap<>();
+    return Collections.emptyMap();
   }
 
   // this is a no op since we override getDatabase.
