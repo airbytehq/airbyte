@@ -77,8 +77,8 @@ class BaseSchemaModel(BaseModel):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     @classmethod
-    def schema(cls, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema(**kwargs)
+        schema = super().schema(*args, **kwargs)
         expand_refs(schema)
         return schema

@@ -67,9 +67,9 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   @BeforeAll
   public static void beforeAll() {
     AbstractSourcePerformanceTest.testArgs = Stream.of(
-        Arguments.of("test1000tables240columns200recordsDb", "test1000tables240columns200recordsDb", 200, 240, 1000),
-        Arguments.of("newregular25tables50000records", "newregular25tables50000records", 50000, 8, 25),
-        Arguments.of("newsmall1000tableswith10000rows", "newsmall1000tableswith10000rows", 10000, 8, 1000));
+        Arguments.of("t1000_c240_r200", "t1000_c240_r200", 200, 240, 1000),
+        Arguments.of("t25_c8_r50k_s10kb", "t25_c8_r50k_s10kb", 50000, 8, 25),
+        Arguments.of("t1000_c8_r10k_s500b", "t1000_c8_r10k_s500b", 10000, 8, 1000));
   }
 
 }

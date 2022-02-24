@@ -18,6 +18,10 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
+//     A small utility library for working with units of digital information
+//     https://github.com/aesy/datasize
+    implementation "io.aesy:datasize:1.0.0"
+
     testImplementation "org.testcontainers:postgresql:1.15.3"
     testImplementation "org.mockito:mockito-inline:4.1.0"
 

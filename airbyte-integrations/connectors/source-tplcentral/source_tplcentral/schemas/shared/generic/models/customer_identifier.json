@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ExternalId": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Id": {
+      "type": "integer"
+    }
+  }
+}

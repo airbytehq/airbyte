@@ -68,14 +68,19 @@ import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
+import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -96,6 +101,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -109,9 +117,12 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -138,6 +149,7 @@ public class AcceptanceTests {
 
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
+  private static final boolean IS_CONTAINER_ORCHESTRATOR = System.getenv().containsKey("CONTAINER_ORCHESTRATOR");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
@@ -171,6 +183,10 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
+  private static FeatureFlags featureFlags;
+
+  private static KubernetesClient kubernetesClient = null;
+
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
@@ -183,6 +199,10 @@ public class AcceptanceTests {
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
+    }
+
+    if (IS_KUBE) {
+      kubernetesClient = new DefaultKubernetesClient();
     }
 
     // by default use airbyte deployment governed by a test container.
@@ -203,6 +223,8 @@ public class AcceptanceTests {
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
+
+    featureFlags = new EnvVariableFeatureFlags();
   }
 
   @AfterAll
@@ -225,6 +247,7 @@ public class AcceptanceTests {
 
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
+    LOGGER.info("workspaceId = " + workspaceId);
 
     // log which connectors are being used.
     final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
@@ -467,7 +490,6 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -486,9 +508,8 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
@@ -519,7 +540,6 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
     LOGGER.info("Beginning testIncrementalSync() sync 1");
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -550,21 +570,31 @@ public class AcceptanceTests {
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
+
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
+    FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      waitForJob(apiClient.getJobsApi(), jobInfoRead.getJob(),
+          Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+    } else {
+      waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
+    }
+
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+        STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
     LOGGER.info("Starting testIncrementalSync() sync 3");
-    final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead connectionSyncRead3 =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndDestinationDbInSync(false);
+
   }
 
   @Test
@@ -613,7 +643,6 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -693,8 +722,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(14)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -743,7 +770,6 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
-
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
@@ -792,8 +818,6 @@ public class AcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
   @Order(16)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -834,7 +858,6 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
-
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
@@ -932,6 +955,210 @@ public class AcceptanceTests {
     } finally {
       apiClient.getJobsApi().cancelJob(jobId);
     }
+  }
+
+  @Test
+  @Order(18)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+                                matches = "true")
+  public void testDowntimeDuringSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+
+    for (final var input : List.of("KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
+      LOGGER.info("Checking " + input);
+
+      final UUID connectionId =
+          createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
+
+      JobInfoRead connectionSyncRead = null;
+
+      while (connectionSyncRead == null) {
+
+        try {
+          connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        } catch (Exception e) {
+          LOGGER.error("retrying after error", e);
+        }
+      }
+
+      Thread.sleep(10000);
+
+      switch (input) {
+        case "KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST" -> {
+          LOGGER.info("Scaling down both workers at roughly the same time...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up both workers...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_SYNC" -> {
+          LOGGER.info("Scaling down only sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_NON_SYNC" -> {
+          LOGGER.info("Scaling down only non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+          LOGGER.info("Scaling up non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        }
+      }
+
+      waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+
+      final long numAttempts = apiClient.getJobsApi()
+          .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
+          .getAttempts()
+          .size();
+
+      // it should be able to accomplish the resume without an additional attempt!
+      assertEquals(1, numAttempts);
+    }
+  }
+
+  @Test
+  @Order(19)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+                                matches = "true")
+  public void testCancelSyncWithInterruption() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    Thread.sleep(5000);
+
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+    Thread.sleep(1000);
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+
+    final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+    assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
+  }
+
+  @Test
+  @Order(20)
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+                                matches = "true")
+  public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+
+    LOGGER.info("Creating connection...");
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    LOGGER.info("Waiting for connection to be available in Temporal...");
+
+    LOGGER.info("Run manual sync...");
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    LOGGER.info("Waiting for job to run...");
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    LOGGER.info("Scale down workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+
+    LOGGER.info("Wait for worker scale down...");
+    Thread.sleep(1000);
+
+    LOGGER.info("Scale up workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+
+    LOGGER.info("Waiting for worker timeout...");
+    Thread.sleep(ContainerOrchestratorApp.MAX_SECONDS_TO_WAIT_FOR_FILE_COPY * 1000 + 1000);
+
+    LOGGER.info("Waiting for job to retry and succeed...");
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+  }
+
+  @Test
+  @Order(21)
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
+  @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+                                matches = "true")
+  public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+
+    LOGGER.info("Creating connection...");
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    LOGGER.info("Waiting for connection to be available in Temporal...");
+
+    LOGGER.info("Run manual sync...");
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    LOGGER.info("Waiting for job to run...");
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    LOGGER.info("Waiting for job to run a little...");
+    Thread.sleep(5000);
+
+    LOGGER.info("Scale down workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+
+    LOGGER.info("Waiting for worker shutdown...");
+    Thread.sleep(2000);
+
+    LOGGER.info("Starting background cancellation request...");
+    final var pool = Executors.newSingleThreadExecutor();
+    final var mdc = MDC.getCopyOfContextMap();
+    final Future<JobInfoRead> resp =
+        pool.submit(() -> {
+          MDC.setContextMap(mdc);
+          try {
+            final JobInfoRead jobInfoRead = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+            LOGGER.info("jobInfoRead = " + jobInfoRead);
+            return jobInfoRead;
+          } catch (ApiException e) {
+            LOGGER.error("Failed to read from api", e);
+            throw e;
+          }
+        });
+    Thread.sleep(2000);
+
+    LOGGER.info("Scaling up workers...");
+    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+
+    LOGGER.info("Waiting for cancellation to go into effect...");
+    assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
   }
 
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {

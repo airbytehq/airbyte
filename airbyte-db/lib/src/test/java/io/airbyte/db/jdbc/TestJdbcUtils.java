@@ -17,7 +17,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -144,8 +144,8 @@ public class TestJdbcUtils {
       sourceOperations.setStatementField(ps, 11, JDBCType.CHAR, "a");
       sourceOperations.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
       sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
-      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
+      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00.000Z");
+      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
       sourceOperations.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
 
       ps.execute();
@@ -239,30 +239,30 @@ public class TestJdbcUtils {
 
     resultSet.next();
     final int columnCount = resultSet.getMetaData().getColumnCount();
-    final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
+    final Map<String, JsonSchemaType> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
       actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getJsonType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
-    final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()
-        .put("bit", JsonSchemaPrimitive.BOOLEAN)
-        .put("boolean", JsonSchemaPrimitive.BOOLEAN)
-        .put("smallint", JsonSchemaPrimitive.NUMBER)
-        .put("int", JsonSchemaPrimitive.NUMBER)
-        .put("bigint", JsonSchemaPrimitive.NUMBER)
-        .put("float", JsonSchemaPrimitive.NUMBER)
-        .put("double", JsonSchemaPrimitive.NUMBER)
-        .put("real", JsonSchemaPrimitive.NUMBER)
-        .put("numeric", JsonSchemaPrimitive.NUMBER)
-        .put("decimal", JsonSchemaPrimitive.NUMBER)
-        .put("char", JsonSchemaPrimitive.STRING)
-        .put("varchar", JsonSchemaPrimitive.STRING)
-        .put("date", JsonSchemaPrimitive.STRING)
-        .put("time", JsonSchemaPrimitive.STRING)
-        .put("timestamp", JsonSchemaPrimitive.STRING)
-        .put("binary1", JsonSchemaPrimitive.STRING_BINARY)
-        .put("text_array", JsonSchemaPrimitive.ARRAY)
-        .put("int_array", JsonSchemaPrimitive.ARRAY)
+    final Map<String, JsonSchemaType> expected = ImmutableMap.<String, JsonSchemaType>builder()
+        .put("bit", JsonSchemaType.BOOLEAN)
+        .put("boolean", JsonSchemaType.BOOLEAN)
+        .put("smallint", JsonSchemaType.NUMBER)
+        .put("int", JsonSchemaType.NUMBER)
+        .put("bigint", JsonSchemaType.NUMBER)
+        .put("float", JsonSchemaType.NUMBER)
+        .put("double", JsonSchemaType.NUMBER)
+        .put("real", JsonSchemaType.NUMBER)
+        .put("numeric", JsonSchemaType.NUMBER)
+        .put("decimal", JsonSchemaType.NUMBER)
+        .put("char", JsonSchemaType.STRING)
+        .put("varchar", JsonSchemaType.STRING)
+        .put("date", JsonSchemaType.STRING)
+        .put("time", JsonSchemaType.STRING)
+        .put("timestamp", JsonSchemaType.STRING)
+        .put("binary1", JsonSchemaType.STRING_BASE_64)
+        .put("text_array", JsonSchemaType.ARRAY)
+        .put("int_array", JsonSchemaType.ARRAY)
         .build();
 
     assertEquals(actual, expected);
@@ -270,13 +270,13 @@ public class TestJdbcUtils {
 
   private ObjectNode jsonFieldExpectedValues() {
     final ObjectNode expected = expectedValues();
-    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
     arrayNode.add("one");
     arrayNode.add("two");
     arrayNode.add("three");
     expected.set("text_array", arrayNode);
 
-    ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
+    final ArrayNode arrayNode2 = new ObjectMapper().createArrayNode();
     arrayNode2.add("1");
     arrayNode2.add("2");
     arrayNode2.add("3");
@@ -303,7 +303,7 @@ public class TestJdbcUtils {
     expected.put("date", "2020-11-01T00:00:00Z");
     // todo (cgardens) we should parse this to a time string
     expected.put("time", "1970-01-01T05:00:00Z");
-    expected.put("timestamp", "2001-09-29T03:00:00Z");
+    expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
   }

@@ -120,6 +120,7 @@ const MainViewRoutes = () => {
             path={`${r}/*`}
             element={
               <Navigate
+                // @ts-expect-error state is now unkown, needs proper typing
                 to={location.state?.from ?? `/${CloudRoutes.SelectWorkspace}`}
                 replace
               />
@@ -148,7 +149,7 @@ const MainViewRoutes = () => {
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
   const config = useConfig();
-  useFullStory(config.fullstory, config.fullstory.enabled);
+  useFullStory(config.fullstory, config.fullstory.enabled, user);
 
   const analyticsContext = useMemo(
     () =>

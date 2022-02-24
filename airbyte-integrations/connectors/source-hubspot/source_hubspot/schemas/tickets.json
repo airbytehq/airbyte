@@ -16,10 +16,16 @@
     "archived": {
       "type": ["null", "boolean"]
     },
-    "companies": {
+    "contacts": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
+      }
+    },
+    "deals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     }
   }

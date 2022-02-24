@@ -4,13 +4,16 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -101,6 +104,29 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected String getAllSyncedObjects(String streamName) {
+    try {
+      final List<AppendBlobClient> appendBlobClients = getAppendBlobClient(streamName);
+      StringBuilder result = new StringBuilder();
+      for (AppendBlobClient appendBlobClient : appendBlobClients) {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        appendBlobClient.download(outputStream);
+        if (result.isEmpty()) {
+          result.append(outputStream.toString(StandardCharsets.UTF_8));
+        } else {
+          var stringStream = outputStream.toString(StandardCharsets.UTF_8);
+          result.append(stringStream.substring(stringStream.indexOf('\n') + 1));
+        }
+      }
+      LOGGER.info("All objects: " + result);
+      return result.toString();
+    } catch (Exception e) {
+      LOGGER.error("No blobs were found for stream with name {}.", streamName);
+      return "";
+    }
   }
 
 }

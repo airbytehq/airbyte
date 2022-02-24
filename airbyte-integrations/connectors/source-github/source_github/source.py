@@ -44,6 +44,7 @@ from .streams import (
 )
 
 TOKEN_SEPARATOR = ","
+DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
 # To scan all the repos within orgnaization, organization name could be
 # specified by using asteriks i.e. "airbytehq/*"
 ORGANIZATION_PATTERN = re.compile("^.*/\\*$")
@@ -140,12 +141,26 @@ class SourceGithub(AbstractSource):
             repository_stats_stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=repositories,
+                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
             for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
                 next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
             return True, None
+
         except Exception as e:
-            return False, repr(e)
+            message = repr(e)
+            if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
+                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')"
+                full_repo_name = message.split("https://api.github.com/repos/")[1]
+                full_repo_name = full_repo_name.split("?")[0]
+                message = f'Unknown repo name: "{full_repo_name}", use existing full repo name <organization>/<repository>'
+            elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
+                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')"
+                org_name = message.split("https://api.github.com/orgs/")[1]
+                org_name = org_name.split("/")[0]
+                message = f'Unknown organization name: "{org_name}"'
+
+            return False, message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
@@ -153,9 +168,10 @@ class SourceGithub(AbstractSource):
         repositories = repos + organization_repos
 
         organizations = list({org.split("/")[0] for org in repositories})
+        page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
-        repository_args = {"authenticator": authenticator, "repositories": repositories}
+        repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
@@ -179,12 +195,12 @@ class SourceGithub(AbstractSource):
             Organizations(**organization_args),
             Projects(**repository_args_with_start_date),
             PullRequestCommentReactions(**repository_args_with_start_date),
-            PullRequestStats(parent=pull_requests_stream, **repository_args),
+            PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
             PullRequests(**repository_args_with_start_date),
             Releases(**repository_args_with_start_date),
             Repositories(**organization_args),
             ReviewComments(**repository_args_with_start_date),
-            Reviews(parent=pull_requests_stream, **repository_args),
+            Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
             Teams(**organization_args),

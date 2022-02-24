@@ -19,7 +19,7 @@
     "companies": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "integer"]
+        "type": ["null", "string"]
       }
     }
   }

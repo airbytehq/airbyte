@@ -4,12 +4,12 @@
 
 
 import json
+import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
 
 
@@ -48,7 +48,7 @@ class Connector(ABC):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
@@ -59,7 +59,7 @@ class Connector(ABC):
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     @abstractmethod
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.

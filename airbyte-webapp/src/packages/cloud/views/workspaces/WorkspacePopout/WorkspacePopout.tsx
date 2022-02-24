@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
 import { components } from "react-select";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import {
-  useListCloudWorkspaces,
   useWorkspaceService,
+  useListCloudWorkspacesAsync,
 } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -100,16 +100,18 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
 };
 
 const WorkspacePopout: React.FC<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const workspaceList = useListCloudWorkspaces();
+  const { formatMessage } = useIntl();
+  const { data: workspaceList, isLoading } = useListCloudWorkspacesAsync();
   const { selectWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
 
   const options = useMemo(
     () =>
       workspaceList
-        .filter((w) => w.workspaceId !== workspace.workspaceId)
+        ?.filter((w) => w.workspaceId !== workspace.workspaceId)
         .map((workspace) => ({
           value: workspace.workspaceId,
           label: workspace.name,
@@ -129,6 +131,12 @@ const WorkspacePopout: React.FC<{
       }}
       isSearchable={false}
       options={options}
+      isLoading={isLoading}
+      loadingMessage={() =>
+        formatMessage({
+          id: "workspaces.loading",
+        })
+      }
       value={workspace.slug}
       onChange={({ value }) => selectWorkspace(value)}
     />

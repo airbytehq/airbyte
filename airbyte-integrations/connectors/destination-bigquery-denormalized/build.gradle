@@ -6,7 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
@@ -22,6 +22,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery-denormalized')
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

@@ -727,9 +727,9 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     LOGGER.info("connection_operation table populated with " + connectionOperationRecords + " records");
   }
 
-  private static <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig airbyteConfigType,
-                                                                         final Class<T> clazz,
-                                                                         final DSLContext ctx) {
+  static <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig airbyteConfigType,
+                                                                 final Class<T> clazz,
+                                                                 final DSLContext ctx) {
     final Field<String> configId = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
     final Field<String> configType = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
     final Field<OffsetDateTime> createdAt =

@@ -127,13 +127,17 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
           .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
+    s3Client.shutdown();
 
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
-    final Database database = getDatabase(databricksConfig);
-    // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
-    // Databricks, and it incorrectly quotes the schema name
-    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
+    try (final Database database = getDatabase(databricksConfig)) {
+      // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
+      // Databricks, and it incorrectly quotes the schema name
+      database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
+    } catch (final Exception e) {
+      throw new SQLException(e);
+    }
   }
 
   private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {

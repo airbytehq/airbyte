@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -21,6 +22,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -51,7 +53,9 @@ public class ConfigurationApiTest {
         "http://localhost",
         new AirbyteVersion("0.1.0-alpha"),
         Path.of(""),
-        mock(HttpClient.class));
+        mock(HttpClient.class),
+        mock(FeatureFlags.class),
+        mock(TemporalWorkerRunFactory.class));
     assertTrue(configurationApi.canImportDefinitons());
   }
 

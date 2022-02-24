@@ -31,6 +31,10 @@
  public      | status_type               | active
  public      | status_type               | inactive
  public      | status_type               | deprecated
+ public      | release_stage             | alpha
+ public      | release_stage             | beta
+ public      | release_stage             | generally_available
+ public      | release_stage             | custom
 
 
 
@@ -57,7 +61,6 @@
 Indexes:
     "workspace_pkey" PRIMARY KEY, btree (id)
 Referenced by:
-    TABLE "actor_oauth_parameter" CONSTRAINT "actor_oauth_parameter_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
     TABLE "actor" CONSTRAINT "actor_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
     TABLE "operation" CONSTRAINT "operation_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
 
@@ -78,6 +81,9 @@ Referenced by:
  spec              | jsonb                    |           | not null |
  created_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
  updated_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ tombstone         | boolean                  |           | not null | false
+ release_stage     | release_stage            |           |          |
+ release_date      | date                     |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)
 Referenced by:
@@ -126,8 +132,6 @@ Indexes:
     "actor_oauth_parameter_pkey" PRIMARY KEY, btree (id)
 Foreign-key constraints:
     "actor_oauth_parameter_actor_definition_id_fkey" FOREIGN KEY (actor_definition_id) REFERENCES actor_definition(id) ON DELETE CASCADE
-    "actor_oauth_parameter_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
-
 
 
 

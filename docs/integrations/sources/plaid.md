@@ -64,3 +64,6 @@ This guide will walk through how to create the credentials you need to run this 
     ```
 * We should now have everything we need to configure this source in the UI.
 
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |

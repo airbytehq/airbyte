@@ -4,6 +4,7 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
+import { WarningMessage } from "../WarningMessage";
 
 import {
   ControlLabels,
@@ -14,10 +15,18 @@ import {
 } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import {
+  Connector,
+  ConnectorDefinition,
+  ReleaseStage,
+} from "core/domain/connector";
 
 import Instruction from "./Instruction";
-import { IDataItem } from "components/base/DropDown/components/Option";
+import {
+  IDataItem,
+  IProps as OptionProps,
+  OptionView,
+} from "components/base/DropDown/components/Option";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -34,6 +43,31 @@ const Block = styled.div`
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
+`;
+
+const Text = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const Label = styled.div`
+  margin-left: 13px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+`;
+
+const Stage = styled.div`
+  padding: 2px 6px;
+  height: 14px;
+  background: ${({ theme }) => theme.greyColor20};
+  border-radius: 25px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 8px;
+  line-height: 10px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
@@ -53,6 +87,32 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
     </BottomElement>
   </>
 );
+
+const Option: React.FC<OptionProps> = (props) => {
+  return (
+    <components.Option {...props}>
+      <OptionView
+        data-testid={props.data.label}
+        isSelected={props.isSelected}
+        isDisabled={props.isDisabled}
+      >
+        <Text>
+          {props.data.img || null}
+          <Label>{props.label}</Label>
+        </Text>
+        {props.data.releaseStage &&
+        props.data.releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+          <Stage>
+            <FormattedMessage
+              id={`connector.releaseStage.${props.data.releaseStage}`}
+              defaultMessage={props.data.releaseStage}
+            />
+          </Stage>
+        ) : null}
+      </OptionView>
+    </components.Option>
+  );
+};
 
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
@@ -90,7 +150,6 @@ const ConnectorServiceTypeControl: React.FC<{
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
         ]
       : [];
   const sortedDropDownData = useMemo(
@@ -103,8 +162,10 @@ const ConnectorServiceTypeControl: React.FC<{
           label: item.name,
           value: Connector.id(item),
           img: <ImageBlock img={item.icon} />,
+          releaseStage: item.releaseStage,
         }))
         .sort(defaultDataItemSort),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
 
@@ -136,6 +197,7 @@ const ConnectorServiceTypeControl: React.FC<{
           {...field}
           components={{
             MenuList: ConnectorList,
+            Option,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
@@ -154,6 +216,11 @@ const ConnectorServiceTypeControl: React.FC<{
           documentationUrl={documentationUrl}
         />
       )}
+      {selectedService &&
+        (selectedService.releaseStage === ReleaseStage.ALPHA ||
+          selectedService.releaseStage === ReleaseStage.BETA) && (
+          <WarningMessage stage={selectedService.releaseStage} />
+        )}
     </>
   );
 };

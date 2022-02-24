@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "_self": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "label": {
+      "type": ["string", "null"]
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "is_sow": {
+      "type": "boolean"
+    },
+    "original_filename": {
+      "type": ["string", "null"]
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "modified": {
+      "type": "string",
+      "format": "datetime"
+    }
+  }
+}

@@ -66,12 +66,17 @@ export const useWorkspaceService = (): Context => {
   return workspaceService;
 };
 
-export const useCurrentWorkspace = (): Workspace => {
+export const useCurrentWorkspaceId = (): string => {
   const { params } = useRouter<unknown, { workspaceId: string }>();
-  const { workspaceId } = params;
+
+  return params.workspaceId;
+};
+
+export const useCurrentWorkspace = (): Workspace => {
+  const workspaceId = useCurrentWorkspaceId();
 
   return useResource(WorkspaceResource.detailShape(), {
-    workspaceId: workspaceId,
+    workspaceId,
   });
 };
 

@@ -252,6 +252,9 @@
     "source_url": {
       "type": ["null", "string"]
     },
+    "shop_url": {
+      "type": ["null", "string"]
+    },
     "total_discounts": {
       "type": ["null", "number"]
     },
@@ -601,7 +604,10 @@
           "type": ["null", "string"]
         },
         "tax_exemptions": {
-          "type": ["null", "boolean"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         },
         "id": {
           "type": ["null", "integer"]

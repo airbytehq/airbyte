@@ -39,6 +39,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   performance-test:
     timeout-minutes: 240
