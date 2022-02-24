@@ -19,7 +19,9 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.channels.Channels;
@@ -80,6 +82,73 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     this.azureBlobPath = String.join("/", azureBlobConfig.getEndpointUrl(), azureBlobConfig.getContainerName(), streamName);
     this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
+
+  public static void attemptAzureBlobWriteAndDelete(AzureBlobStorageConfig config) {
+    AppendBlobClient appendBlobClient = null;
+    try {
+      appendBlobClient = new SpecializedBlobClientBuilder()
+          .endpoint(config.getEndpointUrl())
+          .sasToken(config.getSasToken())
+          .containerName(config.getContainerName())
+          .blobName("testAzureBlob" + UUID.randomUUID())
+          .buildAppendBlobClient();
+
+      BlobContainerClient containerClient = getBlobContainerClient(appendBlobClient);
+      writeTestDataIntoBlob(appendBlobClient);
+      listCreatedBlob(containerClient);
+    }finally {
+      if (appendBlobClient!=null && appendBlobClient.exists()) {
+        LOGGER.info("Deleting blob: " + appendBlobClient.getBlobName());
+        appendBlobClient.delete();
+      }
+    }
+
+  }
+
+  private static void listCreatedBlob(BlobContainerClient containerClient) {
+    containerClient.listBlobs().forEach(blobItem -> LOGGER.info("Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+  }
+
+  private static void writeTestDataIntoBlob(AppendBlobClient appendBlobClient) {
+    final String test = "test_data";
+    LOGGER.info("Writing test data to Azure Blob storage: " + test);
+    final InputStream dataStream = new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_8));
+
+    final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, test.length())
+        .getBlobCommittedBlockCount();
+
+    LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
+  }
+
+  private static BlobContainerClient getBlobContainerClient(AppendBlobClient appendBlobClient) {
+    BlobContainerClient containerClient = appendBlobClient.getContainerClient();
+    if (!containerClient.exists()) {
+      containerClient.create();
+    }
+
+    if (!appendBlobClient.exists()) {
+      appendBlobClient.create();
+      LOGGER.info("blobContainerClient created");
+    } else {
+      LOGGER.info("blobContainerClient already exists");
+    }
+    return containerClient;
+  }
+//  private void initTestContainerAndBlob(AppendBlobClient appendBlobClient) {
+//    // create container if absent (aka SQl Schema)
+//    this.containerClient = appendBlobClient.getContainerClient();
+//    if (!containerClient.exists()) {
+//      containerClient.create();
+//    }
+//
+//    // create a storage container if absent (aka Table is SQL BD)
+//    if (!appendBlobClient.exists()) {
+//      appendBlobClient.create();
+//      LOGGER.info("blobContainerClient created");
+//    } else {
+//      LOGGER.info("blobContainerClient already exists");
+//    }
+//  }
 
   public Set<String> getAzureStagingFiles() {
     return azureStagingFiles;

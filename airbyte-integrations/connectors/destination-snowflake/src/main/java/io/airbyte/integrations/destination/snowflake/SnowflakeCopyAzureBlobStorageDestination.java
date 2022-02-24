@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDe
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
+import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageStreamCopier;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -37,9 +38,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
   @Override
   public void checkPersistence(JsonNode config) throws Exception {
-    final AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
-        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config.get("loading_method")));
-    client.attemptWriteAndDelete();
+    AzureBlobStorageStreamCopier.attemptAzureBlobWriteAndDelete(getAzureBlobConfig(config.get("loading_method")));
   }
 
   @Override

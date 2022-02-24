@@ -18,9 +18,6 @@ public class AzureBlobStorageFormatConfigs {
 
   public static AzureBlobStorageFormatConfig getAzureBlobStorageFormatConfig(final JsonNode config) {
     final JsonNode formatConfig = config.get("format");
-    if (formatConfig == null) {
-      return null;
-    }
     LOGGER.info("Azure Blob Storage format config: {}", formatConfig.toString());
     final AzureBlobStorageFormat formatType = AzureBlobStorageFormat
         .valueOf(formatConfig.get("format_type").asText().toUpperCase());
