@@ -184,8 +184,6 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
               && changedStateEvent.isValue())
           .isEmpty();
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -221,8 +219,6 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
               && changedStateEvent.isValue())
           .isEmpty();
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -266,8 +262,6 @@ public class ConnectionManagerWorkflowTest {
                   && changedStateEvent.getField() != StateField.SUCCESS)
                   && changedStateEvent.isValue())
           .isEmpty();
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -311,8 +305,6 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -356,8 +348,6 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -401,8 +391,6 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Mockito.verify(mConnectionDeletionActivity, Mockito.atLeast(1)).deleteConnection(Mockito.any());
-
-      testEnv.shutdown();
     }
 
   }
@@ -432,13 +420,6 @@ public class ConnectionManagerWorkflowTest {
               WorkflowOptions.newBuilder()
                   .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
                   .build());
-    }
-
-    @AfterEach
-    public void teardown() {
-      if (testEnv != null) {
-        testEnv.shutdown();
-      }
     }
 
     @RepeatedTest(10)
@@ -751,8 +732,6 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -779,8 +758,6 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -807,8 +784,6 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DBT)));
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -835,8 +810,6 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.PERSISTENCE)));
-
-      testEnv.shutdown();
     }
 
     @RepeatedTest(10)
@@ -863,8 +836,6 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.REPLICATION)));
-
-      testEnv.shutdown();
     }
 
   }
@@ -931,7 +902,6 @@ public class ConnectionManagerWorkflowTest {
 
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofMinutes(2L));
-      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -971,8 +941,6 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofSeconds(80L));
       workflow.retryFailedActivity();
       testEnv.sleep(Duration.ofSeconds(30L));
-
-      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -1033,7 +1001,6 @@ public class ConnectionManagerWorkflowTest {
       // For some reason this transiently fails if it is below the runtime.
       // However, this should be reported almost immediately. I think this is a bug.
       testEnv.sleep(Duration.ofSeconds(SleepingSyncWorkflow.RUN_TIME.toSeconds() + 2));
-      testEnv.shutdown();
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
