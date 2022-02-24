@@ -17,5 +17,5 @@ class Field:
         self.value = value
 
     def __str__(self):
-        return f"{self.name} {self.data_type}"
+        return f""""{self.name}" {self.data_type}"""
 
