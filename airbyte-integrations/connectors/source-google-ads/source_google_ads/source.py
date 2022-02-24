@@ -25,7 +25,6 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
-    KeywordView,
     GeographicReport,
     KeywordReport,
     ShoppingPerformanceReport,
@@ -112,23 +111,12 @@ class SourceGoogleAds(AbstractSource):
         incremental_stream_config = self.get_incremental_stream_config(google_api, config, tz=time_zone)
 
         streams = [
-<<<<<<< HEAD
-            AdGroupAds(api=google_api),
-            AdGroups(api=google_api),
-            Accounts(api=google_api),
-=======
             AdGroupAds(**incremental_stream_config),
             AdGroups(**incremental_stream_config),
             Accounts(**incremental_stream_config),
->>>>>>> master
             Campaigns(**incremental_stream_config),
             ClickView(**incremental_stream_config),
-<<<<<<< HEAD
-            KeywordView(**incremental_stream_config)
-        ] + custom_query_streams
-=======
         ]
-
         custom_query_streams = [
             CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
             for single_query_config in config.get("custom_queries", [])
@@ -150,4 +138,3 @@ class SourceGoogleAds(AbstractSource):
                 ]
             )
         return streams
->>>>>>> master

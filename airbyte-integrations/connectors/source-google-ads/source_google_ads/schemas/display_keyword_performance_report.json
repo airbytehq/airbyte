@@ -249,7 +249,8 @@
       "type": ["null", "integer"]
     },
     "segments.date": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }
