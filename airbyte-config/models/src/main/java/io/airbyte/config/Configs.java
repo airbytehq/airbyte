@@ -401,6 +401,32 @@ public interface Configs {
    */
   MaxWorkersConfig getMaxWorkers();
 
+  /**
+   * Define if the worker should run get spec workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunGetSpecWorkflows();
+
+  /**
+   * Define if the worker should run check connection workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunCheckConnectionWorkflows();
+
+  /**
+   * Define if the worker should run discover workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunDiscoverWorkflows();
+
+  /**
+   * Define if the worker should run sync workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunSyncWorkflows();
+
+  /**
+   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use
+   * only.
+   */
+  boolean shouldRunConnectionManagerWorkflows();
+
   // Worker - Kube only
   /**
    * Define the local ports the Airbyte Worker pod uses to connect to the various Job pods.
