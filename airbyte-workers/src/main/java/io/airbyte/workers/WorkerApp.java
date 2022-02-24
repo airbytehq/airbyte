@@ -146,15 +146,14 @@ public class WorkerApp {
       registerDiscover(factory);
     }
 
-    if (configs.shouldRunSyncWorkflows() || configs.shouldRunConnectionManagerWorkflows()) {
-      if (configs.shouldRunSyncWorkflows()) {
-        registerSync(factory);
-      }
-
-      if (configs.shouldRunConnectionManagerWorkflows()) {
-        registerConnectionManager(factory);
-      }
+    if (configs.shouldRunSyncWorkflows()) {
+      registerSync(factory);
     }
+
+    if (configs.shouldRunConnectionManagerWorkflows()) {
+      registerConnectionManager(factory);
+    }
+
     factory.start();
   }
 
@@ -219,7 +218,7 @@ public class WorkerApp {
                 jobPersistence, airbyteVersion));
   }
 
-  public void registerGetSpec(final WorkerFactory factory) {
+  private void registerGetSpec(final WorkerFactory factory) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
