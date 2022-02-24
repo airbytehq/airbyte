@@ -970,80 +970,60 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    for (final var input : List.of("KILL_BOTH_SAME_TIME", "KILL_SYNC_FIRST", "KILL_NON_SYNC_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
-      for (int i = 0; i < 3; i++) {
-        LOGGER.info("Checking " + input + " #" + i);
+    for (final var input : List.of("KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
+      LOGGER.info("Checking " + input);
 
-        final UUID connectionId =
-            createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
+      final UUID connectionId =
+          createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
 
-        JobInfoRead connectionSyncRead = null;
+      JobInfoRead connectionSyncRead = null;
 
-        while (connectionSyncRead == null) {
+      while (connectionSyncRead == null) {
 
-          try {
-            connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-          } catch (Exception e) {
-            LOGGER.error("retrying after error", e);
-          }
+        try {
+          connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        } catch (Exception e) {
+          LOGGER.error("retrying after error", e);
         }
-
-        Thread.sleep(10000);
-
-        switch (input) {
-          case "KILL_BOTH_SAME_TIME" -> {
-            LOGGER.info("Scaling down both workers at roughly the same time...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-
-            LOGGER.info("Scaling up both workers...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-          }
-          case "KILL_SYNC_FIRST" -> {
-            LOGGER.info("Scaling down sync worker first...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-
-            LOGGER.info("Scaling up both workers...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-          }
-          case "KILL_NON_SYNC_FIRST" -> {
-            LOGGER.info("Scaling down non-sync worker first...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-
-            LOGGER.info("Scaling up both workers...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-          }
-          case "KILL_ONLY_SYNC" -> {
-            LOGGER.info("Scaling down only sync worker...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
-
-            LOGGER.info("Scaling up sync worker...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
-          }
-          case "KILL_ONLY_NON_SYNC" -> {
-            LOGGER.info("Scaling down only non-sync worker...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
-
-            LOGGER.info("Scaling up non-sync worker...");
-            kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-          }
-        }
-
-        waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-
-        final long numAttempts = apiClient.getJobsApi()
-            .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-            .getAttempts()
-            .size();
-
-        // it should be able to accomplish the resume without an additional attempt!
-        assertEquals(1, numAttempts);
       }
+
+      Thread.sleep(10000);
+
+      switch (input) {
+        case "KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST" -> {
+          LOGGER.info("Scaling down both workers at roughly the same time...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up both workers...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_SYNC" -> {
+          LOGGER.info("Scaling down only sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_NON_SYNC" -> {
+          LOGGER.info("Scaling down only non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+          LOGGER.info("Scaling up non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        }
+      }
+
+      waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+
+      final long numAttempts = apiClient.getJobsApi()
+          .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
+          .getAttempts()
+          .size();
+
+      // it should be able to accomplish the resume without an additional attempt!
+      assertEquals(1, numAttempts);
     }
   }
 
