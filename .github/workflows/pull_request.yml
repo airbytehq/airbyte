@@ -99,5 +99,6 @@ jobs:
           terraform init
 #          aws sts get-caller-identity
           aws eks update-kubeconfig --region us-east-2 --name main --alias data-stg-main
+          
           terraform apply -auto-approve
 #          terraform plan -lock=false
