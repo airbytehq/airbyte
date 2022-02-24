@@ -144,8 +144,6 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        // use a Scanner that only processes new line characters to strictly abide with the
-        // https://jsonlines.org/ standard
         try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
           AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
         }
