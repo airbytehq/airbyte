@@ -91,7 +91,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final var releaseStages = configRepository.getDatabase().query(ctx -> MetricsQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, destId));
         if (releaseStages != null) {
           for (final ReleaseStage stage : releaseStages) {
-            DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+            DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
           }
         }
 
