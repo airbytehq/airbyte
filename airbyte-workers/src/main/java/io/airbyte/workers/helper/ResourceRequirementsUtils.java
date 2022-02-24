@@ -11,7 +11,6 @@ import io.airbyte.config.JobTypeResourceLimit;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.workers.WorkerConfigs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

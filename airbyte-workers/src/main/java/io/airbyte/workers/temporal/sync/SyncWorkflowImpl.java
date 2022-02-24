@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ActorType;
+import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSyncInput;
