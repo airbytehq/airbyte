@@ -301,7 +301,8 @@ public class KubePodProcess extends Process implements KubePod {
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
-    final PodResource<Pod> pod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
+    final PodResource<Pod> pod =
+        client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
     try {
       pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     } catch (InterruptedException e) {
@@ -309,8 +310,7 @@ public class KubePodProcess extends Process implements KubePod {
       LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
           podDefinition.getMetadata().getNamespace(),
           podDefinition.getMetadata().getName(),
-          pod.get().toString()
-          );
+          pod.get().toString());
       throw e;
     }
     LOGGER.info("Init container present..");
