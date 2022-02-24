@@ -102,6 +102,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
+    #Maximum number of retries that Airbyte attempt to fetch data.
+    report_generation_max_retries = 5
 
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
@@ -109,6 +111,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._model = self._generate_model()
         if(config and config.report_wait_timeout and config.report_wait_timeout > 30):
             self.REPORT_WAIT_TIMEOUT = timedelta(minutes=config.report_wait_timeout).total_seconds
+        if(config and config.report_generation_max_retries and config.report_generation_max_retries > 5):
+            self.report_generation_max_retries = config.report_generation_max_retries
+
         # Set start date from config file, should be in UTC timezone.
         self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
         super().__init__(config, profiles)
@@ -155,7 +160,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff.on_exception(
         backoff.expo,
         ReportGenerationFailure,
-        max_tries=1000,
+        max_tries=report_generation_max_retries,
     )
     def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)

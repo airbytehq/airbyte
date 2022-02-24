@@ -71,6 +71,12 @@ class AmazonAdsConfig(BaseModel):
         description="Timeout duration for Reports"
     )
 
+    report_generation_max_retries: int = Field(
+        None,
+        name="Report Geration Maximum Retries",
+        description="Maximum retries Airbyte will attempt for fetching Report Data",
+    )
+
     @classmethod
     def schema(cls, **kvargs):
         schema = super().schema(**kvargs)
