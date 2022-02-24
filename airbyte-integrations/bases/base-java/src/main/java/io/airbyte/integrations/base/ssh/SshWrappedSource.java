@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SshWrappedSource implements Source {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SshWrappedSource.class);
   private final Source delegate;
   private final List<String> hostKey;
