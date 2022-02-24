@@ -86,8 +86,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final long jobId = jobFactory.create(input.getConnectionId());
 
         log.info("New job created, with id: " + jobId);
-        emitJobToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, standardSync.getSourceId(),
-            standardSync.getDestinationId());
+        emitSrcIdDstIdToReleaseStagesMetric(standardSync.getSourceId(), standardSync.getDestinationId());
 
         return new JobCreationOutput(jobId);
       }
@@ -96,14 +95,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
   }
 
-  private void emitJobToReleaseStagesMetric(final AirbyteMetricsRegistry metric, final UUID srcId, final UUID dstId) throws IOException {
+  private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
     if (releaseStages == null) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(metric, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+      DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
     }
   }
 
@@ -127,15 +126,20 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobSuccess(final JobSuccessInput input) {
     try {
+      final long jobId = input.getJobId();
+      final int attemptId = input.getAttemptId();
+
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       } else {
-        log.warn("The job {} doesn't have any output for the attempt {}", input.getJobId(), input.getAttemptId());
+        log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
-      jobPersistence.succeedAttempt(input.getJobId(), input.getAttemptId());
-      final Job job = jobPersistence.getJob(input.getJobId());
+      jobPersistence.succeedAttempt(jobId, attemptId);
+      final Job job = jobPersistence.getJob(jobId);
+
       jobNotifier.successJob(job);
+      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -145,9 +149,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
-      jobPersistence.failJob(input.getJobId());
-      final Job job = jobPersistence.getJob(input.getJobId());
+      final var jobId = input.getJobId();
+      jobPersistence.failJob(jobId);
+      final Job job = jobPersistence.getJob(jobId);
+
       jobNotifier.failJob(input.getReason(), job);
+      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -173,11 +180,15 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobCancelled(final JobCancelledInput input) {
     try {
-      jobPersistence.cancelJob(input.getJobId());
-      jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
-      jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
-      final Job job = jobPersistence.getJob(input.getJobId());
+      final long jobId = input.getJobId();
+      jobPersistence.cancelJob(jobId);
+      final int attemptId = input.getAttemptId();
+      jobPersistence.failAttempt(jobId, attemptId);
+      jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
+
+      final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
+      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -191,6 +202,17 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobTracker.trackSync(job, JobState.STARTED);
     } catch (final IOException e) {
       throw new RetryableException(e);
+    }
+  }
+
+  private void emitJobIdToReleaseStagesMetric(final AirbyteMetricsRegistry metric, final long jobId) throws IOException {
+    final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
+    if (releaseStages == null) {
+      return;
+    }
+
+    for (final ReleaseStage stage : releaseStages) {
+      DogStatsDMetricSingleton.count(metric, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
     }
   }
 

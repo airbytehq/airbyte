@@ -30,10 +30,22 @@ import com.google.api.client.util.Preconditions;
  */
 public enum AirbyteMetricsRegistry {
 
+  JOB_CANCELLED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_cancelled_by_release_stage",
+      "increments when a job is cancelled. jobs are double counted as this is tagged by release stage."),
   JOB_CREATED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "job_created_by_release_stage",
       "increments when a new job is created. jobs are double counted as this is tagged by release stage."),
+  JOB_FAILED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_failed_by_release_stage",
+      "increments when a job fails. jobs are double counted as this is tagged by release stage."),
+  JOB_SUCCEEDED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_succeeded_by_release_stage",
+      "increments when a job succeeds. jobs are double counted as this is tagged by release stage."),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
