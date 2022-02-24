@@ -523,7 +523,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * This is checking if there was a version bump when the workflow is being reloaded. If so, it will
    * set the job as fail and continue with a new run.
    */
-  private void restartIfNewTemporalVersion(ConnectionUpdaterInput connectionUpdaterInput) {
+  private void restartIfNewTemporalVersion(final ConnectionUpdaterInput connectionUpdaterInput) {
     int version = Workflow.getVersion("connection_manager_workflow", Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
     if (version != CURRENT_VERSION) {
