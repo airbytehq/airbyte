@@ -82,6 +82,9 @@ Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/
 
 ## Changelog
 
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-02-19 | [10312](https://github.com/airbytehq/airbyte/pull/10312) | Add support for Transaction Stream
 | Version | Date       | Pull Request | Subject |
 | :--- |:-----------| :--- | :--- |
 | 0.1.8 | 2022-02-22 | [10366](https://github.com/airbytehq/airbyte/pull/10366) | Fix broken `coupon` stream + add unit tests |
