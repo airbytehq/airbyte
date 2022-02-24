@@ -240,7 +240,7 @@ class DestinationRedshiftPy(Destination):
 
                 if temporary_gzip_file:
                     s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
-                    csv_writer.delete_gzip_file(temporary_gzip_file)
+                    CSVWriter.delete_gzip_file(temporary_gzip_file)
 
                     if stream.destination_sync_mode in [DestinationSyncMode.append, DestinationSyncMode.overwrite]:
                         copy_statement = final_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)

@@ -49,5 +49,6 @@ class CSVWriter:
 
             return temporary_gzip_file
 
-    def delete_gzip_file(self, gzip_file: gzip.GzipFile):
+    @staticmethod
+    def delete_gzip_file(gzip_file: gzip.GzipFile):
         Path(gzip_file.name).unlink()
