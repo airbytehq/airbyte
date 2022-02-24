@@ -30,16 +30,15 @@
       "type": "object",
       "properties": {
         "callerType": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "profileId": {
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": ["callerType", "email", "profileId"]
+      }
     },
     "events": {
       "type": "array",
