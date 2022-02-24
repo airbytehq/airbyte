@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+from pdb import post_mortem
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import request
 
@@ -164,7 +165,10 @@ class IncrementalAppleSearchAdsStream(AppleSearchAdsStream, ABC):
         campaign_ids = []
 
         for campaign in response.json()["data"]:
-            campaign_ids.append({"campaign_id": campaign["id"]})
+            campaign_ids.append({
+                "campaign_id": campaign["id"],
+                "adam_id": campaign["adamId"]
+            })
 
         return campaign_ids
 
@@ -188,6 +192,37 @@ class CampaignNegativeKeywords(IncrementalAppleSearchAdsStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
+
+class CreativeSets(IncrementalAppleSearchAdsStream):
+    primary_key = ["id"]
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"creativesets/find"
+
+    def request_body_json(
+        self, stream_slice: Mapping[str, Any] = None, **kwargs: Any
+    ) -> Optional[Mapping]:
+        post_json = {
+            "selector": {
+                "conditions": [
+                    {
+                        "field": "adamId",
+                        "operator": "EQUALS",
+                        "values": [
+                            stream_slice.get('adam_id')
+                        ]
+                    }
+                ]
+            }
+        }
+
+        return post_json
 
 class SourceAppleSearchAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -229,5 +264,6 @@ class SourceAppleSearchAds(AbstractSource):
         return [
             Campaigns(org_id=config["org_id"], authenticator=auth),
             Adgroups(org_id=config["org_id"], authenticator=auth),
-            CampaignNegativeKeywords(org_id=config["org_id"], authenticator=auth)
+            CampaignNegativeKeywords(org_id=config["org_id"], authenticator=auth),
+            CreativeSets(org_id=config["org_id"], authenticator=auth)
         ]
