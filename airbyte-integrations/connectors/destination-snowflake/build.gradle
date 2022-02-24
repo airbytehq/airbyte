@@ -37,7 +37,6 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
-    implementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
     implementation project(':airbyte-protocol:models')
 
 
