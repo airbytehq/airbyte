@@ -20,6 +20,7 @@ create table "public"."actor_catalog"(
   "catalog" jsonb not null,
   "catalog_hash" varchar(32) not null,
   "created_at" timestamptz(35) not null,
+  "modified_at" timestamptz(35) not null default null,
   constraint "actor_catalog_pkey"
     primary key ("id")
 );
@@ -29,6 +30,8 @@ create table "public"."actor_catalog_fetch_event"(
   "actor_id" uuid not null,
   "config_hash" varchar(32) not null,
   "actor_version" varchar(256) not null,
+  "created_at" timestamptz(35) not null default null,
+  "modified_at" timestamptz(35) not null default null,
   constraint "actor_catalog_fetch_event_pkey"
     primary key ("id")
 );
@@ -47,6 +50,7 @@ create table "public"."actor_definition"(
   "tombstone" bool not null default false,
   "release_stage" release_stage null,
   "release_date" date null,
+  "resource_requirements" jsonb null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

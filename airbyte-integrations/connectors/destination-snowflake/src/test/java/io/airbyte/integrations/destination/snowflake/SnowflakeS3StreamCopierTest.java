@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -20,6 +21,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,13 +79,15 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-
-    for (String fileName : copier.getStagingWritersByFile().keySet()) {
-      verify(db).execute(String.format("COPY INTO fake-schema.%s FROM "
-          + "'s3://fake-bucket/%s'"
-          + " CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
-          + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
-          copier.getTmpTableName(), fileName));
+    List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getStagingWritersByFile().keySet()), 1000);
+    for (List<String> files : partition) {
+      verify(db).execute(String.format(
+          "COPY INTO fake-schema.%s FROM '%s' "
+              + "CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
+              + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+              + "files = (" + copier.generateFilesList(files) + " );",
+          copier.getTmpTableName(),
+          copier.generateBucketPath()));
     }
 
   }
