@@ -208,7 +208,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     // create it.
     final AirbyteConnectionStatus check = check(config);
 
-    //If we throw an exception here,the close method of the tunnel will never be called cause iterator has not been invoked yet
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
