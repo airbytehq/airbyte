@@ -18,7 +18,7 @@ class DataTypeConverter:
         return {
             "string": DataTypeConverter._convert_string(json_schema_format, json_schema_max_length),
             "number": DataType(name="DOUBLE PRECISION"),
-            "integer": DataType(name="INTEGER"),
+            "integer": DataType(name="BIGINT"),
             "boolean": DataType(name="BOOLEAN")
         }.get(json_type, FALLBACK_DATATYPE)
 
