@@ -1,6 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkFrontmatter from "remark-frontmatter";
 import styled from "styled-components";
 import type { PluggableList } from "react-markdown/lib/react-markdown";
 
@@ -16,7 +17,9 @@ const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
       linkTarget="_blank"
       className={className}
       skipHtml
-      remarkPlugins={[remarkGfm]}
+      // @ts-expect-error remarkFrontmatter currently has type conflicts due to duplicate vfile dependencies
+      // This is not actually causing any issues, but requires to disable TS on this for now.
+      remarkPlugins={[remarkFrontmatter, remarkGfm]}
       rehypePlugins={rehypePlugins}
       children={content || ""}
     />
