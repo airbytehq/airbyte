@@ -98,5 +98,4 @@ jobs:
           cd deployments/helm/stg/us_east_2
           terraform init
           aws eks update-kubeconfig --region us-east-2 --name main --profile prd-data-stg-iam-PlatformAdmin --role-arn arn:aws:iam::074505835657:role/PlatformAdmin
-          terraform apply -auto-approve
-#          terraform plan -lock=false
+          terraform plan -lock=false
