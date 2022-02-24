@@ -9,17 +9,22 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
@@ -70,6 +75,9 @@ public class JobCreationAndStatusUpdateActivityTest {
   @Mock
   private JobTracker mJobtracker;
 
+  @Mock
+  private ConfigRepository mConfigRepository;
+
   @InjectMocks
   private JobCreationAndStatusUpdateActivityImpl jobCreationAndStatusUpdateActivity;
 
@@ -93,9 +101,13 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test job creation")
-    public void createJob() {
+    public void createJob() throws JsonValidationException, ConfigNotFoundException, IOException {
       Mockito.when(mJobFactory.create(CONNECTION_ID))
           .thenReturn(JOB_ID);
+      Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
+          .thenReturn(Mockito.mock(StandardSync.class));
+      Mockito.when(mConfigRepository.getDatabase())
+          .thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
 
       final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
 

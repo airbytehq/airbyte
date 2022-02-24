@@ -30,6 +30,10 @@ import com.google.api.client.util.Preconditions;
  */
 public enum AirbyteMetricsRegistry {
 
+  JOB_CREATED(
+      MetricEmittingApps.WORKER,
+      "job_created",
+      "increments each time a job is created"),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",

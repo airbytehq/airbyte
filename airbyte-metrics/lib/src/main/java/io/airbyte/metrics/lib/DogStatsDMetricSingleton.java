@@ -70,7 +70,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("publishing count, name: {}, value: {}", metric.metricName, amt);
+      log.info("publishing count, name: {}, value: {}, tags: {}", metric.metricName, amt, tags);
       statsDClient.count(metric.metricName, amt, tags);
     }
   }
@@ -90,7 +90,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("publishing gauge, name: {}, value: {}", metric, val);
+      log.info("publishing gauge, name: {}, value: {}, tags: {}", metric, val, tags);
       statsDClient.gauge(metric.metricName, val, tags);
     }
   }
@@ -117,7 +117,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("recording histogram, name: {}, value: {}", metric.metricName, val);
+      log.info("recording histogram, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
       statsDClient.histogram(metric.metricName, val, tags);
     }
   }
@@ -138,7 +138,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("recording distribution, name: {}, value: {}", metric.metricName, val);
+      log.info("recording distribution, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
       statsDClient.distribution(metric.metricName, val, tags);
     }
   }

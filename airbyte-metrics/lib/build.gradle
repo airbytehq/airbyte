@@ -5,6 +5,8 @@ plugins {
 dependencies {
     implementation project(':airbyte-commons')
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-db:jooq')
+    implementation project(':airbyte-db:lib')
 
     implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
 }

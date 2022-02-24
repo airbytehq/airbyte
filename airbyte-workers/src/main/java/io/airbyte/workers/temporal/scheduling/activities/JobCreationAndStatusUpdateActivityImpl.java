@@ -17,6 +17,11 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.metrics.lib.MetricsQueries;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -53,8 +58,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
     try {
+      final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       if (input.isReset()) {
-        final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
@@ -80,6 +85,15 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final long jobId = jobFactory.create(input.getConnectionId());
 
         log.info("New job created, with id: " + jobId);
+        final var srcId = standardSync.getSourceId();
+        final var destId = standardSync.getDestinationId();
+
+        final var releaseStages = configRepository.getDatabase().query(ctx -> MetricsQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, destId));
+        if (releaseStages != null) {
+          for (final ReleaseStage stage : releaseStages) {
+            DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+          }
+        }
 
         return new JobCreationOutput(jobId);
       }
@@ -157,7 +171,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobPersistence.cancelJob(input.getJobId());
       jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
       jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
-
       final Job job = jobPersistence.getJob(input.getJobId());
       trackCompletion(job, JobStatus.FAILED);
       jobNotifier.failJob("Job was cancelled", job);
@@ -178,6 +191,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
+  }
+
+  // job -> connection -> source_id & destination_id -> actor_definition -> release stage
+  private void jobToReleaseStages() {
+    // config repository might be related to this.
   }
 
 }
