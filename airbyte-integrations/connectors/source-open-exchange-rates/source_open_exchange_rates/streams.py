@@ -92,19 +92,19 @@ class IncrementalOpenExchangeRatesStream(HttpStream):
 
 
 class HistoricalExchangeRates(IncrementalOpenExchangeRatesStream):
-    cursor_field = "timestamp"
+    cursor_field = ["timestamp"]
 
     def __init__(
         self,
         app_id: str,
         start_date: DateTime,
-        base: Optional[str],
-        symbols: Optional[str],
-        show_alternative: Optional[bool],
-        prettyprint: Optional[bool],
-        ignore_current_day: Optional[bool],
-        ignore_weekends: Optional[bool],
-        max_records_per_sync: Optional[int]
+        base: Optional[str] = None,
+        symbols: Optional[str] = None,
+        show_alternative: Optional[bool] = False,
+        prettyprint: Optional[bool] = False,
+        ignore_current_day: Optional[bool] = True,
+        ignore_weekends: Optional[bool] = False,
+        max_records_per_sync: Optional[int] = None
         ):
         super().__init__()
 
@@ -141,8 +141,8 @@ class HistoricalExchangeRates(IncrementalOpenExchangeRatesStream):
 
         # we get the start date from the start_date user input or from the stream state
         start_date = pendulum.parse(self._request_params["start_date"])
-        if stream_state.get(self.cursor_field) is not None:
-            start_date_stream_state = pendulum.from_timestamp(stream_state.get(self.cursor_field)).add(days=1)
+        if stream_state.get(self.cursor_field[0]) is not None:
+            start_date_stream_state = pendulum.from_timestamp(stream_state.get(self.cursor_field[0])).add(days=1)
         
             if start_date_stream_state > start_date:
                 start_date = start_date_stream_state
@@ -174,8 +174,8 @@ class HistoricalExchangeRates(IncrementalOpenExchangeRatesStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         current_stream_state = current_stream_state or {}
-        current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, pendulum.parse(self._request_params["start_date"]).timestamp())
+        current_stream_state[self.cursor_field[0]] = max(
+            latest_record[self.cursor_field[0]], current_stream_state.get(self.cursor_field[0], pendulum.parse(self._request_params["start_date"]).timestamp())
         )
         return current_stream_state
 
