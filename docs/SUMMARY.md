@@ -120,6 +120,7 @@
     * [Notion](integrations/sources/notion.md)
     * [Okta](integrations/sources/okta.md)
     * [OneSignal](integrations/sources/onesignal.md)
+    * [Open Exchange Rates](integrations/sources/open-echange-rates.md)
     * [OpenWeather](integrations/sources/openweather.md)
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
