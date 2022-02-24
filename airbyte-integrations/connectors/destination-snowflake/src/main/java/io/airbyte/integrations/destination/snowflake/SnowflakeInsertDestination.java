@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return new HashMap<>();
+    return Collections.emptyMap();
   }
 
   // this is a no op since we override getDatabase.
