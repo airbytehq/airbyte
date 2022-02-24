@@ -43,6 +43,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (useSsl(config)) {
       return SSL_JDBC_PARAMETERS;
     } else {
+      // No need for any parameters if the connection doesn't use SSL
       return new HashMap<>();
     }
   }
