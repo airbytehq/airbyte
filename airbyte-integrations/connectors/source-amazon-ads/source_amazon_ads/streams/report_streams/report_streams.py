@@ -10,7 +10,6 @@ from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
-from typing_extensions import Self
 from urllib.parse import urljoin
 
 import backoff
