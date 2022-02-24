@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +44,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
       return SSL_JDBC_PARAMETERS;
     } else {
       // No need for any parameters if the connection doesn't use SSL
-      return new HashMap<>();
+      return Collections.emptyMap();
     }
   }
 
