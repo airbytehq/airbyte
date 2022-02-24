@@ -2,46 +2,53 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from source_facebook_marketing.streams import remove_params_from_url
+import pytest
+from pendulum import duration
+from source_facebook_marketing.api import MyFacebookAdsApi
+from source_facebook_marketing.streams.base_streams import FBMarketingStream
+from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
 
 
-class TestUrlParsing:
-    def test_empty_url(self):
-        url = ""
-        parsed_url = remove_params_from_url(url=url, params=[])
-        assert parsed_url == url
+def test_filter_all_statuses(api, mocker):
+    mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
+    expected = {
+        "filtering": [
+            {
+                "field": "None.delivery_info",
+                "operator": "IN",
+                "value": [
+                    "active",
+                    "archived",
+                    "completed",
+                    "limited",
+                    "not_delivering",
+                    "deleted",
+                    "not_published",
+                    "pending_review",
+                    "permanently_deleted",
+                    "recently_completed",
+                    "recently_rejected",
+                    "rejected",
+                    "scheduled",
+                    "inactive",
+                ],
+            }
+        ]
+    }
+    assert FBMarketingStream(api=api)._filter_all_statuses() == expected
 
-    def test_does_not_raise_exception_for_invalid_url(self):
-        url = "abcd"
-        parsed_url = remove_params_from_url(url=url, params=["test"])
-        assert parsed_url == url
 
-    def test_escaped_characters(self):
-        url = "https://google.com?test=123%23%24%25%2A&test2=456"
-        parsed_url = remove_params_from_url(url=url, params=["test3"])
-        assert parsed_url == url
+@pytest.mark.parametrize(
+    "url", ["https://graph.facebook.com", "https://graph.facebook.com?test=123%23%24%25%2A&test2=456", "https://graph.facebook.com?"]
+)
+def test_fetch_thumbnail_data_url(url, requests_mock):
+    requests_mock.get(url, status_code=200, headers={"content-type": "content-type"}, content=b"")
+    assert fetch_thumbnail_data_url(url) == "data:content-type;base64,"
 
-    def test_no_params_url(self):
-        url = "https://google.com"
-        parsed_url = remove_params_from_url(url=url, params=["test"])
-        assert parsed_url == url
 
-    def test_no_params_arg(self):
-        url = "https://google.com?"
-        parsed_url = remove_params_from_url(url=url, params=["test"])
-        assert parsed_url == "https://google.com"
-
-    def test_partially_empty_params(self):
-        url = "https://google.com?test=122&&"
-        parsed_url = remove_params_from_url(url=url, params=[])
-        assert parsed_url == "https://google.com?test=122"
-
-    def test_no_matching_params(self):
-        url = "https://google.com?test=123"
-        parsed_url = remove_params_from_url(url=url, params=["test2"])
-        assert parsed_url == url
-
-    def test_removes_params(self):
-        url = "https://google.com?test=123&test2=456"
-        parsed_url = remove_params_from_url(url=url, params=["test2"])
-        assert parsed_url == "https://google.com?test=123"
+def test_parse_call_rate_header():
+    headers = {
+        "x-business-use-case-usage": '{"test":[{"type":"ads_management","call_count":1,"total_cputime":1,'
+        '"total_time":1,"estimated_time_to_regain_access":1}]}'
+    }
+    assert MyFacebookAdsApi._parse_call_rate_header(headers) == (1, duration(minutes=1))

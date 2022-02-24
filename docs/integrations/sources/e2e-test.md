@@ -20,6 +20,7 @@ Here is its configuration:
 | --- | --- | --- | --- | --- | --- |
 | Single-stream | stream name | string | yes | | Name of the stream in the catalog. |
 | | stream schema | json | yes | | Json schema of the stream in the catalog. It must be a valid Json schema. |
+| | stream duplication | integer | no | 1 | Duplicate the stream N times to quickly create a multi-stream catalog. |
 | Multi-stream | streams and schemas | json | yes | | A Json object specifying multiple data streams and their schemas. Each key in this object is one stream name. Each value is the schema for that stream. |
 | Both | max records | integer | yes | 100 | The number of record messages to emit from this connector. Min 1. Max 100 billion. |
 | | random seed | integer | no | current time millis | The seed is used in random Json object generation. Min 0. Max 1 million. |
@@ -62,7 +63,8 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 
 | Version | Date | Pull request | Notes |
 | --- | --- | --- | --- |
-| 2.0.0 (unpublished) | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954) | Remove legacy modes. Use more efficient Json generator. |
+| 2.1.0 | 2021-02-12 | [\#10298](https://github.com/airbytehq/airbyte/pull/10298) | Support stream duplication to quickly create a multi-stream catalog. |
+| 2.0.0 | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954) | Remove legacy modes. Use more efficient Json generator. |
 | 1.0.1 | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
 | 1.0.0 | 2021-01-23 | [\#9720](https://github.com/airbytehq/airbyte/pull/9720) | Add new continuous feed mode that supports arbitrary catalog specification. Initial release to cloud. |
 | 0.1.1 | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217) | Fix sleep time in infinite feed mode. |

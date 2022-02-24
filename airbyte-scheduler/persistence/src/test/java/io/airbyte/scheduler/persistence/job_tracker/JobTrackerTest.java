@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
@@ -36,6 +38,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
@@ -56,6 +59,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JobTrackerTest {
+
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "WORKSPACE_TEST";
@@ -99,6 +104,38 @@ class JobTrackerTest {
       .put("table_prefix", false)
       .put("operation_count", 0)
       .build();
+
+  private static final ConnectorSpecification SOURCE_SPEC;
+  private static final ConnectorSpecification DESTINATION_SPEC;
+
+  static {
+    try {
+      SOURCE_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
+          """
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            }
+          }
+          """));
+      DESTINATION_SPEC = new ConnectorSpecification().withConnectionSpecification(OBJECT_MAPPER.readTree(
+          """
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "boolean"
+              }
+            }
+          }
+          """));
+    } catch (final JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   private ConfigRepository configRepository;
 
@@ -259,13 +296,25 @@ class JobTrackerTest {
     final String configJson = MoreResources.readResource("example_config.json");
     final JsonNode config = Jsons.deserialize(configJson);
 
-    final Map<String, Object> expected = ImmutableMap.of(
-        JobTracker.CONFIG + ".username", JobTracker.SET,
-        JobTracker.CONFIG + ".has_ssl", false,
-        JobTracker.CONFIG + ".password", JobTracker.SET,
-        JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
+    final String schemaJson = MoreResources.readResource("example_config_schema.json");
+    final JsonNode schema = Jsons.deserialize(schemaJson);
 
-    final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config);
+    final Map<String, Object> expected = new ImmutableMap.Builder<String, Object>()
+        .put(JobTracker.CONFIG + ".username", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".has_ssl", false)
+        .put(JobTracker.CONFIG + ".password", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".one_of.type_key", "foo")
+        .put(JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".const_object.sub_key", "bar")
+        .put(JobTracker.CONFIG + ".const_object.sub_array", "[1,2,3]")
+        .put(JobTracker.CONFIG + ".const_object.sub_object.sub_sub_key", "baz")
+        .put(JobTracker.CONFIG + ".additionalPropertiesUnset.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesBoolean.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesSchema.foo", JobTracker.SET)
+        .put(JobTracker.CONFIG + ".additionalPropertiesConst.foo", 42)
+        .build();
+
+    final Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config, schema);
 
     assertEquals(expected, actual);
   }
@@ -305,26 +354,30 @@ class JobTrackerTest {
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(SOURCE_SPEC));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(DESTINATION_SPEC));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(SOURCE_SPEC));
     when(configRepository.getStandardDestinationDefinition(UUID2))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
-            .withDockerImageTag(CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION)
+            .withSpec(DESTINATION_SPEC));
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
