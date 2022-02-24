@@ -42,7 +42,7 @@ const Slider = styled.span<{ small?: boolean }>`
     transition: 0.3s;
     border-radius: 50%;
 
-    input:checked + & {
+    input:checked + && {
       transform: translateX(${({ small }) => (small ? 10 : 18)}px);
     }
   }
