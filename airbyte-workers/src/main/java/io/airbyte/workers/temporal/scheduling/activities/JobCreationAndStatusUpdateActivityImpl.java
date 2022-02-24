@@ -144,8 +144,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
-      } else {
-        log.warn("The job {} doesn't have any output for the attempt {}", input.getJobId(), input.getAttemptId());
       }
 
     } catch (final IOException e) {

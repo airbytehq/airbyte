@@ -5,14 +5,14 @@
 package io.airbyte.workers.temporal;
 
 import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.workers.WorkerException;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -22,6 +22,7 @@ import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.testing.TestWorkflowEnvironment;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
@@ -125,6 +128,50 @@ public class TemporalUtilsTest {
     });
   }
 
+  @Test
+  public void testRuntimeExceptionOnHeartbeatWrapper() {
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+    worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+    final AtomicInteger timesReachedEnd = new AtomicInteger(0);
+    worker.registerActivitiesImplementations(new TestFailingWorkflow.Activity1Impl(timesReachedEnd));
+    testEnv.start();
+
+    final TestFailingWorkflow workflowStub =
+        client.newWorkflowStub(TestFailingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+
+    // test runtime first
+    assertThrows(RuntimeException.class, () -> {
+      workflowStub.run("runtime");
+    });
+
+    // we should never retry enough to reach the end
+    assertEquals(0, timesReachedEnd.get());
+  }
+
+  @Test
+  public void testWorkerExceptionOnHeartbeatWrapper() {
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+    worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+    final AtomicInteger timesReachedEnd = new AtomicInteger(0);
+    worker.registerActivitiesImplementations(new TestFailingWorkflow.Activity1Impl(timesReachedEnd));
+    testEnv.start();
+
+    final TestFailingWorkflow workflowStub =
+        client.newWorkflowStub(TestFailingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+
+    // throws workerexception wrapped in a WorkflowFailedException
+    assertThrows(WorkflowFailedException.class, () -> {
+      workflowStub.run("worker");
+    });
+
+    // we should never retry enough to reach the end
+    assertEquals(0, timesReachedEnd.get());
+  }
+
   @WorkflowInterface
   public interface TestWorkflow {
 
@@ -183,6 +230,82 @@ public class TemporalUtilsTest {
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
+        LOGGER.info("before: {}", ACTIVITY1);
+      }
+
+    }
+
+  }
+
+  @WorkflowInterface
+  public interface TestFailingWorkflow {
+
+    @WorkflowMethod
+    String run(String arg);
+
+    class WorkflowImpl implements TestFailingWorkflow {
+
+      private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
+
+      final ActivityOptions options = ActivityOptions.newBuilder()
+          .setScheduleToCloseTimeout(Duration.ofMinutes(30))
+          .setStartToCloseTimeout(Duration.ofMinutes(30))
+          .setScheduleToStartTimeout(Duration.ofMinutes(30))
+          .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
+          .setRetryOptions(TemporalUtils.NO_RETRY)
+          .setHeartbeatTimeout(Duration.ofSeconds(1))
+          .build();
+
+      private final Activity1 activity1 = Workflow.newActivityStub(Activity1.class, options);
+
+      @Override
+      public String run(final String arg) {
+
+        LOGGER.info("workflow before activity 1");
+        activity1.activity(arg);
+        LOGGER.info("workflow after all activities");
+
+        return "completed";
+      }
+
+    }
+
+    @ActivityInterface
+    interface Activity1 {
+
+      @ActivityMethod
+      void activity(String arg);
+
+    }
+
+    class Activity1Impl implements Activity1 {
+
+      private static final Logger LOGGER = LoggerFactory.getLogger(TestWorkflow.Activity1Impl.class);
+      private static final String ACTIVITY1 = "activity1";
+
+      private final AtomicInteger timesReachedEnd;
+
+      public Activity1Impl(final AtomicInteger timesReachedEnd) {
+        this.timesReachedEnd = timesReachedEnd;
+      }
+
+      public void activity(String arg) {
+        LOGGER.info("before: {}", ACTIVITY1);
+        TemporalUtils.withBackgroundHeartbeat(new AtomicReference<>(null), () -> {
+          if (timesReachedEnd.get() == 0) {
+            if (arg.equals("runtime")) {
+              throw new RuntimeException("failed");
+            } else if (arg.equals("timeout")) {
+              Thread.sleep(10000);
+              return null;
+            } else {
+              throw new WorkerException("failed");
+            }
+          } else {
+            return null;
+          }
+        });
+        timesReachedEnd.incrementAndGet();
         LOGGER.info("before: {}", ACTIVITY1);
       }
 

@@ -301,6 +301,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           }
         }
+        LOGGER.info("Total records read: {}", recordsRead);
         try {
           destination.notifyEndOfStream();
         } catch (final Exception e) {
