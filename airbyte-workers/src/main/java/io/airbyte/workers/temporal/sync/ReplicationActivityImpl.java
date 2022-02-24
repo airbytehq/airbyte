@@ -11,6 +11,7 @@ import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -123,7 +124,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
             containerOrchestratorConfig.get(),
             sourceLauncherConfig,
             destinationLauncherConfig,
-            jobRunConfig);
+            jobRunConfig,
+            syncInput.getResourceRequirements());
       } else {
         workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
       }
@@ -206,7 +208,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                     final JobRunConfig jobRunConfig)
+                                                                                                                     final JobRunConfig jobRunConfig,
+                                                                                                                     final ResourceRequirements resourceRequirements)
       throws IOException {
 
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
@@ -218,7 +221,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         sourceLauncherConfig,
         destinationLauncherConfig,
         jobRunConfig,
-        workerConfigs);
+        resourceRequirements);
   }
 
 }
