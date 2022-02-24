@@ -141,7 +141,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null,
-        RedshiftCopyS3Destination.SSL_JDBC_PARAMETERS
+        RedshiftInsertDestination.SSL_JDBC_PARAMETERS
     );
   }
 

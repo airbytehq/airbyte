@@ -22,7 +22,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
 
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
 
-  private static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+  public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
