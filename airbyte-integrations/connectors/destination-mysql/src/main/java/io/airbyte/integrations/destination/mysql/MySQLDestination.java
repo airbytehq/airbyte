@@ -36,10 +36,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "useSSL", "true",
-      "requireSSL", "true",
-      "verifyServerCertificate", "false");
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       // zero dates by default cannot be parsed into java date objects (they will throw an error)
       // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
@@ -48,6 +44,12 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       // since zero dates are placeholders, we convert them to null by default
       "zeroDateTimeBehavior", "convertToNull",
       "allowLoadLocalInfile", "true");
+
+  static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
+          "useSSL", "true",
+          "requireSSL", "true",
+          "verifyServerCertificate", "false"),
+      DEFAULT_JDBC_PARAMETERS);
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MySQLDestination(), List.of(HOST_KEY), List.of(PORT_KEY));
@@ -84,16 +86,10 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     super(DRIVER_CLASS, new MySQLNameTransformer(), new MySQLSqlOperations());
   }
 
-  // Override for testing purposes...
-  @Override
-  protected JdbcDatabase getDatabase(final JsonNode config) {
-    return super.getDatabase(config);
-  }
-
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     if (useSSL(config)) {
-      return MoreMaps.merge(DEFAULT_JDBC_PARAMETERS, SSL_JDBC_PARAMETERS);
+      return DEFAULT_SSL_JDBC_PARAMETERS;
     } else {
       return DEFAULT_JDBC_PARAMETERS;
     }

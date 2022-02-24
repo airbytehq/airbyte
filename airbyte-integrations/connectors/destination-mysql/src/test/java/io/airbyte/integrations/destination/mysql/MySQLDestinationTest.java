@@ -9,15 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.map.MoreMaps;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class MySQLDestinationTest {
-
-  private static final Map<String, String> DEFAULT_PARAMETERS_WITH_SSL = MoreMaps.merge(
-      MySQLDestination.DEFAULT_JDBC_PARAMETERS,
-      MySQLDestination.SSL_JDBC_PARAMETERS);
 
   public static final String JDBC_URL = "jdbc:mysql://localhost:1337/db";
 
@@ -76,7 +71,7 @@ public class MySQLDestinationTest {
   @Test
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters());
-    assertEquals(DEFAULT_PARAMETERS_WITH_SSL, defaultProperties);
+    assertEquals(MySQLDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
 }
