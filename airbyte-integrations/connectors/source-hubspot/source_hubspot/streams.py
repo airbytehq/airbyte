@@ -1029,7 +1029,7 @@ class Deals(CRMSearchStream):
 
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts"]
+    associations = ["contacts", "companies"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1288,7 +1288,7 @@ class Companies(CRMSearchStream):
 class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
-    associations = ["contacts"]
+    associations = ["contacts", "companies"]
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1336,7 +1336,7 @@ class Products(CRMObjectIncrementalStream):
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
-    associations = ["contacts", "deals"]
+    associations = ["contacts", "deals", "companies"]
 
 
 class Quotes(CRMObjectIncrementalStream):
