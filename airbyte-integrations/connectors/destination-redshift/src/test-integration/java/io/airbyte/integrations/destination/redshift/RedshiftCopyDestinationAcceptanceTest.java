@@ -60,19 +60,9 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    final List<JsonNode> records = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
-    return records
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(j -> {
-          final String text = j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText();
-          final JsonNode deserialized = Jsons.deserialize(text);
-          if (deserialized.isTextual()) {
-            final JsonNode d = Jsons.deserialize(deserialized.asText());
-            return d;
-          } else {
-            return deserialized;
-          }
-        })
+        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
