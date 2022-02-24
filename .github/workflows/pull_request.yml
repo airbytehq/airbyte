@@ -5,9 +5,9 @@ on:
 env:
   IMAGE_TAG: ${{ github.sha }}
   IMAGE_NAME: airbyte
-  AWS_PROFILE_ACCOUNT_DEV: prd-data-dev-PlatformAdmin
-  AWS_PROFILE_ACCOUNT_STG: prd-data-stg-PlatformAdmin
-  AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_DEV: prd-data-dev-iam-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_STG: prd-data-stg-iam-PlatformAdmin
+  AWS_PROFILE_ACCOUNT_PRD: prd-data-prd-iam-PlatformAdmin
 
 jobs:
   branch_name:
@@ -92,9 +92,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          export AWS_PROFILE=${AWS_PROFILE}
+          export AWS_PROFILE=${AWS_PROFILE_ACCOUNT_STG}
           export TF_VAR_change_cause=${IMAGE_TAG}
           export TF_VAR_image_tag=${IMAGE_TAG}
           cd deployments/helm/stg/us_east_2
           terraform init
+          aws eks update-kubeconfig --region us-east-2 --name main --profile prd-data-stg-iam-PlatformAdmin --role-arn arn:aws:iam::074505835657:role/PlatformAdmin
           terraform plan -lock=false
