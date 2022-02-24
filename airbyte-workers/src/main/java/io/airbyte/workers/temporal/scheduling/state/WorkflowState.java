@@ -30,6 +30,10 @@ public class WorkflowState {
   private boolean failed = false;
   private boolean resetConnection = false;
   private boolean continueAsReset = false;
+  private boolean retryFailedActivity = false;
+  private boolean quarantined = false;
+  private boolean success = true;
+  private boolean cancelledForReset = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -95,6 +99,38 @@ public class WorkflowState {
     this.continueAsReset = continueAsReset;
   }
 
+  public void setRetryFailedActivity(final boolean retryFailedActivity) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.RETRY_FAILED_ACTIVITY,
+        retryFailedActivity);
+    stateChangedListener.addEvent(id, event);
+    this.retryFailedActivity = retryFailedActivity;
+  }
+
+  public void setQuarantined(final boolean quarantined) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.QUARANTINED,
+        quarantined);
+    stateChangedListener.addEvent(id, event);
+    this.quarantined = quarantined;
+  }
+
+  public void setSuccess(final boolean success) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SUCCESS,
+        success);
+    stateChangedListener.addEvent(id, event);
+    this.success = success;
+  }
+
+  public void setCancelledForReset(final boolean cancelledForReset) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.CANCELLED_FOR_RESET,
+        cancelledForReset);
+    stateChangedListener.addEvent(id, event);
+    this.cancelledForReset = cancelledForReset;
+  }
+
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);
@@ -104,6 +140,10 @@ public class WorkflowState {
     this.setFailed(false);
     this.setResetConnection(false);
     this.setContinueAsReset(false);
+    this.setRetryFailedActivity(false);
+    this.setSuccess(false);
+    this.setQuarantined(false);
+    this.setCancelledForReset(false);
   }
 
 }

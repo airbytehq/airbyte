@@ -85,6 +85,7 @@ public class IntegrationRunner {
         integration.getClass().getSimpleName(),
         parsed.getCommand().toString(),
         true);
+    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
     try {
       runInternal(transaction, parsed);
       transaction.finish(SpanStatus.OK);

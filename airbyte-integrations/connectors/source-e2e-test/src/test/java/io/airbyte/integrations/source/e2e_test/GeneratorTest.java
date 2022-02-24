@@ -53,7 +53,7 @@ public class GeneratorTest {
     final Generator generator = new Generator(CONFIG, schemaStore, RANDOM);
     for (int i = 0; i < 10; ++i) {
       final JsonNode json = Jsons.jsonNode(generator.generate(schema, ContinuousFeedConstants.MOCK_JSON_MAX_TREE_SIZE));
-      assertTrue(JSON_VALIDATOR.test(jsonSchema, json));
+      assertTrue(JSON_VALIDATOR.test(jsonSchema, json), testCase);
     }
 
   }

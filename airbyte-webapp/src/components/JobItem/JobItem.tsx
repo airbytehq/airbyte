@@ -1,5 +1,6 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import styled from "styled-components";
+import { useEffectOnce } from "react-use";
 
 import { Spinner } from "components";
 
@@ -10,6 +11,7 @@ import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import { LogsDetails } from "./components/LogsDetails";
+import { useAttemptLink } from "./attemptLinkUtils";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -46,7 +48,10 @@ const JobCurrentLogs: React.FC<{
 };
 
 const isPartialSuccessCheck = (attempts: Attempt[]) => {
-  if (attempts[attempts.length - 1].status === Status.FAILED) {
+  if (
+    attempts.length > 0 &&
+    attempts[attempts.length - 1].status === Status.FAILED
+  ) {
     return attempts.some(
       (attempt) =>
         attempt.failureSummary && attempt.failureSummary.partialSuccess
@@ -61,17 +66,28 @@ type IProps = {
 } & ({ job: JobListItem } | { jobInfo: JobInfo });
 
 const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onExpand = () => setIsOpen(!isOpen);
-
   const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
+  const { jobId: linkedJobId } = useAttemptLink();
+  const [isOpen, setIsOpen] = useState(linkedJobId === String(jobMeta.id));
+  const onExpand = () => setIsOpen(!isOpen);
+  const scrollAnchor = useRef<HTMLDivElement>(null);
+
   const isFailed = jobMeta.status === Status.FAILED;
   const isPartialSuccess = isJobEntity(props)
     ? isPartialSuccessCheck(props.job.attempts)
     : undefined;
 
+  useEffectOnce(() => {
+    if (linkedJobId) {
+      scrollAnchor.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  });
+
   return (
-    <Item isFailed={isFailed}>
+    <Item isFailed={isFailed} ref={scrollAnchor}>
       <MainInfo
         shortInfo={shortInfo}
         isOpen={isOpen}
@@ -92,11 +108,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
           >
             {isOpen ? (
               isJobEntity(props) ? (
-                <JobLogs
-                  id={jobMeta.id}
-                  jobIsFailed={isFailed}
-                  isPartialSuccess={isPartialSuccess}
-                />
+                <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
               ) : (
                 <JobCurrentLogs
                   id={jobMeta.id}

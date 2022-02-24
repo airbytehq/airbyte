@@ -35,7 +35,13 @@ const StyleProvider: React.FC = ({ children }) => (
 );
 
 const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={en}>
+  <IntlProvider
+    locale="en"
+    messages={en}
+    defaultRichTextElements={{
+      b: (chunk) => <strong>{chunk}</strong>,
+    }}
+  >
     {children}
   </IntlProvider>
 );

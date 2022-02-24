@@ -158,8 +158,8 @@ If you are syncing data from a server using the `postgres` Docker image, you wil
 Here is what these settings would look like in `postgresql.conf`:
 
 ```text
-wal_level = logical             
-max_wal_senders = 1             
+wal_level = logical
+max_wal_senders = 1
 max_replication_slots = 1
 ```
 
@@ -169,8 +169,8 @@ Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgre
 
 ### CDC on AWS Postgres RDS or Aurora
 
-* Go to the `Configuration` tab for your DB cluster. 
-* Find your cluster parameter group. You will either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy you will need to change your cluster's parameter group before restarting. 
+* Go to the `Configuration` tab for your DB cluster.
+* Find your cluster parameter group. You will either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy you will need to change your cluster's parameter group before restarting.
 * Within the parameter group page, search for `rds.logical_replication`. Select this row and click on the `Edit parameters` button. Set this value to `1`.
 * Wait for a maintenance window to automatically restart the instance or restart it manually.
 * Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
@@ -270,6 +270,10 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.8   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
+| 0.4.7   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
+| 0.4.6   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                                       |
 | 0.4.4   | 2022-01-26 | [9807](https://github.com/airbytehq/airbyte/pull/9807) | Update connector fields title/description                                                                       |
 | 0.4.3   | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC                                                                          |
 | 0.4.2   | 2022-01-13 | [9360](https://github.com/airbytehq/airbyte/pull/9360) | Added schema selection                                                                                          |
