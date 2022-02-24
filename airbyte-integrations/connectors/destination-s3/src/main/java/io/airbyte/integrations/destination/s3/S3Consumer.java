@@ -19,10 +19,15 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(S3Consumer.class);
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
@@ -85,8 +90,20 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(final boolean hasFailed) throws Exception {
-    for (final DestinationFileWriter handler : streamNameAndNamespaceToWriters.values()) {
-      handler.close(hasFailed);
+    Optional<Exception> exceptionsThrown = Optional.empty();
+    for (var entry : streamNameAndNamespaceToWriters.entrySet()) {
+      final DestinationFileWriter handler = entry.getValue();
+      try {
+        handler.close(hasFailed);
+      } catch (Exception e) {
+        if (exceptionsThrown.isEmpty()) {
+          exceptionsThrown = Optional.of(e);
+        }
+        LOGGER.error("Exception while closing writer {}", entry.getKey(), e);
+      }
+    }
+    if (exceptionsThrown.isPresent()) {
+      throw exceptionsThrown.get();
     }
     // S3 stream uploader is all or nothing if a failure happens in the destination.
     if (!hasFailed) {
