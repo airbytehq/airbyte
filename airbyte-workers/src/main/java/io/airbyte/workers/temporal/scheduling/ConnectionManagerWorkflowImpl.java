@@ -455,7 +455,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * make sense. >>>>>>> 76e969f2e5e1b869648142c3565b7375b1892999
    */
   private StandardSyncOutput runChildWorkflow(GeneratedJobInput jobInputs) {
-    int taskQueueChangeVersion = Workflow.getVersion("task_queue_change", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+    int taskQueueChangeVersion =
+        Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
 
     String taskQueue = TemporalJobType.SYNC.name();
 
