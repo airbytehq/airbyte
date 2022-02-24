@@ -72,11 +72,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
           properties.put("oracle.net.encryption_types_client", "( " + algorithm + " )");
         }
         case "encrypted_verify_certificate" -> {
-          try {
-            convertAndImportCertificate(encryption.get("ssl_certificate").asText());
-          } catch (final IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to import certificate into Java Keystore");
-          }
+          tryConvertAndImportCertificate(encryption.get("ssl_certificate").asText());
           properties.put("javax.net.ssl.trustStore", KEY_STORE_FILE_PATH);
           properties.put("javax.net.ssl.trustStoreType", "JKS");
           properties.put("javax.net.ssl.trustStorePassword", KEY_STORE_PASS);
@@ -125,6 +121,14 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     }
     throw new RuntimeException(
         "Failed to obtain connection protocol from config " + encryption.asText());
+  }
+
+  private static void tryConvertAndImportCertificate(final String certificate) {
+    try {
+      convertAndImportCertificate(certificate);
+    } catch (final IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to import certificate into Java Keystore");
+    }
   }
 
   private static void convertAndImportCertificate(final String certificate)
