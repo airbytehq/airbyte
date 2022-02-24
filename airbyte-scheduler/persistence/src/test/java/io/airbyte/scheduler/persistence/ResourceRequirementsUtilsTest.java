@@ -6,99 +6,105 @@ package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.JobTypeResourceLimit;
+import io.airbyte.config.JobTypeResourceLimit.JobType;
+import io.airbyte.config.ResourceRequirements;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
 class ResourceRequirementsUtilsTest {
 
-  // @Test
-  // void testNoReqsSet() {
-  // final StandardSyncInput input = new StandardSyncInput();
-  //
-  // final ResourceRequirements sourceReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.SOURCE, JobType.SYNC);
-  // final ResourceRequirements destReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.DESTINATION, JobType.SYNC);
-  //
-  // assertEquals(new ResourceRequirements(), sourceReqs);
-  // assertEquals(new ResourceRequirements(), destReqs);
-  // }
-  //
-  // @Test
-  // void testDefaultDefinitionReqsSet() {
-  // final ResourceRequirements defaultSourceReqs = new ResourceRequirements().withCpuRequest("2");
-  // final ResourceRequirements defaultDestReqs = new ResourceRequirements().withCpuRequest("3");
-  //
-  // final StandardSyncInput input = new StandardSyncInput()
-  // .withSourceResourceRequirements(new
-  // ActorDefinitionResourceRequirements().withDefault(defaultSourceReqs))
-  // .withDestinationResourceRequirements(new
-  // ActorDefinitionResourceRequirements().withDefault(defaultDestReqs));
-  //
-  // final ResourceRequirements sourceReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.SOURCE, JobType.SYNC);
-  // final ResourceRequirements destReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.DESTINATION, JobType.SYNC);
-  //
-  // assertEquals(defaultSourceReqs, sourceReqs);
-  // assertEquals(defaultDestReqs, destReqs);
-  // }
-  //
-  // @Test
-  // void testJobSpecificResourceRequirementsOverrideDefault() {
-  // final ResourceRequirements defaultReqs = new
-  // ResourceRequirements().withCpuRequest("2").withMemoryRequest("300Mi");
-  // final JobTypeResourceLimit jobTypeResourceLimit = new
-  // JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(
-  // new ResourceRequirements().withCpuRequest("4").withMemoryLimit("500Mi"));
-  // final StandardSyncInput input = new StandardSyncInput()
-  // .withSourceResourceRequirements(new ActorDefinitionResourceRequirements()
-  // .withDefault(defaultReqs)
-  // .withJobSpecific(List.of(jobTypeResourceLimit)))
-  // .withDestinationResourceRequirements(new ActorDefinitionResourceRequirements()
-  // .withDefault(defaultReqs)
-  // .withJobSpecific(List.of(jobTypeResourceLimit)));
-  //
-  // final ResourceRequirements sourceReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.SOURCE, JobType.SYNC);
-  // final ResourceRequirements destReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.DESTINATION, JobType.SYNC);
-  //
-  // final ResourceRequirements expectedReqs = new ResourceRequirements()
-  // .withCpuRequest("4")
-  // .withMemoryRequest("300Mi")
-  // .withMemoryLimit("500Mi");
-  // assertEquals(expectedReqs, sourceReqs);
-  // assertEquals(expectedReqs, destReqs);
-  // }
-  //
-  // @Test
-  // void testConnectionResourceRequirementsOverrideDefault() {
-  // final ResourceRequirements defaultReqs = new
-  // ResourceRequirements().withCpuRequest("2").withMemoryRequest("300Mi");
-  // final JobTypeResourceLimit jobTypeResourceLimit = new
-  // JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(
-  // new ResourceRequirements().withCpuRequest("3").withCpuLimit("4"));
-  // final ResourceRequirements connectionResourceReqs = new
-  // ResourceRequirements().withCpuLimit("5").withMemoryLimit("400Mi");
-  // final StandardSyncInput input = new StandardSyncInput()
-  // .withSourceResourceRequirements(new ActorDefinitionResourceRequirements()
-  // .withDefault(defaultReqs)
-  // .withJobSpecific(List.of(jobTypeResourceLimit)))
-  // .withDestinationResourceRequirements(new ActorDefinitionResourceRequirements()
-  // .withDefault(defaultReqs)
-  // .withJobSpecific(List.of(jobTypeResourceLimit)))
-  // .withResourceRequirements(connectionResourceReqs);
-  //
-  // final ResourceRequirements sourceReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.SOURCE, JobType.SYNC);
-  // final ResourceRequirements destReqs = ResourceRequirementsUtils.getResourceRequirements(input,
-  // ActorType.DESTINATION, JobType.SYNC);
-  //
-  // final ResourceRequirements expectedReqs = new ResourceRequirements()
-  // .withCpuRequest("3")
-  // .withCpuLimit("5")
-  // .withMemoryRequest("300Mi")
-  // .withMemoryLimit("400Mi");
-  // assertEquals(expectedReqs, sourceReqs);
-  // assertEquals(expectedReqs, destReqs);
-  // }
+  @Test
+  void testNoReqsSet() {
+    final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
+        null,
+        null,
+        null,
+        JobType.SYNC);
+
+    assertEquals(new ResourceRequirements(), result);
+  }
+
+  @Test
+  void testWorkerDefaultReqsSet() {
+    final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1").withCpuLimit("1");
+    final ResourceRequirements reqs = ResourceRequirementsUtils.getResourceRequirements(
+        null,
+        null,
+        workerDefaultReqs,
+        JobType.SYNC);
+
+    assertEquals(workerDefaultReqs, reqs);
+  }
+
+  @Test
+  void testDefinitionDefaultReqsOverrideWorker() {
+    final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1").withCpuLimit("1");
+    final ResourceRequirements definitionDefaultReqs = new ResourceRequirements().withCpuLimit("2").withMemoryRequest("100Mi");
+    final ActorDefinitionResourceRequirements definitionReqs = new ActorDefinitionResourceRequirements().withDefault(definitionDefaultReqs);
+
+    final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
+        null,
+        definitionReqs,
+        workerDefaultReqs,
+        JobType.SYNC);
+
+    final ResourceRequirements expectedReqs = new ResourceRequirements()
+        .withCpuRequest("1")
+        .withCpuLimit("2")
+        .withMemoryRequest("100Mi");
+
+    assertEquals(expectedReqs, result);
+  }
+
+  @Test
+  void testJobSpecificReqsOverrideDefault() {
+    final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1").withCpuLimit("1");
+    final ResourceRequirements definitionDefaultReqs = new ResourceRequirements().withCpuLimit("2").withMemoryRequest("100Mi");
+    final JobTypeResourceLimit jobTypeResourceLimit = new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(
+        new ResourceRequirements().withCpuRequest("2").withMemoryRequest("200Mi").withMemoryLimit("300Mi"));
+    final ActorDefinitionResourceRequirements definitionReqs = new ActorDefinitionResourceRequirements()
+        .withDefault(definitionDefaultReqs)
+        .withJobSpecific(List.of(jobTypeResourceLimit));
+
+    final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
+        null,
+        definitionReqs,
+        workerDefaultReqs,
+        JobType.SYNC);
+
+    final ResourceRequirements expectedReqs = new ResourceRequirements()
+        .withCpuRequest("2")
+        .withCpuLimit("2")
+        .withMemoryRequest("200Mi")
+        .withMemoryLimit("300Mi");
+    assertEquals(expectedReqs, result);
+  }
+
+  @Test
+  void testConnectionResourceRequirementsOverrideDefault() {
+    final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1");
+    final ResourceRequirements definitionDefaultReqs = new ResourceRequirements().withCpuLimit("2").withCpuRequest("2");
+    final JobTypeResourceLimit jobTypeResourceLimit = new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(
+        new ResourceRequirements().withCpuLimit("3").withMemoryRequest("200Mi"));
+    final ActorDefinitionResourceRequirements definitionReqs = new ActorDefinitionResourceRequirements()
+        .withDefault(definitionDefaultReqs)
+        .withJobSpecific(List.of(jobTypeResourceLimit));
+    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withMemoryRequest("400Mi").withMemoryLimit("500Mi");
+
+    final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
+        connectionResourceRequirements,
+        definitionReqs,
+        workerDefaultReqs,
+        JobType.SYNC);
+
+    final ResourceRequirements expectedReqs = new ResourceRequirements()
+        .withCpuRequest("2")
+        .withCpuLimit("3")
+        .withMemoryRequest("400Mi")
+        .withMemoryLimit("500Mi");
+    assertEquals(expectedReqs, result);
+  }
 
 }
