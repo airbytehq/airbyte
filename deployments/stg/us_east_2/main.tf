@@ -40,7 +40,7 @@ resource "kubernetes_secret" "airbyte_secrets" {
 }
 
 data "kustomization" "airbyte_deployment" {
-  path = "../../../kustomize"
+  path = "kustomize"
 }
 
 resource "kustomization_resource" "airbyte_deployment" {

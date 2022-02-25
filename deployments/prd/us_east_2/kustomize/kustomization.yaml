@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: airbyte
 
 bases:
-  - resources
+  - ../../../resources
 
 resources:
   - ingress.yaml
