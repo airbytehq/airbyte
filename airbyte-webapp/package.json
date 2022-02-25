@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.36-alpha",
+  "version": "0.35.37-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -47,6 +47,7 @@
     "react-widgets": "^4.6.1",
     "recharts": "^2.1.9",
     "rehype-urls": "^1.1.1",
+    "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
     "rest-hooks": "^5.0.20",
     "sanitize-html": "^2.7.0",

@@ -4,33 +4,77 @@
 
 package io.airbyte.server.converters;
 
+import io.airbyte.api.model.ActorDefinitionResourceRequirements;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.JobType;
+import io.airbyte.api.model.JobTypeResourceLimit;
 import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
 import io.airbyte.workers.helper.CatalogConverter;
+import java.util.stream.Collectors;
 
 public class ApiPojoConverters {
 
-  public static io.airbyte.config.ResourceRequirements resourceRequirementsToInternal(final ResourceRequirements resourceRequirements) {
-    return new io.airbyte.config.ResourceRequirements()
-        .withCpuRequest(resourceRequirements.getCpuRequest())
-        .withCpuLimit(resourceRequirements.getCpuLimit())
-        .withMemoryRequest(resourceRequirements.getMemoryRequest())
-        .withMemoryLimit(resourceRequirements.getMemoryLimit());
+  public static io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqsToInternal(final ActorDefinitionResourceRequirements actorDefResourceReqs) {
+    if (actorDefResourceReqs == null) {
+      return null;
+    }
+
+    return new io.airbyte.config.ActorDefinitionResourceRequirements()
+        .withDefault(actorDefResourceReqs.getDefault() == null ? null : resourceRequirementsToInternal(actorDefResourceReqs.getDefault()))
+        .withJobSpecific(actorDefResourceReqs.getJobSpecific() == null ? null
+            : actorDefResourceReqs.getJobSpecific()
+                .stream()
+                .map(jobSpecific -> new io.airbyte.config.JobTypeResourceLimit()
+                    .withJobType(toInternalJobType(jobSpecific.getJobType()))
+                    .withResourceRequirements(resourceRequirementsToInternal(jobSpecific.getResourceRequirements())))
+                .collect(Collectors.toList()));
   }
 
-  public static ResourceRequirements resourceRequirementsToApi(final io.airbyte.config.ResourceRequirements resourceRequirements) {
+  public static ActorDefinitionResourceRequirements actorDefResourceReqsToApi(final io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqs) {
+    if (actorDefResourceReqs == null) {
+      return null;
+    }
+
+    return new ActorDefinitionResourceRequirements()
+        ._default(actorDefResourceReqs.getDefault() == null ? null : resourceRequirementsToApi(actorDefResourceReqs.getDefault()))
+        .jobSpecific(actorDefResourceReqs.getJobSpecific() == null ? null
+            : actorDefResourceReqs.getJobSpecific()
+                .stream()
+                .map(jobSpecific -> new JobTypeResourceLimit()
+                    .jobType(toApiJobType(jobSpecific.getJobType()))
+                    .resourceRequirements(resourceRequirementsToApi(jobSpecific.getResourceRequirements())))
+                .collect(Collectors.toList()));
+  }
+
+  public static io.airbyte.config.ResourceRequirements resourceRequirementsToInternal(final ResourceRequirements resourceReqs) {
+    if (resourceReqs == null) {
+      return null;
+    }
+
+    return new io.airbyte.config.ResourceRequirements()
+        .withCpuRequest(resourceReqs.getCpuRequest())
+        .withCpuLimit(resourceReqs.getCpuLimit())
+        .withMemoryRequest(resourceReqs.getMemoryRequest())
+        .withMemoryLimit(resourceReqs.getMemoryLimit());
+  }
+
+  public static ResourceRequirements resourceRequirementsToApi(final io.airbyte.config.ResourceRequirements resourceReqs) {
+    if (resourceReqs == null) {
+      return null;
+    }
+
     return new ResourceRequirements()
-        .cpuRequest(resourceRequirements.getCpuRequest())
-        .cpuLimit(resourceRequirements.getCpuLimit())
-        .memoryRequest(resourceRequirements.getMemoryRequest())
-        .memoryLimit(resourceRequirements.getMemoryLimit());
+        .cpuRequest(resourceReqs.getCpuRequest())
+        .cpuLimit(resourceReqs.getCpuLimit())
+        .memoryRequest(resourceReqs.getMemoryRequest())
+        .memoryLimit(resourceReqs.getMemoryLimit());
   }
 
   public static io.airbyte.config.StandardSync connectionUpdateToInternal(final ConnectionUpdate update) {
@@ -88,6 +132,14 @@ public class ApiPojoConverters {
     }
 
     return connectionRead;
+  }
+
+  public static JobType toApiJobType(final io.airbyte.config.JobTypeResourceLimit.JobType jobType) {
+    return Enums.convertTo(jobType, JobType.class);
+  }
+
+  public static io.airbyte.config.JobTypeResourceLimit.JobType toInternalJobType(final JobType jobType) {
+    return Enums.convertTo(jobType, io.airbyte.config.JobTypeResourceLimit.JobType.class);
   }
 
   public static ConnectionSchedule.TimeUnitEnum toApiTimeUnit(final Schedule.TimeUnit apiTimeUnit) {
