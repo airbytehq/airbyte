@@ -26,19 +26,20 @@ from  google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 from .streams import DBMStream
 from .streams import CookieReach
+from .streams import Standard
 
 class SourceDV360(Source):
 
     def get_credentials(self,config: json) -> Credentials:
         cred_json = config.get('credentials')
         return Credentials(
-        cred_json.get('access_token'), 
+        cred_json.get('access_token'),
         refresh_token= cred_json.get('refresh_token'),
         token_uri=cred_json.get('token_uri'),
         client_id=cred_json.get('client_id'),
         client_secret=cred_json.get('client_secret'))
 
-        
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -112,14 +113,14 @@ class SourceDV360(Source):
         start_date = config.get("start_date")
         end_date = config.get("end_date")
         stream_name = "cookie_reach"  # Example
-        #data = {"columnName": "Hello World"}  # Example
-        dbm_stream = CookieReach(service=dbm_service, start_date=start_date, end_date=end_date)
-     
-        data=dbm_stream.read_records(sync_mode=None)
-        
+        data = {"Advertiser ID":705159561,"Advertiser":"Stage Entertainment_Germany","Insertion Order ID":22061360,"Insertion Order":"de_2021-7_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_multipleshows_usecase1googleinmarketaudience","Line Item ID":55828118,"Line Item":"de_2021-8_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_dynamic-image_h5_multipleshows_usecase1googleinmarketaudience-mmr","Partner          ID":694186226,"Partner":"TP - Stage Entertainment - DQ&A - DV360 - DE","Cookie Reach: Impression Reach":310859}
+
+ # Example
+        dbm_stream = CookieReach(credentials=self.get_credentials(config),partner_id = config.get('partner_id'), start_date=start_date, end_date=end_date)
+
+        #data=dbm_stream.read_records(sync_mode=None)
+
         yield AirbyteMessage(
             type=Type.RECORD,
             record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
         )
-
-

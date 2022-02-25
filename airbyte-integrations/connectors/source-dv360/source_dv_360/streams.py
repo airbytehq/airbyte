@@ -29,20 +29,22 @@ REPORT_TYPE_MAPPING = {
     "unique_reach_audience": "TYPE_REACH_AUDIENCE",
     "unique_reach": "TYPE_REACH_AND_FREQUENCY"
 }
+
 class DBM:
-  QUERY_TEMPLATE_PATH = "./queries/query_template.json"
+  QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json"
   DBM_SCOPE = 'doubleclickbidmanager'
 
   def __init__(self, credentials: Credentials, partner_id: str, scope: str = DBM_SCOPE, version: str = 'v1.1'):
     self.service = build(scope,version, credentials= credentials)
     self.partner_id = partner_id
 
-  def set_partner_filter(query: Mapping[str, Any], partner_id: str):
+  def set_partner_filter(self,query: Mapping[str, Any]):
+    #print(query)
     filters = query.get("params").get("filters")
     if filters:
       partner_filter_index = next((index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None)
       if partner_filter_index is not None:
-        query["params"]["filters"][partner_filter_index]["value"] = partner_id
+        query["params"]["filters"][partner_filter_index]["value"] = self.partner_id
 
   def create_query_object(self, report_name:str, dimensions:List[str], metrics:List[str],
     start_date_ms:str, end_date_ms:str, filters:List[dict] = [] ) -> Mapping[str, Any]:
@@ -52,7 +54,7 @@ class DBM:
     with open(DBM.QUERY_TEMPLATE_PATH, 'r') as template:
       query_body = json.loads(template.read())
 
-    self.set_partner_filter(query_body, self.partner_id) #Set partner Id in the filter
+    self.set_partner_filter(query_body) #Set partner Id in the filter
     query_body["metadata"]["title"] = report_name
     query_body["params"]["type"] = REPORT_TYPE_MAPPING[report_name]
     query_body["params"]["groupBys"] = dimensions
@@ -60,31 +62,31 @@ class DBM:
     query_body["params"]["metrics"] = metrics
     query_body["reportDataStartTimeMs"] = start_date_ms
     query_body["reportDataEndTimeMs"] = end_date_ms
+    return query_body
 
 
-  def get_dimensions_from_schema(schema: Mapping[str, Any]) -> List[str]:
+  def get_dimensions_from_schema(self, schema: Mapping[str, Any]) -> List[str]:
     """
     Return a list of dimensions from the givem schema
     """
-    dimensions = [key for key in schema.get("properties").keys if key.startswith('FILTER')]
+    dimensions = [key for key in schema.get("properties").keys() if key.startswith('FILTER')]
     return dimensions
 
-  def get_metrics_from_schema(schema: Mapping[str, Any]) -> List[str]:
+  def get_metrics_from_schema(self, schema: Mapping[str, Any]) -> List[str]:
     """
     Return a list of metrics from the givem schema
     """
-    metrics = [key for key in schema.get("properties").keys if key.startswith('METRIC')]
+    metrics = [key for key in schema.get("properties").keys() if key.startswith('METRIC')]
     return metrics
 
-  def get_report_type_from_schema(schema: Mapping[str, Any]) -> str:
+  def get_report_type_from_schema(self, schema: Mapping[str, Any]) -> str:
     """
     Return the report type from the given schema
     """
     properties = schema.get("properties")
     return list(properties.get("params").get("report_type"))
 
-  def convert_schema_into_query(self,
-    schema: Mapping[str, Any], report_name: str, start_date: str, end_date: str = None) -> str:
+  def convert_schema_into_query(self,schema: Mapping[str, Any], report_name: str, start_date: str, end_date: str = None) -> str:
     """
     Create a query from the given schema
     """
@@ -94,21 +96,24 @@ class DBM:
       report_name = report_name,
       dimensions = self.get_dimensions_from_schema(schema),
       metrics = self.get_metrics_from_schema(schema),
-      start_date_ms = str(int(round(end_date).timestamp() * 1000)),   ## Convert dates to ms --> checkeck for timezone
-      end_date_ms = str(int(round(start_date).timestamp() * 1000)),
-      filters = schema.get("params").get("filters")
-    ).execute()
-    return query
+      start_date_ms = str(int(start_date.timestamp() * 1000)),   ## Convert dates to ms --> checkeck for timezone
+      end_date_ms = str(int(end_date.timestamp() * 1000)),
+    )
+    print(query)
+    create_query =self.service.queries().createquery(body=query).execute()
+    get_query=self.service.queries().getquery(queryId=create_query.get('queryId')).execute()
+    print(get_query)
+    return get_query
 
 
 class DBMStream(Stream, ABC):
   """
   Base stream class
   """
-  OUTPUT_DIR = "./reports"
+  OUTPUT_DIR = "source_dv_360/reports"
 
-  def __init__(self, service: DBM, start_date: str, end_date: str=None):
-    self.service = service
+  def __init__(self, credentials: Credentials, partner_id: str, start_date: str, end_date: str=None):
+    self.dbm = DBM(credentials= credentials, partner_id=partner_id)
     self._start_date = start_date
     self._end_date = end_date
 
@@ -116,15 +121,17 @@ class DBMStream(Stream, ABC):
     """
     Return a query
     """
-    query = DBM.convert_schema_into_query(schema= self.get_json_schema(), report_name= self.name)
+    query = self.dbm.convert_schema_into_query(schema= self.get_json_schema(), report_name= self.name,
+    start_date=self._start_date, end_date=self._end_date)
     return query
 
-  def fetch_report(self, query: str, output_dir: str = OUTPUT_DIR) -> str:
+  def fetch_report(self, query: dict, output_dir: str = OUTPUT_DIR) -> str:
     """
     Fetch a report and save the CSV file in the reports directory
     """
     output_file = ""
-    query_id = query.get("query_id")
+    query_id = query.get("queryId")
+    print(query_id)
     if query_id:
       try:
         if not os.path.isabs(output_dir):
@@ -145,7 +152,7 @@ class DBMStream(Stream, ABC):
     return output_file
 
 
-  def file_reader(filename):
+  def file_reader(self,filename):
     """
     Read file until an empty line is encountered
     """
@@ -156,7 +163,7 @@ class DBMStream(Stream, ABC):
         else:
           break
 
-  def get_list_of_columns(csv_file_path:str) -> List[str]:
+  def get_list_of_columns(self,csv_file_path:str) -> List[str]:
     """
     Get the list of columns from a csv file, which are the header of the file
     """
@@ -173,7 +180,11 @@ class DBMStream(Stream, ABC):
     if report_file != "":
       data = io.StringIO(''.join(self.file_reader(report_file)))
       final_data = pd.read_csv(data)
-    return final_data.to_json(orient='records', lines=True)
+      json_data = final_data.to_json(orient='records',lines=True)
+      print(json_data)
+      return json_data
+    else:
+      return {}
 
 
 class DBMIncrementalStream(DBMStream, ABC):
@@ -195,6 +206,7 @@ class CookieReach(DBMStream):
   """
   Cookie Reach stream
   """
+  primary_key = None
 
 class Floodlight(DBMStream):
   """
@@ -205,13 +217,16 @@ class Standard(DBMStream):
   """
   Standard stream
   """
+  primary_key = None
 
 class UniqueReachAudience(DBMStream):
   """
   Unique Reach Audience stream
   """
+  primary_key = None
 
 class UniqueReach(DBMStream):
   """
   Unique Reach stream
   """
+  primary_key = None
