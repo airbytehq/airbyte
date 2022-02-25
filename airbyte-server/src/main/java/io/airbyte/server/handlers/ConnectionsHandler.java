@@ -123,8 +123,6 @@ public class ConnectionsHandler {
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
-    } else {
-      standardSync.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
