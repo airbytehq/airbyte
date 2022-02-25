@@ -103,7 +103,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
     #Maximum number of retries that Airbyte attempt to fetch data.
-    report_generation_max_retries = 5
+    REPORT_GENERATION_MAX_RETRIES = 5
 
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
@@ -112,7 +112,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if(config and config.report_wait_timeout and config.report_wait_timeout > 30):
             self.REPORT_WAIT_TIMEOUT = timedelta(minutes=config.report_wait_timeout).total_seconds
         if(config and config.report_generation_max_retries and config.report_generation_max_retries > 5):
-            self.report_generation_max_retries = config.report_generation_max_retries
+            self.REPORT_GENERATION_MAX_RETRIES = config.report_generation_max_retries
 
         # Set start date from config file, should be in UTC timezone.
         self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
@@ -157,25 +157,34 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     metric=metric_object,
                 ).dict()
 
-    @backoff.on_exception(
-        backoff.expo,
-        ReportGenerationFailure,
-        max_tries=report_generation_max_retries,
-    )
+    def backoff_max_time(func):
+        def wrapped(self, *args, **kwargs):
+            return backoff.on_exception(
+                backoff.constant,
+                RetryableException,
+                max_time = self.REPORT_WAIT_TIMEOUT
+            )(func)(self, *args, **kwargs)
+        return wrapped
+        
+    def backoff_max_tries(func):
+        def wrapped(self, *args, **kwargs):
+            return backoff.on_exception(
+                backoff.expo,
+                ReportGenerationFailure,
+                max_tries = self.REPORT_GENERATION_MAX_RETRIES
+            )(func)(self, *args, **kwargs)
+        return wrapped
+
+    @backoff_max_tries
     def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
         return report_infos
 
-    @backoff.on_exception(
-        backoff.constant,
-        RetryableException,
-        max_time=REPORT_WAIT_TIMEOUT,
-    )
+    @backoff_max_time
     def _try_read_records(self, report_infos):
         incomplete_report_infos = self._incomplete_report_infos(report_infos)
-
         logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)
