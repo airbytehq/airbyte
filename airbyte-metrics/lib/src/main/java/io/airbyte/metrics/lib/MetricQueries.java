@@ -6,8 +6,10 @@ package io.airbyte.metrics.lib;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import java.util.List;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -42,6 +44,10 @@ public class MetricQueries {
     return ctx.select(ACTOR_DEFINITION.RELEASE_STAGE).from(ACTOR).join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
         .where(ACTOR.ID.eq(srcId))
         .or(ACTOR.ID.eq(dstId)).fetch().getValues(ACTOR_DEFINITION.RELEASE_STAGE);
+  }
+
+  public static int numberOfPendingJobs(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.pending)).execute();
   }
 
 }

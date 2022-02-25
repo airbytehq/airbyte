@@ -61,7 +61,11 @@ public enum MetricsRegistry {
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
-      "time taken to create a new kube pod process");
+      "time taken to create a new kube pod process"),
+  NUM_PENDING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_pending_jobs",
+      "number of pending jobs");
 
   public final MetricEmittingApp application;
   public final String metricName;
