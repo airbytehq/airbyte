@@ -11,10 +11,14 @@ import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
  */
 public class MetricTags {
 
-  private static final String RELEASE_STAGE = "release_stage:";
+  private static final String RELEASE_STAGE = "release_stage";
 
   public static String getReleaseStage(final ReleaseStage stage) {
-    return RELEASE_STAGE + ":" + stage.getLiteral();
+    return tagDelimit(RELEASE_STAGE, stage.getLiteral());
+  }
+
+  private static String tagDelimit(final String tagName, final String tagVal) {
+    return String.join(":", tagName, tagVal);
   }
 
 }
