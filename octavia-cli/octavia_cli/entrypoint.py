@@ -13,7 +13,12 @@ from .generate import commands as generate_commands
 from .init import commands as init_commands
 from .list import commands as list_commands
 
-AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, init_commands.init, generate_commands.generate]
+AVAILABLE_COMMANDS: List[click.Command] = [
+    list_commands._list,
+    init_commands.init,
+    generate_commands.generate,
+    generate_commands.generate_connection,
+]
 
 
 @click.group()

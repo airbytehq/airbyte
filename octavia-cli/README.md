@@ -24,7 +24,7 @@ docker run airbyte/octavia-cli:dev
 ````
 3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
 ````bash
-echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
+echo 'alias octavia="docker run -v /Users/marcosmarx/octavia-tests:/tmp/octavia-config airbyte/octavia-cli:dev --airbyte-url host.docker.internal:8000"'  >> ~/.zshrc
 source ~/.zshrc
 octavia
 ````
