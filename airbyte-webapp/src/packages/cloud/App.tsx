@@ -23,7 +23,13 @@ import { ConfigProvider } from "./services/ConfigProvider";
 const messages = Object.assign({}, en, cloudLocales);
 
 const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={messages}>
+  <IntlProvider
+    locale="en"
+    messages={messages}
+    defaultRichTextElements={{
+      b: (chunk) => <strong>{chunk}</strong>,
+    }}
+  >
     {children}
   </IntlProvider>
 );

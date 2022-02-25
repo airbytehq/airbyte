@@ -36,7 +36,9 @@ configurations {
 
 dependencies {
     implementation project(':airbyte-api')
+    implementation project(':airbyte-container-orchestrator')
 
+    implementation 'io.fabric8:kubernetes-client:5.3.1'
     implementation 'org.testcontainers:testcontainers:1.15.3'
 
     acceptanceTestsImplementation project(':airbyte-api')
@@ -50,7 +52,7 @@ dependencies {
 
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'
-    acceptanceTestsImplementation 'io.temporal:temporal-sdk:1.6.0'
+    acceptanceTestsImplementation 'io.temporal:temporal-sdk:1.8.1'
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
     acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.3'
     acceptanceTestsImplementation 'org.postgresql:postgresql:42.2.18'

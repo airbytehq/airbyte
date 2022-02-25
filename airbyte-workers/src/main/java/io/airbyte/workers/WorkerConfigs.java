@@ -7,39 +7,163 @@ package io.airbyte.workers;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class WorkerConfigs {
 
   private final Configs.WorkerEnvironment workerEnvironment;
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
-  private final Map<String, String> workerKubeNodeSelectors;
-  private final Map<String, String> workerKubeAnnotations;
+  private final Optional<Map<String, String>> workerKubeNodeSelectors;
+  private final Optional<Map<String, String>> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
   private final String jobSocatImage;
   private final String jobBusyboxImage;
   private final String jobCurlImage;
   private final Map<String, String> envMap;
+  private final Duration workerStatusCheckInterval;
 
+  /**
+   * Constructs a job-type-agnostic WorkerConfigs. For WorkerConfigs customized for specific
+   * job-types, use static `build*JOBTYPE*WorkerConfigs` method if one exists.
+   */
   public WorkerConfigs(final Configs configs) {
-    this.workerEnvironment = configs.getWorkerEnvironment();
-    this.resourceRequirements = new ResourceRequirements()
-        .withCpuRequest(configs.getJobMainContainerCpuRequest())
-        .withCpuLimit(configs.getJobMainContainerCpuLimit())
-        .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
-        .withMemoryLimit(configs.getJobMainContainerMemoryLimit());
-    this.workerKubeTolerations = configs.getJobKubeTolerations();
-    this.workerKubeNodeSelectors = configs.getJobKubeNodeSelectors();
-    this.workerKubeAnnotations = configs.getJobKubeAnnotations();
-    this.jobImagePullSecret = configs.getJobKubeMainContainerImagePullSecret();
-    this.jobImagePullPolicy = configs.getJobKubeMainContainerImagePullPolicy();
-    this.jobSocatImage = configs.getJobKubeSocatImage();
-    this.jobBusyboxImage = configs.getJobKubeBusyboxImage();
-    this.jobCurlImage = configs.getJobKubeCurlImage();
-    this.envMap = configs.getJobDefaultEnvMap();
+    this(
+        configs.getWorkerEnvironment(),
+        new ResourceRequirements()
+            .withCpuRequest(configs.getJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
+        configs.getJobKubeTolerations(),
+        configs.getJobKubeNodeSelectors(),
+        configs.getJobKubeAnnotations(),
+        configs.getJobKubeMainContainerImagePullSecret(),
+        configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSocatImage(),
+        configs.getJobKubeBusyboxImage(),
+        configs.getJobKubeCurlImage(),
+        configs.getJobDefaultEnvMap(),
+        configs.getDefaultWorkerStatusCheckInterval());
+  }
+
+  /**
+   * Builds a WorkerConfigs with some configs that are specific to the Spec job type.
+   */
+  public static WorkerConfigs buildSpecWorkerConfigs(final Configs configs) {
+    final Optional<Map<String, String>> nodeSelectors = configs.getSpecJobKubeNodeSelectors().isPresent()
+        ? configs.getSpecJobKubeNodeSelectors()
+        : configs.getJobKubeNodeSelectors();
+
+    final Optional<Map<String, String>> annotations = configs.getSpecJobKubeAnnotations().isPresent()
+        ? configs.getSpecJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
+    return new WorkerConfigs(
+        configs.getWorkerEnvironment(),
+        new ResourceRequirements()
+            .withCpuRequest(configs.getJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
+        configs.getJobKubeTolerations(),
+        nodeSelectors,
+        annotations,
+        configs.getJobKubeMainContainerImagePullSecret(),
+        configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSocatImage(),
+        configs.getJobKubeBusyboxImage(),
+        configs.getJobKubeCurlImage(),
+        configs.getJobDefaultEnvMap(),
+        configs.getSpecWorkerStatusCheckInterval());
+  }
+
+  /**
+   * Builds a WorkerConfigs with some configs that are specific to the Check job type.
+   */
+  public static WorkerConfigs buildCheckWorkerConfigs(final Configs configs) {
+    final Optional<Map<String, String>> nodeSelectors = configs.getCheckJobKubeNodeSelectors().isPresent()
+        ? configs.getCheckJobKubeNodeSelectors()
+        : configs.getJobKubeNodeSelectors();
+
+    final Optional<Map<String, String>> annotations = configs.getCheckJobKubeAnnotations().isPresent()
+        ? configs.getCheckJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
+    return new WorkerConfigs(
+        configs.getWorkerEnvironment(),
+        new ResourceRequirements()
+            .withCpuRequest(configs.getCheckJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getCheckJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getCheckJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
+        configs.getJobKubeTolerations(),
+        nodeSelectors,
+        annotations,
+        configs.getJobKubeMainContainerImagePullSecret(),
+        configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSocatImage(),
+        configs.getJobKubeBusyboxImage(),
+        configs.getJobKubeCurlImage(),
+        configs.getJobDefaultEnvMap(),
+        configs.getCheckWorkerStatusCheckInterval());
+  }
+
+  /**
+   * Builds a WorkerConfigs with some configs that are specific to the Discover job type.
+   */
+  public static WorkerConfigs buildDiscoverWorkerConfigs(final Configs configs) {
+    final Optional<Map<String, String>> nodeSelectors = configs.getDiscoverJobKubeNodeSelectors().isPresent()
+        ? configs.getDiscoverJobKubeNodeSelectors()
+        : configs.getJobKubeNodeSelectors();
+
+    final Optional<Map<String, String>> annotations = configs.getDiscoverJobKubeAnnotations().isPresent()
+        ? configs.getDiscoverJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
+    return new WorkerConfigs(
+        configs.getWorkerEnvironment(),
+        new ResourceRequirements()
+            .withCpuRequest(configs.getJobMainContainerCpuRequest())
+            .withCpuLimit(configs.getJobMainContainerCpuLimit())
+            .withMemoryRequest(configs.getJobMainContainerMemoryRequest())
+            .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
+        configs.getJobKubeTolerations(),
+        nodeSelectors,
+        annotations,
+        configs.getJobKubeMainContainerImagePullSecret(),
+        configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSocatImage(),
+        configs.getJobKubeBusyboxImage(),
+        configs.getJobKubeCurlImage(),
+        configs.getJobDefaultEnvMap(),
+        configs.getDiscoverWorkerStatusCheckInterval());
+  }
+
+  public static WorkerConfigs buildReplicationWorkerConfigs(final Configs configs) {
+    return new WorkerConfigs(
+        configs.getWorkerEnvironment(),
+        new ResourceRequirements()
+            .withCpuRequest(configs.getReplicationOrchestratorCpuRequest())
+            .withCpuLimit(configs.getReplicationOrchestratorCpuLimit())
+            .withMemoryRequest(configs.getReplicationOrchestratorMemoryRequest())
+            .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit()),
+        configs.getJobKubeTolerations(),
+        configs.getJobKubeNodeSelectors(),
+        configs.getJobKubeAnnotations(),
+        configs.getJobKubeMainContainerImagePullSecret(),
+        configs.getJobKubeMainContainerImagePullPolicy(),
+        configs.getJobKubeSocatImage(),
+        configs.getJobKubeBusyboxImage(),
+        configs.getJobKubeCurlImage(),
+        configs.getJobDefaultEnvMap(),
+        configs.getReplicationWorkerStatusCheckInterval());
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
@@ -54,11 +178,11 @@ public class WorkerConfigs {
     return workerKubeTolerations;
   }
 
-  public Map<String, String> getworkerKubeNodeSelectors() {
+  public Optional<Map<String, String>> getworkerKubeNodeSelectors() {
     return workerKubeNodeSelectors;
   }
 
-  public Map<String, String> getWorkerKubeAnnotations() {
+  public Optional<Map<String, String>> getWorkerKubeAnnotations() {
     return workerKubeAnnotations;
   }
 
@@ -84,6 +208,10 @@ public class WorkerConfigs {
 
   public Map<String, String> getEnvMap() {
     return envMap;
+  }
+
+  public Duration getWorkerStatusCheckInterval() {
+    return workerStatusCheckInterval;
   }
 
 }

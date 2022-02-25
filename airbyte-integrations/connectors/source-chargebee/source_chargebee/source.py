@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Addon, AttachedItem, Customer, Invoice, Item, ItemPrice, Order, Plan, Subscription
+from .streams import Addon, AttachedItem, Coupon, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription, Transaction
 
 
 class SourceChargebee(AbstractSource):
@@ -34,10 +34,13 @@ class SourceChargebee(AbstractSource):
 
         # Below streams are suitable for both `Product Catalog 1.0` and `Product Catalog 2.0`.
         common_streams = [
+            Coupon(**kwargs),
             Customer(**kwargs),
+            Event(**kwargs),
             Invoice(**kwargs),
             Order(**kwargs),
             Subscription(**kwargs),
+            Transaction(**kwargs),
         ]
 
         if product_catalog_version == "1.0":

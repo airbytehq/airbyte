@@ -25,10 +25,13 @@ This connector outputs the following streams:
 Some streams may depend on Product Catalog version and be accessible only on sites with specific Product Catalog version. This means that we have following streams:
 
 1. presented in both `Product Catalog 1.0` and `Product Catalog 2.0`:
-   * Subscriptions
    * Customers
+   * Events
    * Invoices
    * Orders
+   * Coupons
+   * Subscriptions
+   * Transactions
 2. presented only in `Product Catalog 1.0`:
    * Plans
    * Addons
@@ -37,7 +40,7 @@ Some streams may depend on Product Catalog version and be accessible only on sit
    * Item Prices
    * Attached Items
 
-Also, 8 streams from the above 9 incremental streams are pure incremental meaning that they:
+Also, 9 streams from the above 10 incremental streams are pure incremental meaning that they:
 
 * read only new records;
 * output only new records.
@@ -81,6 +84,10 @@ Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.9 | 2022-0224  | [10312](https://github.com/airbytehq/airbyte/pull/10312) | Add support for Transaction Stream |
+| 0.1.8 | 2022-02-22 | [10366](https://github.com/airbytehq/airbyte/pull/10366) | Fix broken `coupon` stream + add unit tests |
+| 0.1.7 | 2022-02-14 | [10269](https://github.com/airbytehq/airbyte/pull/10269) | Add support for Coupon stream |
+| 0.1.6 | 2022-02-10 | [10143](https://github.com/airbytehq/airbyte/pull/10143) | Add support for Event stream |
 | 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.4 | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454) | Fix examples in spec file |
 | 0.1.3 | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items` |

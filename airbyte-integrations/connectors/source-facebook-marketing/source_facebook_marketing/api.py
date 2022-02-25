@@ -4,27 +4,51 @@
 
 import json
 import logging
+from dataclasses import dataclass
 from time import sleep
 
+import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import FacebookAPIException
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+class FacebookAPIException(Exception):
+    """General class for all API errors"""
+
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    call_rate_threshold = 90  # maximum percentage of call limit utilization
+    call_rate_threshold = 95  # maximum percentage of call limit utilization
     pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
+    @dataclass
+    class Throttle:
+        """Utilization of call rate in %, from 0 to 100"""
+
+        per_application: float
+        per_account: float
+
+    # Insights async jobs throttle
+    _ads_insights_throttle: Throttle
+
+    @property
+    def ads_insights_throttle(self) -> Throttle:
+        return self._ads_insights_throttle
+
     @staticmethod
-    def parse_call_rate_header(headers):
+    def _parse_call_rate_header(headers):
         usage = 0
         pause_interval = pendulum.duration()
 
@@ -69,8 +93,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
             max_pause_interval = self.pause_interval_minimum
 
             for record in response.json():
+                # there are two types of failures: 
+                # 1. no response (we execute batch until all inner requests has response)
+                # 2. response with error (we crash loudly)
+                # in case it is failed inner request the headers might not be present
+                if "headers" not in record:
+                    continue
                 headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-                usage, pause_interval = self.parse_call_rate_header(headers)
+                usage, pause_interval = self._parse_call_rate_header(headers)
                 max_usage = max(max_usage, usage)
                 max_pause_interval = max(max_pause_interval, pause_interval)
 
@@ -80,12 +110,28 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 sleep(max_pause_interval.total_seconds())
         else:
             headers = response.headers()
-            usage, pause_interval = self.parse_call_rate_header(headers)
+            usage, pause_interval = self._parse_call_rate_header(headers)
             if usage > self.call_rate_threshold or pause_interval:
                 pause_interval = max(pause_interval, self.pause_interval_minimum)
                 logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
+    def _update_insights_throttle_limit(self, response: FacebookResponse):
+        """
+        For /insights call every response contains x-fb-ads-insights-throttle
+        header representing current throttle limit parameter for async insights
+        jobs for current app/account.  We need this information to adjust
+        number of running async jobs for optimal performance.
+        """
+        ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
+        if ads_insights_throttle:
+            ads_insights_throttle = json.loads(ads_insights_throttle)
+            self._ads_insights_throttle = self.Throttle(
+                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
+                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+            )
+
+    @backoff_policy
     def call(
         self,
         method,
@@ -98,6 +144,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
+        self._update_insights_throttle_limit(response)
         self.handle_call_rate_limit(response, params)
         return response
 
