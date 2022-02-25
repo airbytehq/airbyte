@@ -37,8 +37,6 @@
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
-<<<<<<< HEAD
-=======
     },
     "campaign.network_settings.target_content_network": {
       "type": ["null", "boolean"]
@@ -51,7 +49,6 @@
     },
     "campaign.network_settings.target_search_network": {
       "type": ["null", "boolean"]
->>>>>>> master
     }
   }
 }
