@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,6 +160,7 @@ public class IntegrationRunner {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
+    final Thread currentThread = Thread.currentThread();
     try (consumer) {
       consumer.start();
       while (input.hasNext()) {
@@ -168,6 +170,15 @@ public class IntegrationRunner {
           consumer.accept(messageOptional.get());
         } else {
           LOGGER.error("Received invalid message: " + inputString);
+        }
+      }
+    } finally {
+      for (final Thread runningThread : ThreadUtils.getAllThreads()) {
+        if (!runningThread.getName().equals(currentThread.getName())
+            && runningThread.getThreadGroup().getName().equals(currentThread.getThreadGroup().getName())
+            && !runningThread.isDaemon()) {
+          LOGGER.warn("A child non-daemon thread is still active {}", runningThread);
+          // Should we call runningThread.interrupt(); ?
         }
       }
     }
