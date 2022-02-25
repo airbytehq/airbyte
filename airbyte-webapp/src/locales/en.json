@@ -212,7 +212,7 @@
   "onboarding.createFirstDestination.text": "Destinations are connectors that push data to a data store.",
   "onboarding.createConnection": "Set up <name>the connection</name>",
   "onboarding.createConnection.text": "Connections represent a sync between a source and a destination.",
-  "onboarding.synchronizationProgress": "<sr>Source</sr><ds>Destination</ds> = <sync>Synchronization</sync> in progress",
+  "onboarding.synchronizationProgress": "{source}{destination} = <sync>Synchronization</sync> in progress",
   "onboarding.useCases": "Enable <name>popular use cases</name>",
   "onboarding.replicateMySQL": "Replicate your MySQL database to Postgres with log-based CDC",
   "onboarding.consolidateMarketing": "Consolidate your marketing data to compute the CAC for your paid customers",
