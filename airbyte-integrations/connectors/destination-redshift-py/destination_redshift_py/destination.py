@@ -8,7 +8,7 @@ from datetime import datetime
 from functools import reduce
 from hashlib import sha256
 from operator import iconcat
-from typing import Mapping, Any, Iterable, List, Dict
+from typing import Mapping, Any, Iterable, List, Dict, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -114,26 +114,26 @@ class DestinationRedshiftPy(Destination):
                 for node in nodes:
                     table = stream.final_tables[PARENT_CHILD_SPLITTER.join(node)]
 
-                    def get_records(parent, method):
-                        if not isinstance(parent, list):
-                            parent = [parent]
+                    def get_records(parents: Union[DotMap, List[DotMap]], method: str) -> List[DotMap]:
+                        if not isinstance(parents, list):
+                            parents = [parents]
 
-                        child_records = []
-                        for item in parent:
-                            child = getattr(item, method)
-                            if not isinstance(child, list):
-                                child = [child]
+                        children_records = []
+                        for parent_item in parents:
+                            children = getattr(parent_item, method)
+                            if not isinstance(children, list):
+                                children = [children]
 
-                            for child_item in child:
+                            for child_item in children:
                                 if child_item and table.references and method == node[-1]:
-                                    child_item[table.reference_key.name] = item[AIRBYTE_ID_NAME]
+                                    child_item[table.reference_key.name] = parent_item[AIRBYTE_ID_NAME]
 
-                                child_records.append(child_item)
+                                children_records.append(child_item)
 
-                        return child_records
+                        return children_records
 
                     records = reduce(get_records, [nested_record] + node)
-                    records = list(filter(None.__ne__, [records] if not isinstance(records, list) else records))
+                    records = list(filter(None.__ne__, records))
 
                     if records:
                         # Choose primary keys (other than the Airbyte auto generated ID). If there are no primary keys (except the auto
@@ -142,7 +142,10 @@ class DestinationRedshiftPy(Destination):
 
                         self._assign_id_and_emitted_at(records=records, hashing_keys=hashing_keys, emitted_at=emitted_at)
 
-                        records = [DotMap([field_name, record[field_name] or None] for field_name in table.field_names) for record in records]
+                        # Assign only the table fields and drop other fields
+                        records = [
+                            DotMap([field_name, record[field_name] or None] for field_name in table.field_names) for record in records
+                        ]
 
                         self.csv_writers[table.name].write(records)
 
