@@ -1,7 +1,7 @@
-[
-  "replicateMySQL",
-  "consolidateMarketing",
-  "consolidatePayment",
-  "buildDashboard",
-  "zoomCalls"
-]
+{
+  "replicateMySQL": "https://airbyte.com/recipes/migrate-from-mysql-to-postgresql",
+  "consolidateMarketing": "",
+  "consolidatePayment": "",
+  "buildDashboard": "https://airbyte.com/recipes/build-a-github-activity-dashboard-for-your-project",
+  "zoomCalls": "https://airbyte.com/recipes/visualize-the-time-spent-by-your-team-in-zoom-calls"
+}

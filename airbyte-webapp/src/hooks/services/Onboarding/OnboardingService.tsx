@@ -7,7 +7,8 @@ import casesConfig from "config/casesConfig.json";
 type Context = {
   feedbackPassed?: boolean;
   passFeedback: () => void;
-  useCases?: string[];
+  visibleUseCases?: string[];
+  useCaseLinks: Record<string, string>;
   skipCase: (skipId: string) => void;
 };
 
@@ -23,14 +24,15 @@ export const OnboardingServiceProvider: React.FC = ({ children }) => {
   );
   const [useCases, setUseCases] = useLocalStorage<string[]>(
     `${workspace.workspaceId}/useCases`,
-    casesConfig
+    Object.keys(casesConfig)
   );
 
   const ctx = useMemo<Context>(
     () => ({
       feedbackPassed,
       passFeedback: () => setFeedbackPassed(true),
-      useCases,
+      visibleUseCases: useCases,
+      useCaseLinks: casesConfig,
       skipCase: (skipId: string) =>
         setUseCases(useCases?.filter((item) => item !== skipId)),
     }),
