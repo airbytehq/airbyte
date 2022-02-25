@@ -84,7 +84,7 @@
       "type": ["null", "integer"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     }
   }
 }
