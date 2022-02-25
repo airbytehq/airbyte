@@ -60,33 +60,39 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
    * </ul>
    */
   @Override
-  public void initialize() {
-    final String bucket = config.getBucketName();
-    if (!gcsBucketExist(s3Client, bucket)) {
-      LOGGER.info("Bucket {} does not exist; creating...", bucket);
-      s3Client.createBucket(bucket);
-      LOGGER.info("Bucket {} has been created.", bucket);
-    }
-
-    if (syncMode == DestinationSyncMode.OVERWRITE) {
-      LOGGER.info("Overwrite mode");
-      final List<KeyVersion> keysToDelete = new LinkedList<>();
-      final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-          .getObjectSummaries();
-      for (final S3ObjectSummary object : objects) {
-        keysToDelete.add(new KeyVersion(object.getKey()));
+  public void initialize() throws IOException {
+    try {
+      final String bucket = config.getBucketName();
+      if (!gcsBucketExist(s3Client, bucket)) {
+        LOGGER.info("Bucket {} does not exist; creating...", bucket);
+        s3Client.createBucket(bucket);
+        LOGGER.info("Bucket {} has been created.", bucket);
       }
 
-      if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
-        // Google Cloud Storage doesn't accept request to delete multiple objects
-        for (final KeyVersion keyToDelete : keysToDelete) {
-          s3Client.deleteObject(bucket, keyToDelete.getKey());
+      if (syncMode == DestinationSyncMode.OVERWRITE) {
+        LOGGER.info("Overwrite mode");
+        final List<KeyVersion> keysToDelete = new LinkedList<>();
+        final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
+            .getObjectSummaries();
+        for (final S3ObjectSummary object : objects) {
+          keysToDelete.add(new KeyVersion(object.getKey()));
         }
-        LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
-            stream.getName());
+
+        if (keysToDelete.size() > 0) {
+          LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
+          // Google Cloud Storage doesn't accept request to delete multiple objects
+          for (final KeyVersion keyToDelete : keysToDelete) {
+            s3Client.deleteObject(bucket, keyToDelete.getKey());
+          }
+          LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
+              stream.getName());
+        }
+        LOGGER.info("Overwrite is finished");
       }
-      LOGGER.info("Overwrite is finished");
+    } catch (Exception e) {
+      LOGGER.error("Failed to initialize: ", e);
+      closeWhenFail();
+      throw e;
     }
   }
 
