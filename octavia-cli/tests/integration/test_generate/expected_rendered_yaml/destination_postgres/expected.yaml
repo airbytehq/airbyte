@@ -16,7 +16,7 @@ configuration:
   password: # SECRET | OPTIONAL | string | Password associated with the username.
   ssl: # OPTIONAL | boolean | Encrypt data using SSL.
   tunnel_method:
-    ## -------- Pick one  valid structure among the examples below: --------
+    ## -------- Pick one valid structure among the examples below: --------
     tunnel_method: "NO_TUNNEL" # REQUIRED | string | No ssh tunnel needed to connect to database
     ## -------- Another valid structure for tunnel_method: --------
     # tunnel_method: "SSH_KEY_AUTH" # REQUIRED | string | Connect through a jump server tunnel host using username and ssh key

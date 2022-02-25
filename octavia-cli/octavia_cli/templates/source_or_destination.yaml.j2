@@ -35,7 +35,7 @@ definition_version: {{ definition.docker_image_tag }}
 {{ field.name }}: 
 {%- for one_of_value in field.one_of_values %}
   {%- if loop.first %}
-  ## -------- Pick one  valid structure among the examples below: --------
+  ## -------- Pick one valid structure among the examples below: --------
   {{- render_sub_fields(one_of_value, False)|indent(2, False) }}
   {%- else %}
   ## -------- Another valid structure for {{ field.name }}: --------

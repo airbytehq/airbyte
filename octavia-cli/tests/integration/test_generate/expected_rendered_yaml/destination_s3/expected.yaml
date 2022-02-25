@@ -15,10 +15,10 @@ configuration:
   access_key_id: # SECRET | OPTIONAL | string | The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile. | Example: A012345678910EXAMPLE
   secret_access_key: # SECRET | OPTIONAL | string | The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided | Example: a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY
   format:
-    ## -------- Pick one  valid structure among the examples below: --------
+    ## -------- Pick one valid structure among the examples below: --------
     format_type: "Avro" # REQUIRED | string}
     compression_codec:
-      ## -------- Pick one  valid structure among the examples below: --------
+      ## -------- Pick one valid structure among the examples below: --------
       codec: "no compression" # REQUIRED | string
       ## -------- Another valid structure for compression_codec: --------
       # codec: "Deflate" # REQUIRED | string
