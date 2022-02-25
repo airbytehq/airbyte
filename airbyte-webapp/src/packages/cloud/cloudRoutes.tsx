@@ -117,6 +117,7 @@ const MainViewRoutes = () => {
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map(
         (r) => (
           <Route
+            key={r}
             path={`${r}/*`}
             element={
               <Navigate
