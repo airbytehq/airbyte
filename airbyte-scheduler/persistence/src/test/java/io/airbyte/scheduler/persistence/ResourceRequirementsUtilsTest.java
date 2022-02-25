@@ -107,4 +107,18 @@ class ResourceRequirementsUtilsTest {
     assertEquals(expectedReqs, result);
   }
 
+  @Test
+  void testConnectionResourceRequirementsOverrideWorker() {
+    final ResourceRequirements workerDefaultReqs = new ResourceRequirements().withCpuRequest("1").withCpuLimit("1");
+    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withCpuLimit("2").withMemoryLimit("500Mi");
+
+    final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(connectionResourceRequirements, workerDefaultReqs);
+
+    final ResourceRequirements expectedReqs = new ResourceRequirements()
+        .withCpuRequest("1")
+        .withCpuLimit("2")
+        .withMemoryLimit("500Mi");
+    assertEquals(expectedReqs, result);
+  }
+
 }

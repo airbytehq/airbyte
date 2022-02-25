@@ -60,7 +60,7 @@ public class DefaultJobCreator implements JobCreator {
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null)
-        .withResourceRequirements(ResourceRequirementsUtils.mergeResourceRequirements(
+        .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
             workerResourceRequirements))
         .withSourceResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
@@ -108,7 +108,7 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
-        .withResourceRequirements(ResourceRequirementsUtils.mergeResourceRequirements(
+        .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
             workerResourceRequirements));
 
