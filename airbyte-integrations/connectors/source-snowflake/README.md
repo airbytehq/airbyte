@@ -8,7 +8,7 @@
 1. Create a file at `secrets/config.json` with the following format:
 ```
 {
-  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
+  "host": "ACCOUNT.snowflakecomputing.com",
   "role": "AIRBYTE_ROLE",
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
