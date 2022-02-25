@@ -1,6 +1,6 @@
-# Scaffold-Destination-Python Destination
+# Scaffold Destination Python Destination
 
-This is the repository for the Scaffold-Destination-Python destination connector, written in Python.
+This is the repository for the Scaffold Destination Python destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/scaffold-destination-python).
 
 ## Local development

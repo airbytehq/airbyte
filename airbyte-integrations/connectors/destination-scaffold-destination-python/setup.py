@@ -15,7 +15,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="destination_scaffold_destination_python",
-    description="Destination implementation for Scaffold-Destination-Python.",
+    description="Destination implementation for Scaffold Destination Python.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

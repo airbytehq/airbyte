@@ -1,6 +1,6 @@
-# Scaffold-Source-Http Source
+# Scaffold Source Http Source
 
-This is the repository for the Scaffold-Source-Http source connector, written in Python.
+This is the repository for the Scaffold Source Http source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/scaffold-source-http).
 
 ## Local development

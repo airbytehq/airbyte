@@ -1,6 +1,6 @@
-# Source Scaffold-Java-Jdbc
+# Source Scaffold Java Jdbc
 
-This is the repository for the Scaffold-Java-Jdbc source connector in Java.
+This is the repository for the Scaffold Java Jdbc source connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/scaffold-java-jdbc).
 
 ## Local development
