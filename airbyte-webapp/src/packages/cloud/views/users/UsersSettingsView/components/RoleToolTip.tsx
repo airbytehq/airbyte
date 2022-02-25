@@ -37,29 +37,14 @@ const RoleToolTip: React.FC = () => {
     >
       <>
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleViewers"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleViewers" />
         </LineBlock>
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleEditors"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleEditors" />
         </LineBlock>
 
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleAdmin"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleAdmin" />
         </LineBlock>
       </>
     </ToolTip>

@@ -21,6 +21,7 @@ from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
+from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
 
@@ -288,6 +289,21 @@ class Event(IncrementalChargebeeStream):
     cursor_field = "occurred_at"
 
     api = EventModel
+
+
+class Transaction(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/transactions?lang=curl&prod_cat_ver=2
+    """
+
+    cursor_field = "updated_at"
+
+    api = TransactionModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "created_at"
+        return params
 
 
 class Coupon(IncrementalChargebeeStream):

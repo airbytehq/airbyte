@@ -25,7 +25,7 @@ const ConnectionStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createConnection"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode[]) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
