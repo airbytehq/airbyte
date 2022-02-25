@@ -73,7 +73,7 @@ const UseCaseBlock: React.FC<UseCaseBlockProps> = ({
       <div>
         <Num>{count}</Num>
         <Link href={href} target="_blank">
-          <FormattedMessage id={`onboarding.${id}`} />
+          <FormattedMessage id={`onboarding.useCase.${id}`} />
         </Link>
       </div>
       <SkipButton onClick={() => onSkip(id)}>

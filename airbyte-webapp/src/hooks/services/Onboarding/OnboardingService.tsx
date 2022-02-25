@@ -22,22 +22,24 @@ export const OnboardingServiceProvider: React.FC = ({ children }) => {
     `${workspace.workspaceId}/passFeedback`,
     false
   );
-  const [useCases, setUseCases] = useLocalStorage<string[]>(
-    `${workspace.workspaceId}/useCases`,
-    Object.keys(casesConfig)
+  const [skippedUseCases, setSkippedUseCases] = useLocalStorage<string[]>(
+    `${workspace.workspaceId}/skippedUseCases`,
+    []
   );
 
   const ctx = useMemo<Context>(
     () => ({
       feedbackPassed,
       passFeedback: () => setFeedbackPassed(true),
-      visibleUseCases: useCases,
+      visibleUseCases: Object.keys(casesConfig).filter(
+        (useCase) => !skippedUseCases?.includes(useCase)
+      ),
       useCaseLinks: casesConfig,
       skipCase: (skipId: string) =>
-        setUseCases(useCases?.filter((item) => item !== skipId)),
+        setSkippedUseCases([...(skippedUseCases ?? []), skipId]),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [feedbackPassed, useCases]
+    [feedbackPassed, skippedUseCases]
   );
 
   return (
