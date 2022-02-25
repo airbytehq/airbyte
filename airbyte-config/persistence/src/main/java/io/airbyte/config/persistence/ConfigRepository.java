@@ -77,6 +77,10 @@ public class ConfigRepository {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
+  }
+
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
@@ -84,7 +88,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 

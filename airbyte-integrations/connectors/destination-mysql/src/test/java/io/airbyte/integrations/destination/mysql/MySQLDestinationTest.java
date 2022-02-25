@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -25,8 +29,7 @@ public class MySQLDestinationTest {
         "host", "localhost",
         "port", 1337,
         "username", "user",
-        "database", "db"
-    ));
+        "database", "db"));
     return config;
   }
 
@@ -36,8 +39,7 @@ public class MySQLDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-        "jdbc_url_params", extraParam
-    ));
+        "jdbc_url_params", extraParam));
     return config;
   }
 
@@ -48,8 +50,7 @@ public class MySQLDestinationTest {
         "username", "user",
         "database", "db",
         "ssl", false,
-        "jdbc_url_params", extraParam
-    ));
+        "jdbc_url_params", extraParam));
     return config;
   }
 
@@ -59,8 +60,7 @@ public class MySQLDestinationTest {
         "port", 1337,
         "username", "user",
         "database", "db",
-        "ssl", false
-    ));
+        "ssl", false));
     return config;
   }
 
@@ -97,13 +97,9 @@ public class MySQLDestinationTest {
       final String overridingParameter = MySQLDestination.formatParameter(entry.getKey(), "DIFFERENT_VALUE");
 
       // Do not throw an exception if the values are equal
-      assertDoesNotThrow(() ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(identicalParameter)).get("jdbc_url").asText()
-      );
+      assertDoesNotThrow(() -> getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(identicalParameter)).get("jdbc_url").asText());
       // Throw an exception if the values are different
-      assertThrows(IllegalArgumentException.class, () ->
-          getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(overridingParameter))
-      );
+      assertThrows(IllegalArgumentException.class, () -> getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(overridingParameter)));
     }
   }
 
@@ -133,4 +129,5 @@ public class MySQLDestinationTest {
       getDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
     });
   }
+
 }
