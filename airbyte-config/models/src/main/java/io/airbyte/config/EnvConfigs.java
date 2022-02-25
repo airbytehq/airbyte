@@ -553,8 +553,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Splits key value pairs from the input string into a map.
-   * Each kv-pair is separated by a ','. The key and the value are separated by '='.
+   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The
+   * key and the value are separated by '='.
    * <p>
    * For example:- The following represents two map entries
    * </p>
