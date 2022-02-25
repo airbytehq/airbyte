@@ -26,6 +26,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.ThreadUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,8 +178,8 @@ public class IntegrationRunner {
         if (!runningThread.getName().equals(currentThread.getName())
             && runningThread.getThreadGroup().getName().equals(currentThread.getThreadGroup().getName())
             && !runningThread.isDaemon()) {
-          LOGGER.warn("A child non-daemon thread is still active {}", runningThread);
-          // Should we call runningThread.interrupt(); ?
+          LOGGER.warn("A child non-daemon thread is still active {} while the main thread is exiting...\n" +
+              "This should probably need to be be cleaned up properly instead: {}", runningThread, runningThread.getStackTrace());
         }
       }
     }
