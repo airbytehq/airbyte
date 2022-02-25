@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-
+user_agent_header = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
 # Basic full refresh stream
 class WoocommerceStream(HttpStream, ABC):
 
@@ -50,7 +50,7 @@ class WoocommerceStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         #for some source user-agent is expected by the woo-commerce API
         return {
-            'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+            'User-Agent' : user_agent_header,
             'Content-Type': 'application/json'
         }
 
@@ -100,7 +100,6 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
     state_checkpoint_interval = limit
     # Setting the default cursor field for all streams
     cursor_field = "date_modified"
-    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if self.cursor_field == "date_modified" and datetime.now().isoformat() < current_stream_state.get(self.cursor_field, ""):
@@ -188,7 +187,7 @@ class SourceWoocommerce(AbstractSource):
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
             headers = dict(Accept="application/json", **auth.get_auth_header())
-            headers['User-Agent']='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+            headers['User-Agent']=user_agent_header
             session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
