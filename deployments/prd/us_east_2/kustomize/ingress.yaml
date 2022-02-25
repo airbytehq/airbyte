@@ -6,7 +6,7 @@ metadata:
       {"type": "redirect", "redirectConfig": { "protocol": "HTTPS", "port": "443", "statusCode": "HTTP_301"}}
     alb.ingress.kubernetes.io/backend-protocol: HTTP
     alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:074505835657:certificate/aebd899e-d846-4d74-bf5d-d4e3b6fd2536
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:375060456233:certificate/6fb05ee6-2eb4-4567-881c-86204da5d58f
     alb.ingress.kubernetes.io/healthcheck-path: /
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
