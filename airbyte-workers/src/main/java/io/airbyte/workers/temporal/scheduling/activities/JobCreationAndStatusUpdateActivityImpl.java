@@ -102,7 +102,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+      DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
     }
   }
 
@@ -212,7 +212,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(metric, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+      DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
     }
   }
 

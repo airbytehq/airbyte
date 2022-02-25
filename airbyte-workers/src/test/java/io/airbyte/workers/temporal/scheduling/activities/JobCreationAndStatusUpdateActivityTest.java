@@ -233,7 +233,7 @@ public class JobCreationAndStatusUpdateActivityTest {
     @Test
     public void setJobCancelled() throws IOException {
       Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
-      
+
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
       Mockito.verify(mJobPersistence).cancelJob(JOB_ID);
