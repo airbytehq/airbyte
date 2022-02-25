@@ -45,7 +45,6 @@ class SourceIterable(AbstractSource):
             # use for loop to check for one record and also gracefully handle empty iterator
             # https://stackoverflow.com/questions/14413969/why-does-next-raise-a-stopiteration-but-for-do-a-normal-return
             for l in list_gen:
-                print("Successfully connected to Iterable API to fetch one static list")
                 break
             return True, None
         except Exception as e:
