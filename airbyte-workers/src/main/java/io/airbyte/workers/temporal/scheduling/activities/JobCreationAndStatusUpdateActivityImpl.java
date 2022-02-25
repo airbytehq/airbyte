@@ -109,14 +109,15 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public AttemptCreationOutput createNewAttempt(final AttemptCreationInput input) throws RetryableException {
     try {
-      final Job createdJob = jobPersistence.getJob(input.getJobId());
+      final long jobId = input.getJobId();
+      final Job createdJob = jobPersistence.getJob(jobId);
 
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
       final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-      final int persistedAttemptId = jobPersistence.createAttempt(input.getJobId(), logFilePath);
+      final int persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
 
       LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-
       return new AttemptCreationOutput(persistedAttemptId);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -136,6 +137,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
       jobPersistence.succeedAttempt(jobId, attemptId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.successJob(job);
@@ -164,14 +166,18 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void attemptFailure(final AttemptFailureInput input) {
     try {
-      jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
-      jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
+      final int attemptId = input.getAttemptId();
+      final long jobId = input.getJobId();
+
+      jobPersistence.failAttempt(jobId, attemptId);
+      jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       }
 
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
