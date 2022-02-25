@@ -24,6 +24,7 @@ dependencies {
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-metrics:lib')
     implementation project(':airbyte-json-validation')

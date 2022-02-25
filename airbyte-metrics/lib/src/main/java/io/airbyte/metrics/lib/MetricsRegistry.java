@@ -28,8 +28,24 @@ import com.google.api.client.util.Preconditions;
  * - Add units at name end if applicable. This is especially relevant for time units. versioning
  * tactic and present at the end of the metric.
  */
-public enum AirbyteMetricsRegistry {
+public enum MetricsRegistry {
 
+  JOB_CANCELLED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_cancelled_by_release_stage",
+      "increments when a job is cancelled. jobs are double counted as this is tagged by release stage."),
+  JOB_CREATED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_created_by_release_stage",
+      "increments when a new job is created. jobs are double counted as this is tagged by release stage."),
+  JOB_FAILED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_failed_by_release_stage",
+      "increments when a job fails. jobs are double counted as this is tagged by release stage."),
+  JOB_SUCCEEDED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "job_succeeded_by_release_stage",
+      "increments when a job succeeds. jobs are double counted as this is tagged by release stage."),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
@@ -39,7 +55,7 @@ public enum AirbyteMetricsRegistry {
   public final String metricName;
   public final String metricDescription;
 
-  AirbyteMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  MetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
