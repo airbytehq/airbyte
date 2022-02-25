@@ -4,8 +4,12 @@
 
 package io.airbyte.scheduler.persistence.job_tracker;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -16,7 +20,9 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
@@ -102,9 +108,37 @@ public class TrackingMetadata {
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
           }
         }
+
+        final ArrayNode failuresAsJson = failureReasonsAsJsonArray(attempts);
+        if (!failuresAsJson.isEmpty()) {
+          metadata.put("failure_reasons", failuresAsJson.toString());
+          metadata.put("main_failure_reason", failuresAsJson.get(0).toString());
+        }
       }
     }
     return metadata.build();
+  }
+
+  private static ArrayNode failureReasonsAsJsonArray(final List<Attempt> attempts) {
+    final ArrayNode failureJsonsArray = Jsons.arrayNode();
+
+    final IntStream attemptIndices = IntStream.range(0, attempts.size());
+    attemptIndices.mapToObj(attemptIndex -> attempts.get(attemptIndex)
+        .getFailureSummary()
+        .map(failureSummary -> failureSummary.getFailures()
+            .stream()
+            .map(failureReason -> {
+              final JsonNode jsonNode = Jsons.jsonNode(failureReason);
+              ((ObjectNode) jsonNode).remove("stacktrace");
+              ((ObjectNode) jsonNode).put("attempt_id", attemptIndex + 1);
+              return jsonNode;
+            })
+            .toList()))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(failureJsonsArray::addAll);
+
+    return failureJsonsArray;
   }
 
 }
