@@ -11,196 +11,201 @@ import io.airbyte.commons.json.Jsons;
 public class BigQueryDenormalizedTestDataUtils {
 
   public static JsonNode getSchema() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"accepts_marketing_updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"null\",\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    },\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permission-list\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n"
-            + "            ],\n"
-            + "            \"items\": {\n"
-            + "              \"type\": [\n"
-            + "                \"string\"\n"
-            + "              ]\n"
-            + "            }\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
-
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "accepts_marketing_updated_at": {
+                                         "type": [
+                                             "null",
+                                             "string"
+                                         ],
+                                         "format": "date-time"
+                                     },
+                                     "name": {
+                                         "type": [
+                                             "string"
+                                         ]
+                                     },
+                                     "permission-list": {
+                                         "type": [
+                                             "array"
+                                         ],
+                                         "items": {
+                                             "type": [
+                                                 "object"
+                                             ],
+                                             "properties": {
+                                                 "domain": {
+                                                     "type": [
+                                                         "string"
+                                                     ]
+                                                 },
+                                                 "grants": {
+                                                     "type": [
+                                                         "array"
+                                                     ],
+                                                     "items": {
+                                                         "type": [
+                                                             "string"
+                                                         ]
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+                             """);
   }
 
   public static JsonNode getSchemaWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"date_of_birth\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date\"\n"
-            + "    },\n"
-            + "    \"updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "name": {
+                                         "type": [
+                                             "string"
+                                         ]
+                                     },
+                                     "date_of_birth": {
+                                         "type": [
+                                             "string"
+                                         ],
+                                         "format": "date"
+                                     },
+                                     "updated_at": {
+                                         "type": [
+                                             "string"
+                                         ],
+                                         "format": "date-time"
+                                     }
+                                 }
+                             }
+                             """);
   }
 
   public static JsonNode getSchemaWithDateTime() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    "
-            +
-            "\"updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    },\n"
-            + "    \"items\": {\n"
-            + "      \"type\": [\n"
-            + "        \"object\"\n"
-            + "      ],\n"
-            + "      \"properties\": {\n"
-            + "        \"nested_datetime\": {\n"
-            + "          \"type\": [\n"
-            + "            \"string\"\n"
-            + "          ],\n"
-            + "          \"format\": \"date-time\"\n"
-            + "        }\n"
-            +
-            "      "
-            + "}\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "updated_at": {
+                                         "type": [
+                                             "string"
+                                         ],
+                                         "format": "date-time"
+                                     },
+                                     "items": {
+                                         "type": [
+                                             "object"
+                                         ],
+                                         "properties": {
+                                             "nested_datetime": {
+                                                 "type": [
+                                                     "string"
+                                                 ],
+                                                 "format": "date-time"
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+                             """);
   }
 
   public static JsonNode getSchemaWithInvalidArrayType() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permission-list\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n" // missed "items" element
-            + "            ]\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "name": {
+                                         "type": [
+                                             "string"
+                                         ]
+                                     },
+                                     "permission-list": {
+                                         "type": [
+                                             "array"
+                                         ],
+                                         "items": {
+                                             "type": [
+                                                 "object"
+                                             ],
+                                             "properties": {
+                                                 "domain": {
+                                                     "type": [
+                                                         "string"
+                                                     ]
+                                                 },
+                                                 "grants": {
+                                                     "type": [
+                                                         "array"
+                                                         """ + // missed "items" element
+        """
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """);
 
   }
 
   public static JsonNode getData() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"accepts_marketing_updated_at\": \"2021-10-11T06:36:53-07:00\",\n"
-            + "  \"permission-list\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [\n"
-            + "        \"read\", \"write\"\n"
-            + "      ]\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "name": "Andrii",
+                                 "accepts_marketing_updated_at": "2021-10-11T06:36:53-07:00",
+                                 "permission-list": [
+                                     {
+                                         "domain": "abs",
+                                         "grants": [
+                                             "admin"
+                                         ]
+                                     },
+                                     {
+                                         "domain": "tools",
+                                         "grants": [
+                                             "read",
+                                             "write"
+                                         ]
+                                     }
+                                 ]
+                             }
+                             """);
   }
 
   public static JsonNode getDataWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"date_of_birth\": \"1996-01-25\",\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53\"\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "name": "Andrii",
+                                 "date_of_birth": "1996-01-25",
+                                 "updated_at": "2021-10-11T06:36:53"
+                             }
+                             """);
   }
 
   public static JsonNode getDataWithJSONDateTimeFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53+00:00\",\n"
-            + "  \"items\": {\n"
-            + "    \"nested_datetime\": \"2021-11-11T06:36:53+00:00\"\n"
-            + "  }\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                               "updated_at": "2021-10-11T06:36:53+00:00",
+                               "items": {
+                                 "nested_datetime": "2021-11-11T06:36:53+00:00"
+                               }
+                             }
+                             """);
   }
 
   public static JsonNode getDataWithJSONWithReference() {
@@ -211,86 +216,98 @@ public class BigQueryDenormalizedTestDataUtils {
   }
 
   public static JsonNode getSchemaWithReferenceDefinition() {
-    return Jsons.deserialize(
-        "{ \n"
-            + "  \"type\" : [ \"null\", \"object\" ],\n"
-            + "  \"properties\" : {\n"
-            + "    \"users\": {\n"
-            + "      \"$ref\": \"#/definitions/users_\"\n"
-            +
-            "    }\n"
-            + "  }\n"
-            +
-            "}\n"
-            + "  ");
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "null",
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "users": {
+                                         "$ref": "#/definitions/users_"
+                                     }
+                                 }
+                             }
+                             """);
   }
 
   public static JsonNode getSchemaWithNestedDatetimeInsideNullObject() {
-    return Jsons.deserialize("{\n" +
-        "  \"type\": [\n" +
-        "    \"object\"\n" +
-        "  ],\n" +
-        "  \"properties\": {\n" +
-        "    \"name\": {\n" +
-        "      \"type\": [\n" +
-        "        \"null\",\n" +
-        "        \"string\"\n" +
-        "      ]\n" +
-        "    },\n" +
-        "    \"appointment\": {\n" +
-        "      \"type\": [\n" +
-        "        \"null\",\n" +
-        "        \"object\"\n" +
-        "      ],\n" +
-        "      \"properties\": {\n" +
-        "        \"street\": {\n" +
-        "          \"type\": [\n" +
-        "            \"null\",\n" +
-        "            \"string\"\n" +
-        "          ]\n" +
-        "        },\n" +
-        "        \"expTime\": {\n" +
-        "          \"type\": [\n" +
-        "            \"null\",\n" +
-        "            \"string\"\n" +
-        "          ],\n" +
-        "          \"format\": \"date-time\"\n" +
-        "        }\n" +
-        "      }\n" +
-        "    }\n" +
-        "  }\n" +
-        "}");
+    return Jsons.deserialize("""
+                             {
+                                 "type": [
+                                     "object"
+                                 ],
+                                 "properties": {
+                                     "name": {
+                                         "type": [
+                                             "null",
+                                             "string"
+                                         ]
+                                     },
+                                     "appointment": {
+                                         "type": [
+                                             "null",
+                                             "object"
+                                         ],
+                                         "properties": {
+                                             "street": {
+                                                 "type": [
+                                                     "null",
+                                                     "string"
+                                                 ]
+                                             },
+                                             "expTime": {
+                                                 "type": [
+                                                     "null",
+                                                     "string"
+                                                 ],
+                                                 "format": "date-time"
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+                             """);
   }
 
   public static JsonNode getDataWithEmptyObjectAndArray() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"permission-list\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"items\": {},\n" // empty object
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [],\n" // empty array
-            + "      \"items\": {\n" // object with empty array and object
-            + "        \"object\": {},\n"
-            + "        \"array\": []\n"
-            + "      }\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
+    return Jsons.deserialize("""
+                             {
+                                 "name": "Andrii",
+                                 "permission-list": [
+                                     {
+                                         "domain": "abs",
+                                         "items": {},
+                                          """ + // empty object
+        """
+            "grants": [
+                "admin"
+            ]
+        },
+        {
+            "domain": "tools",
+            "grants": [],
+            """ + // empty array
+        """
+        "items": {
+        """ + // object with empty array and object
+        """
+                        "object": {},
+                        "array": []
+                    }
+                }
+            ]
+        }
+        """);
   }
 
   public static JsonNode getDataWithNestedDatetimeInsideNullObject() {
-    return Jsons.deserialize("{\n" +
-        "  \"name\": \"Alice in Wonderland\",\n" +
-        "  \"appointment\": null\n" +
-        "}");
+    return Jsons.deserialize("""
+                             {
+                                 "name": "Alice in Wonderland",
+                                 "appointment": null
+                             }
+                                     """);
 
   }
 
