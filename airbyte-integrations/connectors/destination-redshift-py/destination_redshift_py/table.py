@@ -62,6 +62,7 @@ class Table:
             FORMAT CSV
             TIMEFORMAT 'auto'
             ACCEPTANYDATE
+            TRUNCATECOLUMNS
             IGNOREHEADER 1
             GZIP
         """
