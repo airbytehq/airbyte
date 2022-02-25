@@ -169,6 +169,8 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobSuccess() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, standardSyncOutput));
 
       Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
@@ -189,6 +191,8 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
@@ -228,6 +232,8 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobCancelled() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+      
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
       Mockito.verify(mJobPersistence).cancelJob(JOB_ID);

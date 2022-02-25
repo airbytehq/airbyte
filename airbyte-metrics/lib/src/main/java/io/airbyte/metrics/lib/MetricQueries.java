@@ -22,15 +22,15 @@ public class MetricQueries {
     final var dstRelStageCol = "dst_release_stage";
 
     final var query = String.format("""
-                                    select src_def_data.release_stage as %s,
-                                           dest_def_data.release_stage as %s
-                                    from connection
-                                    inner join jobs on connection.id=CAST(jobs.scope AS uuid)
-                                    inner join actor as dest_data on connection.destination_id = dest_data.id
-                                    inner join actor_definition as dest_def_data on dest_data.actor_definition_id = dest_def_data.id
-                                    inner join actor as src_data on connection.source_id = src_data.id
-                                    inner join actor_definition as src_def_data on src_data.actor_definition_id = src_def_data.id
-                                        where jobs.id = '%d';""", srcRelStageCol, dstRelStageCol, jobId);
+                                    SELECT src_def_data.release_stage AS %s,
+                                           dest_def_data.release_stage AS %s
+                                    FROM connection
+                                    INNER JOIN jobs ON connection.id=CAST(jobs.scope AS uuid)
+                                    INNER JOIN actor AS dest_data ON connection.destination_id = dest_data.id
+                                    INNER JOIN actor_definition AS dest_def_data ON dest_data.actor_definition_id = dest_def_data.id
+                                    INNER JOIN actor AS src_data ON connection.source_id = src_data.id
+                                    INNER JOIN actor_definition AS src_def_data ON src_data.actor_definition_id = src_def_data.id
+                                        WHERE jobs.id = '%d';""", srcRelStageCol, dstRelStageCol, jobId);
 
     final var res = ctx.fetch(query);
     final var stages = res.getValues(srcRelStageCol, ReleaseStage.class);

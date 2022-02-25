@@ -18,10 +18,10 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
-import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.metrics.lib.MetricsRegistry;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -102,7 +102,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(AirbyteMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
+      DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.RELEASE_STAGE + stage.getLiteral());
     }
   }
 
@@ -139,7 +139,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.successJob(job);
-      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -154,7 +154,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.failJob(input.getReason(), job);
-      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -188,7 +188,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
-      emitJobIdToReleaseStagesMetric(AirbyteMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -205,7 +205,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
   }
 
-  private void emitJobIdToReleaseStagesMetric(final AirbyteMetricsRegistry metric, final long jobId) throws IOException {
+  private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
     if (releaseStages == null) {
       return;

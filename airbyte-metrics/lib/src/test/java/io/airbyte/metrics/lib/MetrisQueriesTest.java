@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.metrics.llib;
+package io.airbyte.metrics.lib;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
@@ -15,7 +15,6 @@ import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
-import io.airbyte.metrics.lib.MetricQueries;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;

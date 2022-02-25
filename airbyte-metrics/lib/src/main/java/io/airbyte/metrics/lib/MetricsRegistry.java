@@ -28,7 +28,7 @@ import com.google.api.client.util.Preconditions;
  * - Add units at name end if applicable. This is especially relevant for time units. versioning
  * tactic and present at the end of the metric.
  */
-public enum AirbyteMetricsRegistry {
+public enum MetricsRegistry {
 
   JOB_CANCELLED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
@@ -55,7 +55,7 @@ public enum AirbyteMetricsRegistry {
   public final String metricName;
   public final String metricDescription;
 
-  AirbyteMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  MetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
