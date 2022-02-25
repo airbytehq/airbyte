@@ -89,7 +89,7 @@ class FieldToRender:
         return self.type if self.type else None
 
     def _get_secret_comment(self) -> str:
-        return "🤫" if self.airbyte_secret else None
+        return "SECRET" if self.airbyte_secret else None
 
     def _get_description_comment(self) -> str:
         return self.description if self.description else None
