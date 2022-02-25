@@ -2,12 +2,8 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.metrics.llib;
+package io.airbyte.metrics.lib;
 
-import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
-import io.airbyte.metrics.lib.MetricEmittingApps;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +21,7 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishTrueNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false));
-      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
@@ -34,7 +30,7 @@ public class DogStatsDMetricSingletonTest {
   public void testPublishFalseNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
       DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", true));
-      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
@@ -42,7 +38,7 @@ public class DogStatsDMetricSingletonTest {
   @DisplayName("there should be no exception if we attempt to emit metrics without initializing")
   public void testNoInitializeNoEmitError() {
     Assertions.assertDoesNotThrow(() -> {
-      DogStatsDMetricSingleton.gauge(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
+      DogStatsDMetricSingleton.gauge(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
     });
   }
 
