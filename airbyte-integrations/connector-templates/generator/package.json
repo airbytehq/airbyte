@@ -6,6 +6,7 @@
     "generate": "plop"
   },
   "devDependencies": {
+    "capital-case": "^1.0.4",
     "handlebars": "^4.7.7",
     "plop": "^3.0.5",
     "set-value": ">=4.0.1",
