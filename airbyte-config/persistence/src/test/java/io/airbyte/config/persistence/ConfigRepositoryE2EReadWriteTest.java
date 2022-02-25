@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 
@@ -32,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -153,6 +155,13 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
+  }
+
+  @Test
+  public void testListWorkspaceStandardSync() throws IOException {
+
+    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspace().getWorkspaceId());
+    assertThat(MockData.standardSyncs()).hasSameElementsAs(syncs);
   }
 
 }
