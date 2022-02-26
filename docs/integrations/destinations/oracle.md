@@ -92,7 +92,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                            |
 | 0.1.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
 | 0.1.13  | 2021-12-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                           |
 | 0.1.12  | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
@@ -108,9 +108,9 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 ### Changelog (Strict Encrypt)
 
-| Version | Date       | Pull Request                                            | Subject |
-|:--------|:-----------|:--------------------------------------------------------| :--- |
-| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description |
-| 0.1.1   | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
+| Version | Date       | Pull Request                                            | Subject                                                                                                                     |
+|:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------|
+| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                    |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                  |
+| 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                                                   |
+| 0.1.1   | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count                         |
