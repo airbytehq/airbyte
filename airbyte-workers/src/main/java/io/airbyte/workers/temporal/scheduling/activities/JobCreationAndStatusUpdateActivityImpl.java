@@ -213,12 +213,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-    if (releaseStages == null) {
+    if (releaseStages.size() == 0) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      if (stage != null) {
+        DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      }
     }
   }
 
