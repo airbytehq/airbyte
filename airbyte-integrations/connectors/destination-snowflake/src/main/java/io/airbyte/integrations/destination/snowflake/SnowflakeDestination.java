@@ -11,7 +11,14 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.util.Map;
 
-public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
+public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> implements AutoCloseable {
+
+  public static boolean isAlive;
+
+  @Override
+  public void close() throws Exception {
+    isAlive = false;
+  }
 
   enum DestinationType {
     COPY_S3,
