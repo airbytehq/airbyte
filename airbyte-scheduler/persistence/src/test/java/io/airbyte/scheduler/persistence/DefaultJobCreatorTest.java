@@ -7,17 +7,22 @@ package io.airbyte.scheduler.persistence;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
+import io.airbyte.config.JobTypeResourceLimit;
+import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.ResourceRequirements;
@@ -136,7 +141,9 @@ public class DefaultJobCreatorTest {
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
-        .withResourceRequirements(workerResourceRequirements);
+        .withResourceRequirements(workerResourceRequirements)
+        .withSourceResourceRequirements(workerResourceRequirements)
+        .withDestinationResourceRequirements(workerResourceRequirements);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -151,7 +158,9 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -182,7 +191,133 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
-        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null).isEmpty());
+  }
+
+  @Test
+  void testCreateSyncJobDefaultWorkerResourceReqs() throws IOException {
+    jobCreator.createSyncJob(
+        SOURCE_CONNECTION,
+        DESTINATION_CONNECTION,
+        STANDARD_SYNC,
+        SOURCE_IMAGE_NAME,
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null);
+
+    final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+        .withPrefix(STANDARD_SYNC.getPrefix())
+        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+        .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements)
+        .withSourceResourceRequirements(workerResourceRequirements)
+        .withDestinationResourceRequirements(workerResourceRequirements);
+
+    final JobConfig expectedJobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(expectedJobSyncConfig);
+
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+
+    verify(jobPersistence, times(1)).enqueueJob(expectedScope, expectedJobConfig);
+  }
+
+  @Test
+  void testCreateSyncJobConnectionResourceReqs() throws IOException {
+    final ResourceRequirements standardSyncResourceRequirements = new ResourceRequirements()
+        .withCpuLimit("0.5")
+        .withCpuRequest("0.5")
+        .withMemoryLimit("500Mi")
+        .withMemoryRequest("500Mi");
+    final StandardSync standardSync = Jsons.clone(STANDARD_SYNC).withResourceRequirements(standardSyncResourceRequirements);
+
+    jobCreator.createSyncJob(
+        SOURCE_CONNECTION,
+        DESTINATION_CONNECTION,
+        standardSync,
+        SOURCE_IMAGE_NAME,
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION),
+        null,
+        null);
+
+    final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+        .withPrefix(STANDARD_SYNC.getPrefix())
+        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+        .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(standardSyncResourceRequirements)
+        .withSourceResourceRequirements(standardSyncResourceRequirements)
+        .withDestinationResourceRequirements(standardSyncResourceRequirements);
+
+    final JobConfig expectedJobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(expectedJobSyncConfig);
+
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+
+    verify(jobPersistence, times(1)).enqueueJob(expectedScope, expectedJobConfig);
+  }
+
+  @Test
+  void testCreateSyncJobSourceAndDestinationResourceReqs() throws IOException {
+    final ResourceRequirements sourceResourceRequirements = new ResourceRequirements()
+        .withCpuLimit("0.7")
+        .withCpuRequest("0.7")
+        .withMemoryLimit("700Mi")
+        .withMemoryRequest("700Mi");
+    final ResourceRequirements destResourceRequirements = new ResourceRequirements()
+        .withCpuLimit("0.8")
+        .withCpuRequest("0.8")
+        .withMemoryLimit("800Mi")
+        .withMemoryRequest("800Mi");
+
+    jobCreator.createSyncJob(
+        SOURCE_CONNECTION,
+        DESTINATION_CONNECTION,
+        STANDARD_SYNC,
+        SOURCE_IMAGE_NAME,
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION),
+        new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements),
+        new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
+            new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements))));
+
+    final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
+        .withPrefix(STANDARD_SYNC.getPrefix())
+        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+        .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
+        .withResourceRequirements(workerResourceRequirements)
+        .withSourceResourceRequirements(sourceResourceRequirements)
+        .withDestinationResourceRequirements(destResourceRequirements);
+
+    final JobConfig expectedJobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(expectedJobSyncConfig);
+
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+
+    verify(jobPersistence, times(1)).enqueueJob(expectedScope, expectedJobConfig);
   }
 
   @Test
