@@ -604,7 +604,10 @@
           "type": ["null", "string"]
         },
         "tax_exemptions": {
-          "type": ["null", "boolean"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         },
         "id": {
           "type": ["null", "integer"]

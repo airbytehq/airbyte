@@ -149,7 +149,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
-  private final FeatureFlags featureFlags;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -190,7 +189,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory, featureFlags);
+
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
@@ -228,7 +228,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
-    this.featureFlags = featureFlags;
   }
 
   // WORKSPACE
@@ -566,19 +565,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    if (featureFlags.usesNewScheduler()) {
-      return execute(() -> schedulerHandler.createManualRun(connectionIdRequestBody.getConnectionId()));
-    }
-
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    if (featureFlags.usesNewScheduler()) {
-      return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody.getConnectionId()));
-    }
-
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
@@ -640,10 +631,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
-    if (featureFlags.usesNewScheduler()) {
-      return execute(() -> schedulerHandler.createNewSchedulerCancellation(jobIdRequestBody.getId()));
-    }
-
     return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
   }
 

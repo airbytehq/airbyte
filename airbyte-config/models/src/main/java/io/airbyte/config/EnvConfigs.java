@@ -110,6 +110,12 @@ public class EnvConfigs implements Configs {
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
 
+  private static final String SHOULD_RUN_GET_SPEC_WORKFLOWS = "SHOULD_RUN_GET_SPEC_WORKFLOWS";
+  private static final String SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS = "SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS";
+  private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
+  private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
+  private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
@@ -690,6 +696,31 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+  }
+
+  @Override
+  public boolean shouldRunGetSpecWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_GET_SPEC_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunCheckConnectionWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunDiscoverWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_DISCOVER_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunSyncWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_SYNC_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunConnectionManagerWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
   }
 
   @Override
