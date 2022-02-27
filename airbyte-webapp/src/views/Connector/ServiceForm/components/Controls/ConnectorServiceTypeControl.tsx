@@ -27,6 +27,11 @@ import {
   IProps as OptionProps,
   OptionView,
 } from "components/base/DropDown/components/Option";
+import {
+  IProps as SingleValueProps,
+  Icon as SingleValueIcon,
+  ItemView as SingleValueView,
+} from "components/base/DropDown/components/SingleValue";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -70,6 +75,15 @@ const Stage = styled.div`
   color: ${({ theme }) => theme.textColor};
 `;
 
+const SingleValueContent = styled(components.SingleValue)`
+  width: 100%;
+  padding-right: 38px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
@@ -88,6 +102,18 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   </>
 );
 
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
+  releaseStage,
+}) =>
+  releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+    <Stage>
+      <FormattedMessage
+        id={`connector.releaseStage.${releaseStage}`}
+        defaultMessage={releaseStage}
+      />
+    </Stage>
+  ) : null;
+
 const Option: React.FC<OptionProps> = (props) => {
   return (
     <components.Option {...props}>
@@ -100,17 +126,25 @@ const Option: React.FC<OptionProps> = (props) => {
           {props.data.img || null}
           <Label>{props.label}</Label>
         </Text>
-        {props.data.releaseStage &&
-        props.data.releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
-          <Stage>
-            <FormattedMessage
-              id={`connector.releaseStage.${props.data.releaseStage}`}
-              defaultMessage={props.data.releaseStage}
-            />
-          </Stage>
-        ) : null}
+        <StageLabel releaseStage={props.data.releaseStage} />
       </OptionView>
     </components.Option>
+  );
+};
+
+const SingleValue: React.FC<SingleValueProps> = (props) => {
+  return (
+    <SingleValueView>
+      {props.data.img ? (
+        <SingleValueIcon>{props.data.img}</SingleValueIcon>
+      ) : null}
+      <div>
+        <SingleValueContent {...props}>
+          {props.data.label}
+          <StageLabel releaseStage={props.data.releaseStage} />
+        </SingleValueContent>
+      </div>
+    </SingleValueView>
   );
 };
 
@@ -198,6 +232,7 @@ const ConnectorServiceTypeControl: React.FC<{
           components={{
             MenuList: ConnectorList,
             Option,
+            SingleValue,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
