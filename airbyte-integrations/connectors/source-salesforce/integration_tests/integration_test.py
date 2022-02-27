@@ -75,12 +75,12 @@ def test_update_for_deleted_record(stream):
     stream_state = get_stream_state()
     time.sleep(1)
     response = create_note(stream, headers)
-    assert response.status_code == 201, "Note was note created"
+    assert response.status_code == 201, "Note was not created"
 
     created_note_id = response.json()["id"]
 
     notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
-    assert created_note_id in notes, "No created note during the sync"
+    assert created_note_id in notes, "The stream didn't return the note we created"
 
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
@@ -95,14 +95,9 @@ def test_update_for_deleted_record(stream):
     assert is_note_updated, "No deleted note during the sync"
     assert is_deleted, "Wrong field value for deleted note during the sync"
 
-    stream_state = get_stream_state()
     time.sleep(1)
     response = update_note(stream, created_note_id, headers)
-    assert response.status_code == 404, "Note was updated, but should not"
-    time.sleep(1)
-    notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state))
-    assert created_note_id not in notes, "Note was updated, but should not"
-
+    assert response.status_code == 404, "Expected an update to a deleted note to return 404"
 
 def test_deleted_record(stream):
     headers = stream.authenticator.get_auth_header()
@@ -146,7 +141,7 @@ def test_parallel_discover(input_sandbox_config):
     parallel_schemas = sf.generate_schemas(stream_objects)
     parallel_loading_time = (datetime.now() - start_time).total_seconds()
 
-    assert parallel_loading_time < (consecutive_loading_time / sf.parallel_tasks_size) + 5.0
+    assert parallel_loading_time < consecutive_loading_time / 10, "parallel should be more than 10x faster"
     assert set(consecutive_schemas.keys()) == set(parallel_schemas.keys())
     for stream_name, schema in consecutive_schemas.items():
         assert schema == parallel_schemas[stream_name]

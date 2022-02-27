@@ -175,7 +175,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 class Salesforce:
     logger = AirbyteLogger()
     version = "v52.0"
-    parallel_tasks_size = 200
+    parallel_tasks_size = 100
 
     def __init__(
         self,
@@ -247,7 +247,7 @@ class Salesforce:
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
-    @default_backoff_handler(max_tries=5, factor=15)
+    @default_backoff_handler(max_tries=5, factor=5)
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
