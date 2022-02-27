@@ -34,6 +34,9 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             session = boto3session.Session(
                 aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
             )
+        elif S3File.use_aws_default_credential_provider_chain(provider):
+            session = boto3session.Session()
+            client_config = Config()
         else:
             session = boto3session.Session()
             client_config = Config(signature_version=UNSIGNED)

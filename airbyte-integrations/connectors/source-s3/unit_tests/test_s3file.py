@@ -30,3 +30,23 @@ class TestS3File:
     )
     def test_use_aws_account(self, provider: Mapping[str, str], return_true: bool) -> None:
         assert S3File.use_aws_account(provider) is return_true
+
+    @pytest.mark.parametrize(
+        "provider, return_true",
+        [
+            (
+                {"storage": "S3", "bucket": "dummy", "path_prefix": "dummy", "use_aws_default_credential_provider_chain": True},
+                True,
+            ),
+            (
+                {"storage": "S3", "bucket": "dummy", "path_prefix": "dummy", "use_aws_default_credential_provider_chain": False},
+                False,
+            ),
+            (
+                {"storage": "S3", "bucket": "dummy", "path_prefix": "dummy", "use_aws_default_credential_provider_chain": None},
+                None,
+            ),
+        ],
+    )
+    def test_use_aws_default_credential_provider_chain(self, provider: Mapping[str, str], return_true: bool) -> None:
+        assert S3File.use_aws_default_credential_provider_chain(provider) is return_true

@@ -33,6 +33,9 @@ class S3File(StorageFile):
                 aws_secret_access_key=self._provider.get("aws_secret_access_key"),
             )
             self._boto_s3_resource = make_s3_resource(self._provider, session=self._boto_session)
+        elif self.use_aws_default_credential_provider_chain:
+            self._boto_session = boto3session.Session()
+            self._boto_s3_resource = make_s3_resource(self._provider, config=Config(), session=self._boto_session)
         else:
             self._boto_session = boto3session.Session()
             self._boto_s3_resource = make_s3_resource(self._provider, config=Config(signature_version=UNSIGNED), session=self._boto_session)
@@ -42,6 +45,10 @@ class S3File(StorageFile):
         aws_access_key_id = provider.get("aws_access_key_id")
         aws_secret_access_key = provider.get("aws_secret_access_key")
         return True if (aws_access_key_id is not None and aws_secret_access_key is not None) else False
+
+    @staticmethod
+    def use_aws_default_credential_provider_chain(provider: Mapping[str, str]) -> bool:
+        return provider.get("use_aws_default_credential_provider_chain")
 
     @contextmanager
     def open(self, binary: bool) -> Iterator[Union[TextIO, BinaryIO]]:
@@ -55,6 +62,9 @@ class S3File(StorageFile):
         bucket = self._provider.get("bucket")
         if self.use_aws_account(self._provider):
             params = {"client": make_s3_client(self._provider, session=self._boto_session)}
+        elif self.use_aws_default_credential_provider_chain(self._provider):
+            config = ClientConfig()
+            params = {"client": make_s3_client(self._provider, config=config)}
         else:
             config = ClientConfig(signature_version=UNSIGNED)
             params = {"client": make_s3_client(self._provider, config=config)}

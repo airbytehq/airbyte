@@ -37,6 +37,10 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.")
+        use_aws_default_credential_provider_chain: bool = Field(
+            default=None,
+            description="Use default AWS credential provider chain (such as EC2 instance profile). Leave the Access Key ID and Secret Access Key blank if setting this to true.",
+        )
         use_ssl: bool = Field(default=None, description="Is remote server using secure SSL/TLS connection")
         verify_ssl_cert: bool = Field(default=None, description="Allow self signed certificates")
 
