@@ -39,7 +39,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
           <FormattedMessage
             id="form.basicNormalization.message"
             values={{
-              lnk: (...lnk: React.ReactNode[]) => (
+              lnk: (lnk: React.ReactNode) => (
                 <Link target="_blank" href={config.ui.normalizationLink} as="a">
                   {lnk}
                 </Link>

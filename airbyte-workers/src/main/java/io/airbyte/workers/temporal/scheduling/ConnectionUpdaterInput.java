@@ -21,6 +21,11 @@ public class ConnectionUpdaterInput {
   private UUID connectionId;
   @Nullable
   private Long jobId;
+  /**
+   * This field is unused, it is kept for compatibility reasons.
+   */
+  @Nullable
+  private Integer attemptId;
   private boolean fromFailure;
   private int attemptNumber;
   /**

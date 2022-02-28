@@ -23,6 +23,9 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobCreator;
@@ -131,72 +134,35 @@ public class WorkerApp {
 
     final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
 
-    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
-    specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
-    specWorker.registerActivitiesImplementations(
-        new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
-            airbyteVersion));
+    if (configs.shouldRunGetSpecWorkflows()) {
+      registerGetSpec(factory);
+    }
 
-    final Worker checkConnectionWorker =
-        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
-    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
-    checkConnectionWorker
-        .registerActivitiesImplementations(
-            new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-                jobPersistence, airbyteVersion));
+    if (configs.shouldRunCheckConnectionWorkflows()) {
+      registerCheckConnection(factory);
+    }
 
-    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
-    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
-    discoverWorker
-        .registerActivitiesImplementations(
-            new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
-                logConfigs,
-                jobPersistence, airbyteVersion));
+    if (configs.shouldRunDiscoverWorkflows()) {
+      registerDiscover(factory);
+    }
 
-    final NormalizationActivityImpl normalizationActivity =
-        new NormalizationActivityImpl(
-            containerOrchestratorConfig,
-            defaultWorkerConfigs,
-            defaultProcessFactory,
-            secretsHydrator,
-            workspaceRoot,
-            workerEnvironment,
-            logConfigs,
-            jobPersistence,
-            airbyteVersion);
-    final DbtTransformationActivityImpl dbtTransformationActivity =
-        new DbtTransformationActivityImpl(
-            containerOrchestratorConfig,
-            defaultWorkerConfigs,
-            defaultProcessFactory,
-            secretsHydrator,
-            workspaceRoot,
-            workerEnvironment,
-            logConfigs,
-            jobPersistence,
-            airbyteVersion);
-    new PersistStateActivityImpl(workspaceRoot, configRepository);
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(
-        containerOrchestratorConfig,
-        replicationWorkerConfigs,
-        replicationProcessFactory,
-        secretsHydrator,
-        workspaceRoot,
-        workerEnvironment,
-        logConfigs,
-        jobPersistence,
-        airbyteVersion);
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    if (configs.shouldRunSyncWorkflows()) {
+      registerSync(factory);
+    }
 
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    if (configs.shouldRunConnectionManagerWorkflows()) {
+      registerConnectionManager(factory);
+    }
 
+    factory.start();
+  }
+
+  private void registerConnectionManager(final WorkerFactory factory) {
     final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class, SyncWorkflowImpl.class);
+    connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
             jobPersistence),
@@ -211,31 +177,89 @@ public class WorkerApp {
             configRepository,
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
-        new ConnectionDeletionActivityImpl(connectionHelper),
-        replicationActivity,
-        normalizationActivity,
-        dbtTransformationActivity,
-        persistStateActivity);
-
-    factory.start();
+        new ConnectionDeletionActivityImpl(connectionHelper));
   }
 
-  /**
-   * Switches behavior based on containerOrchestratorEnabled to decide whether to use new container
-   * launching or not.
-   */
-  private ReplicationActivityImpl getReplicationActivityImpl(
-                                                             final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                                             final WorkerConfigs workerConfigs,
-                                                             final ProcessFactory jobProcessFactory,
-                                                             final SecretsHydrator secretsHydrator,
-                                                             final Path workspaceRoot,
-                                                             final WorkerEnvironment workerEnvironment,
-                                                             final LogConfigs logConfigs,
-                                                             final JobPersistence jobPersistence,
-                                                             final String airbyteVersion) {
+  private void registerSync(final WorkerFactory factory) {
+    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+
+    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
+        defaultWorkerConfigs,
+        defaultProcessFactory);
+
+    final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
+        defaultWorkerConfigs,
+        defaultProcessFactory);
+
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
+
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+  }
+
+  private void registerDiscover(final WorkerFactory factory) {
+    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
+    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
+    discoverWorker
+        .registerActivitiesImplementations(
+            new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
+                logConfigs,
+                jobPersistence, airbyteVersion));
+  }
+
+  private void registerCheckConnection(final WorkerFactory factory) {
+    final Worker checkConnectionWorker =
+        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
+    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
+    checkConnectionWorker
+        .registerActivitiesImplementations(
+            new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
+                jobPersistence, airbyteVersion));
+  }
+
+  private void registerGetSpec(final WorkerFactory factory) {
+    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
+    specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
+    specWorker.registerActivitiesImplementations(
+        new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
+            airbyteVersion));
+  }
+
+  private ReplicationActivityImpl getReplicationActivityImpl(final WorkerConfigs workerConfigs,
+                                                             final ProcessFactory jobProcessFactory) {
 
     return new ReplicationActivityImpl(
+        containerOrchestratorConfig,
+        workerConfigs,
+        jobProcessFactory,
+        secretsHydrator,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        jobPersistence,
+        airbyteVersion);
+  }
+
+  private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
+                                                                 final ProcessFactory jobProcessFactory) {
+
+    return new NormalizationActivityImpl(
+        containerOrchestratorConfig,
+        workerConfigs,
+        jobProcessFactory,
+        secretsHydrator,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        jobPersistence,
+        airbyteVersion);
+  }
+
+  private DbtTransformationActivityImpl getDbtActivityImpl(final WorkerConfigs workerConfigs,
+                                                           final ProcessFactory jobProcessFactory) {
+
+    return new DbtTransformationActivityImpl(
         containerOrchestratorConfig,
         workerConfigs,
         jobProcessFactory,
@@ -302,6 +326,8 @@ public class WorkerApp {
 
   private static void launchWorkerApp() throws IOException {
     final Configs configs = new EnvConfigs();
+
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
     final WorkerConfigs specWorkerConfigs = WorkerConfigs.buildSpecWorkerConfigs(configs);
@@ -378,10 +404,7 @@ public class WorkerApp {
         configRepository,
         jobPersistence);
 
-    final ConnectionHelper connectionHelper = new ConnectionHelper(
-        configRepository,
-        workspaceHelper,
-        defaultWorkerConfigs);
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
     final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig = getContainerOrchestratorConfig(configs);
 
