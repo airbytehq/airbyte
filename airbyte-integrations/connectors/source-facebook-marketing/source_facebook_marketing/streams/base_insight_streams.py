@@ -150,9 +150,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def _date_intervals(self) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
         if self._end_date < self._next_cursor_value:
-            return []
+            return
         date_range = self._end_date - self._next_cursor_value
-        return date_range.range("days", self.time_increment)
+        yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -222,7 +222,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                 logger.info(
                     f"The cursor value within refresh period ({self.INSIGHTS_LOOKBACK_PERIOD}), start sync from {refresh_date} instead."
                 )
-            # FIXME: change cursor logic to not update cursor earlier than 28 days, after that we don't need this line
             start_date = min(start_date, refresh_date)
 
             if start_date < self._start_date:
