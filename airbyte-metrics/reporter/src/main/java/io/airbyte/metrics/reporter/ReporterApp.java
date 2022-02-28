@@ -17,10 +17,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ReporterApp {
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));
@@ -33,6 +35,7 @@ public class ReporterApp {
 
     final var pollers = Executors.newSingleThreadScheduledExecutor();
 
+    log.info("Starting pollers..");
     pollers.scheduleAtFixedRate(() -> {
       try {
         final var pendingJobs = configDatabase.query(MetricQueries::numberOfPendingJobs);
@@ -41,6 +44,8 @@ public class ReporterApp {
         e.printStackTrace();
       }
     }, 0, 15, TimeUnit.SECONDS);
+    
+    Thread.sleep(1000_000 * 1000);
   }
 
 }
