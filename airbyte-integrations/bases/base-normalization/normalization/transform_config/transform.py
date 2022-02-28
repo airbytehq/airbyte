@@ -237,6 +237,10 @@ class TransformConfig:
     @staticmethod
     def transform_oracle(config: Dict[str, Any]):
         print("transform_oracle")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://github.com/techindicium/dbt-oracle#configure-your-profile
         dbt_config = {
             "type": "oracle",
@@ -253,6 +257,10 @@ class TransformConfig:
     @staticmethod
     def transform_mssql(config: Dict[str, Any]):
         print("transform_mssql")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
         dbt_config = {
             "type": "sqlserver",
@@ -272,6 +280,10 @@ class TransformConfig:
     @staticmethod
     def transform_clickhouse(config: Dict[str, Any]):
         print("transform_clickhouse")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
