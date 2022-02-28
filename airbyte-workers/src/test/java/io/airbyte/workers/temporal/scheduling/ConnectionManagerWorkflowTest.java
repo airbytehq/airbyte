@@ -70,7 +70,7 @@ import org.mockito.Mockito;
  */
 @Slf4j
 public class ConnectionManagerWorkflowTest {
-
+/*
   private static final long JOB_ID = 1L;
   private static final int ATTEMPT_ID = 1;
 
@@ -1061,5 +1061,5 @@ public class ConnectionManagerWorkflowTest {
       }
     }
   }
-
+*/
 }
