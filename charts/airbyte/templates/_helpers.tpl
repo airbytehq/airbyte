@@ -173,6 +173,17 @@ Add environment variables to configure minio
 {{- end -}}
 
 {{/*
+Returns the GCP credentials path
+*/}}
+{{- define "airbyte.gcpLogCredentialsPath" -}}
+{{- if .Values.logs.gcs.credentialsJson }}
+    {{- printf "%s" "/secrets/gcs-log-creds/gcp.json" -}}
+{{- else -}}
+    {{- printf "%s" .Values.logs.gcs.credentials -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Returns the Airbyte Scheduler Image
 */}}
 {{- define "airbyte.schedulerImage" -}}

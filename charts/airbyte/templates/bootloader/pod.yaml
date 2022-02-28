@@ -22,23 +22,23 @@ spec:
         - name: AIRBYTE_VERSION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: AIRBYTE_VERSION
         - name: DATABASE_HOST
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: DATABASE_HOST
         - name: DATABASE_PORT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: DATABASE_PORT
         {{- if .Values.postgresql.enabled }}
         - name: DATABASE_PASSWORD
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_PASSWORD
         {{- else }}
         - name: DATABASE_PASSWORD
@@ -50,10 +50,10 @@ spec:
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: DATABASE_URL
         - name: DATABASE_USER
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_USER

@@ -45,12 +45,15 @@ spec:
         - name: DB_PORT
           value: {{ include "airbyte.database.port" . | quote }}
         - name: POSTGRES_USER
-          value: {{ include "airbyte.database.user" . }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
+              key: DATABASE_USER
         {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_PWD
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_PASSWORD
         {{- else }}
         - name: POSTGRES_PWD
