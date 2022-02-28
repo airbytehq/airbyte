@@ -844,6 +844,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         payload = {}
 
         if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+<<<<<<< HEAD
             params["after"] = int(response["paging"]["next"]["after"])
             payload["after"] = int(response["paging"]["next"]["after"])
 
@@ -853,6 +854,17 @@ class CRMSearchStream(IncrementalStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return [None]
+=======
+            # Hubspot documentations states that the search endpoints are limited to 10,000 total results 
+            # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+            # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000, so that
+            # the new sync starts a new query with a more recent cursor value.
+            after = int(response["paging"]["next"]["after"])
+            if after < 10000:
+                params["after"] = after
+                payload["after"] = after
+                return {"params": params, "payload": payload}
+>>>>>>> 3ff68c120 (Handled search queries that would output more than 10K records)
 
 
 class CRMObjectStream(Stream):
