@@ -115,18 +115,18 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final JdbcDatabase database = Databases.createJdbcDatabase(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            jdbcConfig.get("jdbc_url").asText(),
-            driverClass,
-            jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
-            sourceOperations);
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        driverClass,
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
+        sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return new CockroachJdbcDatabase(database, sourceOperations);
   }
-  
+
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
     return connection -> {
       final PreparedStatement ps = connection.prepareStatement(
