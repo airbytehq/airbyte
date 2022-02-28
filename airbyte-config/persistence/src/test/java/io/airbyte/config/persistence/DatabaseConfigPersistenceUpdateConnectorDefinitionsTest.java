@@ -100,10 +100,10 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1.9");
 
     assertUpdateConnectorDefinition(
-            Collections.singletonList(currentSource),
-            Collections.singletonList(currentSource),
-            Collections.singletonList(latestSource),
-            Collections.singletonList(latestSource));
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(latestSource));
   }
 
   @Test
@@ -113,10 +113,10 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.2.0");
 
     assertUpdateConnectorDefinition(
-            Collections.singletonList(currentSource),
-            Collections.singletonList(currentSource),
-            Collections.singletonList(latestSource),
-            Collections.singletonList(currentSource));
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(currentSource));
   }
 
   @Test

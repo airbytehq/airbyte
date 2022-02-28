@@ -1912,8 +1912,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private void writeOrUpdateStandardDefinition(final DSLContext ctx,
-                                       final AirbyteConfig configType,
-                                       final JsonNode definition) {
+                                               final AirbyteConfig configType,
+                                               final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
       writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
