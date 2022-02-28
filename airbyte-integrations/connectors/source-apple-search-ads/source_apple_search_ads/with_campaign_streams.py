@@ -41,7 +41,7 @@ class WithCampaignAppleSearchAdsStream(AppleSearchAdsStream, ABC):
         return self._chunk_campaigns_range()
 
 class Adgroups(WithCampaignAppleSearchAdsStream):
-    primary_key = ["id"]
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -49,7 +49,7 @@ class Adgroups(WithCampaignAppleSearchAdsStream):
         return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
 
 class CampaignNegativeKeywords(WithCampaignAppleSearchAdsStream):
-    primary_key = ["id"]
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -57,7 +57,7 @@ class CampaignNegativeKeywords(WithCampaignAppleSearchAdsStream):
         return f"campaigns/{stream_slice.get('campaign_id')}/adgroups"
 
 class CreativeSets(WithCampaignAppleSearchAdsStream):
-    primary_key = ["id"]
+    primary_key = "id"
 
     @property
     def http_method(self) -> str:
@@ -105,7 +105,7 @@ class CreativeSets(WithCampaignAppleSearchAdsStream):
         return post_json
 
 class AdgroupCreativeSets(WithCampaignAppleSearchAdsStream):
-    primary_key = ["id"]
+    primary_key = "id"
 
     @property
     def http_method(self) -> str:

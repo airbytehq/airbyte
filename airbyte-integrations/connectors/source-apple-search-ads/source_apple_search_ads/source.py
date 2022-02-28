@@ -16,6 +16,7 @@ from .authenticator import AppleSearchAdsAuthenticator
 
 from .basic_streams import Campaigns
 from .with_campaign_streams import Adgroups, CampaignNegativeKeywords, CreativeSets, AdgroupCreativeSets
+from .with_campaign_adgroup_streams import AdgroupNegativeKeywords
 from .with_campaign_report_streams import ReportCampaigns, ReportAdgroups, ReportKeywords, ReportSearchterms, ReportAds
 
 class SourceAppleSearchAds(AbstractSource):
@@ -61,6 +62,7 @@ class SourceAppleSearchAds(AbstractSource):
             CampaignNegativeKeywords(org_id=config["org_id"], authenticator=auth),
             CreativeSets(org_id=config["org_id"], authenticator=auth),
             AdgroupCreativeSets(org_id=config["org_id"], authenticator=auth),
+            AdgroupNegativeKeywords(org_id=config["org_id"], authenticator=auth),
             ReportCampaigns(org_id=config["org_id"], authenticator=auth),
             ReportAdgroups(org_id=config["org_id"], authenticator=auth),
             ReportKeywords(org_id=config["org_id"], authenticator=auth),

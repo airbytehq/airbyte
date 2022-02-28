@@ -47,6 +47,15 @@
     },
     {
       "stream": {
+        "name": "adgroup_negative_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "report_campaigns",
         "json_schema": {},
         "supported_sync_modes": ["incremental"]
