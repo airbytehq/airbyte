@@ -41,10 +41,10 @@ const Slider = styled.span<{ small?: boolean }>`
     background: ${({ theme }) => theme.whiteColor};
     transition: 0.3s;
     border-radius: 50%;
+  }
 
-    input:checked + && {
-      transform: translateX(${({ small }) => (small ? 10 : 18)}px);
-    }
+  input:checked + &&:before {
+    transform: translateX(${({ small }) => (small ? 10 : 18)}px);
   }
 
   input:checked + & {
