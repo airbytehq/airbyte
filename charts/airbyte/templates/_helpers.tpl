@@ -162,7 +162,7 @@ Add environment variables to configure minio
 {{- if .Values.logs.minio.enabled -}}
     {{- printf "http://%s:%d" (include "airbyte.minio.fullname" .) 9000 -}}
 {{- else if .Values.logs.externalMinio.enabled -}}
-    {{- printf "http://%s:%d" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
+    {{- printf "http://%s:%g" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
 {{- else -}}
     {{- printf "" -}}
 {{- end -}}

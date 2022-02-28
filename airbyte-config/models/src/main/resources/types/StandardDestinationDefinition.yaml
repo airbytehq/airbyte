@@ -39,9 +39,11 @@ properties:
     enum:
       - alpha
       - beta
-      - generallyAvailable
+      - generally_available
       - custom
   releaseDate:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string
     format: date
+  resourceRequirements:
+    "$ref": ActorDefinitionResourceRequirements.yaml

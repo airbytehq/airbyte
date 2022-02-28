@@ -65,6 +65,7 @@ const OnboardingPage: React.FC = () => {
 
   useEffect(() => {
     analyticsService.page("Onboarding Page");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { sources } = useSourceList();

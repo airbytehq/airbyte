@@ -38,15 +38,47 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        {{- if .Values.podSweeper.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.podSweeper.containerSecurityContext | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - mountPath: /script/sweep-pod.sh
           subPath: sweep-pod.sh
           name: sweep-pod-script
         - mountPath: /.kube
           name: kube-config
+        {{- if .Values.podSweeper.extraVolumeMounts }}
+  {{ toYaml .Values.podSweeper.extraVolumeMounts | nindent 8 }}
+        {{- end }}
         command: ["/bin/bash", "-c", /script/sweep-pod.sh]
         {{- if .Values.podSweeper.resources }}
         resources: {{- toYaml .Values.podSweeper.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.podSweeper.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - grep -aq sweep-pod.sh /proc/1/cmdline
+          initialDelaySeconds: {{ .Values.podSweeper.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.podSweeper.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.podSweeper.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.podSweeper.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.podSweeper.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.podSweeper.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - grep -aq sweep-pod.sh /proc/1/cmdline
+          initialDelaySeconds: {{ .Values.podSweeper.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.podSweeper.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.podSweeper.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.podSweeper.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.podSweeper.readinessProbe.failureThreshold }}
         {{- end }}
       volumes:
       - name: kube-config
@@ -55,3 +87,6 @@ spec:
         configMap:
           name: {{ include "airbyte.fullname" . }}-sweep-pod-script
           defaultMode: 0755
+      {{- if .Values.podSweeper.extraVolumes }}
+{{ toYaml .Values.podSweeper.extraVolumes | nindent 6 }}
+      {{- end }}
