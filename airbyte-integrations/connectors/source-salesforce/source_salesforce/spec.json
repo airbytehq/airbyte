@@ -68,8 +68,8 @@
             }
           }
         },
-        "title": "Streams filter criteria",
-        "description": "Add selection criteria for streams to get only streams that are relevant to you"
+        "title": "Salesforce Object filtering criteria (Optional)",
+        "description": "Add selection criteria for streams to read only the Salesforce objects which are relevant to you."
       }
     }
   },
