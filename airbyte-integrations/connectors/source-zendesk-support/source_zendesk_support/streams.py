@@ -61,7 +61,74 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
         return self.executor.submit(func, request, **kwargs)
 
 
-class SourceZendeskSupportStream(HttpStream, ABC):
+class BaseSourceZendeskSupportStream(HttpStream, ABC):
+    def __init__(self, subdomain: str, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+
+        self._start_date = start_date
+        self._subdomain = subdomain
+
+    def backoff_time(self, response: requests.Response) -> Union[int, float]:
+        """
+        The rate limit is 700 requests per minute
+        # monitoring-your-request-activity
+        See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+        The response has a Retry-After header that tells you for how many seconds to wait before retrying.
+        """
+
+        retry_after = int(response.headers.get("Retry-After", 0))
+        if retry_after > 0:
+            return retry_after
+
+        # the header X-Rate-Limit returns the amount of requests per minute
+        # we try to wait twice as long
+        rate_limit = float(response.headers.get("X-Rate-Limit", 0))
+        if rate_limit and rate_limit > 0:
+            return (60.0 / rate_limit) * 2
+        return super().backoff_time(response)
+
+    @staticmethod
+    def str2datetime(str_dt: str) -> datetime:
+        """convert string to datetime object
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
+        """
+        if not str_dt:
+            return None
+        return datetime.strptime(str_dt, DATETIME_FORMAT)
+
+    @staticmethod
+    def datetime2str(dt: datetime) -> str:
+        """convert datetime object to string
+        Output example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
+        """
+        return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
+
+    @staticmethod
+    def str2unixtime(str_dt: str) -> Optional[int]:
+        """convert string to unixtime number
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: 1626936955"
+        """
+        if not str_dt:
+            return None
+        dt = datetime.strptime(str_dt, DATETIME_FORMAT)
+        return calendar.timegm(dt.utctimetuple())
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """try to select relevant data only"""
+
+        records = response.json().get(self.response_list_name or self.name) or []
+        if not self.cursor_field:
+            yield from records
+        else:
+            cursor_date = (stream_state or {}).get(self.cursor_field)
+            for record in records:
+                updated = record[self.cursor_field]
+                if not cursor_date or updated > cursor_date:
+                    yield record
+
+
+class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     """Basic Zendesk class"""
 
     primary_key = "id"
@@ -75,14 +142,11 @@ class SourceZendeskSupportStream(HttpStream, ABC):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, subdomain: str, start_date: str, authenticator: Union[AuthBase, HttpAuthenticator] = None, **kwargs):
-        self._start_date = start_date
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, **kwargs):
         super().__init__(**kwargs)
+
         self._session = SourceZendeskSupportFuturesSession()
         self._session.auth = authenticator
-
-        # add the custom value for generation of a zendesk domain
-        self._subdomain = subdomain
         self.future_requests = deque()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -184,15 +248,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         while len(self.future_requests) > 0:
             item = self.future_requests.popleft()
 
-            if self.use_cache:
-                # use context manager to handle and store cassette metadata
-                with self.cache_file as cass:
-                    self.cassete = cass
-                    # vcr tries to find records based on the request, if such records exist, return from cache file
-                    # else make a request and save record in cache file
-                    response = item["future"].result()
-            else:
-                response = item["future"].result()
+            response = item["future"].result()
 
             if self.should_retry(response):
                 backoff_time = self.backoff_time(response)
@@ -226,80 +282,16 @@ class SourceZendeskSupportStream(HttpStream, ABC):
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
 
-    def backoff_time(self, response: requests.Response) -> Union[int, float]:
-        """
-        The rate limit is 700 requests per minute
-        # monitoring-your-request-activity
-        See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
-        The response has a Retry-After header that tells you for how many seconds to wait before retrying.
-        """
-
-        retry_after = int(response.headers.get("Retry-After", 0))
-        if retry_after > 0:
-            return retry_after
-
-        # the header X-Rate-Limit returns a amount of requests per minute
-        # we try to wait twice as long
-        rate_limit = float(response.headers.get("X-Rate-Limit", 0))
-        if rate_limit and rate_limit > 0:
-            return (60.0 / rate_limit) * 2
-        return super().backoff_time(response)
-
-    @staticmethod
-    def str2datetime(str_dt: str) -> datetime:
-        """convert string to datetime object
-        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
-        """
-        if not str_dt:
-            return None
-        return datetime.strptime(str_dt, DATETIME_FORMAT)
-
-    @staticmethod
-    def datetime2str(dt: datetime) -> str:
-        """convert datetime object to string
-        Output example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
-        """
-        return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
-
-    @staticmethod
-    def str2unixtime(str_dt: str) -> Optional[int]:
-        """convert string to unixtime number
-        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
-        Output example: 1626936955"
-        """
-        if not str_dt:
-            return None
-        dt = datetime.strptime(str_dt, DATETIME_FORMAT)
-        return calendar.timegm(dt.utctimetuple())
-
     def path(self, **kwargs):
         return self.name
 
     def next_page_token(self, *args, **kwargs):
         return None
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """try to select relevant data only"""
 
-        records = response.json().get(self.response_list_name or self.name) or []
-        if not self.cursor_field:
-            yield from records
-        else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
-            for record in records:
-                updated = record[self.cursor_field]
-                if not cursor_date or updated > cursor_date:
-                    yield record
-
-
-class SourceZendeskSupportFullRefreshStream(HttpStream, ABC):
+class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
     primary_key = "id"
     response_list_name: str = None
-
-    def __init__(self, subdomain: str, start_date: str, authenticator: Union[AuthBase, HttpAuthenticator] = None, **kwargs):
-        super().__init__(authenticator=authenticator, **kwargs)
-        self._start_date = start_date
-        self._subdomain = subdomain
 
     @property
     def url_base(self) -> str:
@@ -332,9 +324,6 @@ class SourceZendeskSupportFullRefreshStream(HttpStream, ABC):
             }
         )
         return params
-
-    def parse_response(self, response: requests.Response, **kwargs):
-        yield from response.json().get(self.response_list_name or self.name) or []
 
 
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
@@ -379,7 +368,6 @@ class Tickets(SourceZendeskSupportStream):
     # The generated_timestamp value is updated for all entity updates, including system updates.
     # If a system update occurs after an event, the unchanged updated_at time will become earlier
     # relative to the updated generated_timestamp time.
-    use_cache = True
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Adds the field 'comment_count'"""
@@ -402,12 +390,6 @@ class TicketComments(SourceZendeskSupportStream):
     cursor_field = "created_at"
 
     response_list_name = "comments"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # need to save a slice ticket state
-        # because the function get_updated_state doesn't have a stream_slice as argument
-        self._ticket_last_end_time = None
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         ticket_id = stream_slice["id"]
