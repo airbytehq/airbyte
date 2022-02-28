@@ -119,7 +119,7 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.EventRunner;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
@@ -168,7 +168,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final Path workspaceRoot,
                           final HttpClient httpClient,
                           final FeatureFlags featureFlags,
-                          final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                          final EventRunner eventRunner) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -189,13 +189,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory, featureFlags);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, eventRunner, featureFlags);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         workerConfigs);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, connectionsHandler);
@@ -215,7 +215,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        temporalWorkerRunFactory);
+        eventRunner);
     healthCheckHandler = new HealthCheckHandler();
     archiveHandler = new ArchiveHandler(
         airbyteVersion,

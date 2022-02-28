@@ -54,7 +54,7 @@ import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.EventRunner;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +90,7 @@ class ConnectionsHandlerTest {
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
-  private TemporalWorkerRunFactory temporalWorkflowHandler;
+  private EventRunner eventRunner;
   private SyncJobFactory jobFactory;
   private JobPersistence jobPersistence;
   private LogConfigs logConfigs;
@@ -153,7 +153,7 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
     featureFlags = mock(FeatureFlags.class);
-    temporalWorkflowHandler = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
@@ -173,7 +173,7 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          temporalWorkflowHandler,
+          eventRunner,
           featureFlags,
           workerConfigs);
     }
@@ -357,7 +357,7 @@ class ConnectionsHandlerTest {
       verify(configRepository).writeStandardSync(updatedStandardSync);
 
       if (useNewScheduler) {
-        verify(temporalWorkflowHandler).update(connectionUpdate);
+        verify(eventRunner).update(connectionUpdate);
       }
     }
 

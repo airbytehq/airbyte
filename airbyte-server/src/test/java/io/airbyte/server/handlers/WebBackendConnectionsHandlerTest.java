@@ -72,7 +72,7 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.EventRunner;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -99,7 +99,7 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
   private FeatureFlags featureFlags;
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private EventRunner eventRunner;
   private ConnectionHelper connectionHelper;
 
   @BeforeEach
@@ -111,7 +111,7 @@ class WebBackendConnectionsHandlerTest {
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     featureFlags = mock(FeatureFlags.class);
-    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
     connectionHelper = mock(ConnectionHelper.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
         sourceHandler,
@@ -120,7 +120,7 @@ class WebBackendConnectionsHandlerTest {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        temporalWorkerRunFactory);
+        eventRunner);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -590,9 +590,9 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
-    final InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
-    orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
-    orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
+    final InOrder orderVerifier = inOrder(eventRunner);
+    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test

@@ -43,7 +43,6 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.worker_run.EventRunner;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;

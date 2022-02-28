@@ -18,7 +18,7 @@ import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.EventRunner;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -47,7 +47,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
   private static FeatureFlags featureFlags;
-  private static TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private static EventRunner eventRunner;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -69,7 +69,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final Path workspaceRoot,
                                final HttpClient httpClient,
                                final FeatureFlags featureFlags,
-                               final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                               final EventRunner eventRunner) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -89,7 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
     ConfigurationApiFactory.featureFlags = featureFlags;
-    ConfigurationApiFactory.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    ConfigurationApiFactory.eventRunner = eventRunner;
   }
 
   @Override
@@ -115,7 +115,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.workspaceRoot,
         ConfigurationApiFactory.httpClient,
         ConfigurationApiFactory.featureFlags,
-        ConfigurationApiFactory.temporalWorkerRunFactory);
+        ConfigurationApiFactory.eventRunner);
   }
 
   @Override

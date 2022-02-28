@@ -47,7 +47,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.workers.worker_run.EventRunner;
+import io.airbyte.workers.worker_run.TemporalEventRunner;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -191,11 +192,8 @@ public class ServerApp implements ServerRunnable {
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs),
-        configs.getWorkspaceRoot(),
-        configs.getAirbyteVersionOrWarning(),
-        featureFlags);
+    final EventRunner eventRunner = new TemporalEventRunner(
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
 
     LOGGER.info("Starting server...");
 
@@ -217,17 +215,17 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkspaceRoot(),
         httpClient,
         featureFlags,
-        temporalWorkerRunFactory);
+        eventRunner);
   }
 
-  private static void migrateExistingConnection(final ConfigRepository configRepository, final TemporalWorkerRunFactory temporalWorkerRunFactory)
+  private static void migrateExistingConnection(final ConfigRepository configRepository, final EventRunner eventRunner)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     LOGGER.info("Start migration to the new scheduler...");
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
             .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
-    temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
+    eventRunner.migrateSyncIfNeeded(connectionIds);
     LOGGER.info("Done migrating to the new scheduler...");
   }
 

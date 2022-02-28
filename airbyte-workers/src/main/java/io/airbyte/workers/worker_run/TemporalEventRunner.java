@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.worker_run;
 
 import io.airbyte.api.model.ConnectionUpdate;
@@ -12,6 +16,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class TemporalEventRunner implements EventRunner {
+
   private final TemporalClient temporalClient;
 
   public void createNewSchedulerWorkflow(final UUID connectionId) {
@@ -45,4 +50,5 @@ public class TemporalEventRunner implements EventRunner {
   public void update(final ConnectionUpdate connectionUpdate) throws JsonValidationException, ConfigNotFoundException, IOException {
     temporalClient.update(connectionUpdate);
   }
+
 }
