@@ -131,6 +131,16 @@ public class CloudStorageConfigs {
       return region;
     }
 
+    @Override
+    public String getAwsAccessKey() {
+      throw new IllegalArgumentException("Should not call getAwsAccessKey for AWS S3");
+    }
+
+    @Override
+    public String getAwsSecretAccessKey() {
+      throw new IllegalArgumentException("Should not call getAwsSecretAccessKey for AWS S3");
+    }
+
   }
 
   public static class MinioConfig extends S3ApiWorkerStorageConfig {
