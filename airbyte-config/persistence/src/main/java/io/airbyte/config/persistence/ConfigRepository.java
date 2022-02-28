@@ -5,7 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -53,8 +53,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jooq.DSLContext;
-import org.jooq.SelectConditionStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -657,25 +655,28 @@ public class ConfigRepository {
         actorCatalogFetchEvent);
   }
 
-  private SelectConditionStep selectCountWorkspaceConnections(final DSLContext ctx, final UUID workspaceId) {
-    return ctx.selectCount()
-        .from(ACTOR).join(WORKSPACE)
-        .on(ACTOR.WORKSPACE_ID.equal(WORKSPACE.ID))
-        .where(WORKSPACE.ID.equal(workspaceId));
-  }
-
   public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
-    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId)).fetchOne().into(int.class);
+    return database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
   public int countSourcesForWorkspace(final UUID workspaceId) throws IOException {
-    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.source))).fetchOne()
-        .into(int.class);
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
   public int countDestinationsForWorkspace(final UUID workspaceId) throws IOException {
-    return database.query(ctx -> selectCountWorkspaceConnections(ctx, workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))).fetchOne()
-        .into(int.class);
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
   /**

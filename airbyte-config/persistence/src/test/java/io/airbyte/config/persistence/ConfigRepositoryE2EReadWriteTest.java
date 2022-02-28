@@ -121,9 +121,9 @@ public class ConfigRepositoryE2EReadWriteTest {
       configRepository.writeDestinationConnection(destination, specification);
     }
 
-    assertEquals(3, configRepository.listSourceConnection().size());
-    assertEquals(4, configRepository.listDestinationConnection().size());
-    assertEquals(destinationCount + sourceCount, configRepository.countConnectionsForWorkspace(workspace.getWorkspaceId()));
+    final int connectionCount = 0;
+
+    assertEquals(connectionCount, configRepository.countConnectionsForWorkspace(workspace.getWorkspaceId()));
     assertEquals(destinationCount, configRepository.countDestinationsForWorkspace(workspace.getWorkspaceId()));
     assertEquals(sourceCount, configRepository.countSourcesForWorkspace(workspace.getWorkspaceId()));
   }
