@@ -77,7 +77,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
-    Workflow.sleep(Duration.ofMinutes(1L));
     try {
       try {
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
@@ -148,6 +147,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       StandardSyncOutput standardSyncOutput = null;
       try {
         standardSyncOutput = runChildWorkflow(jobInputs);
+
+        Workflow.sleep(Duration.ofMinutes(1L));
 
         workflowState.setFailed(getFailStatus(standardSyncOutput));
 
