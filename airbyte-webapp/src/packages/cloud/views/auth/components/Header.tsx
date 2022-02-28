@@ -16,13 +16,10 @@ const Links = styled.div`
   align-items: center;
 `;
 
-const BackLink = styled.div`
+const BackLink = styled.a`
   font-style: normal;
   font-weight: bold;
-  font-size: 14px;
-  line-height: 17px;
   color: ${({ theme }) => theme.primaryColor};
-  cursor: pointer;
 
   &:hover {
     opacity: 0.8;
@@ -47,7 +44,7 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ toLogin }) => {
   return (
     <Links>
-      <BackLink>
+      <BackLink href="https://airbyte.com">
         <FontAwesomeIcon icon={faArrowLeft} />
         <TextBlock>Back</TextBlock>
       </BackLink>
