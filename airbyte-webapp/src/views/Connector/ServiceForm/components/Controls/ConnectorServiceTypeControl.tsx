@@ -135,9 +135,7 @@ const Option: React.FC<OptionProps> = (props) => {
 const SingleValue: React.FC<SingleValueProps> = (props) => {
   return (
     <SingleValueView>
-      {props.data.img ? (
-        <SingleValueIcon>{props.data.img}</SingleValueIcon>
-      ) : null}
+      {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
       <div>
         <SingleValueContent {...props}>
           {props.data.label}
