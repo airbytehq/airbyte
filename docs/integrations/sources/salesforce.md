@@ -36,7 +36,7 @@ If this is Greek to you, then you are likely not using a sandbox account.
 * Salesforce Account
 * Dedicated Salesforce user (optional)
 
-**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
+**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
 
 ### Setup guide
 
@@ -51,7 +51,7 @@ If this is Greek to you, then you are likely not using a sandbox account.
 * Salesforce OAuth credentials
 * Dedicated Salesforce user (optional)
 
-**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
+**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
 
 ### Setup guide
 
