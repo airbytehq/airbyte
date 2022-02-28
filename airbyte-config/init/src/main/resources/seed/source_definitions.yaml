@@ -872,3 +872,9 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/kustomer
   sourceType: api
+- name: Woo Commerce
+  sourceDefinitionId: cd06e646-???
+  dockerRepository: airbyte/source-woocommerce
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/woocommerce
+  sourceType: api
