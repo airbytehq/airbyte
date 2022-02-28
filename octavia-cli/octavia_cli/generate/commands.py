@@ -40,9 +40,9 @@ def generate_connection(ctx: click.Context, source_id: str, destination_id: str,
     #         "Your octavia project is not initialized, please run 'octavia init' before running 'octavia generate'."
     #     )
 
-    connection_obj = connection.Connection(ctx.obj["API_CLIENT"], source_id, destination_id, resource_name)
-    # renderer = ConnectionSpecificationRenderer(resource_name, definition)
+    connection.Connection(ctx.obj["API_CLIENT"], source_id, destination_id, resource_name).generate()
+    # renderer = Connection2SpecificationRenderer(conn)
     # output_path = renderer.write_yaml(project_path=".")
     # message = f"✅ - Created the specification template for {resource_name} in {output_path}."
-    message = connection_obj.create()
+    message = "ohoy"
     click.echo(click.style(message, fg="green"))

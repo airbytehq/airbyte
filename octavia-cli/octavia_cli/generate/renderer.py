@@ -158,3 +158,26 @@ class ConnectionSpecificationRenderer:
         with open(output_path, "w") as f:
             f.write(rendered)
         return output_path
+
+
+class Connection2SpecificationRenderer:
+    TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
+
+    def __init__(self, resource_name: str, source_id: str, destination_id: str) -> None:
+        self.resource_name = resource_name
+        self.source_id = source_id
+        self.destination_id = destination_id
+
+    def _get_output_path(self, project_path: str) -> str:
+        return os.path.join(project_path, "connections", f"{self.resource_name}.yaml")
+
+    def write_yaml(self, project_path: str) -> str:
+        output_path = self._get_output_path(project_path)
+        parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
+        rendered = self.TEMPLATE.render(
+            {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
+        )
+
+        with open(output_path, "w") as f:
+            f.write(rendered)
+        return output_path

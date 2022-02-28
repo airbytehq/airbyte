@@ -32,21 +32,17 @@ class Connection:
         self.destination_id = destination_id
         self.resource_name = resource_name
 
-    def source_discover(self):
-
+    def get_source_catalog(self):
         source_id_request_body = SourceIdRequestBody(source_id=self.source_id)
-
-        catalog = self.source_api.discover_schema_for_source(source_id_request_body, _check_return_type=False)
-
+        catalog = self.source_api.discover_schema_for_source(source_id_request_body, _check_return_type=False).catalog
         return catalog
 
-    def create(self):
-        catalog = self.source_discover().catalog
-
+    def generate(self) -> ConnectionCreate:
+        catalog = self.get_source_catalog()
         connection_create = ConnectionCreate(
             name=self.resource_name,
             namespace_definition=NamespaceDefinitionType("source"),
-            namespace_format="${SOURCE_NAMESPACE}",
+            namespace_format="",
             prefix="",
             source_id=self.source_id,
             destination_id=self.destination_id,
@@ -62,28 +58,16 @@ class Connection:
                             supported_sync_modes=[
                                 SyncMode("full_refresh"),
                             ],
-                            source_defined_cursor=True,
-                            default_cursor_field=[
-                                "default_cursor_field_example",
-                            ],
-                            source_defined_primary_key=[
-                                [
-                                    "string_example",
-                                ],
-                            ],
-                            namespace="namespace_example",
+                            source_defined_cursor=False,
+                            default_cursor_field=[],
+                            source_defined_primary_key=[],
+                            namespace="",
                         ),
                         config=AirbyteStreamConfiguration(
                             sync_mode=SyncMode("full_refresh"),
-                            cursor_field=[
-                                "cursor_field_example",
-                            ],
+                            cursor_field=[],
                             destination_sync_mode=DestinationSyncMode("append"),
-                            primary_key=[
-                                [
-                                    "string_example",
-                                ],
-                            ],
+                            primary_key=[],
                             alias_name="alias_name_example",
                             selected=True,
                         ),
@@ -97,13 +81,15 @@ class Connection:
             ),
             status=ConnectionStatus("active"),
             resource_requirements=ResourceRequirements(
-                cpu_request="cpu_request_example",
-                cpu_limit="cpu_limit_example",
-                memory_request="memory_request_example",
-                memory_limit="memory_limit_example",
+                cpu_request="",
+                cpu_limit="",
+                memory_request="",
+                memory_limit="",
             ),
         )
 
-        new_connection = self.connection_api.create_connection(connection_create)
-        dict_to_yaml(connection_create.to_dict())
-        return new_connection
+        # new_connection = self.connection_api.create_connection(connection_create)
+        # this trigger the API to create a new connection
+        # dict_to_yaml(connection_create.to_dict())
+
+        return connection_create
