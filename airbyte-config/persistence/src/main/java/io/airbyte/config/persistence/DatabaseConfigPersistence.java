@@ -1835,13 +1835,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       // Add new connector
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
         LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         newCount++;
         continue;
       }
@@ -1863,13 +1857,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         if (hasNewPatchVersion(connectorInfo.dockerImageTag, latestImageTag)) {
           // Update connector to the latest patch version
           LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
-          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-            writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-            writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-          } else {
-            throw new RuntimeException("Unknown config type " + configType);
-          }
+          writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
           updatedCount++;
         } else if (newFields.size() == 0) {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
@@ -1877,13 +1865,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           // Add new fields to the connector definition
           final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
           LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-            writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-            writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-          } else {
-            throw new RuntimeException("Unknown config type " + configType);
-          }
+          writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
           updatedCount++;
         }
         continue;
@@ -1894,25 +1876,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         // Update connector to the latest version
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         updatedCount++;
       } else if (newFields.size() > 0) {
         // Add new fields to the connector definition
         final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
         LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
         updatedCount++;
       } else {
         LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
@@ -1920,6 +1890,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
 
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  private void writeOrUpdateStandardDefinition(final DSLContext ctx,
+                                       final AirbyteConfig configType,
+                                       final JsonNode definition) {
+    if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+      writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+    } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+      writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+    } else {
+      throw new RuntimeException("Unknown config type " + configType);
+    }
   }
 
   @VisibleForTesting
