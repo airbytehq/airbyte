@@ -102,11 +102,8 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
-  private static final String DEFAULT_CPU_REQUEST = "0.1";
-  private static final String DEFAULT_CPU_LIMIT = "0.2";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
-      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -179,7 +176,6 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
         .withCommand("sh", "-c", initCommand)
-        .withResources(getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build())
         .withVolumeMounts(mainVolumeMounts)
         .build();
   }
