@@ -20,15 +20,14 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
 
     url_base = "https://api.outbrain.com/amplify/v0.1/"
 
-    def __init__(self,  marketer_id, ob_token_v1, authenticator, start_date, **kwargs):
+    def __init__(self,  marketer_id, ob_token_v1, authenticator, **kwargs):
         super().__init__(authenticator, **kwargs)
         self.marketer_id = marketer_id
         self.token = ob_token_v1
-        self.start_date = start_date
+        self.start_date = str((datetime.date.today() - datetime.timedelta(days=8)).strftime("%Y-%m-%d"))
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-
         return None
 
     def request_params(
@@ -42,12 +41,6 @@ class OutbrainAmplifyApiStream(HttpStream, ABC):
         header = {"OB-TOKEN-V1": self.token}
         return header
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
 
 
 class Budgets(OutbrainAmplifyApiStream):
@@ -59,38 +52,29 @@ class Budgets(OutbrainAmplifyApiStream):
     ) -> str:
 
         marketer_id = self.marketer_id
-        return 'marketers/' +marketer_id + '/budgets?detachedOnly=false'
+        return f"marketers/{marketer_id}/budgets?detachedOnly=false"
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         return response.json().get("budgets")
 
 class Campaigns(OutbrainAmplifyApiStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
+    request_pagination_limit = 50
     pagintation_token = 0
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         marketer_id = self.marketer_id
-        return 'marketers/' +marketer_id + '/campaigns'
+        return f"marketers/{marketer_id }/campaigns"
     
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         count = int(response.json()['count'])
         Campaigns.pagintation_token = Campaigns.pagintation_token + count
         next_page_token =  Campaigns.pagintation_token
-        # return next pagination token until count of records in call is != 25 (limit of records per call)
-        if count  == 25 :
+
+        if count  == Campaigns.request_pagination_limit :
             return  next_page_token
         else:
             return None
@@ -98,19 +82,9 @@ class Campaigns(OutbrainAmplifyApiStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-  
-        return {"offset": next_page_token}
+        return {"offset": next_page_token, "limit": Campaigns.request_pagination_limit}
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-
         return response.json().get("campaigns")
     
 class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
@@ -120,25 +94,16 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-
         marketer_id = self.marketer_id
-
-        return 'reports/marketers/' +marketer_id + '/campaigns/sections'
+        return f"reports/marketers/{marketer_id}/campaigns/sections"
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-
-
         return response.json().get("campaignResults")
     
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
         start_date = self.start_date
         end_date = str((datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"))
         params = {"from": start_date, "to": end_date}
@@ -146,21 +111,16 @@ class PublisherSectionByCampaignPerformance(OutbrainAmplifyApiStream):
     
 
 class PerformanceByCountry(OutbrainAmplifyApiStream):
-    
     primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-
         marketer_id = self.marketer_id
-
-
-        return 'reports/marketers/' +marketer_id + '/geo?breakdown=country'
+        return f"reports/marketers/{marketer_id}/geo?breakdown=country"
     
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         return response.json().get("results")
     
     def request_params(
@@ -175,18 +135,6 @@ class PerformanceByCountry(OutbrainAmplifyApiStream):
 
 # Basic incremental stream
 class IncrementalOutbrainAmplifyApiStream(OutbrainAmplifyApiStream, ABC):
-
-
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {
-            "date": date.today().strftime("%Y-%m-%d")
-        }
- 
     def _chunk_date_range(self, start_date: datetime.date) -> List[Mapping[str, any]]:
         dates = []
         while start_date < datetime.date.today():
@@ -215,7 +163,7 @@ class PerformanceByCountry(IncrementalOutbrainAmplifyApiStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         marketer_id = self.marketer_id
-        return 'reports/marketers/' +marketer_id + '/geo?breakdown=country'
+        return f"reports/marketers/{marketer_id}/geo?breakdown=country"
 
     def parse_response(
         self,
@@ -261,14 +209,6 @@ class PublisherSectionByCampaignPerformance(IncrementalOutbrainAmplifyApiStream)
 # Source
 class SourceOutbrainAmplifyApi(AbstractSource):
     url = 'https://api.outbrain.com/amplify/v0.1/login'
-    @property
-    def retry_factor(self) -> int:
-         # For python backoff package expo backoff delays calculated according to formula:
-        # delay = factor * base ** n where base is 2
-        # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
-        # For exports stream there is a limit of 4 requests per minute.
-        # With retry_factor == 1800, we avoid hitting the api rate limit of generating more than 2 token within 30mins
-        return 1800
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
@@ -278,18 +218,17 @@ class SourceOutbrainAmplifyApi(AbstractSource):
             return True, None
         else:
             return False,  "Unable to connect to Outbrain API with the provided credentials"
-
-
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-         
         auth=requests.auth.HTTPBasicAuth(config["USERNAME"], config["PASSWORD"])
         response = (requests.get(self.url, auth=auth))
         token = response.json()['OB-TOKEN-V1']
-        
         authenticator = NoAuth()
-        return [Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,  start_date= config['START_DATE']), 
-        Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator,start_date=config['START_DATE']),
-        PublisherSectionByCampaignPerformance(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE']),
-        PerformanceByCountry(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator, start_date=config['START_DATE'])]
+
+        return [
+            Budgets(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator), 
+            Campaigns(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator),
+            PublisherSectionByCampaignPerformance(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator),
+            PerformanceByCountry(marketer_id= config['MARKETER_ID'], ob_token_v1=token, authenticator=authenticator)
+        ]
