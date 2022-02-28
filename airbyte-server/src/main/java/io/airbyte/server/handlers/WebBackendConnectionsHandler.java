@@ -272,8 +272,6 @@ public class WebBackendConnectionsHandler {
       connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
       if (needReset) {
-        // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        temporalWorkerRunFactory.update(connectionUpdate);
 
         // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
         temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
