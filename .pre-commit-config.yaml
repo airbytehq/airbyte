@@ -38,14 +38,14 @@ repos:
           ).?$
 
   - repo: https://github.com/csachs/pyproject-flake8
-    rev: 0.0.1a2
+    rev: v0.0.1a2.post1
     hooks:
       - id: pyproject-flake8
         args: ["--config", "pyproject.toml"]
         additional_dependencies: ["mccabe"]
         alias: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 0.930
+    rev: v0.930
     hooks:
       - id: mypy
         args: ["--config-file", "pyproject.toml"]

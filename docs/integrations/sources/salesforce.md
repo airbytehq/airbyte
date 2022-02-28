@@ -88,7 +88,7 @@ We fetch and handle all the possible & available streams dynamically based on:
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
 |:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.24  | 2022-02-23 | [10454](https://github.com/airbytehq/airbyte/pull/10454) +  [10516](https://github.com/airbytehq/airbyte/pull/10516) | Support incremental sync deletes and parallel discovering            |
+| 1.0.0 | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
 | 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |
 | 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012) | Increase CSV field_size_limit                                                                                                    |
 | 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
