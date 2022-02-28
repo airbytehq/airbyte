@@ -29,6 +29,9 @@ class AppleSearchAdsStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pagination = response.json()["pagination"]
 
+        if pagination == None:
+            return None
+
         if pagination["totalResults"] > (pagination["startIndex"] + 1) * self.limit:
             return {"limit": self.limit, "offset": ((pagination["startIndex"] + 1) * self.limit) + 1 }
         else:
