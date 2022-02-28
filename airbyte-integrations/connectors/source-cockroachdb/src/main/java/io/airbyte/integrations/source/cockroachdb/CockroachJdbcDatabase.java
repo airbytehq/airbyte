@@ -9,10 +9,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
-
-import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -22,17 +18,15 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * This implementation uses non-streamed queries to CockroachDB. CockroachDB
- * does not currently support multiple active pgwire portals on the same session,
- * which makes it impossible to replicate tables that have over ~1000 rows
- * using StreamingJdbcDatabase. See: https://go.crdb.dev/issue-v/40195/v21.2
- * and in particular, the comment:
- * https://github.com/cockroachdb/cockroach/issues/40195?version=v21.2#issuecomment-870570351
- * The same situation as kafka-connect applies to StreamingJdbcDatabase
+ * This implementation uses non-streamed queries to CockroachDB. CockroachDB does not currently
+ * support multiple active pgwire portals on the same session, which makes it impossible to
+ * replicate tables that have over ~1000 rows using StreamingJdbcDatabase. See:
+ * https://go.crdb.dev/issue-v/40195/v21.2 and in particular, the comment:
+ * https://github.com/cockroachdb/cockroach/issues/40195?version=v21.2#issuecomment-870570351 The
+ * same situation as kafka-connect applies to StreamingJdbcDatabase
  */
 public class CockroachJdbcDatabase
-        extends JdbcDatabase
-{
+    extends JdbcDatabase {
 
   private final JdbcDatabase database;
 
