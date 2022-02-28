@@ -21,15 +21,6 @@ def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
     }
 
 
-@pytest.fixture(scope="session", name="state_with_include_deleted")
-def state_with_include_deleted_fixture(state):
-    result_state = copy.deepcopy(state)
-    for state in result_state.values():
-        state["include_deleted"] = True
-
-    return result_state
-
-
 @pytest.fixture(scope="session", name="configured_catalog")
 def configured_catalog_fixture(config) -> ConfiguredAirbyteCatalog:
     catalog = SourceFacebookMarketing().discover(logger=logging.getLogger("airbyte"), config=config)
@@ -76,8 +67,8 @@ class TestFacebookMarketingSource:
         """Should ignore state because of include_deleted enabled"""
         if include_deleted_in_state:
             state = copy.deepcopy(state)
-            for state in state.values():
-                state["include_deleted"] = True
+            for value in state.values():
+                value["include_deleted"] = True
 
         catalog = self._slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog, state=state)
