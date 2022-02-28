@@ -65,8 +65,8 @@ class ReportCampaigns(WithCampaignReportAppleSearchAdsStream):
                     ],
                     "orderBy": [
                         {
-                        "field": "adamId",
-                        "sortOrder": "ASCENDING"
+                            "field": "adamId",
+                            "sortOrder": "ASCENDING"
                         }
                     ],
                     "pagination": {
@@ -177,8 +177,8 @@ class ReportKeywords(WithCampaignReportAppleSearchAdsStreamGulpErrors):
                     ],
                     "orderBy": [
                         {
-                        "field": "keywordId",
-                        "sortOrder": "ASCENDING"
+                            "field": "keywordId",
+                            "sortOrder": "ASCENDING"
                         }
                     ],
                     "pagination": {
@@ -211,8 +211,8 @@ class ReportSearchterms(WithCampaignReportAppleSearchAdsStreamGulpErrors):
                 "selector": {
                     "orderBy": [
                         {
-                        "field": "adGroupId",
-                        "sortOrder": "ASCENDING"
+                            "field": "keywordId",
+                            "sortOrder": "ASCENDING"
                         }
                     ],
                     "pagination": {
@@ -223,6 +223,51 @@ class ReportSearchterms(WithCampaignReportAppleSearchAdsStreamGulpErrors):
                 "returnRecordsWithNoMetrics": "false",
                 "returnRowTotals": "true",
                 "returnGrandTotals": "true"
+        }
+
+        return post_json
+
+class ReportAds(WithCampaignReportAppleSearchAdsStreamGulpErrors):
+    primary_key = "adGroupId"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"reports/campaigns/{stream_slice.get('campaign_id')}/ads"
+
+    def request_body_json(self,
+      stream_state: Mapping[str, Any],
+      stream_slice: Mapping[str, Any] = None,
+      **kwargs) -> Optional[Mapping]:
+        start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+        end_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        post_json = {
+                "startTime": start_date,
+                "endTime": end_date,
+                "granularity": "DAILY",
+                "selector": {
+                    "conditions": [
+                        {
+                            "field": "deleted",
+                            "operator": "IN",
+                            "values": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    ],
+                    "orderBy": [
+                        {
+                            "field": "adGroupId",
+                            "sortOrder": "ASCENDING"
+                        }
+                    ],
+                    "pagination": {
+                        "offset": 0,
+                        "limit": self.limit
+                    }
+                }
         }
 
         return post_json

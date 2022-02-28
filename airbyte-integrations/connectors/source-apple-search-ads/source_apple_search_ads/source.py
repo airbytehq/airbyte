@@ -16,7 +16,7 @@ from .authenticator import AppleSearchAdsAuthenticator
 
 from .basic_streams import Campaigns
 from .with_campaign_streams import Adgroups, CampaignNegativeKeywords, CreativeSets, AdgroupCreativeSets
-from .with_campaign_report_streams import ReportCampaigns, ReportAdgroups, ReportKeywords, ReportSearchterms
+from .with_campaign_report_streams import ReportCampaigns, ReportAdgroups, ReportKeywords, ReportSearchterms, ReportAds
 
 class SourceAppleSearchAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -64,5 +64,6 @@ class SourceAppleSearchAds(AbstractSource):
             ReportCampaigns(org_id=config["org_id"], authenticator=auth),
             ReportAdgroups(org_id=config["org_id"], authenticator=auth),
             ReportKeywords(org_id=config["org_id"], authenticator=auth),
-            ReportSearchterms(org_id=config["org_id"], authenticator=auth)
+            ReportSearchterms(org_id=config["org_id"], authenticator=auth),
+            ReportAds(org_id=config["org_id"], authenticator=auth)
         ]

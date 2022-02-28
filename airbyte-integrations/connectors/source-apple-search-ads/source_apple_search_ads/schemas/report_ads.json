@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "other": {
+      "type": ["null", "boolean"]
+    },
+    "total": {
+      "type": ["null", "object"],
+      "properties": {
+        "avgCPA": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "avgCPM": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "avgCPT": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "conversionRate": {
+          "type": ["null", "number"]
+        },
+        "impressions": {
+          "type": ["null", "integer"]
+        },
+        "installs": {
+          "type": ["null", "integer"]
+        },
+        "latOffInstalls": {
+          "type": ["null", "integer"]
+        },
+        "latOnInstalls": {
+          "type": ["null", "integer"]
+        },
+        "localSpend": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "newDownloads": {
+          "type": ["null", "integer"]
+        },
+        "redownloads": {
+          "type": ["null", "integer"]
+        },
+        "taps": {
+          "type": ["null", "integer"]
+        },
+        "ttr": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "insights": {
+      "type": ["null", "object"],
+      "properties": {
+        "bidRecommendation": {
+          "type": ["null", "object"],
+          "properties": {
+            "bidMin": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "string"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "bidMax": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "granularity": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "avgCPA": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "string"]
+              },
+              "currency": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "avgCPM": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "string"]
+              },
+              "currency": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "avgCPT": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "string"]
+              },
+              "currency": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "conversionRate": {
+            "type": ["null", "number"]
+          },
+          "date": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "impressions": {
+            "type": ["null", "integer"]
+          },
+          "installs": {
+            "type": ["null", "integer"]
+          },
+          "latOffInstalls": {
+            "type": ["null", "integer"]
+          },
+          "latOnInstalls": {
+            "type": ["null", "integer"]
+          },
+          "localSpend": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "string"]
+              },
+              "currency": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "newDownloads": {
+            "type": ["null", "integer"]
+          },
+          "redownloads": {
+            "type": ["null", "integer"]
+          },
+          "taps": {
+            "type": ["null", "integer"]
+          },
+          "ttr": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "campaignId": {
+          "type": ["null", "string"]
+        },
+        "campaignName": {
+          "type": ["null", "string"]
+        },
+        "deleted": {
+          "type": ["null", "boolean"]
+        },
+        "campaignStatus": {
+          "type": ["null", "string"]
+        },
+        "app": {
+          "type": ["null", "object"],
+          "properties": {
+            "appName": {
+              "type": ["null", "string"]
+            },
+            "adamId": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "servingStatus": {
+          "type": ["null", "string"]
+        },
+        "servingStateReasons": {
+          "type": ["null", "string"]
+        },
+        "countriesOrRegions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "modificationTime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "totalBudget": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "dailyBudget": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "displayStatus": {
+          "type": ["null", "string"]
+        },
+        "supplySources": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "adChannelType": {
+          "type": ["null", "string"]
+        },
+        "orgId": {
+          "type": ["null", "integer"]
+        },
+        "countryOrRegionServingStateReasons": {
+          "type": ["null", "object"]
+        },
+        "billingEvent": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
