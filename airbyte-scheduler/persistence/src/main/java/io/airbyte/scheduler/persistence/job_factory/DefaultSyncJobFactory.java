@@ -50,9 +50,10 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           destinationConnection.getWorkspaceId(),
           destinationConnection.getConfiguration());
       destinationConnection.withConfiguration(destinationConfiguration);
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-      final StandardDestinationDefinition destinationDefinition =
-          configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+      final StandardSourceDefinition sourceDefinition = configRepository
+          .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+      final StandardDestinationDefinition destinationDefinition = configRepository
+          .getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
       final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
       final String destinationImageName =
@@ -70,7 +71,9 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           standardSync,
           sourceImageName,
           destinationImageName,
-          standardSyncOperations)
+          standardSyncOperations,
+          sourceDefinition.getResourceRequirements(),
+          destinationDefinition.getResourceRequirements())
           .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
