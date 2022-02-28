@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -35,14 +36,17 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -69,11 +73,13 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
@@ -129,6 +135,8 @@ class SchedulerHandlerTest {
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
   private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private FeatureFlags featureFlags;
+  private JobConverter jobConverter;
 
   @BeforeEach
   void setup() {
@@ -147,6 +155,11 @@ class SchedulerHandlerTest {
     final JobNotifier jobNotifier = mock(JobNotifier.class);
     temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
 
+    featureFlags = mock(FeatureFlags.class);
+    when(featureFlags.usesNewScheduler()).thenReturn(false);
+
+    jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
+
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,
@@ -159,7 +172,9 @@ class SchedulerHandlerTest {
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
-        temporalWorkerRunFactory);
+        temporalWorkerRunFactory,
+        featureFlags,
+        jobConverter);
   }
 
   @Test
@@ -487,22 +502,36 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
+    final ActorDefinitionResourceRequirements sourceResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withResourceRequirements(sourceResourceReqs));
+    final ActorDefinitionResourceRequirements destResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(new StandardDestinationDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+            .withResourceRequirements(destResourceReqs));
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(getOperation(operationId));
-    when(schedulerJobClient.createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE, operations))
-        .thenReturn(completedJob);
+    when(schedulerJobClient.createOrGetActiveSyncJob(
+        source,
+        destination,
+        standardSync,
+        SOURCE_DOCKER_IMAGE,
+        DESTINATION_DOCKER_IMAGE,
+        operations,
+        sourceResourceReqs,
+        destResourceReqs))
+            .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
     when(completedJob.getConfig()).thenReturn(jobConfig);
@@ -514,7 +543,15 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE, operations);
+    verify(schedulerJobClient).createOrGetActiveSyncJob(
+        source,
+        destination,
+        standardSync,
+        SOURCE_DOCKER_IMAGE,
+        DESTINATION_DOCKER_IMAGE,
+        operations,
+        sourceResourceReqs,
+        destResourceReqs);
   }
 
   @Test
@@ -579,6 +616,30 @@ class SchedulerHandlerTest {
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+  }
+
+  @Test
+  void testNewSchedulerSync() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(featureFlags.usesNewScheduler()).thenReturn(true);
+
+    UUID connectionId = UUID.randomUUID();
+
+    long jobId = 123L;
+    ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+        .builder()
+        .failingReason(Optional.empty())
+        .jobId(Optional.of(jobId))
+        .build();
+
+    when(temporalWorkerRunFactory.startNewManualSync(connectionId))
+        .thenReturn(manualSyncSubmissionResult);
+
+    doReturn(new JobInfoRead())
+        .when(jobConverter).getJobInfoRead(any());
+
+    schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    verify(temporalWorkerRunFactory).startNewManualSync(connectionId);
   }
 
   private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {

@@ -72,7 +72,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getResourceRequirements());
+        syncInput.getSourceResourceRequirements());
 
     log.info("Setting up destination launcher...");
     final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
@@ -80,7 +80,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
         destinationLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getResourceRequirements());
+        syncInput.getDestinationResourceRequirements());
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
