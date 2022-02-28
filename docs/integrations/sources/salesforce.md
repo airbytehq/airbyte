@@ -4,11 +4,7 @@
 
 The Salesforce source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-The Connector supports `Custom Fields` for each of their available streams
-
-### Output schema
-
-Several output streams are available from this source. A list of these streams can be found below in the [Streams](salesforce.md#streams) section.
+The Connector supports replicating both standard and custom Salesforce objects.
 
 ### Features
 
@@ -20,9 +16,7 @@ Several output streams are available from this source. A list of these streams c
 | Namespaces | No |
 
 #### Incremental Deletes Sync
-We can retrieve deleted records in Salesforce. It is available only for streams with the `IsDeleted` field in the schema. 
-If the record was deleted, Salesforce set `IsDeleted=True` and in the next incremental sync, we read this record.
-In case, when the record was created, synced, then updated and deleted, synced one more time, we retrieve the record with updated data and `IsDeleted=True`.
+This connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.  
 
 ### Performance considerations
 
