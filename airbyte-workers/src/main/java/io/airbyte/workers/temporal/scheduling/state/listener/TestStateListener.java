@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TestStateListener implements WorkflowStateChangedListener {
 
@@ -31,7 +30,7 @@ public class TestStateListener implements WorkflowStateChangedListener {
   @Override
   public void addEvent(final UUID testId, final ChangedStateEvent event) {
     Optional.ofNullable(events.get(testId))
-        .or(() -> Optional.of(new ConcurrentLinkedQueue<>()))
+        .or(() -> Optional.of(new LinkedList<>()))
         .stream()
         .forEach((eventQueue) -> {
           eventQueue.add(event);

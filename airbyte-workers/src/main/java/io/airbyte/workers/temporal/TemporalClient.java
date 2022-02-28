@@ -257,12 +257,6 @@ public class TemporalClient {
     connectionManagerWorkflow.connectionUpdated();
   }
 
-  public WorkflowState getWorkflowState(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
-
-    return connectionManagerWorkflow.getState();
-  }
-
   @Value
   @Builder
   public static class ManualSyncSubmissionResult {
@@ -339,7 +333,7 @@ public class TemporalClient {
 
     connectionManagerWorkflow.cancelJob();
 
-    while (connectionManagerWorkflow.getState().isRunning()) {
+    do {
       try {
         Thread.sleep(DELAY_BETWEEN_QUERY_MS);
       } catch (final InterruptedException e) {
@@ -347,7 +341,7 @@ public class TemporalClient {
             Optional.of("Didn't manage cancel a sync for: " + connectionId),
             Optional.empty());
       }
-    }
+    } while (connectionManagerWorkflow.getState().isRunning());
 
     log.info("end of manual cancellation");
 
