@@ -24,6 +24,7 @@ class WithCampaignReportAppleSearchAdsStream(WithCampaignAppleSearchAdsStream, A
         data = response.json()["data"]
 
         if data == None:
+            self.logger.info(response.json())
             yield from []
         else:
             rows = response.json()["data"]["reportingDataResponse"]["row"]
@@ -122,17 +123,9 @@ class ReportAdgroups(WithCampaignReportAppleSearchAdsStream):
 
         return post_json
 
-class ReportKeywords(WithCampaignReportAppleSearchAdsStream):
-    primary_key = "keywordId"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"reports/campaigns/{stream_slice.get('campaign_id')}/keywords"
-
-    # For keywords, if the keywords does not exist it gives out a 400
+class WithCampaignReportAppleSearchAdsStreamGulpErrors(WithCampaignReportAppleSearchAdsStream):
     @classmethod
-    def check_for_non_existant_keyword(cls, response: requests.Response) -> bool:
+    def check_for_400(cls, response: requests.Response) -> bool:
         if response.status_code in [400]:
             # example response:
             # {'data': None, 'pagination': None, 'error': {'errors': [{'messageCode': 'INVALID_INPUT', 'message': 'APPSTORE_SEARCH_TAB CAMPAIGN DOES NOT CONTAIN KEYWORD', 'field': ''}]}}
@@ -143,7 +136,7 @@ class ReportKeywords(WithCampaignReportAppleSearchAdsStream):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        if self.check_for_non_existant_keyword(response):
+        if self.check_for_400(response):
             return False
 
         return super().should_retry(response)
@@ -151,6 +144,14 @@ class ReportKeywords(WithCampaignReportAppleSearchAdsStream):
     @property
     def raise_on_http_errors(self) -> bool:
         return False
+
+class ReportKeywords(WithCampaignReportAppleSearchAdsStreamGulpErrors):
+    primary_key = "keywordId"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"reports/campaigns/{stream_slice.get('campaign_id')}/keywords"
 
     def request_body_json(self,
       stream_state: Mapping[str, Any],
@@ -185,6 +186,43 @@ class ReportKeywords(WithCampaignReportAppleSearchAdsStream):
                         "limit": self.limit
                     }
                 }
+        }
+
+        return post_json
+
+class ReportSearchterms(WithCampaignReportAppleSearchAdsStreamGulpErrors):
+    primary_key = "keywordId"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"reports/campaigns/{stream_slice.get('campaign_id')}/searchterms"
+
+    def request_body_json(self,
+      stream_state: Mapping[str, Any],
+      stream_slice: Mapping[str, Any] = None,
+      **kwargs) -> Optional[Mapping]:
+        start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+        end_date = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        post_json = {
+                "startTime": start_date,
+                "endTime": end_date,
+                "selector": {
+                    "orderBy": [
+                        {
+                        "field": "adGroupId",
+                        "sortOrder": "ASCENDING"
+                        }
+                    ],
+                    "pagination": {
+                        "offset": 0,
+                        "limit": self.limit
+                    }
+                },
+                "returnRecordsWithNoMetrics": "false",
+                "returnRowTotals": "true",
+                "returnGrandTotals": "true"
         }
 
         return post_json
