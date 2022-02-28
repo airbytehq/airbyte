@@ -75,7 +75,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override
@@ -111,8 +111,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
       throws SQLException {
     final List<org.jooq.Record> result = getDatabase(config)
         .query(ctx -> ctx.fetch(
-            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                OracleDestination.COLUMN_NAME_EMITTED_AT))
+                String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                    OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
     return result
