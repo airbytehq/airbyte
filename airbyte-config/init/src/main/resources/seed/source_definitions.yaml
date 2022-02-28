@@ -878,3 +878,4 @@
   dockerImageTag: 0.0.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/woocommerce
   sourceType: api
+  icon: woocommerce.svg
