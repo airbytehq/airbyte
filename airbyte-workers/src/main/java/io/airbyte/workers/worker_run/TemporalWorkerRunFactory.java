@@ -47,34 +47,6 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
-  public void createNewSchedulerWorkflow(final UUID connectionId) {
-    temporalClient.submitConnectionUpdaterAsync(connectionId);
-  }
-
-  public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
-    return temporalClient.startNewManualSync(connectionId);
-  }
-
-  public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
-    return temporalClient.startNewCancelation(connectionId);
-  }
-
-  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
-    return temporalClient.resetConnection(connectionId);
-  }
-
-  public ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId) {
-    return temporalClient.synchronousResetConnection(connectionId);
-  }
-
-  public void deleteConnection(final UUID connectionId) {
-    temporalClient.deleteConnection(connectionId);
-  }
-
-  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
-    temporalClient.migrateSyncIfNeeded(connectionIds);
-  }
-
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     final UUID connectionId = UUID.fromString(job.getScope());
@@ -136,10 +108,6 @@ public class TemporalWorkerRunFactory {
     final JobStatus status = JobStatus.SUCCEEDED;
 
     return new OutputAndStatus<>(status, new JobOutput().withSync(null));
-  }
-
-  public void update(final ConnectionUpdate connectionUpdate) throws JsonValidationException, ConfigNotFoundException, IOException {
-    temporalClient.update(connectionUpdate);
   }
 
 }

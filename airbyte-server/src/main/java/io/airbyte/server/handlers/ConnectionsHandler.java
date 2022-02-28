@@ -42,6 +42,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.worker_run.EventRunner;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
   private final FeatureFlags featureFlags;
   private final WorkerConfigs workerConfigs;
 
@@ -70,14 +71,14 @@ public class ConnectionsHandler {
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                     final EventRunner eventRunner,
                      final FeatureFlags featureFlags,
                      final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
-    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.eventRunner = eventRunner;
     this.featureFlags = featureFlags;
     this.workerConfigs = workerConfigs;
   }
@@ -85,14 +86,14 @@ public class ConnectionsHandler {
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                            final EventRunner eventRunner,
                             final FeatureFlags featureFlags,
                             final WorkerConfigs workerConfigs) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         workerConfigs);
 
@@ -150,7 +151,7 @@ public class ConnectionsHandler {
     if (featureFlags.usesNewScheduler()) {
       try {
         LOGGER.info("Starting a connection using the new scheduler");
-        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
+        eventRunner.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         LOGGER.error("Start of the temporal connection manager workflow failed", e);
         configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
@@ -214,7 +215,7 @@ public class ConnectionsHandler {
     configRepository.writeStandardSync(newConnection);
 
     if (featureFlags.usesNewScheduler()) {
-      temporalWorkerRunFactory.update(connectionUpdate);
+      eventRunner.update(connectionUpdate);
     }
 
     return buildConnectionRead(connectionUpdate.getConnectionId());
@@ -323,7 +324,7 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     if (featureFlags.usesNewScheduler()) {
       // todo (cgardens) - need an interface over this.
-      temporalWorkerRunFactory.deleteConnection(connectionId);
+      eventRunner.deleteConnection(connectionId);
     } else {
       final ConnectionRead connectionRead = getConnection(connectionId);
       deleteConnection(connectionRead);
