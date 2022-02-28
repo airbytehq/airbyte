@@ -1,0 +1,15 @@
+{
+  "host": "gz45853.us-east-2",
+  "role": "AIRBYTE_ROLE",
+  "warehouse": "AIRBYTE_WAREHOUSE",
+  "database": "AIRBYTE_DATABASE",
+  "schema": "AIRBYTE_SCHEMA",
+  "username": "AIRBYTE_INTEGRATION_TEST",
+  "password": "1Yiyu!U01&$%s0",
+  "loading_method": {
+    "method": "GCS Staging",
+    "project_id": "dataline-integration-testing",
+    "bucket_name": "io_airbyte_test_staging",
+    "credentials_json": "{\n  \"type\": \"service_account\",\n  \"project_id\": \"dataline-integration-testing\",\n  \"private_key_id\": \"ee40d7d4022aef3d941ae60b1b37bd579da1a955\",\n  \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCY01tKIjckAYVh\\nJ6ThGH9aCR2XzMpUl6BV7mZi68pa0UJzuovgqJe5ZjsXlD/2eWUC5JiHKMN63cx8\\nGDo5UgFaAe/E6gu4Pw+9kpXiccJIqv1ikkpNZ/mdt4FSToOIoyKuuRtsnNJUNJuK\\nhW2BTUbtxb52umi2y5jmjMp+7yTduXG1dbNKwM6e/mY7wLXTd/ENBmiEEiZXWjZK\\nR9j857fu33gvFwIEMVxnGOIUc2bw/uJc4uZuDLtHM1wGEK6Bt2433CZIODC2ofVn\\nnCJWcknJ/afgZ7H4JIZlHmg9//kN95r3vlMZIKwQteD0x2b/PJpDYZDkBll/ucqs\\nIiu6+DzzAgMBAAECggEAEL8cYk/EhhQKlx5egXILRoT4MrG0vDdPUQtKOe3Ho1MJ\\n+p+HA2vGEIFk2U0cAzjDOmFtW2Y6oYSbiz+mZbCYSFItAYF6Hkr+wRHGjeVUWl0u\\nXfZU4Q2TO1an+6px3G+v9cCAAlNe8u4+2xuK59/ddWG1YNJFdj5yN1VXPTicbBVi\\nIXT6eLsQk1smHrrjvg1aOo+7kbr2KOsgqzqNMTQTKztyYTKuUqexTBJjuZyFlt6i\\nFdvamCDxWeHafnt/miJvWJ9tCy5ogZ1yR5aHN5MiutvWeFoDfeJ2gl41A+lmBepx\\ny9QpVsN/WIxkde6lC+N0QCQytIpWq8peDhfCnf/isQKBgQDXGb6KdV2dewpZ43B7\\nqlvwaP8wcvGRXbBvtwKsQkwV1Q1XlPg3hxwfi75xXU8s2R28ScnHITfKG0MKWjwn\\nQhuX5NDm3kfG+aKIif0MqupJGxLUuqVyVrXNU4x4dbYr6lmCioRFCOb1YxBsUOsH\\nSRC7Zn+yKQqrWk3XTZHU8rdFEQKBgQC14k+NubA26wjd9FvCkQR3IoqS9+xzr2HR\\nnPnomSAxEhTNJZr8IhNC0X19Gk2WmfvQfHAIHL4TPR0GY+mOn2i82jneRYJqxW4T\\n6DKZeMHUTYJQPpHc9oGMZBXjg/k9uC2fALNWoDXJ2taha02JWKarhwu5qqxJWWlj\\nuwoDV0CRwwKBgQCCQszo/HpczA5QsTOFMH3M8UjZBkLUTXBzttifiOaashMKXuSS\\ne/fEAtSpwmAYQMOJKwZO2Qb4Fdpbgpm7DIW5TpBTv3ioPrT3Ctl7umV3MDYPLZjT\\nzT77wQToTiCsJ5ddPpUrWWDEaeGgNsCeANlpI4FhWwljC6ToJcmStAnYgQKBgF3F\\ne7ZZ0Zu+uSeVX+mD0oWJbWAwKdvKw+fJwp5Es/AYnljV1n2/I6cDUms5MF9ArC7k\\nuO21w9kvXNN6l2NMlDcpW0RZGc/qUcI5qDyvoV7PRywP1ivReyDiSNavp8RGPF8J\\ngWxb1N9oz9cQ9zykU+mDCmyCrahzTH56Y8MtLMD5AoGAOegtx9q6fzhJSgkGUkf/\\nMhnLub/FNm1HEx2Sfm10xxenTSaELv6NXCB/t9k5FFgQfLlq2lYtaySI0PGYGmWf\\nNPM3m2AC9wnBAMFGSyHHJGekm4QmqHTgq+1G2m/x/++kdIJjbL5EUuzAaDuiqMza\\nznqPoAGllrENZXmYi2lvFls=\\n-----END PRIVATE KEY-----\\n\",\n  \"client_email\": \"gcs-integration-test-user@dataline-integration-testing.iam.gserviceaccount.com\",\n  \"client_id\": \"109794137261323748391\",\n  \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\n  \"token_uri\": \"https://oauth2.googleapis.com/token\",\n  \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\n  \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/gcs-integration-test-user%40dataline-integration-testing.iam.gserviceaccount.com\"\n}\n"
+  }
+}

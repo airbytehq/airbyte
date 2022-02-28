@@ -9,10 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class SnowflakeDestinationTest {
 
@@ -98,6 +102,16 @@ public class SnowflakeDestinationTest {
     assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
 
     verify(sqlOperations, times(1)).cleanUpStage(any(), anyString());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"copy_gcs_config.json", "copy_s3_config.json", "insert_config.json"})
+  public void testS3ConfigType(String configFileName) throws Exception {
+    final JsonNode config = spy(Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class));
+    SnowflakeDestination snowflakeDestination = new SnowflakeDestination();
+    snowflakeDestination.getConsumer(config, mock(ConfiguredAirbyteCatalog.class), message -> System.out.println(Jsons.serialize(message)));
+    verify(config, atLeast(1)).has("loading_method");
+    verify(config, atLeast(2)).get("loading_method");
   }
 
   private List<AirbyteMessage> generateTestMessages() {
