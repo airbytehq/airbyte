@@ -17,7 +17,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_scaffold_source_http",
-    description="Source implementation for Scaffold-Source-Http.",
+    description="Source implementation for Scaffold Source Http.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
