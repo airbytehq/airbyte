@@ -7,7 +7,6 @@ package io.airbyte.db.jdbc;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

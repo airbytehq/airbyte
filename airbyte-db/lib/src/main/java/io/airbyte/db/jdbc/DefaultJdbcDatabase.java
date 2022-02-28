@@ -118,8 +118,6 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     if (dataSource instanceof AutoCloseable autoCloseable) {
       autoCloseable.close();
     }
-    // TODO (liren): closing the data source is not enough because
-    // the allocation connection may still be open (issue #1128).
     if (dataSource instanceof Closeable closeable) {
       closeable.close();
     }
