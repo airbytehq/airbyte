@@ -158,7 +158,7 @@ public class IntegrationRunner {
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
-    try (final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+")) {
+    final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+") {
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
@@ -169,7 +169,6 @@ public class IntegrationRunner {
           LOGGER.error("Received invalid message: " + inputString);
         }
       }
-    }
   }
 
   private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
