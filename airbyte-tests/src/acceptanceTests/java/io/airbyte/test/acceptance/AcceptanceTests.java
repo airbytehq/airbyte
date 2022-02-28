@@ -525,7 +525,10 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    if (!featureFlags.usesNewScheduler()) {
+      waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    }
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
