@@ -97,12 +97,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-    if (releaseStages == null) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+      if (stage != null) {
+        DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+      }
     }
   }
 
@@ -213,12 +215,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-    if (releaseStages == null) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      if (stage != null) {
+        DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      }
     }
   }
 
