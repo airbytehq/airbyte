@@ -25,6 +25,10 @@ class WorkspaceIdError(click.ClickException):
     pass
 
 
+class ProjectNotInitializedError(click.ClickException):
+    pass
+
+
 def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
     """Check if the Airbyte API is network reachable and healthy.
 
