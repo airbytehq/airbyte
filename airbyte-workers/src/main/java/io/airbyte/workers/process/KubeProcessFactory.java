@@ -138,6 +138,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getWorkerKubeTolerations(),
           workerConfigs.getworkerKubeNodeSelectors(),
           allLabels,
+          workerConfigs.getWorkerKubeAnnotations(),
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),

@@ -102,8 +102,11 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
+  private static final String DEFAULT_CPU_REQUEST = "0.1";
+  private static final String DEFAULT_CPU_LIMIT = "0.2";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
+      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -111,6 +114,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   public static final String CONFIG_DIR = "/config";
   private static final String TERMINATION_DIR = "/termination";
+  private static final String TMP_DIR = "/tmp";
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
@@ -176,6 +180,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
         .withCommand("sh", "-c", initCommand)
+        .withResources(getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build())
         .withVolumeMounts(mainVolumeMounts)
         .build();
   }
@@ -368,6 +373,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final List<TolerationPOJO> tolerations,
                         final Optional<Map<String, String>> nodeSelectors,
                         final Map<String, String> labels,
+                        final Optional<Map<String, String>> annotations,
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
@@ -422,13 +428,24 @@ public class KubePodProcess extends Process implements KubePod {
         .withMountPath(TERMINATION_DIR)
         .build();
 
+    final Volume tmpVolume = new VolumeBuilder()
+        .withName("tmp")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    final VolumeMount tmpVolumeMount = new VolumeMountBuilder()
+        .withName("tmp")
+        .withMountPath(TMP_DIR)
+        .build();
+
     final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
         usesStdin,
         entrypointOverride,
-        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount, tmpVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
         envMap,
@@ -483,6 +500,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
+        .withAnnotations(annotations.orElse(null))
         .endMetadata()
         .withNewSpec();
 
@@ -496,11 +514,11 @@ public class KubePodProcess extends Process implements KubePod {
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
-        .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .withVolumes(pipeVolume, configVolume, terminationVolume, tmpVolume)
         .endSpec()
         .build();
 
-    LOGGER.info("Creating pod...");
+    LOGGER.info("Creating pod {}...", pod.getMetadata().getName());
     val start = System.currentTimeMillis();
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 

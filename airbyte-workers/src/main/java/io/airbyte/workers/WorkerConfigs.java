@@ -20,6 +20,7 @@ public class WorkerConfigs {
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Optional<Map<String, String>> workerKubeNodeSelectors;
+  private final Optional<Map<String, String>> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
   private final String jobSocatImage;
@@ -42,6 +43,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -59,6 +61,10 @@ public class WorkerConfigs {
         ? configs.getSpecJobKubeNodeSelectors()
         : configs.getJobKubeNodeSelectors();
 
+    final Optional<Map<String, String>> annotations = configs.getSpecJobKubeAnnotations().isPresent()
+        ? configs.getSpecJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
     return new WorkerConfigs(
         configs.getWorkerEnvironment(),
         new ResourceRequirements()
@@ -68,6 +74,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -85,6 +92,10 @@ public class WorkerConfigs {
         ? configs.getCheckJobKubeNodeSelectors()
         : configs.getJobKubeNodeSelectors();
 
+    final Optional<Map<String, String>> annotations = configs.getCheckJobKubeAnnotations().isPresent()
+        ? configs.getCheckJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
     return new WorkerConfigs(
         configs.getWorkerEnvironment(),
         new ResourceRequirements()
@@ -94,6 +105,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -111,6 +123,10 @@ public class WorkerConfigs {
         ? configs.getDiscoverJobKubeNodeSelectors()
         : configs.getJobKubeNodeSelectors();
 
+    final Optional<Map<String, String>> annotations = configs.getDiscoverJobKubeAnnotations().isPresent()
+        ? configs.getDiscoverJobKubeAnnotations()
+        : configs.getJobKubeAnnotations();
+
     return new WorkerConfigs(
         configs.getWorkerEnvironment(),
         new ResourceRequirements()
@@ -120,6 +136,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -139,6 +156,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -162,6 +180,10 @@ public class WorkerConfigs {
 
   public Optional<Map<String, String>> getworkerKubeNodeSelectors() {
     return workerKubeNodeSelectors;
+  }
+
+  public Optional<Map<String, String>> getWorkerKubeAnnotations() {
+    return workerKubeAnnotations;
   }
 
   public String getJobImagePullSecret() {

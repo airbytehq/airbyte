@@ -289,6 +289,26 @@ public interface Configs {
   Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
 
   /**
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getJobKubeAnnotations();
+
+  /**
+   * Define annotations for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getSpecJobKubeAnnotations();
+
+  /**
+   * Define annotations for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getCheckJobKubeAnnotations();
+
+  /**
+   * Define annotations for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Optional<Map<String, String>> getDiscoverJobKubeAnnotations();
+
+  /**
    * Define the Job pod connector image pull policy.
    */
   String getJobKubeMainContainerImagePullPolicy();
