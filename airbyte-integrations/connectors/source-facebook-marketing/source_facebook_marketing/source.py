@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
+    Activities,
     AdAccount,
     AdCreatives,
     Ads,
@@ -26,7 +27,6 @@ from source_facebook_marketing.streams import (
     Campaigns,
     Images,
     Videos,
-    Activities,
 )
 
 logger = logging.getLogger("airbyte")

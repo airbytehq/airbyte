@@ -5,13 +5,13 @@
 import base64
 import logging
 from typing import Any, Iterable, List, Mapping, Optional
-import pendulum
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
-from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -94,6 +94,7 @@ class Campaigns(FBMarketingIncrementalStream):
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_campaigns(params=params)
 
+
 class Activities(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-activity"""
 
@@ -130,9 +131,8 @@ class Activities(FBMarketingIncrementalStream):
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             since = self._start_date
 
-        return {
-            "since": since.int_timestamp
-        }
+        return {"since": since.int_timestamp}
+
 
 class Videos(FBMarketingIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
