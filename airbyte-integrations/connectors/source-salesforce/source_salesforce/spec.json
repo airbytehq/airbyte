@@ -66,11 +66,13 @@
                 "not contains",
                 "not exacts"
               ],
+              "order": 1,
               "default": "contains"
             },
             "value": {
               "type": "string",
-              "title": "Search value"
+              "title": "Search value",
+              "order": 2
             }
           }
         },
