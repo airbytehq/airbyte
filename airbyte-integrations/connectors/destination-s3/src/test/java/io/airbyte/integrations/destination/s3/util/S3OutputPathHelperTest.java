@@ -26,13 +26,13 @@ class S3OutputPathHelperTest {
 
     // With empty namespace
     assertEquals("bucket_path/stream_name", S3OutputPathHelper
-            .getOutputPrefix("bucket_path",
-                    new AirbyteStream().withNamespace("").withName("stream_name")));
+        .getOutputPrefix("bucket_path",
+            new AirbyteStream().withNamespace("").withName("stream_name")));
 
     // With namespace with slash chart in the end
     assertEquals("bucket_path/namespace_/stream_name", S3OutputPathHelper
-            .getOutputPrefix("bucket_path",
-                    new AirbyteStream().withNamespace("namespace/").withName("stream_name")));
+        .getOutputPrefix("bucket_path",
+            new AirbyteStream().withNamespace("namespace/").withName("stream_name")));
   }
 
 }

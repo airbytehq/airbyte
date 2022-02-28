@@ -6,9 +6,10 @@
     "generate": "plop"
   },
   "devDependencies": {
+    "capital-case": "^1.0.4",
     "handlebars": "^4.7.7",
-    "plop": "^2.7.4",
-    "uuid": "^8.3.2",
-    "set-value": ">=4.0.1"
+    "plop": "^3.0.5",
+    "set-value": ">=4.0.1",
+    "uuid": "^8.3.2"
   }
 }

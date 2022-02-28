@@ -115,9 +115,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
-      const formValues: ConnectionFormValues = connectionValidationSchema.cast(
+      const formValues: ConnectionFormValues = (connectionValidationSchema.cast(
         values
-      ) as any;
+      ) as unknown) as ConnectionFormValues;
 
       formValues.operations = mapFormPropsToOperation(
         values,
