@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -19,10 +21,10 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
@@ -109,36 +111,37 @@ public class TrackingMetadata {
           }
         }
 
-        final ArrayNode failuresAsJson = failureReasonsAsJsonArray(attempts);
-        if (!failuresAsJson.isEmpty()) {
-          metadata.put("failure_reasons", failuresAsJson.toString());
-          metadata.put("main_failure_reason", failuresAsJson.get(0).toString());
+        final List<FailureReason> failureReasons = failureReasonsList(attempts);
+        if (!failureReasons.isEmpty()) {
+          metadata.put("failure_reasons", failureReasonsListAsJson(failureReasons).toString());
+          metadata.put("main_failure_reason", failureReasonAsJson(failureReasons.get(0)).toString());
         }
       }
     }
     return metadata.build();
   }
 
-  private static ArrayNode failureReasonsAsJsonArray(final List<Attempt> attempts) {
-    final ArrayNode failureJsonsArray = Jsons.arrayNode();
+  private static List<FailureReason> failureReasonsList(final List<Attempt> attempts) {
+    return attempts
+        .stream()
+        .map(Attempt::getFailureSummary)
+        .flatMap(Optional::stream)
+        .map(AttemptFailureSummary::getFailures)
+        .flatMap(Collection::stream)
+        .toList();
+  }
 
-    final IntStream attemptIndices = IntStream.range(0, attempts.size());
-    attemptIndices.mapToObj(attemptIndex -> attempts.get(attemptIndex)
-        .getFailureSummary()
-        .map(failureSummary -> failureSummary.getFailures()
-            .stream()
-            .map(failureReason -> {
-              final JsonNode jsonNode = Jsons.jsonNode(failureReason);
-              ((ObjectNode) jsonNode).remove("stacktrace");
-              ((ObjectNode) jsonNode).put("attempt_id", attemptIndex + 1);
-              return jsonNode;
-            })
-            .toList()))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .forEach(failureJsonsArray::addAll);
+  private static ArrayNode failureReasonsListAsJson(final List<FailureReason> failureReasons) {
+    return Jsons.arrayNode().addAll(failureReasons
+        .stream()
+        .map(TrackingMetadata::failureReasonAsJson)
+        .toList());
+  }
 
-    return failureJsonsArray;
+  private static JsonNode failureReasonAsJson(final FailureReason failureReason) {
+    final JsonNode jsonNode = Jsons.jsonNode(failureReason);
+    ((ObjectNode) jsonNode).remove("stacktrace");
+    return jsonNode;
   }
 
 }

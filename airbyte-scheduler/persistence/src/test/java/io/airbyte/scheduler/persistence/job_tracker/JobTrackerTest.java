@@ -348,8 +348,7 @@ class JobTrackerTest {
         "externalMessage", "Config error related msg",
         "metadata", ImmutableMap.of("some", "metadata"),
         "retryable", true,
-        "timestamp", 1010,
-        "attempt_id", 1));
+        "timestamp", 1010));
 
     final JsonNode systemFailureJson = Jsons.jsonNode(ImmutableMap.of(
         "failureOrigin", "replication",
@@ -358,8 +357,7 @@ class JobTrackerTest {
         "externalMessage", "System error related msg",
         "metadata", ImmutableMap.of("some", "metadata"),
         "retryable", true,
-        "timestamp", 1100,
-        "attempt_id", 2));
+        "timestamp", 1100));
 
     final JsonNode unknownFailureJson = Jsons.jsonNode(ImmutableMap.of(
         "failureOrigin", "unknown",
@@ -368,8 +366,7 @@ class JobTrackerTest {
         "externalMessage", "Unknown error related msg",
         "metadata", ImmutableMap.of("some", "metadata"),
         "retryable", true,
-        "timestamp", 1110,
-        "attempt_id", 2));
+        "timestamp", 1110));
 
     final Map<String, Object> failureMetadata = ImmutableMap.of(
         "failure_reasons", Jsons.arrayNode().addAll(Arrays.asList(configFailureJson, systemFailureJson, unknownFailureJson)).toString(),
