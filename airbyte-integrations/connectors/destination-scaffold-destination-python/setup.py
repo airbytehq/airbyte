@@ -9,7 +9,9 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.1"
+]
 
 setup(
     name="destination_scaffold_destination_python",
