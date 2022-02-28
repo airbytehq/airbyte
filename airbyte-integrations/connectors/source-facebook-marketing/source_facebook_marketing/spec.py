@@ -18,6 +18,7 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 
 
 class InsightConfig(BaseModel):
@@ -59,7 +60,7 @@ class InsightConfig(BaseModel):
     start_date: Optional[datetime] = Field(
         title="Start Date",
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
@@ -70,7 +71,7 @@ class InsightConfig(BaseModel):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
     )
 
@@ -88,7 +89,7 @@ class ConnectorConfig(BaseConfig):
             "The date from which you'd like to replicate data for all incremental streams, "
             "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
         ),
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
@@ -100,7 +101,7 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
     )
