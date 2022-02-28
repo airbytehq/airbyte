@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from deprecated import deprecated
 import logging
 import logging.config
 import sys
@@ -101,7 +102,7 @@ def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
 
     return log_level, rendered_message
 
-
+@deprecated(version="0.1.47", reason="Use logging.getLogger('airbyte') instead")
 class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
