@@ -82,9 +82,6 @@
     },
     "ad_group_criterion.criterion_id": {
       "type": ["null", "integer"]
-    },
-    "segments.ad_network_type": {
-      "type": ["null", "string"]
     }
   }
 }
