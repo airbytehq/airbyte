@@ -97,7 +97,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-    if (releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
@@ -215,7 +215,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-    if (releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
