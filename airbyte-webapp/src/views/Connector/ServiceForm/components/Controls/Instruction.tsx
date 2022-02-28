@@ -120,7 +120,7 @@ const Instruction: React.FC<IProps> = ({
       )}
 
       {docType === "internal" && (
-        <SideViewButton onClick={() => setIsSideViewOpen(true)}>
+        <SideViewButton type="button" onClick={() => setIsSideViewOpen(true)}>
           <FormattedMessage id="form.setupGuide" />
         </SideViewButton>
       )}
