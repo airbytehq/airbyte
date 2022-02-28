@@ -159,16 +159,16 @@ public class IntegrationRunner {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
-      consumer.start();
-      while (input.hasNext()) {
-        final String inputString = input.next();
-        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (messageOptional.isPresent()) {
-          consumer.accept(messageOptional.get());
-        } else {
-          LOGGER.error("Received invalid message: " + inputString);
-        }
+    consumer.start();
+    while (input.hasNext()) {
+      final String inputString = input.next();
+      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+      if (messageOptional.isPresent()) {
+        consumer.accept(messageOptional.get());
+      } else {
+        LOGGER.error("Received invalid message: " + inputString);
       }
+    }
   }
 
   private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
