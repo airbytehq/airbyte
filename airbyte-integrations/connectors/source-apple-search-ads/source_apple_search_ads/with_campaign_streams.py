@@ -13,25 +13,42 @@ class WithCampaignAppleSearchAdsStream(AppleSearchAdsStream, ABC):
         return {}
 
     def _chunk_campaigns_range(self) -> List[Mapping[str, any]]:
-        response = requests.request(
+        offset = 0
+
+        campaign_ids = []
+
+        self.logger.info("Starting all Campaigns access")
+
+        while True:
+            params = {
+                "limit": self.limit,
+                "offset": offset
+            }
+
+            response = requests.request(
                 "GET",
                 url=f"{self.url_base}campaigns",
                 headers={
                     "X-AP-Context": f"orgId={self.org_id}",
                     **self.authenticator.get_auth_header()
                 },
-                params={
-                    "limit": self.limit
-                }
+                params=params
             )
 
-        campaign_ids = []
+            for campaign in response.json()["data"]:
+                campaign_ids.append({
+                    "campaign_id": campaign["id"],
+                    "adam_id": campaign["adamId"]
+                })
 
-        for campaign in response.json()["data"]:
-            campaign_ids.append({
-                "campaign_id": campaign["id"],
-                "adam_id": campaign["adamId"]
-            })
+            pagination = response.json()["pagination"]
+
+            if pagination["totalResults"] > (pagination["startIndex"] + pagination["itemsPerPage"]):
+                offset = pagination["startIndex"] + pagination["itemsPerPage"]
+            else:
+                break
+
+        self.logger.info(f"Got {len(campaign_ids)} Campaigns")
 
         return campaign_ids
 

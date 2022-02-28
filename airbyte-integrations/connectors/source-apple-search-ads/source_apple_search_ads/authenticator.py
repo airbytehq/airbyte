@@ -14,7 +14,7 @@ class AppleSearchAdsAuthenticator(TokenAuthenticator):
     audience = 'https://appleid.apple.com'
     alg = 'ES256'
 
-    expiration_seconds = 60*10
+    expiration_seconds = 60*20
 
     def __init__(self, client_id: str, team_id: str, key_id: str, private_key: str):
         self.client_id = client_id

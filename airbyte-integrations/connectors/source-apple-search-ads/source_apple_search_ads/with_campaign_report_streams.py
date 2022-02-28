@@ -20,11 +20,9 @@ class WithCampaignReportAppleSearchAdsStream(WithCampaignAppleSearchAdsStream, A
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         data = response.json()["data"]
 
         if data == None:
-            self.logger.info(response.json())
             yield from []
         else:
             rows = response.json()["data"]["reportingDataResponse"]["row"]

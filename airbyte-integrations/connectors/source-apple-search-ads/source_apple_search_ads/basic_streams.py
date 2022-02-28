@@ -32,10 +32,27 @@ class AppleSearchAdsStream(HttpStream, ABC):
         if pagination == None:
             return None
 
-        if pagination["totalResults"] > (pagination["startIndex"] + 1) * self.limit:
-            return {"limit": self.limit, "offset": ((pagination["startIndex"] + 1) * self.limit) + 1 }
+        if pagination["totalResults"] > (pagination["startIndex"] + pagination["itemsPerPage"]):
+            next_page_params = {
+                "limit": self.limit,
+                "offset": pagination["startIndex"] + pagination["itemsPerPage"]
+            }
+            return next_page_params
         else:
             return None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "limit": self.limit,
+            "offset": 0
+        }
+
+        if next_page_token:
+            params.update(**next_page_token)
+
+        return params
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -52,14 +69,6 @@ class AppleSearchAdsStream(HttpStream, ABC):
 
 class Campaigns(AppleSearchAdsStream):
     primary_key = "id"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "limit": self.limit,
-            "offset": 0
-        }
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
