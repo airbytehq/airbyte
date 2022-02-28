@@ -4,6 +4,7 @@
 
 import base64
 import json
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -71,15 +72,16 @@ def get_stream_state():
 
 def test_update_for_deleted_record(stream):
     headers = stream.authenticator.get_auth_header()
+    stream_state = get_stream_state()
+    time.sleep(1)
     response = create_note(stream, headers)
-    assert response.status_code == 201, "Note was note created"
+    assert response.status_code == 201, "Note was not created"
 
     created_note_id = response.json()["id"]
 
     notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
-    assert created_note_id in notes, "No created note during the sync"
+    assert created_note_id in notes, "The stream didn't return the note we created"
 
-    stream_state = get_stream_state()
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
 
@@ -93,12 +95,9 @@ def test_update_for_deleted_record(stream):
     assert is_note_updated, "No deleted note during the sync"
     assert is_deleted, "Wrong field value for deleted note during the sync"
 
-    stream_state = get_stream_state()
+    time.sleep(1)
     response = update_note(stream, created_note_id, headers)
-    assert response.status_code == 404, "Note was updated, but should not"
-
-    notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state))
-    assert created_note_id not in notes, "Note was updated, but should not"
+    assert response.status_code == 404, "Expected an update to a deleted note to return 404"
 
 
 def test_deleted_record(stream):
@@ -126,3 +125,24 @@ def test_deleted_record(stream):
     assert record, "No updated note during the sync"
     assert record["IsDeleted"], "Wrong field value for deleted note during the sync"
     assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, "Note Content was not updated"
+
+
+def test_parallel_discover(input_sandbox_config):
+    sf = Salesforce(**input_sandbox_config)
+    sf.login()
+    stream_objects = sf.get_validated_streams(config=input_sandbox_config)
+
+    # try to load all schema with the old consecutive logic
+    consecutive_schemas = {}
+    start_time = datetime.now()
+    for stream_name, sobject_options in stream_objects.items():
+        consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
+    consecutive_loading_time = (datetime.now() - start_time).total_seconds()
+    start_time = datetime.now()
+    parallel_schemas = sf.generate_schemas(stream_objects)
+    parallel_loading_time = (datetime.now() - start_time).total_seconds()
+
+    assert parallel_loading_time < consecutive_loading_time / 5.0, "parallel should be more than 10x faster"
+    assert set(consecutive_schemas.keys()) == set(parallel_schemas.keys())
+    for stream_name, schema in consecutive_schemas.items():
+        assert schema == parallel_schemas[stream_name]

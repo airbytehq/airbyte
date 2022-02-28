@@ -65,7 +65,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withOperationSequence(config.getOperationSequence())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
-          .withResourceRequirements(config.getResourceRequirements());
+          .withResourceRequirements(config.getResourceRequirements())
+          .withSourceResourceRequirements(config.getSourceResourceRequirements())
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
