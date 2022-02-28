@@ -66,7 +66,7 @@ class InsightConfig(BaseModel):
     end_date: Optional[datetime] = Field(
         title="End Date",
         description=(
-            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
+            "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. "
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
