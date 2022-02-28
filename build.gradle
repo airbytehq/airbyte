@@ -256,6 +256,7 @@ subprojects {
 
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
+        implementation(platform("software.amazon.awssdk:bom:2.17.136"))
 
 
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
@@ -287,10 +288,12 @@ subprojects {
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
         implementation 'com.therealvan:appender-log4j2:3.6.0'
-        implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
         implementation 'com.google.cloud:google-cloud-storage:2.2.2'
 
-        implementation 'software.amazon.awssdk:s3:2.16.84'
+        implementation 'software.amazon.awssdk:s3'
+        implementation 'software.amazon.awssdk:sts'
+        implementation 'software.amazon.awssdk:auth'
+        implementation 'software.amazon.awssdk:iam'
 
         // Lombok dependencies
         compileOnly 'org.projectlombok:lombok:1.18.22'

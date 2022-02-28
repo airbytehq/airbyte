@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -29,15 +30,13 @@ public class S3LogsTest {
 
   private static final LogConfigs logConfigs = new LogConfigs(CloudStorageConfigs.s3(new CloudStorageConfigs.S3Config(
       System.getenv(LogClientSingleton.S3_LOG_BUCKET),
-      System.getenv(LogClientSingleton.AWS_ACCESS_KEY_ID),
-      System.getenv(LogClientSingleton.AWS_SECRET_ACCESS_KEY),
       System.getenv(LogClientSingleton.S3_LOG_BUCKET_REGION))));
 
   private S3Client s3Client;
 
   @BeforeEach
   void setup() {
-    s3Client = S3Client.builder().region(REGION).build();
+    s3Client = S3Client.builder().region(REGION).credentialsProvider(DefaultCredentialsProvider.create()).build();
     generatePaginateTestFiles();
   }
 

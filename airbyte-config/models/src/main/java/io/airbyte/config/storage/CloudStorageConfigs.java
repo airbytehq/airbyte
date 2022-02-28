@@ -94,6 +94,10 @@ public class CloudStorageConfigs {
     private final String awsAccessKey;
     private final String awsSecretAccessKey;
 
+    protected S3ApiWorkerStorageConfig(final String bucketName) {
+      this(bucketName, null, null);
+    }
+
     protected S3ApiWorkerStorageConfig(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey) {
       this.bucketName = bucketName;
       this.awsAccessKey = awsAccessKey;
@@ -118,8 +122,8 @@ public class CloudStorageConfigs {
 
     private final String region;
 
-    public S3Config(final String bucketName, final String awsAccessKey, final String awsSecretAccessKey, final String region) {
-      super(bucketName, awsAccessKey, awsSecretAccessKey);
+    public S3Config(final String bucketName, final String region) {
+      super(bucketName, null, null);
       this.region = region;
     }
 

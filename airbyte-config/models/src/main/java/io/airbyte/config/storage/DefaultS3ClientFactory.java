@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.storage.CloudStorageConfigs.S3ApiWorkerStorageConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.util.function.Supplier;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -33,16 +33,13 @@ public class DefaultS3ClientFactory implements Supplier<S3Client> {
   }
 
   static void validateBase(final S3ApiWorkerStorageConfig s3BaseConfig) {
-    Preconditions.checkArgument(!s3BaseConfig.getAwsAccessKey().isBlank());
-    Preconditions.checkArgument(!s3BaseConfig.getAwsSecretAccessKey().isBlank());
-    Preconditions.checkArgument(!s3BaseConfig.getBucketName().isBlank());
     Preconditions.checkArgument(!s3BaseConfig.getBucketName().isBlank());
   }
 
   @Override
   public S3Client get() {
     final var builder = S3Client.builder();
-    builder.credentialsProvider(() -> AwsBasicCredentials.create(s3Config.getAwsAccessKey(), s3Config.getAwsSecretAccessKey()));
+    builder.credentialsProvider(DefaultCredentialsProvider.builder().build());
     builder.region(Region.of(s3Config.getRegion()));
     return builder.build();
   }

@@ -203,8 +203,6 @@ public class EnvConfigs implements Configs {
     } else if (getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION) != null && !getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION).isBlank()) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
-          getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""))));
     } else {
       return Optional.empty();
@@ -225,8 +223,6 @@ public class EnvConfigs implements Configs {
     } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
     } else {
       return Optional.empty();
