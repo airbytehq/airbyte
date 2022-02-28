@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "count": {
+            "type": "number"
+        },
+        "budgets": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "number"
+                },
+                "budgets": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

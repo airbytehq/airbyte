@@ -1,0 +1,107 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "countryId": {
+                    "type": "string"
+                },
+                "countryName": {
+                    "type": "string"
+                },
+                "countryCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "metrics": {
+            "type": "object",
+            "properties": {
+                "impressions": {
+                    "type": "number"
+                },
+                "clicks": {
+                    "type": "number"
+                },
+                "totalConversions": {
+                    "type": "number"
+                },
+                "conversions": {
+                    "type": "number"
+                },
+                "viewConversions": {
+                    "type": "number"
+                },
+                "spend": {
+                    "type": "number"
+                },
+                "ecpc": {
+                    "type": "number"
+                },
+                "ctr": {
+                    "type": "number"
+                },
+                "conversionRate": {
+                    "type": "number"
+                },
+                "viewConversionRate": {
+                    "type": "number"
+                },
+                "cpa": {
+                    "type": "number"
+                },
+                "totalCpa": {
+                    "type": "number"
+                },
+                "totalValue": {
+                    "type": "number"
+                },
+                "totalSumValue": {
+                    "type": "number"
+                },
+                "sumValue": {
+                    "type": "number"
+                },
+                "viewSumValue": {
+                    "type": "number"
+                },
+                "totalAverageValue": {
+                    "type": "number"
+                },
+                "averageValue": {
+                    "type": "number"
+                },
+                "viewAverageValue": {
+                    "type": "number"
+                },
+                "roas": {
+                    "type": "number"
+                },
+                "totalRoas": {
+                    "type": "number"
+                },
+                "conversionMetrics": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

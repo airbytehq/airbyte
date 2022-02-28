@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "count": {
+            "type": "number"
+        },
+        "campaigns": {
+            "type": "array",
+            "items": {
+                "type": [
+                    "null",
+                    "number",
+                    "string"
+                ]
+            }
+        },
+        "marketerBlockedSites": {
+            "type": "object",
+            "properties": {
+                "blockedPublishers": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ]
+                    }
+                },
+                "blockedSections": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Outbrain Amplify Api Spec",
+    "type": "object",
+    "required": [
+      "USERNAME",
+      "PASSWORD",
+      "MARKETER_ID"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "USERNAME": {
+        "type": "string",
+        "description": "Outbrain Username"
+      },
+      "PASSWORD": {
+        "type": "string",
+        "airbyte_secret": true,
+        "description": "Outbrain Password"
+      },
+      "MARKETER_ID": {
+        "type": "string",
+        "description": "Outbrain Marketer ID"
+      },
+      "END_DATE": {
+        "type": "string",
+        "description": "End Date for data retrieval"
+      }
+    }
+  }
+}

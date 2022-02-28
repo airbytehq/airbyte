@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "campaignId": {
+            "type": "string"
+        },
+        "results": {
+            "type": "array",
+            "items": {
+                "type": [
+                    "null",
+                    "number",
+                    "string"
+                ]
+            }
+        },
+        "totalResults": {
+            "type": "number"
+        }
+    }
+}

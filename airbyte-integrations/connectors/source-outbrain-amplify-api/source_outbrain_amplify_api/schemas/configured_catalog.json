@@ -1,0 +1,1082 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "budgets",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                            "type": "integer"
+                        },
+                        "budgets": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "shared": {
+                                            "type": "boolean"
+                                        },
+                                        "amount": {
+                                            "type": "integer"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "amountRemaining": {
+                                            "type": "integer"
+                                        },
+                                        "amountSpent": {
+                                            "type": "integer"
+                                        },
+                                        "creationTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModified": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "runForever": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "pacing": {
+                                            "type": "string"
+                                        },
+                                        "dailyTarget": {
+                                            "type": "integer"
+                                        },
+                                        "maximumAmount": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "supported_sync_modes": [
+                            "full_refresh"
+                        ]
+                    }
+                }
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        },
+        {
+            "stream": {
+                "name": "campaigns",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                            "type": "integer"
+                        },
+                        "campaigns": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "marketerId": {
+                                            "type": "string"
+                                        },
+                                        "onAirReason": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "lastModified": {
+                                            "type": "string"
+                                        },
+                                        "creationTime": {
+                                            "type": "string"
+                                        },
+                                        "autoArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "cpc": {
+                                            "type": "number"
+                                        },
+                                        "minimumCpc": {
+                                            "type": "number"
+                                        },
+                                        "amountSpent": {
+                                            "type": "integer"
+                                        },
+                                        "targeting": {
+                                            "type": "object",
+                                            "properties": {
+                                                "platform": {
+                                                    "type": "array",
+                                                    "items": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "string"
+                                                        }
+                                                    ]
+                                                },
+                                                "locations": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "operatingSystems": {
+                                                    "type": "array",
+                                                    "items": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "string"
+                                                        }
+                                                    ]
+                                                },
+                                                "browsers": {
+                                                    "type": "array",
+                                                    "items": [
+                                                        {
+                                                            "type": "string"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "feeds": {
+                                            "type": "array",
+                                            "items": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        },
+                                        "budget": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "shared": {
+                                                    "type": "boolean"
+                                                },
+                                                "amount": {
+                                                    "type": "integer"
+                                                },
+                                                "currency": {
+                                                    "type": "string"
+                                                },
+                                                "amountRemaining": {
+                                                    "type": "integer"
+                                                },
+                                                "amountSpent": {
+                                                    "type": "integer"
+                                                },
+                                                "creationTime": {
+                                                    "type": "string"
+                                                },
+                                                "lastModified": {
+                                                    "type": "string"
+                                                },
+                                                "startDate": {
+                                                    "type": "string"
+                                                },
+                                                "runForever": {
+                                                    "type": "boolean"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "pacing": {
+                                                    "type": "string"
+                                                },
+                                                "dailyTarget": {
+                                                    "type": "integer"
+                                                },
+                                                "maximumAmount": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "suffixTrackingCode": {
+                                            "type": "string"
+                                        },
+                                        "prefixTrackingCode": {
+                                            "type": "object",
+                                            "properties": {
+                                                "prefix": {
+                                                    "type": "string"
+                                                },
+                                                "encode": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "liveStatus": {
+                                            "type": "object",
+                                            "properties": {
+                                                "campaignOnAir": {
+                                                    "type": "boolean"
+                                                },
+                                                "onAirReason": {
+                                                    "type": "string"
+                                                },
+                                                "amountSpent": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "marketerBlockedSites": {
+                            "type": "object",
+                            "properties": {
+                                "blockedPublishers": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "creationTime": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "blockedSections": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "publisher": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "creationTime": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        },
+        {
+            "stream": {
+                "name": "performance_by_country",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "campaignId": {
+                            "type": "string"
+                        },
+                        "results": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "publisherId": {
+                                                    "type": "string"
+                                                },
+                                                "publisherName": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                },
+                                                "publisherUrl": {
+                                                    "type": "string"
+                                                },
+                                                "isOen": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "impressions": {
+                                                    "type": "integer"
+                                                },
+                                                "clicks": {
+                                                    "type": "integer"
+                                                },
+                                                "totalConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversions": {
+                                                    "type": "integer"
+                                                },
+                                                "viewConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "spend": {
+                                                    "type": "number"
+                                                },
+                                                "ecpc": {
+                                                    "type": "number"
+                                                },
+                                                "ctr": {
+                                                    "type": "number"
+                                                },
+                                                "conversionRate": {
+                                                    "type": "number"
+                                                },
+                                                "viewConversionRate": {
+                                                    "type": "integer"
+                                                },
+                                                "cpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalCpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "sumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "averageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "roas": {
+                                                    "type": "number"
+                                                },
+                                                "totalRoas": {
+                                                    "type": "number"
+                                                },
+                                                "conversionMetrics": {
+                                                    "type": "array",
+                                                    "items": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "totalConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversionRate": {
+                                                                    "type": "number"
+                                                                },
+                                                                "viewConversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalCpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "cpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "sumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "averageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "roas": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalRoas": {
+                                                                    "type": "number"
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "totalConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalCpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "cpa": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "sumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "averageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "roas": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalRoas": {
+                                                                    "type": "integer"
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "publisherId": {
+                                                    "type": "string"
+                                                },
+                                                "publisherName": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                },
+                                                "publisherUrl": {
+                                                    "type": "string"
+                                                },
+                                                "isOen": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "impressions": {
+                                                    "type": "integer"
+                                                },
+                                                "clicks": {
+                                                    "type": "integer"
+                                                },
+                                                "totalConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversions": {
+                                                    "type": "integer"
+                                                },
+                                                "viewConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "spend": {
+                                                    "type": "number"
+                                                },
+                                                "ecpc": {
+                                                    "type": "number"
+                                                },
+                                                "ctr": {
+                                                    "type": "number"
+                                                },
+                                                "conversionRate": {
+                                                    "type": "number"
+                                                },
+                                                "viewConversionRate": {
+                                                    "type": "integer"
+                                                },
+                                                "cpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalCpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "sumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "averageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "roas": {
+                                                    "type": "number"
+                                                },
+                                                "totalRoas": {
+                                                    "type": "number"
+                                                },
+                                                "conversionMetrics": {
+                                                    "type": "array",
+                                                    "items": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "totalConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversionRate": {
+                                                                    "type": "number"
+                                                                },
+                                                                "viewConversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalCpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "cpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "sumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "averageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "roas": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalRoas": {
+                                                                    "type": "number"
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "totalConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversionRate": {
+                                                                    "type": "number"
+                                                                },
+                                                                "viewConversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalCpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "cpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "sumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "averageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "roas": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalRoas": {
+                                                                    "type": "integer"
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "totalConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewConversions": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "conversionRate": {
+                                                                    "type": "number"
+                                                                },
+                                                                "viewConversionRate": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalCpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "cpa": {
+                                                                    "type": "number"
+                                                                },
+                                                                "totalValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "sumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewSumValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "averageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "viewAverageValue": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "roas": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "totalRoas": {
+                                                                    "type": "integer"
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "totalResults": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ]
+            },
+            "sync_mode": "incremental",
+            "destination_sync_mode": "append",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        },
+        {
+            "stream": {
+                "name": "publisher_section_by_campaign_performance",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "code": {
+                                    "type": "string"
+                                },
+                                "countryId": {
+                                    "type": "string"
+                                },
+                                "countryName": {
+                                    "type": "string"
+                                },
+                                "countryCode": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "metrics": {
+                            "type": "object",
+                            "properties": {
+                                "impressions": {
+                                    "type": "integer"
+                                },
+                                "clicks": {
+                                    "type": "integer"
+                                },
+                                "totalConversions": {
+                                    "type": "integer"
+                                },
+                                "conversions": {
+                                    "type": "integer"
+                                },
+                                "viewConversions": {
+                                    "type": "integer"
+                                },
+                                "spend": {
+                                    "type": "number"
+                                },
+                                "ecpc": {
+                                    "type": "number"
+                                },
+                                "ctr": {
+                                    "type": "number"
+                                },
+                                "conversionRate": {
+                                    "type": "number"
+                                },
+                                "viewConversionRate": {
+                                    "type": "integer"
+                                },
+                                "cpa": {
+                                    "type": "number"
+                                },
+                                "totalCpa": {
+                                    "type": "number"
+                                },
+                                "totalValue": {
+                                    "type": "integer"
+                                },
+                                "totalSumValue": {
+                                    "type": "integer"
+                                },
+                                "sumValue": {
+                                    "type": "integer"
+                                },
+                                "viewSumValue": {
+                                    "type": "integer"
+                                },
+                                "totalAverageValue": {
+                                    "type": "integer"
+                                },
+                                "averageValue": {
+                                    "type": "integer"
+                                },
+                                "viewAverageValue": {
+                                    "type": "integer"
+                                },
+                                "roas": {
+                                    "type": "integer"
+                                },
+                                "totalRoas": {
+                                    "type": "integer"
+                                },
+                                "conversionMetrics": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "totalConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversions": {
+                                                    "type": "integer"
+                                                },
+                                                "viewConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversionRate": {
+                                                    "type": "number"
+                                                },
+                                                "viewConversionRate": {
+                                                    "type": "integer"
+                                                },
+                                                "totalCpa": {
+                                                    "type": "number"
+                                                },
+                                                "cpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "sumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "averageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "roas": {
+                                                    "type": "integer"
+                                                },
+                                                "totalRoas": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "totalConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversions": {
+                                                    "type": "integer"
+                                                },
+                                                "viewConversions": {
+                                                    "type": "integer"
+                                                },
+                                                "conversionRate": {
+                                                    "type": "number"
+                                                },
+                                                "viewConversionRate": {
+                                                    "type": "integer"
+                                                },
+                                                "totalCpa": {
+                                                    "type": "number"
+                                                },
+                                                "cpa": {
+                                                    "type": "number"
+                                                },
+                                                "totalValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "sumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewSumValue": {
+                                                    "type": "integer"
+                                                },
+                                                "totalAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "averageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "viewAverageValue": {
+                                                    "type": "integer"
+                                                },
+                                                "roas": {
+                                                    "type": "integer"
+                                                },
+                                                "totalRoas": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ]
+            },
+            "sync_mode": "incremental",
+            "destination_sync_mode": "append",
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ]
+        }
+    ]
+}
