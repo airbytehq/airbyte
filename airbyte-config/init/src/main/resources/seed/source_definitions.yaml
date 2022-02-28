@@ -873,7 +873,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/kustomer
   sourceType: api
 - name: Woo Commerce
-  sourceDefinitionId: cd06e646-???
+  sourceDefinitionId: da635843-1190-4931-80ef-69a68103f74e
   dockerRepository: airbyte/source-woocommerce
   dockerImageTag: 0.0.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/woocommerce
