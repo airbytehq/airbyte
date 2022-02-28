@@ -1031,27 +1031,6 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies"]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._stage_history = DealStageHistoryStream(**kwargs)
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        history_by_id = {}
-        for record in self._stage_history.read_records(sync_mode):
-            if all(field in record for field in ("id", "dealstage")):
-                history_by_id[record["id"]] = record["dealstage"]
-
-        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            if record.get("id") and int(record["id"]) in history_by_id:
-                record["dealstage"] = history_by_id[int(record["id"])]
-            yield record
-
 
 class DealPipelines(Stream):
     """Deal pipelines, API v1,
