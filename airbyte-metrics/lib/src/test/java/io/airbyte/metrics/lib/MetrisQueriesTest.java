@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.lib;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.*;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
@@ -131,6 +132,25 @@ public class MetrisQueriesTest {
       final var missingJobId = 100000L;
       final var res = configDb.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, missingJobId));
       assertEquals(0, res.size());
+    }
+
+    @Nested
+    class oldestPendingJob {
+
+      @Test
+      @DisplayName("should not error out or return any result if not applicable")
+      void shouldReturnNothingIfNotApplicable() throws SQLException {
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(4L, "").execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(5L, "").execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(6L, "").execute());
+        final var missingJobId = 100000L;
+        final var res = configDb.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, missingJobId));
+        assertEquals(0, res.size());
+      }
+
     }
 
   }

@@ -54,4 +54,12 @@ public class MetricQueries {
     return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
   }
 
+  public static int oldestPendingJob(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+  }
+
+  public static int oldestRunningJob(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+  }
+
 }
