@@ -194,7 +194,7 @@ public class MetrisQueriesTest {
       @Test
       @DisplayName("should return only the running job's age in seconds")
       void shouldReturnOnlyRunningSeconds() throws SQLException {
-        final var expAgeSecs = 1000;
+        final var expAgeSecs = 10000;
         final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
         // oldest pending job
         configDb.transaction(
@@ -211,7 +211,7 @@ public class MetrisQueriesTest {
             ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
         final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
-        assertEquals(1000, res);
+        assertEquals(10000, res);
       }
 
       @Test

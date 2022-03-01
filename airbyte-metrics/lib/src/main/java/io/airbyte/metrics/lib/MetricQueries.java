@@ -64,14 +64,14 @@ public class MetricQueries {
     return oldestJobAgeSecs(ctx, JobStatus.running);
   }
 
-
   private static Long oldestJobAgeSecs(final DSLContext ctx, final JobStatus status) {
+    final var readableTimeField = "run_duration";
     final var durationSecField = "run_duration_secs";
     final var query = String.format("""
                                     with
                                     oldest_job as (
                                     SELECT id,
-                                           age(current_timestamp, created_at) AS run_duration
+                                           age(current_timestamp, created_at) AS %s
                                     FROM jobs
                                     WHERE status = '%s'
                                     ORDER BY run_duration DESC
@@ -79,15 +79,22 @@ public class MetricQueries {
                                     select id,
                                            run_duration,
                                            extract(epoch from run_duration) as %s
-                                    from oldest_job""", status.getLiteral(), durationSecField);
+                                    from oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
     final var res = ctx.fetch(query);
+    System.out.println(res);
+    // unfortunately there are no good Jooq methods for retrieving a single record of a single column
+    // forcing the List cast.
     final var duration = res.getValues(durationSecField, Double.class);
 
     if (duration.size() == 0) {
       return 0L;
     }
+    // .get(0) works in the following code due to the query's SELECT 1.
+    final var id = res.getValues("id", String.class).get(0);
+    final var readableTime = res.getValues(readableTimeField, String.class).get(0);
+    log.info("oldest job information - id: {}, readable time: {}", id, readableTime);
 
-    // Since double might have rounding errors, round down to remove noise.
+    // as double can have rounding errors, round down to remove noise.
     return duration.get(0).longValue();
   }
 
