@@ -63,6 +63,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -80,7 +81,6 @@ import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
@@ -134,7 +134,7 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private EventRunner eventRunner;
   private FeatureFlags featureFlags;
   private JobConverter jobConverter;
 
@@ -153,7 +153,7 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     final JobNotifier jobNotifier = mock(JobNotifier.class);
-    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
 
     featureFlags = mock(FeatureFlags.class);
     when(featureFlags.usesNewScheduler()).thenReturn(false);
@@ -172,7 +172,7 @@ class SchedulerHandlerTest {
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         jobConverter);
   }
@@ -631,7 +631,7 @@ class SchedulerHandlerTest {
         .jobId(Optional.of(jobId))
         .build();
 
-    when(temporalWorkerRunFactory.startNewManualSync(connectionId))
+    when(eventRunner.startNewManualSync(connectionId))
         .thenReturn(manualSyncSubmissionResult);
 
     doReturn(new JobInfoRead())
@@ -639,7 +639,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(temporalWorkerRunFactory).startNewManualSync(connectionId);
+    verify(eventRunner).startNewManualSync(connectionId);
   }
 
   private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {
