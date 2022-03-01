@@ -219,8 +219,7 @@ public class IntegrationRunner {
   }
 
   protected static TimeUnit getDelayTimeUnit() {
-    // return TimeUnit.MINUTES;
-    return TimeUnit.SECONDS;
+    return TimeUnit.MINUTES;
   }
 
   private static String dumpThread(final Thread thread) {
