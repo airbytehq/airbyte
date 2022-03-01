@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -341,32 +342,47 @@ class JobTrackerTest {
 
   void testAsynchronousAttemptWithFailures(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final JsonNode configFailureJson = Jsons.jsonNode(ImmutableMap.of(
-        "failureOrigin", "source",
-        "failureType", "configError",
-        "internalMessage", "Internal config error error msg",
-        "externalMessage", "Config error related msg",
-        "metadata", ImmutableMap.of("some", "metadata"),
-        "retryable", true,
-        "timestamp", 1010));
+    final JsonNode configFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
 
-    final JsonNode systemFailureJson = Jsons.jsonNode(ImmutableMap.of(
-        "failureOrigin", "replication",
-        "failureType", "systemError",
-        "internalMessage", "Internal system error error msg",
-        "externalMessage", "System error related msg",
-        "metadata", ImmutableMap.of("some", "metadata"),
-        "retryable", true,
-        "timestamp", 1100));
+      {
+        put("failureOrigin", "source");
+        put("failureType", "configError");
+        put("internalMessage", "Internal config error error msg");
+        put("externalMessage", "Config error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1010);
+      }
 
-    final JsonNode unknownFailureJson = Jsons.jsonNode(ImmutableMap.of(
-        "failureOrigin", "unknown",
-        "failureType", "unknown",
-        "internalMessage", "Internal unknown error error msg",
-        "externalMessage", "Unknown error related msg",
-        "metadata", ImmutableMap.of("some", "metadata"),
-        "retryable", true,
-        "timestamp", 1110));
+    });
+
+    final JsonNode systemFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", "replication");
+        put("failureType", "systemError");
+        put("internalMessage", "Internal system error error msg");
+        put("externalMessage", "System error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1100);
+      }
+
+    });
+
+    final JsonNode unknownFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", null);
+        put("failureType", null);
+        put("internalMessage", "Internal unknown error error msg");
+        put("externalMessage", "Unknown error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1110);
+      }
+
+    });
 
     final Map<String, Object> failureMetadata = ImmutableMap.of(
         "failure_reasons", Jsons.arrayNode().addAll(Arrays.asList(configFailureJson, systemFailureJson, unknownFailureJson)).toString(),
@@ -510,8 +526,6 @@ class JobTrackerTest {
         .withStacktrace("Don't include stacktrace in call to track")
         .withTimestamp(SYNC_START_TIME + 100);
     final FailureReason unknownFailureReason = new FailureReason()
-        .withFailureOrigin(FailureReason.FailureOrigin.UNKNOWN)
-        .withFailureType(FailureReason.FailureType.UNKNOWN)
         .withRetryable(true)
         .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
         .withExternalMessage("Unknown error related msg")

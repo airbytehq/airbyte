@@ -6,7 +6,6 @@ package io.airbyte.scheduler.persistence.job_tracker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
@@ -23,6 +22,7 @@ import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -141,9 +141,20 @@ public class TrackingMetadata {
   }
 
   private static JsonNode failureReasonAsJson(final FailureReason failureReason) {
-    final JsonNode jsonNode = Jsons.jsonNode(failureReason);
-    ((ObjectNode) jsonNode).remove("stacktrace");
-    return jsonNode;
+    // we want the json to always include failureOrigin and failureType, even when they are null
+    return Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", failureReason.getFailureOrigin());
+        put("failureType", failureReason.getFailureType());
+        put("internalMessage", failureReason.getInternalMessage());
+        put("externalMessage", failureReason.getExternalMessage());
+        put("metadata", failureReason.getMetadata());
+        put("retryable", failureReason.getRetryable());
+        put("timestamp", failureReason.getTimestamp());
+      }
+
+    });
   }
 
 }
