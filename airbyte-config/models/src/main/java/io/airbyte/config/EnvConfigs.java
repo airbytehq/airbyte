@@ -823,6 +823,10 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
+  public int getEnvOrDefault(final String key, final int defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Integer::parseInt, false);
+  }
+
   public boolean getEnvOrDefault(final String key, final boolean defaultValue) {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
