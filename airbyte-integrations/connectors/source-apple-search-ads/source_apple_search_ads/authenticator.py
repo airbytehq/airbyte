@@ -4,7 +4,7 @@ import requests
 import jwt
 import pendulum
 
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class AppleSearchAdsException(Exception):
@@ -12,15 +12,15 @@ class AppleSearchAdsException(Exception):
 
 class AppleSearchAdsAuthenticator(TokenAuthenticator):
     audience = 'https://appleid.apple.com'
-    alg = 'ES256'
 
     expiration_seconds = 60*20
 
-    def __init__(self, client_id: str, team_id: str, key_id: str, private_key: str):
+    def __init__(self, client_id: str, team_id: str, key_id: str, private_key: str, algorithm: str = 'ES256'):
         self.client_id = client_id
         self.team_id = team_id
         self.key_id = key_id
         self.private_key = private_key
+        self.algorithm = algorithm if algorithm is not None else 'ES256'
 
         super().__init__(None)
 
@@ -36,7 +36,7 @@ class AppleSearchAdsAuthenticator(TokenAuthenticator):
 
         # Create Client secret
         headers = dict()
-        headers['alg'] = self.alg
+        headers['alg'] = self.algorithm
         headers['kid'] = self.key_id
 
         payload = dict()
@@ -49,7 +49,7 @@ class AppleSearchAdsAuthenticator(TokenAuthenticator):
         client_secret = jwt.encode(
             payload=payload,
             headers=headers,
-            algorithm=self.alg,
+            algorithm=self.algorithm,
             key=self.private_key
         )
 

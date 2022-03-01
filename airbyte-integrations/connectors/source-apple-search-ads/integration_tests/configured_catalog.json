@@ -1,6 +1,59 @@
 {
   "streams": [
-
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "adgroups",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaign_negative_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creative_sets",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "adgroup_creative_sets",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "adgroup_negative_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
     {
       "stream": {
         "name": "adgroup_targeting_keywords",
@@ -9,5 +62,51 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
-    }  ]
+    },
+    {
+      "stream": {
+        "name": "report_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "report_adgroups",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "report_keywords",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "report_searchterms",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "report_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
 }

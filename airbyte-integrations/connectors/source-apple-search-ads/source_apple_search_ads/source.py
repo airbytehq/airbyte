@@ -25,7 +25,8 @@ class SourceAppleSearchAds(AbstractSource):
             client_id=config["client_id"],
             team_id=config["team_id"],
             key_id=config["key_id"],
-            private_key=config["private_key"]
+            private_key=config["private_key"],
+            algorithm=config.get("algorithm")
         )
 
         try:
