@@ -4,7 +4,6 @@
 
 package io.airbyte.metrics.lib;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.*;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
@@ -15,9 +14,12 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import org.jooq.JSONB;
@@ -62,11 +64,6 @@ public class MetrisQueriesTest {
     configDb.transaction(ctx -> ctx.alterTable(ACTOR).dropForeignKey("actor_workspace_id_fkey").execute());
   }
 
-  @AfterEach
-  void tearDown() throws SQLException {
-    configDb.transaction(ctx -> ctx.truncate(ACTOR));
-  }
-
   @Nested
   class srcIdAndDestIdToReleaseStages {
 
@@ -97,6 +94,11 @@ public class MetrisQueriesTest {
 
   @Nested
   class jobIdToReleaseStages {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
+    }
 
     @Test
     @DisplayName("should return the right release stages")
@@ -137,18 +139,46 @@ public class MetrisQueriesTest {
     @Nested
     class oldestPendingJob {
 
+      @AfterEach
+      void tearDown() throws SQLException {
+        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
+      }
+
+      @Test
+      @DisplayName("should return only the pending job's age in seconds")
+      void shouldReturnOnlyPendingSeconds() throws SQLException {
+        final var expAgeSecs = 1000;
+        final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+        // oldest pending job
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.pending, oldestCreateAt)
+                .execute());
+        // second oldest pending job
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.pending, OffsetDateTime.now())
+                .execute());
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::oldestPendingJob);
+        assertEquals(1000, res);
+      }
+
       @Test
       @DisplayName("should not error out or return any result if not applicable")
       void shouldReturnNothingIfNotApplicable() throws SQLException {
         configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(4L, "").execute());
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
         configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(5L, "").execute());
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.running).execute());
         configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE).values(6L, "").execute());
-        final var missingJobId = 100000L;
-        final var res = configDb.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, missingJobId));
-        assertEquals(0, res.size());
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::oldestPendingJob);
+        assertEquals(0L, res);
       }
 
     }

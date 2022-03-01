@@ -12,11 +12,13 @@ import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 
 /**
  * Keep track of all metric queries.
  */
+@Slf4j
 public class MetricQueries {
 
   public static List<ReleaseStage> jobIdToReleaseStages(final DSLContext ctx, final long jobId) {
@@ -54,12 +56,38 @@ public class MetricQueries {
     return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
   }
 
-  public static int oldestPendingJob(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+  public static Long oldestPendingJob(final DSLContext ctx) {
+    return oldestJob(ctx, JobStatus.pending);
   }
 
-  public static int oldestRunningJob(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+  public static Long oldestRunningJob(final DSLContext ctx) {
+    return 0L;
+  }
+
+  static Long oldestJob(final DSLContext ctx, final JobStatus status) {
+    final var durationSecField = "run_duration_secs";
+    final var query = String.format("""
+                                    with
+                                    oldest_job as (
+                                    SELECT id,
+                                           age(current_timestamp, created_at) AS run_duration
+                                    FROM jobs
+                                    WHERE status = '%s'
+                                    ORDER BY run_duration DESC
+                                    LIMIT 1)
+                                    select id,
+                                           run_duration,
+                                           extract(epoch from run_duration) as %s
+                                    from oldest_job""", status.getLiteral(), durationSecField);
+    final var res = ctx.fetch(query);
+    final var duration = res.getValues(durationSecField, Double.class);
+
+    if (duration.size() == 0) {
+      return 0L;
+    }
+
+    // Since double might have rounding errors, round down to remove noise.
+    return duration.get(0).longValue();
   }
 
 }
