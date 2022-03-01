@@ -17,6 +17,26 @@ from requests.exceptions import HTTPError
 DEFAULT_PAGE_SIZE = 100
 
 
+def get_value_by_path(D: Mapping[str, Any], path: List[str]):
+    for k in path:
+        if k not in D:
+            return None
+        D = D[k]
+    return D
+
+
+def set_value_by_path(D: Mapping[str, Any], path: List[str], value):
+    for k in path[:-1]:
+        D = D.setdefault(k, {})
+    D[path[-1]] = value
+
+
+def del_value_by_path(D, path):
+    for k in path[:1]:
+        D = D[k]
+    del D[path[-1]]
+
+
 class GithubStream(HttpStream, ABC):
     url_base = "https://api.github.com/"
 
@@ -195,6 +215,7 @@ class SemiIncrementalGithubStream(GithubStream):
     """
 
     cursor_field = "updated_at"
+    state_path = ["repository"]
 
     # This flag is used to indicate that current stream supports `sort` and `direction` request parameters and that
     # we should break processing records if possible. If `sort` is set to `updated` and `direction` is set to `desc`
@@ -214,26 +235,35 @@ class SemiIncrementalGithubStream(GithubStream):
             return self.page_size
         return None
 
+    def _get_state_path(self, state_path, record: Mapping[str, Any]):
+        res = []
+        for k in state_path:
+            if k not in record:
+                raise ValueError("record field: '{}' not found".format(k))
+            res.append(record[k])
+        res.append(self.cursor_field)
+        return res
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-
-        if current_stream_state.get(current_repository, {}).get(self.cursor_field):
-            state_value = max(latest_cursor_value, current_stream_state[current_repository][self.cursor_field])
-        current_stream_state[current_repository] = {self.cursor_field: state_value}
+        state_value = latest_record[self.cursor_field]
+        state_path = self._get_state_path(self.state_path, latest_record)
+        old_state_value = get_value_by_path(current_stream_state, state_path)
+        if old_state_value:
+            state_value = max(state_value, old_state_value)
+        set_value_by_path(current_stream_state, state_path, state_value)
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str) -> str:
-        start_point = self._start_date
-
-        if stream_state and stream_state.get(repository, {}).get(self.cursor_field):
-            start_point = max(start_point, stream_state[repository][self.cursor_field])
-
-        return start_point
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            state_path = self._get_state_path(self.state_path, stream_slice)
+            old_state_value = get_value_by_path(stream_state, state_path)
+            if old_state_value:
+                return max(self._start_date, old_state_value)
+        return self._start_date
 
     def read_records(
         self,
@@ -242,7 +272,7 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
@@ -255,7 +285,7 @@ class SemiIncrementalGithubStream(GithubStream):
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        since_params = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        since_params = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         if since_params:
             params["since"] = since_params
         return params
@@ -565,6 +595,7 @@ class Commits(IncrementalGithubStream):
 
     primary_key = "sha"
     cursor_field = "created_at"
+    state_path = ["repository", "branch"]
 
     def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
         super().__init__(**kwargs)
@@ -573,9 +604,7 @@ class Commits(IncrementalGithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(
-            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
-        )
+        params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         params["sha"] = stream_slice["branch"]
         return params
 
@@ -599,33 +628,45 @@ class Commits(IncrementalGithubStream):
         return record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
+
         current_branch = latest_record["branch"]
+        current_repository = latest_record["repository"]
 
-        if current_stream_state.get(current_repository):
-            repository_commits_state = current_stream_state[current_repository]
-            if repository_commits_state.get(self.cursor_field):
-                # transfer state from old source version to per-branch version
-                if current_branch == self.default_branches[current_repository]:
-                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
-                    del repository_commits_state[self.cursor_field]
-            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
-                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
+        state_value = latest_record[self.cursor_field]
+        state_path = self._get_state_path(self.state_path[:-1], latest_record)
+        old_state_value = get_value_by_path(current_stream_state, state_path)
 
-        if current_repository not in current_stream_state:
-            current_stream_state[current_repository] = {}
+        if old_state_value:
+            if current_branch == self.default_branches[current_repository]:
+                del_value_by_path(current_stream_state, state_path)
+            state_value = max(state_value, old_state_value)
+        else:
+            state_path = self._get_state_path(self.state_path, latest_record)
+            old_state_value = get_value_by_path(current_stream_state, state_path)
+            if old_state_value:
+                state_value = max(state_value, old_state_value)
 
-        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        state_path = self._get_state_path(self.state_path, latest_record)
+        set_value_by_path(current_stream_state, state_path, state_value)
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str) -> str:
-        start_point = self._start_date
-        if stream_state and stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field):
-            return max(start_point, stream_state[repository][branch][self.cursor_field])
-        if branch == self.default_branches[repository]:
-            return super().get_starting_point(stream_state=stream_state, repository=repository)
-        return start_point
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+
+        if stream_state:
+            state_path = self._get_state_path(self.state_path, stream_slice)
+            old_state_value = get_value_by_path(stream_state, state_path)
+            if old_state_value:
+                return max(self._start_date, old_state_value)
+
+            repository = stream_slice["repository"]
+            branch = stream_slice["branch"]
+
+            if branch == self.default_branches[repository]:
+                state_path = self._get_state_path(self.state_path[:-1], stream_slice)
+                old_state_value = get_value_by_path(stream_state, state_path)
+                if old_state_value:
+                    return max(self._start_date, old_state_value)
+        return self._start_date
 
     def read_records(
         self,
@@ -634,9 +675,7 @@ class Commits(IncrementalGithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(
-            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
-        )
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         for record in super(SemiIncrementalGithubStream, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
