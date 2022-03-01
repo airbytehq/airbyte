@@ -11,7 +11,8 @@ import io.airbyte.integrations.source.redshift.RedshiftSource;
 
 public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTest {
 
-  protected static JdbcDatabase createDatabase(final JsonNode config) {
+  @Override
+  protected JdbcDatabase createDatabase(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
