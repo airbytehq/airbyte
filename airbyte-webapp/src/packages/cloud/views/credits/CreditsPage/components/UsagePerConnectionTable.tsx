@@ -18,6 +18,14 @@ const Content = styled.div`
   padding: 0 60px 0 15px;
 `;
 
+const UsageValue = styled.div`
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  padding-right: 10px;
+  min-width: 53px;
+`;
+
 type UsagePerConnectionTableProps = {
   creditConsumption: CreditConsumptionByConnector[];
 };
@@ -144,11 +152,18 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
           </>
         ),
         accessor: "creditsConsumed",
-        Cell: ({ cell, row }: CellProps<FullTableProps>) => (
-          <UsageCell
-            value={cell.value}
-            percent={row.original.creditsConsumedPercent}
-          />
+        collapse: true,
+        customPadding: { right: 0 },
+        Cell: ({ cell }: CellProps<FullTableProps>) => (
+          <UsageValue>{cell.value}</UsageValue>
+        ),
+      },
+      {
+        Header: "",
+        accessor: "creditsConsumedPercent",
+        customPadding: { left: 0 },
+        Cell: ({ cell }: CellProps<FullTableProps>) => (
+          <UsageCell percent={cell.value} />
         ),
       },
       // TODO: Replace to Grow column
