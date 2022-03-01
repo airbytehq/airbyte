@@ -11,10 +11,16 @@ import {
 
 import { Card } from "components";
 
+type PaddingProps = {
+  left?: number;
+  right?: number;
+};
+
 type IHeaderProps = {
   headerHighlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
 } & ColumnInstance;
 
 type ICellProps = {
@@ -25,6 +31,7 @@ type IThProps = {
   highlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
   light?: boolean;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
@@ -47,8 +54,13 @@ const Tr = styled.tr<{
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
 `;
 
-const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
-  padding: 16px 13px;
+const Td = styled.td<{
+  collapse?: boolean;
+  customWidth?: number;
+  customPadding?: PaddingProps;
+}>`
+  padding: ${({ customPadding }) =>
+    `16px ${customPadding?.right ?? 13}px 16px ${customPadding?.left ?? 13}px`};
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -75,7 +87,8 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 
 const Th = styled.th<IThProps>`
   background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
-  padding: 9px 13px 10px;
+  padding: ${({ customPadding }) =>
+    `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
   font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
@@ -157,6 +170,7 @@ const Table: React.FC<IProps> = ({
                 {...column.getHeaderProps()}
                 highlighted={column.headerHighlighted}
                 collapse={column.collapse}
+                customPadding={column.customPadding}
                 customWidth={column.customWidth}
                 key={`table-column-${key}-${columnKey}`}
                 light={light}
@@ -185,6 +199,7 @@ const Table: React.FC<IProps> = ({
                     <Td
                       {...cell.getCellProps()}
                       collapse={cell.column.collapse}
+                      customPadding={cell.column.customPadding}
                       customWidth={cell.column.customWidth}
                       key={`table-cell-${row.id}-${key}`}
                     >
