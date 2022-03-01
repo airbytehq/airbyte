@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -106,7 +107,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 
@@ -115,19 +116,19 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final JdbcDatabase database = Databases.createJdbcDatabase(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            jdbcConfig.get("jdbc_url").asText(),
-            driverClass,
-            jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
-            sourceOperations);
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        driverClass,
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return new CockroachJdbcDatabase(database, sourceOperations);
   }
-  
-  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(JdbcDatabase database) {
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(final JdbcDatabase database) {
     return connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
@@ -138,7 +139,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     };
   }
 
-  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+  private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
     return JdbcPrivilegeDto.builder()
         .schemaName(jsonNode.get("table_schema").asText())
         .tableName(jsonNode.get("table_name").asText())
