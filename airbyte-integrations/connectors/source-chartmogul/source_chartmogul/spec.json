@@ -22,7 +22,7 @@
       },
       "interval": {
         "type": "string",
-        "description": "Metrics APIs uses intervals to cluster data. Default interval is \"month\"",
+        "description": "Some APIs such as Metrics requires intervals to cluster data.",
         "enum": ["day", "week", "month", "quarter"],
         "default": "month",
         "order": 2
