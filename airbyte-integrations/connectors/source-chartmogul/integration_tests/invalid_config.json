@@ -1,3 +1,4 @@
 {
-  "api_key": "<invalid_key>"
+  "api_key": "<invalid_key>",
+  "interval": "day"
 }
