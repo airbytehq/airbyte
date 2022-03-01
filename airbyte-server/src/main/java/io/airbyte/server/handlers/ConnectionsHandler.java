@@ -214,7 +214,7 @@ public class ConnectionsHandler {
     configRepository.writeStandardSync(newConnection);
 
     if (featureFlags.usesNewScheduler()) {
-      eventRunner.update(connectionUpdate);
+      eventRunner.update(connectionUpdate.getConnectionId());
     }
 
     return buildConnectionRead(connectionUpdate.getConnectionId());

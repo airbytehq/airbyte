@@ -357,7 +357,7 @@ class ConnectionsHandlerTest {
       verify(configRepository).writeStandardSync(updatedStandardSync);
 
       if (useNewScheduler) {
-        verify(eventRunner).update(connectionUpdate);
+        verify(eventRunner).update(connectionUpdate.getConnectionId());
       }
     }
 
