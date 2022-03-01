@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
-import { Button } from "components";
+import { Button, H5 } from "components";
 import DeleteModal from "./components/DeleteModal";
 
 type IProps = {
@@ -13,9 +13,10 @@ type IProps = {
 
 const DeleteBlockComponent = styled(ContentCard)`
   margin-top: 12px;
-  padding: 29px 28px 27px;
+  padding: 19px 20px 20px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const Text = styled.div`
@@ -32,6 +33,12 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   return (
     <>
       <DeleteBlockComponent>
+        <Text>
+          <H5 bold>
+            <FormattedMessage id={`tables.${type}Delete.title`} />
+          </H5>
+          <FormattedMessage id={`tables.${type}DataDelete`} />
+        </Text>
         <Button
           danger
           onClick={() => setIsModalOpen(true)}
@@ -39,9 +46,6 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
         >
           <FormattedMessage id={`tables.${type}Delete`} />
         </Button>
-        <Text>
-          <FormattedMessage id={`tables.${type}DataDelete`} />
-        </Text>
       </DeleteBlockComponent>
       {isModalOpen && (
         <DeleteModal

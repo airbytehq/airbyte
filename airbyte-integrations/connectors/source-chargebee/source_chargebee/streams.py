@@ -12,13 +12,16 @@ from chargebee.list_result import ListResult
 from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
+from chargebee.models import Coupon as CouponModel
 from chargebee.models import Customer as CustomerModel
+from chargebee.models import Event as EventModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
+from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
 
@@ -113,7 +116,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         # Convert `start_date` to timestamp(UTC).
         self._start_date = pendulum.parse(start_date).int_timestamp if start_date else None
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> str:
+    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> int:
         start_point = self._start_date
 
         if stream_state and stream_state.get(item_id, {}).get(self.cursor_field):
@@ -276,3 +279,43 @@ class AttachedItem(SemiIncrementalChargebeeStream):
         """
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         return self.api.list(id=stream_slice["item_id"], params=params)
+
+
+class Event(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
+    """
+
+    cursor_field = "occurred_at"
+
+    api = EventModel
+
+
+class Transaction(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/transactions?lang=curl&prod_cat_ver=2
+    """
+
+    cursor_field = "updated_at"
+
+    api = TransactionModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "created_at"
+        return params
+
+
+class Coupon(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/coupons?prod_cat_ver=2#list_coupons
+    """
+
+    cursor_field = "updated_at"
+
+    api = CouponModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "created_at"
+        return params

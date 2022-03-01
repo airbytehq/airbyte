@@ -19,8 +19,8 @@
   "login.backLogin": "Back to Log in",
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
-  "login.activateAccess": "Activate your 30-day free trial",
-  "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$1,000</sum>  worth of <free>free usage</free>. No credit card required.",
+  "login.activateAccess": "Activate your 14-day free trial",
+  "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$400</sum>  worth of <free>free usage</free>. No credit card required.",
   "login.fullName": "Full name*",
   "login.fullName.placeholder": "Christopher Smith",
   "login.companyName": "Company name*",
@@ -43,6 +43,7 @@
   "workspaces.subtitle": "Workspaces let you collaborate with team members and share sources across your team under a shared billing account.",
   "workspaces.create": "Create workspace",
   "workspaces.createNew": "Create new workspace",
+  "workspaces.loading": "Loading…",
 
   "settings.accountSettings.logoutLabel": "Sign out",
   "settings.accountSettings.logoutText": "Sign out",
@@ -95,6 +96,15 @@
 
   "credits.date": "Date",
   "credits.amount": "Credits",
+
+  "credits.usagePerConnection": "Usage per connection",
+  "credits.connection": "Connection",
+  "credits.usage": "Usage",
+  "credits.noData": "Data is empty",
+  "credits.creditsProblem.negative_within_grace_period": "Your workspace is out of credits! Please add more credits to make sure your syncs keep running!",
+  "credits.creditsProblem.negative_beyond_grace_period": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
+  "credits.creditsProblem.negative_max_threshold": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
+  "credits.creditsProblem.link": "Visit credits page",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",

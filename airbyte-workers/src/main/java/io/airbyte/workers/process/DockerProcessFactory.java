@@ -101,6 +101,7 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
+      LOGGER.info("Creating docker job ID: {}", jobId);
       final List<String> cmd = Lists.newArrayList(
           "docker",
           "run",
@@ -137,9 +138,6 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(entrypoint);
       }
       if (resourceRequirements != null) {
-        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
-          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
-        }
         if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }

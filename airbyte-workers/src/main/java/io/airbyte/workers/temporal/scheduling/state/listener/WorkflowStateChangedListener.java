@@ -29,7 +29,12 @@ public interface WorkflowStateChangedListener {
     SKIPPED_SCHEDULING,
     UPDATED,
     FAILED,
-    RESET
+    RESET,
+    CONTINUE_AS_RESET,
+    RETRY_FAILED_ACTIVITY,
+    QUARANTINED,
+    SUCCESS,
+    CANCELLED_FOR_RESET,
   }
 
   @Value

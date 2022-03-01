@@ -85,6 +85,7 @@ public class IntegrationRunner {
         integration.getClass().getSimpleName(),
         parsed.getCommand().toString(),
         true);
+    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
     try {
       runInternal(transaction, parsed);
       transaction.finish(SpanStatus.OK);
@@ -134,8 +135,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
-        try (messageIterator) {
+        try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
           AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
         }
       }
@@ -144,8 +144,9 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
-        AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+        try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+          AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+        }
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
@@ -158,16 +159,14 @@ public class IntegrationRunner {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
-    try (consumer) {
-      consumer.start();
-      while (input.hasNext()) {
-        final String inputString = input.next();
-        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (messageOptional.isPresent()) {
-          consumer.accept(messageOptional.get());
-        } else {
-          LOGGER.error("Received invalid message: " + inputString);
-        }
+    consumer.start();
+    while (input.hasNext()) {
+      final String inputString = input.next();
+      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+      if (messageOptional.isPresent()) {
+        consumer.accept(messageOptional.get());
+      } else {
+        LOGGER.error("Received invalid message: " + inputString);
       }
     }
   }
