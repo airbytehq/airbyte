@@ -22,6 +22,7 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -134,6 +135,7 @@ public class TrackingMetadata {
   private static ArrayNode failureReasonsListAsJson(final List<FailureReason> failureReasons) {
     return Jsons.arrayNode().addAll(failureReasons
         .stream()
+        .sorted(Comparator.comparing(FailureReason::getTimestamp))
         .map(TrackingMetadata::failureReasonAsJson)
         .toList());
   }
