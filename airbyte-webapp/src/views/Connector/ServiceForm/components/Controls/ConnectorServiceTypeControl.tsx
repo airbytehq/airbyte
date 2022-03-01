@@ -4,6 +4,7 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
+import { WarningMessage } from "../WarningMessage";
 
 import {
   ControlLabels,
@@ -164,6 +165,7 @@ const ConnectorServiceTypeControl: React.FC<{
           releaseStage: item.releaseStage,
         }))
         .sort(defaultDataItemSort),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
 
@@ -214,6 +216,11 @@ const ConnectorServiceTypeControl: React.FC<{
           documentationUrl={documentationUrl}
         />
       )}
+      {selectedService &&
+        (selectedService.releaseStage === ReleaseStage.ALPHA ||
+          selectedService.releaseStage === ReleaseStage.BETA) && (
+          <WarningMessage stage={selectedService.releaseStage} />
+        )}
     </>
   );
 };

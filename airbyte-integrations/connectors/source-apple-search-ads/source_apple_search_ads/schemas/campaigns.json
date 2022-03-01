@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "adamId": {
+      "type": ["null", "string"]
+    },
+    "adChannelType": {
+      "type": ["null", "string"]
+    },
+    "billingEvent": {
+      "type": ["null", "string"]
+    },
+    "budgetAmount": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "budgetOrders": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "countriesOrRegions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "countryOrRegionServingStateReasons": {
+      "type": ["null", "object"]
+    },
+    "dailyBudgetAmount": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "deleted": {
+      "type": ["null", "boolean"]
+    },
+    "displayStatus": {
+      "type": ["null", "string"]
+    },
+    "endTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "locInvoiceDetails": {
+      "type": ["null", "object"],
+      "properties": {
+        "billingContactEmail": {
+          "type": ["null", "string"]
+        },
+        "buyerEmail": {
+          "type": ["null", "string"]
+        },
+        "buyerName": {
+          "type": ["null", "string"]
+        },
+        "clientName": {
+          "type": ["null", "string"]
+        },
+        "orderNumber": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "modificationTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "orgId": {
+      "type": ["null", "integer"]
+    },
+    "paymentModel": {
+      "type": ["null", "string"]
+    },
+    "servingStateReasons": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "servingStatus": {
+      "type": ["null", "string"]
+    },
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "supplySources": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

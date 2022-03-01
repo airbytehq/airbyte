@@ -11,7 +11,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
@@ -54,7 +53,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
@@ -65,6 +64,8 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConnectionsHandlerTest {
 
@@ -162,60 +163,11 @@ class ConnectionsHandlerTest {
     when(featureFlags.usesNewScheduler()).thenReturn(false);
   }
 
-  // TODO: bmoric move to a mock
-  private ConnectionHelper connectionHelper;
-
-  @Nested
-  class MockedConnectionHelper {
-
-    @BeforeEach
-    void setUp() {
-      connectionHelper = mock(ConnectionHelper.class);
-
-      connectionsHandler = new ConnectionsHandler(
-          configRepository,
-          uuidGenerator,
-          workspaceHelper,
-          trackingClient,
-          temporalWorkflowHandler,
-          featureFlags,
-          connectionHelper,
-          workerConfigs);
-    }
-
-    @Test
-    void testUpdateConnectionWithNewScheduler() throws JsonValidationException, ConfigNotFoundException, IOException {
-      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-          .connectionId(standardSync.getConnectionId());
-
-      when(featureFlags.usesNewScheduler()).thenReturn(true);
-      connectionsHandler.updateConnection(connectionUpdate, false);
-
-      verify(connectionHelper).updateConnection(connectionUpdate);
-      verify(temporalWorkflowHandler).update(connectionUpdate);
-    }
-
-    @Test
-    void testUpdateConnectionWithNewSchedulerForReset() throws JsonValidationException, ConfigNotFoundException, IOException {
-      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-          .connectionId(standardSync.getConnectionId());
-
-      when(featureFlags.usesNewScheduler()).thenReturn(true);
-      connectionsHandler.updateConnection(connectionUpdate, true);
-
-      verify(connectionHelper).updateConnection(connectionUpdate);
-      verifyNoInteractions(temporalWorkflowHandler);
-    }
-
-  }
-
   @Nested
   class UnMockedConnectionHelper {
 
     @BeforeEach
     void setUp() {
-      connectionHelper = new ConnectionHelper(configRepository, workspaceHelper, workerConfigs);
-
       connectionsHandler = new ConnectionsHandler(
           configRepository,
           uuidGenerator,
@@ -223,7 +175,6 @@ class ConnectionsHandlerTest {
           trackingClient,
           temporalWorkflowHandler,
           featureFlags,
-          connectionHelper,
           workerConfigs);
     }
 
@@ -344,8 +295,12 @@ class ConnectionsHandlerTest {
 
     }
 
-    @Test
-    void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testUpdateConnection(boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
+      when(featureFlags.usesNewScheduler())
+          .thenReturn(useNewScheduler);
+
       final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
       catalog.getStreams().get(0).getStream().setName("azkaban_users");
       catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
@@ -400,6 +355,10 @@ class ConnectionsHandlerTest {
       assertEquals(expectedConnectionRead, actualConnectionRead);
 
       verify(configRepository).writeStandardSync(updatedStandardSync);
+
+      if (useNewScheduler) {
+        verify(temporalWorkflowHandler).update(connectionUpdate);
+      }
     }
 
     @Test
@@ -409,7 +368,8 @@ class ConnectionsHandlerTest {
 
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .connectionId(standardSync.getConnectionId())
-          .operationIds(Collections.singletonList(operationId));
+          .operationIds(Collections.singletonList(operationId))
+          .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
 
       assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
     }

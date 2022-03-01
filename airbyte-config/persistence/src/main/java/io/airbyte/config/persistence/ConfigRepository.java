@@ -5,9 +5,14 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -25,6 +30,9 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
+import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -55,15 +63,22 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
+  private final ExceptionWrappingDatabase database;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
                           final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence,
+                          final Database database) {
     this.persistence = persistence;
     this.secretsHydrator = secretsHydrator;
     this.longLivedSecretPersistence = longLivedSecretPersistence;
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
+    this.database = new ExceptionWrappingDatabase(database);
+  }
+
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -73,7 +88,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
@@ -549,6 +563,95 @@ public class ConfigRepository {
     } catch (final JsonValidationException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
+                                                 final String configurationHash,
+                                                 final String connectorVersion)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
+      if (event.getConnectorVersion().equals(connectorVersion)
+          && event.getConfigHash().equals(configurationHash)
+          && event.getActorId().equals(sourceId)) {
+        return getCatalogById(event.getActorCatalogId());
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
+
+    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        ActorCatalogFetchEvent.class)) {
+      actorCatalogFetchEvents.add(event);
+    }
+    return actorCatalogFetchEvents;
+  }
+
+  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
+      throws IOException {
+    try {
+      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
+          ActorCatalog.class));
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
+      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
+        return Optional.of(fetchedCatalog);
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalog> listActorCatalogs()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
+
+    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
+        ActorCatalog.class)) {
+      actorCatalogs.add(event);
+    }
+    return actorCatalogs;
+  }
+
+  public void writeCatalog(final AirbyteCatalog catalog,
+                           final UUID sourceId,
+                           final String configurationHash,
+                           final String connectorVersion)
+      throws JsonValidationException, IOException {
+    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
+    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(catalog).getBytes(
+        Charsets.UTF_8)).toString();
+    ActorCatalog actorCatalog = new ActorCatalog()
+        .withCatalog(Jsons.jsonNode(catalog))
+        .withId(UUID.randomUUID())
+        .withCatalogHash(catalogHash);
+    final Optional<ActorCatalog> existingCatalog = findExistingCatalog(actorCatalog);
+    if (existingCatalog.isPresent()) {
+      actorCatalog = existingCatalog.get();
+    } else {
+      persistence.writeConfig(ConfigSchema.ACTOR_CATALOG,
+          actorCatalog.getId().toString(),
+          actorCatalog);
+    }
+    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
+        .withActorCatalogId(actorCatalog.getId())
+        .withId(UUID.randomUUID())
+        .withConfigHash(configurationHash)
+        .withConnectorVersion(connectorVersion)
+        .withActorId(sourceId);
+    persistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        actorCatalogFetchEvent.getId().toString(),
+        actorCatalogFetchEvent);
   }
 
   /**

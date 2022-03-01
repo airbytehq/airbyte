@@ -53,6 +53,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -791,10 +792,11 @@ public abstract class DestinationAcceptanceTest {
       throw new WorkerException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
-    dbtConfig.withDbtArguments("docs generate");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt docs generate Failed.");
-    }
+    // This step is commented out because it takes a long time, but is not vital for Airbyte
+    // dbtConfig.withDbtArguments("docs generate");
+    // if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
+    // throw new WorkerException("dbt docs generate Failed.");
+    // }
     runner.close();
   }
 
@@ -1299,5 +1301,72 @@ public abstract class DestinationAcceptanceTest {
           + "Pellentesque elementum vehicula egestas. Sed volutpat velit arcu, at imperdiet sapien consectetur facilisis. Suspendisse porttitor tincidunt interdum. Morbi gravida faucibus tortor, ut rutrum magna tincidunt a. Morbi eu nisi eget dui finibus hendrerit sit amet in augue. Aenean imperdiet lacus enim, a volutpat nulla placerat at. Suspendisse nibh ipsum, venenatis vel maximus ut, fringilla nec felis. Sed risus mi, egestas quis quam ullamcorper, pharetra vestibulum diam.\n"
           + "\n"
           + "Praesent finibus scelerisque elit, accumsan condimentum risus mattis vitae. Donec tristique hendrerit facilisis. Curabitur metus purus, venenatis non elementum id, finibus eu augue. Quisque posuere rhoncus ligula, et vehicula erat pulvinar at. Pellentesque vel quam vel lectus tincidunt congue quis id sapien. Ut efficitur mauris vitae pretium iaculis. Aliquam consectetur iaculis nisi vitae laoreet. Integer vel odio quis diam mattis tempor eget nec est. Donec iaculis facilisis neque, at dictum magna vestibulum ut. Sed malesuada non nunc ac consequat. Maecenas tempus lectus a nisl congue, ac venenatis diam viverra. Nam ac justo id nulla iaculis lobortis in eu ligula. Vivamus et ligula id sapien efficitur aliquet. Curabitur est justo, tempus vitae mollis quis, tincidunt vitae felis. Vestibulum molestie laoreet justo, nec mollis purus vulputate at.";
+
+  protected boolean supportBasicDataTypeTest() {
+    return false;
+  }
+
+  protected boolean supportArrayDataTypeTest() {
+    return false;
+  }
+
+  protected boolean supportObjectDataTypeTest() {
+    return false;
+  }
+
+  private boolean checkTestCompatibility(final DataTypeTestArgumentProvider.TestCompatibility testCompatibility) {
+    return testCompatibility.isTestCompatible(supportBasicDataTypeTest(), supportArrayDataTypeTest(), supportObjectDataTypeTest());
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
+    if (!checkTestCompatibility(testCompatibility))
+      return;
+
+    final AirbyteCatalog catalog = readCatalogFromFile(catalogFilename);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
+
+    if (supportsNormalization()) {
+      LOGGER.info("Normalization is supported! Run test with normalization.");
+      runAndCheckWithNormalization(messages, configuredCatalog, catalog);
+    } else {
+      LOGGER.info("Normalization is not supported! Run test without normalization.");
+      runAndCheckWithoutNormalization(messages, configuredCatalog, catalog);
+    }
+  }
+
+  private AirbyteCatalog readCatalogFromFile(String catalogFilename) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+  }
+
+  private List<AirbyteMessage> readMessagesFromFile(String messagesFilename) throws IOException {
+    return MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+  }
+
+  private void runAndCheckWithNormalization(final List<AirbyteMessage> messages,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final AirbyteCatalog catalog)
+      throws Exception {
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, getDefaultSchema(config));
+    assertSameMessages(messages, actualMessages, true);
+  }
+
+  private void runAndCheckWithoutNormalization(final List<AirbyteMessage> messages,
+                                               final ConfiguredAirbyteCatalog configuredCatalog,
+                                               final AirbyteCatalog catalog)
+      throws Exception {
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));
+  }
 
 }
