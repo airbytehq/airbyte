@@ -2910,9 +2910,9 @@ components:
     OperationIdRequestBody:
       type: object
       required:
-        - OperationId
+        - operationId
       properties:
-        OperationId:
+        operationId:
           $ref: "#/components/schemas/OperationId"
     OperationCreate:
       type: object
