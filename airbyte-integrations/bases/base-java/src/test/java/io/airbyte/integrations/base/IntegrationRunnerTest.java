@@ -241,14 +241,13 @@ class IntegrationRunnerTest {
         + Jsons.serialize(message2) + "\n"
         + Jsons.serialize(stateMessage)).getBytes()));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
-
-    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message2);
-    inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
-    inOrder.verify(airbyteMessageConsumerMock).close();
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message2);
+      inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
+    }
   }
 
   @Test
@@ -267,15 +266,13 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes()));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
-
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
-
-    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-    inOrder.verify(airbyteMessageConsumerMock).close();
-    inOrder.verifyNoMoreInteractions();
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verifyNoMoreInteractions();
+    }
   }
 
 }

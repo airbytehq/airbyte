@@ -4,11 +4,7 @@
 
 The Salesforce source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-The Connector supports `Custom Fields` for each of their available streams
-
-### Output schema
-
-Several output streams are available from this source. A list of these streams can be found below in the [Streams](salesforce.md#streams) section.
+The Connector supports replicating both standard and custom Salesforce objects.
 
 ### Features
 
@@ -20,9 +16,7 @@ Several output streams are available from this source. A list of these streams c
 | Namespaces | No |
 
 #### Incremental Deletes Sync
-We can retrieve deleted records in Salesforce. It is available only for streams with the `IsDeleted` field in the schema. 
-If the record was deleted, Salesforce set `IsDeleted=True` and in the next incremental sync, we read this record.
-In case, when the record was created, synced, then updated and deleted, synced one more time, we retrieve the record with updated data and `IsDeleted=True`.
+This connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.  
 
 ### Performance considerations
 
@@ -30,18 +24,41 @@ The connector is restricted by daily Salesforce rate limiting.
 The connector uses as much rate limit as it can every day, then ends the sync early with success status and continues the sync from where it left the next time.
 Note that, picking up from where it ends will work only for incremental sync.
 
-## Getting started
+## Getting Started (Airbyte Cloud)
+#### Sandbox accounts
+
+If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
+
+If this is Greek to you, then you are likely not using a sandbox account.
 
 ### Requirements
 
 * Salesforce Account
-* Salesforce OAuth credentials
 * Dedicated Salesforce user (optional)
 
-**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
+**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
 
 ### Setup guide
 
+1. Toggle whether your Salesforce account is a Sandbox account or a live account.  
+2. Click `Authenticate your Salesforce account` to sign in with Salesforce and authorize your account.
+3. Fill in the rest of the details.
+4. You should be ready to sync data. 
+
+## Getting started (Airbyte OSS) 
+### Requirements
+* Salesforce Account
+* Salesforce OAuth credentials
+* Dedicated Salesforce user (optional)
+
+**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
+
+### Setup guide
+
+#### Sandbox accounts
+If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
+
+If this is Greek to you, then you are likely not using a sandbox account.
 We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
 
 Suggested edits:
@@ -49,6 +66,7 @@ Suggested edits:
 1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`. 
 2. When running a `curl` command, always run it with the `-L` option to follow any redirects.
 
+<<<<<<< HEAD
 #### is\_sandbox
 
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then the value is false. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then the value should be true. If this is Greek to you, then this value should probably be false.
@@ -67,14 +85,15 @@ This parameter allows you to specify any fields that you need to be excluded fro
 
 This parameter allows you to specify any Salesforce data types that you desire to exclude from all streams on this source, e.g. `encryptedstring` `base64`. 
 
+=======
+>>>>>>> master
 ## Streams
 
-**Note**: The connector supports reading not only standard streams, but also reading `Custom Objects`.
+**Note**: The connector supports reading both standard streams and Custom Objects from Salesforce.
 
 We fetch and handle all the possible & available streams dynamically based on:
-- User Role & Permissions to read & fetch objects and their data (administration question);
-- Whether or not, the stream has the queryable property is set to true, which means it's available to fetch the data, otherwise we will hit the 400 - bad request, or 503 - forbidden in response;
-- No other restrictions applied, so we should have the full list of available streams as much as possible (both standard objects & custom ones along with standard and custom fields).
+- User Role & Permissions to read & fetch objects and their data
+- Whether or not the stream has the queryable property set to true. Queryable streams are available to be fetched via the API. If you cannot see your object available via Airbyte, please ensure it is API-accessible to the user you used for authenticating into Airbyte  
 
 **Note**: Using the BULK API is not possible to receive data from the following streams:
 
@@ -102,7 +121,9 @@ We fetch and handle all the possible & available streams dynamically based on:
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
 |:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.24  | 2022-02-24 | [9931](https://github.com/airbytehq/airbyte/pull/9931) | Added two optional parameters: `exclude_fields` and `exclude_types`                                                                                                        |
+| 1.0.2   | 2022-03-01 | [9931](https://github.com/airbytehq/airbyte/pull/9931) | Added two optional parameters: `exclude_fields` and `exclude_types`                                                                                                        |
+| 1.0.1   | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
+| 1.0.0   | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
 | 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |
 | 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012) | Increase CSV field_size_limit                                                                                                    |
 | 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |

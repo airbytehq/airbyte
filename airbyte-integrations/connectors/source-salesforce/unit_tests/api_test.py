@@ -4,7 +4,6 @@
 
 import csv
 import io
-import json
 import re
 from unittest.mock import Mock
 
@@ -12,6 +11,7 @@ import pytest
 import requests_mock
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from conftest import generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
@@ -24,87 +24,8 @@ from source_salesforce.streams import (
 )
 
 
-@pytest.fixture(scope="module")
-def configured_catalog():
-    with open("unit_tests/configured_catalog.json") as f:
-        data = json.loads(f.read())
-    return ConfiguredAirbyteCatalog.parse_obj(data)
-
-
-@pytest.fixture(scope="module")
-def state():
-    state = {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
-    return state
-
-
-@pytest.fixture(scope="module")
-def stream_config():
-    """Generates streams settings for BULK logic"""
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "start_date": "2010-01-18T21:18:20Z",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
-
-
-@pytest.fixture(scope="module")
-def stream_config_date_format():
-    """Generates streams settings with `start_date` in format YYYY-MM-DD"""
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "start_date": "2010-01-18",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
-
-
-@pytest.fixture(scope="module")
-def stream_config_without_start_date():
-    """Generates streams settings for REST logic without start_date"""
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
-
-
-def _stream_api(stream_config, describe_response_data=None):
-    sf_object = Salesforce(**stream_config)
-    sf_object.login = Mock()
-    sf_object.access_token = Mock()
-    sf_object.instance_url = "https://fase-account.salesforce.com"
-
-    response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}]}
-    if describe_response_data:
-        response_data = describe_response_data
-    sf_object.describe = Mock(return_value=response_data)
-    return sf_object
-
-
-@pytest.fixture(scope="module")
-def stream_api(stream_config):
-    return _stream_api(stream_config)
-
-
-@pytest.fixture(scope="module")
-def stream_api_v2(stream_config):
-    describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "BillingAddress", "type": "address"}]}
-    return _stream_api(stream_config, describe_response_data=describe_response_data)
-
-
-def _generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
-
-
 def test_bulk_sync_creation_failed(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
         m.register_uri("POST", stream.path(), status_code=400, json=[{"message": "test_error"}])
         with pytest.raises(HTTPError) as err:
@@ -117,7 +38,7 @@ def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
     """
     stream_name = "AcceptedEventRelation"
-    stream = _generate_stream(stream_name, stream_config, stream_api)
+    stream = generate_stream(stream_name, stream_config, stream_api)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
@@ -127,7 +48,7 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     in that case REST API stream will be used for it.
     """
     stream_name = "Account"
-    stream = _generate_stream(stream_name, stream_config, stream_api_v2)
+    stream = generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
@@ -137,7 +58,7 @@ def test_stream_has_state_rest_api_should_be_used(stream_config, stream_api):
     """
     stream_name = "ActiveFeatureLicenseMetric"
     state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
-    stream = _generate_stream(stream_name, stream_config, stream_api, state=state)
+    stream = generate_stream(stream_name, stream_config, stream_api, state=state)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
@@ -147,13 +68,13 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
     """
     stream_name = "ActiveFeatureLicenseMetric"
     state = {"other_stream": {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
-    stream = _generate_stream(stream_name, stream_config, stream_api, state=state)
+    stream = generate_stream(stream_name, stream_config, stream_api, state=state)
     assert isinstance(stream, BulkSalesforceStream)
 
 
 @pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
 def test_bulk_sync_pagination(item_number, stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     test_ids = [i for i in range(1, item_number)]
     pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
     if not pages:
@@ -190,7 +111,7 @@ def _get_result_id(stream):
 
 
 def test_bulk_sync_successful(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         m.register_uri("GET", stream.path() + f"/{job_id}", [{"json": {"state": "JobComplete"}}])
@@ -198,7 +119,7 @@ def test_bulk_sync_successful(stream_config, stream_api):
 
 
 def test_bulk_sync_successful_long_response(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         m.register_uri(
@@ -217,7 +138,7 @@ def test_bulk_sync_successful_long_response(stream_config, stream_api):
 # this test tries to check a job state 17 times with +-1second for very one
 @pytest.mark.timeout(17)
 def test_bulk_sync_successful_retry(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
 
     with requests_mock.Mocker() as m:
@@ -232,7 +153,7 @@ def test_bulk_sync_successful_retry(stream_config, stream_api):
 
 @pytest.mark.timeout(30)
 def test_bulk_sync_failed_retry(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
@@ -260,26 +181,26 @@ def test_stream_start_date(
     stream_config_without_start_date,
 ):
     if start_date_provided:
-        stream = _generate_stream(stream_name, stream_config, stream_api)
+        stream = generate_stream(stream_name, stream_config, stream_api)
     else:
-        stream = _generate_stream(stream_name, stream_config_without_start_date, stream_api)
+        stream = generate_stream(stream_name, stream_config_without_start_date, stream_api)
 
     assert stream.start_date == expected_start_date
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
-    stream: IncrementalSalesforceStream = _generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
+    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
     assert stream.start_date == "2010-01-18T00:00:00Z"
 
 
 def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
-    stream: IncrementalSalesforceStream = _generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
+    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
 
 
 def test_download_data_filter_null_bytes(stream_config, stream_api):
     job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
-    stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
@@ -289,57 +210,6 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
         res = list(stream.download_data(url=job_full_url))
         assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": "false"})]
-
-
-@pytest.mark.parametrize(
-    "streams_criteria,predicted_filtered_streams",
-    [
-        ([{"criteria": "exacts", "value": "Account"}], ["Account"]),
-        (
-            [{"criteria": "not exacts", "value": "CustomStreamHistory"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream"],
-        ),
-        ([{"criteria": "starts with", "value": "lead"}], ["Leads", "LeadHistory"]),
-        (
-            [{"criteria": "starts not with", "value": "custom"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
-        ),
-        ([{"criteria": "ends with", "value": "story"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
-        ([{"criteria": "ends not with", "value": "s"}], ["Account", "LeadHistory", "OrderHistory", "CustomStream", "CustomStreamHistory"]),
-        ([{"criteria": "contains", "value": "applicat"}], ["AIApplications"]),
-        ([{"criteria": "contains", "value": "hist"}], ["LeadHistory", "OrderHistory", "CustomStreamHistory"]),
-        (
-            [{"criteria": "not contains", "value": "stream"}],
-            ["Account", "AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory"],
-        ),
-        (
-            [{"criteria": "not contains", "value": "Account"}],
-            ["AIApplications", "Leads", "LeadHistory", "Orders", "OrderHistory", "CustomStream", "CustomStreamHistory"],
-        ),
-    ],
-)
-def test_discover_with_streams_criteria_param(streams_criteria, predicted_filtered_streams, stream_config):
-    updated_config = {**stream_config, **{"streams_criteria": streams_criteria}}
-    sf_object = Salesforce(**stream_config)
-    sf_object.login = Mock()
-    sf_object.access_token = Mock()
-    sf_object.instance_url = "https://fase-account.salesforce.com"
-    sf_object.describe = Mock(
-        return_value={
-            "sobjects": [
-                {"name": "Account", "queryable": True},
-                {"name": "AIApplications", "queryable": True},
-                {"name": "Leads", "queryable": True},
-                {"name": "LeadHistory", "queryable": True},
-                {"name": "Orders", "queryable": True},
-                {"name": "OrderHistory", "queryable": True},
-                {"name": "CustomStream", "queryable": True},
-                {"name": "CustomStreamHistory", "queryable": True},
-            ]
-        }
-    )
-    filtered_streams = sf_object.get_validated_streams(config=updated_config)
-    assert sorted(filtered_streams.keys()) == sorted(predicted_filtered_streams)
 
 
 def test_check_connection_rate_limit(stream_config):
@@ -370,8 +240,8 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    stream_1: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api)
-    stream_2: BulkIncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api)
+    stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+    stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
     streams = [stream_1, stream_2]
     configure_request_params_mock(stream_1, stream_2)
 
@@ -427,8 +297,8 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
     Next streams should not be executed.
     """
 
-    stream_1: IncrementalSalesforceStream = _generate_stream("Account", stream_config, stream_api, state=state)
-    stream_2: IncrementalSalesforceStream = _generate_stream("Asset", stream_config, stream_api, state=state)
+    stream_1: IncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api, state=state)
+    stream_2: IncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api, state=state)
 
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
@@ -487,28 +357,11 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
         assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-17"
 
 
-def test_discover_only_queryable(stream_config):
-    sf_object = Salesforce(**stream_config)
-    sf_object.login = Mock()
-    sf_object.access_token = Mock()
-    sf_object.instance_url = "https://fase-account.salesforce.com"
-    sf_object.describe = Mock(
-        return_value={
-            "sobjects": [
-                {"name": "Account", "queryable": True},
-                {"name": "Leads", "queryable": False},
-            ]
-        }
-    )
-    filtered_streams = sf_object.get_validated_streams(config=stream_config)
-    assert list(filtered_streams.keys()) == ["Account"]
-
-
 def test_pagination_rest(stream_config, stream_api):
     stream_name = "ActiveFeatureLicenseMetric"
     state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
 
-    stream: SalesforceStream = _generate_stream(stream_name, stream_config, stream_api, state=state)
+    stream: SalesforceStream = generate_stream(stream_name, stream_config, stream_api, state=state)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
@@ -734,3 +587,9 @@ def test_schema_with_user_excluded_types(exclude_types, predicted_fields, stream
     returned_properties = json_schema.get("properties", {})
     schema_fields = returned_properties.keys()
     assert len(schema_fields) == len(predicted_fields)
+
+
+def test_convert_to_standard_instance(stream_config, stream_api):
+    bulk_stream = generate_stream("Account", stream_config, stream_api)
+    rest_stream = bulk_stream.get_standard_instance()
+    assert isinstance(rest_stream, IncrementalSalesforceStream)

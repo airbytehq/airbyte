@@ -16,6 +16,7 @@ import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormal
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithInvalidArrayType;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithReferenceDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -71,12 +72,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class BigQueryDenormalizedGscDestinationTest {
+class BigQueryDenormalizedGcsDestinationTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final Set<String> AIRBYTE_METADATA_FIELDS = Set.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedGscDestinationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedGcsDestinationTest.class);
 
   private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
@@ -276,8 +277,11 @@ class BigQueryDenormalizedGscDestinationTest {
         Field.of("updated_at", StandardSQLTypeName.TIMESTAMP),
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+    final Schema actualSchema = BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema();
 
-    assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
+    assertNotNull(actualSchema);
+    actualSchema.getFields().forEach(actualField -> assertEquals(expectedSchema.getFields().get(actualField.getName()),
+        Field.of(actualField.getName(), actualField.getType())));
   }
 
   @Test

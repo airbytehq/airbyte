@@ -7,6 +7,13 @@
     "required": ["client_id", "client_secret", "refresh_token"],
     "additionalProperties": true,
     "properties": {
+      "is_sandbox": {
+        "title": "Sandbox",
+        "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as false. We provide more info on this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#is_sandbox\">docs</a>.",
+        "type": "boolean",
+        "default": false,
+        "order": 1
+      },
       "auth_type": {
         "type": "string",
         "const": "Client"
@@ -15,21 +22,21 @@
         "title": "Client ID",
         "description": "The Client ID of your Salesforce developer application.",
         "type": "string",
-        "order": 100
+        "order": 2
       },
       "client_secret": {
         "title": "Client Secret",
         "description": "The Client Secret of your Salesforce developer application.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 101
+        "order": 3
       },
       "refresh_token": {
         "title": "Refresh Token",
         "description": "Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow this <a href=\"https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b\">guide</a> to retrieve it.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 102
+        "order": 4
       },
       "start_date": {
         "title": "Start Date",
@@ -37,14 +44,7 @@
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "examples": ["2021-07-25", "2021-07-25T00:00:00Z"],
-        "order": 103
-      },
-      "is_sandbox": {
-        "title": "Sandbox",
-        "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as false. We provide more info on this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#is_sandbox\">docs</a>.",
-        "type": "boolean",
-        "default": false,
-        "order": 104
+        "order": 5
       },
       "streams_criteria": {
         "type": "array",
@@ -65,19 +65,19 @@
                 "not contains",
                 "not exacts"
               ],
-              "default": "contains",
-              "order": 201
+              "order": 1,
+              "default": "contains"
             },
             "value": {
               "type": "string",
               "title": "Search value",
-              "order": 202
+              "order": 2
             }
           }
         },
-        "title": "Streams filter criteria",
-        "description": "Add selection criteria for streams to get only streams that are relevant to you",
-        "order": 110
+        "title": "Salesforce Object filtering criteria (Optional)",
+        "description": "Add selection criteria for streams to read only the Salesforce objects which are relevant to you.",
+        "order": 6
       },
       "exclude_fields": {
         "title": "Fields to Exclude",
@@ -88,7 +88,7 @@
           "type": "string",
           "pattern": "^[A-Za-z0-9_]+\\.[A-Za-z0-9_]+$"
         },
-        "order": 120
+        "order": 7
       },
       "exclude_types": {
         "title": "Data Types to Exclude",
@@ -98,7 +98,7 @@
         "items": {
           "type": "string"
         },
-        "order": 130
+        "order": 8
       }
     }
   },
