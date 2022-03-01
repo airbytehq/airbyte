@@ -215,36 +215,36 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class Accounts(GoogleAdsStream):
+class Accounts(IncrementalGoogleAdsStream):
     """
     Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
     """
 
-    primary_key = "customer.id"
+    primary_key = ["customer.id", "segments.date"]
 
 
-class Campaigns(GoogleAdsStream):
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
     """
 
-    primary_key = "campaign.id"
+    primary_key = ["campaign.id", "segments.date"]
 
 
-class AdGroups(GoogleAdsStream):
+class AdGroups(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
     """
 
-    primary_key = "ad_group.id"
+    primary_key = ["ad_group.id", "segments.date"]
 
 
-class AdGroupAds(GoogleAdsStream):
+class AdGroupAds(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
     """
 
-    primary_key = "ad_group_ad.ad.id"
+    primary_key = ["ad_group_ad.ad.id", "segments.date"]
 
 
 class AccountPerformanceReport(IncrementalGoogleAdsStream):
@@ -306,5 +306,6 @@ class ClickView(IncrementalGoogleAdsStream):
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
 
+    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
     range_days = 1

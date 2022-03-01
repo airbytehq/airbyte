@@ -165,7 +165,7 @@ public class ServerApp implements ServerRunnable {
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = jobsDatabaseInstance.getInitialized();
