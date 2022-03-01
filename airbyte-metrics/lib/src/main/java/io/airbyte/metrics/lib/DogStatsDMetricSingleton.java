@@ -62,7 +62,7 @@ public class DogStatsDMetricSingleton {
    * @param amt to adjust.
    * @param tags
    */
-  public static void count(final AirbyteMetricsRegistry metric, final double amt, final String... tags) {
+  public static void count(final MetricsRegistry metric, final double amt, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -70,7 +70,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("publishing count, name: {}, value: {}", metric.metricName, amt);
+      log.info("publishing count, name: {}, value: {}, tags: {}", metric.metricName, amt, tags);
       statsDClient.count(metric.metricName, amt, tags);
     }
   }
@@ -82,7 +82,7 @@ public class DogStatsDMetricSingleton {
    * @param val to record.
    * @param tags
    */
-  public static void gauge(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void gauge(final MetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -90,7 +90,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("publishing gauge, name: {}, value: {}", metric, val);
+      log.info("publishing gauge, name: {}, value: {}, tags: {}", metric, val, tags);
       statsDClient.gauge(metric.metricName, val, tags);
     }
   }
@@ -109,7 +109,7 @@ public class DogStatsDMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public static void recordTimeLocal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void recordTimeLocal(final MetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -117,7 +117,7 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("recording histogram, name: {}, value: {}", metric.metricName, val);
+      log.info("recording histogram, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
       statsDClient.histogram(metric.metricName, val, tags);
     }
   }
@@ -130,7 +130,7 @@ public class DogStatsDMetricSingleton {
    * @param val of time to record.
    * @param tags
    */
-  public static void recordTimeGlobal(final AirbyteMetricsRegistry metric, final double val, final String... tags) {
+  public static void recordTimeGlobal(final MetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -138,20 +138,20 @@ public class DogStatsDMetricSingleton {
         return;
       }
 
-      log.info("recording distribution, name: {}, value: {}", metric.metricName, val);
+      log.info("recording distribution, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
       statsDClient.distribution(metric.metricName, val, tags);
     }
   }
 
   /**
-   * Wrapper of {@link #recordTimeGlobal(AirbyteMetricsRegistry, double, String...)} with a runnable
-   * for convenience.
+   * Wrapper of {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a runnable for
+   * convenience.
    *
    * @param metric
    * @param runnable to time
    * @param tags
    */
-  public static void recordTimeGlobal(final AirbyteMetricsRegistry metric, final Runnable runnable, final String... tags) {
+  public static void recordTimeGlobal(final MetricsRegistry metric, final Runnable runnable, final String... tags) {
     final long start = System.currentTimeMillis();
     runnable.run();
     final long end = System.currentTimeMillis();

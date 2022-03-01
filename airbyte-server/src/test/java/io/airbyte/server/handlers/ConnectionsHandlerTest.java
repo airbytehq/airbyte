@@ -64,6 +64,8 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConnectionsHandlerTest {
 
@@ -293,8 +295,12 @@ class ConnectionsHandlerTest {
 
     }
 
-    @Test
-    void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testUpdateConnection(boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
+      when(featureFlags.usesNewScheduler())
+          .thenReturn(useNewScheduler);
+
       final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
       catalog.getStreams().get(0).getStream().setName("azkaban_users");
       catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
@@ -349,6 +355,10 @@ class ConnectionsHandlerTest {
       assertEquals(expectedConnectionRead, actualConnectionRead);
 
       verify(configRepository).writeStandardSync(updatedStandardSync);
+
+      if (useNewScheduler) {
+        verify(temporalWorkflowHandler).update(connectionUpdate);
+      }
     }
 
     @Test

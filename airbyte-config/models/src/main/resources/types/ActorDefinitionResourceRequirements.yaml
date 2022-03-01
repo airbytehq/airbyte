@@ -4,7 +4,8 @@
 title: ActorDefinitionResourceRequirements
 description: actor definition specific resource requirements
 type: object
-additionalProperties: true
+# set to false because we need the validations on seeds to be strict. otherwise, we will just add whatever is in the seed file into the db.
+additionalProperties: false
 properties:
   default:
     description: if set, these are the requirements that should be set for ALL jobs run for this actor definition.
@@ -17,8 +18,10 @@ definitions:
   JobTypeResourceLimit:
     description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
     type: object
+    # set to false because we need the validations on seeds to be strict. otherwise, we will just add whatever is in the seed file into the db.
+    additionalProperties: false
     required:
-      - jobtype
+      - jobType
       - resourceRequirements
     properties:
       jobType:
