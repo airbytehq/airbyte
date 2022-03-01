@@ -97,26 +97,29 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-    if (releaseStages == null) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+      if (stage != null) {
+        DogStatsDMetricSingleton.count(MetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+      }
     }
   }
 
   @Override
   public AttemptCreationOutput createNewAttempt(final AttemptCreationInput input) throws RetryableException {
     try {
-      final Job createdJob = jobPersistence.getJob(input.getJobId());
+      final long jobId = input.getJobId();
+      final Job createdJob = jobPersistence.getJob(jobId);
 
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
       final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-      final int persistedAttemptId = jobPersistence.createAttempt(input.getJobId(), logFilePath);
+      final int persistedAttemptId = jobPersistence.createAttempt(jobId, logFilePath);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
 
       LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-
       return new AttemptCreationOutput(persistedAttemptId);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -136,6 +139,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
       jobPersistence.succeedAttempt(jobId, attemptId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.successJob(job);
@@ -164,14 +168,18 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void attemptFailure(final AttemptFailureInput input) {
     try {
-      jobPersistence.failAttempt(input.getJobId(), input.getAttemptId());
-      jobPersistence.writeAttemptFailureSummary(input.getJobId(), input.getAttemptId(), input.getAttemptFailureSummary());
+      final int attemptId = input.getAttemptId();
+      final long jobId = input.getJobId();
+
+      jobPersistence.failAttempt(jobId, attemptId);
+      jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(input.getJobId(), input.getAttemptId(), jobOutput);
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
       }
 
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -188,7 +196,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       final Job job = jobPersistence.getJob(jobId);
       trackCompletion(job, JobStatus.FAILED);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
     } catch (final IOException e) {
       throw new RetryableException(e);
@@ -207,12 +215,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-    if (releaseStages == null) {
+    if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
-      DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      if (stage != null) {
+        DogStatsDMetricSingleton.count(metric, 1, MetricTags.getReleaseStage(stage));
+      }
     }
   }
 

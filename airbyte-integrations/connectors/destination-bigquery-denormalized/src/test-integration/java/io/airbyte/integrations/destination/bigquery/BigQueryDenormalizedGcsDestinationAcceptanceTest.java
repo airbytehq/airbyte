@@ -49,9 +49,9 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDenormalizedGscDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedGscDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedGcsDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 

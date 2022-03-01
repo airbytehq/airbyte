@@ -30,6 +30,18 @@ import com.google.api.client.util.Preconditions;
  */
 public enum MetricsRegistry {
 
+  ATTEMPT_CREATED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "attempt_created_by_release_stage",
+      "increments when a new attempt is created. attempts are double counted as this is tagged by release stage."),
+  ATTEMPT_FAILED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "attempt_failed_by_release_stage",
+      "increments when an attempt fails. attempts are double counted as this is tagged by release stage."),
+  ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
+      MetricEmittingApps.WORKER,
+      "attempt_succeeded_by_release_stage",
+      "increments when an attempts succeeds. attempts are double counted as this is tagged by release stage."),
   JOB_CANCELLED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "job_cancelled_by_release_stage",
