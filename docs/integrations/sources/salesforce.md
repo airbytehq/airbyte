@@ -96,7 +96,7 @@ Suggested edits:
 
 ## Streams
 
-**Note**: The connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate streams. 
+**Note**: The connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. 
 
 See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm). 
 
