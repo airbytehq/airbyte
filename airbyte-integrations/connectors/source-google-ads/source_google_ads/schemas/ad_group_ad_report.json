@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "ad_group.id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "customer.currency_code": {
       "type": ["null", "string"]
