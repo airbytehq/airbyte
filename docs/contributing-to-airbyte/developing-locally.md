@@ -27,15 +27,8 @@ To start contributing:
 
 ## Build with `gradle`
 
-To compile and build just the platform \(not all the connectors\):
-
-```bash
-SUB_BUILD=PLATFORM ./gradlew build
-```
-
 {% hint style="info" %}
-If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
-some additional environment variables:
+If you're using Mac M1 \(Apple Silicon\) machines, you can run Airbyte locally only in `dev` mode and you need to set these environment variables in order to build Airbyte:
 
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
@@ -43,12 +36,17 @@ export DOCKER_BUILD_ARCH=arm64
 export ALPINE_IMAGE=arm64v8/alpine:3.14
 export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
 export JDK_VERSION=17
-SUB_BUILD=PLATFORM ./gradlew build
 ```
 
 There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
 
 {% endhint %}
+
+To compile and build just the platform \(not all the connectors\):
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+```
 
 This will build all the code and run all the unit tests.
 
