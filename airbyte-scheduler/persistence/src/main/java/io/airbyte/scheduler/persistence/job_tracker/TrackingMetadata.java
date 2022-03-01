@@ -129,13 +129,13 @@ public class TrackingMetadata {
         .flatMap(Optional::stream)
         .map(AttemptFailureSummary::getFailures)
         .flatMap(Collection::stream)
+        .sorted(Comparator.comparing(FailureReason::getTimestamp))
         .toList();
   }
 
   private static ArrayNode failureReasonsListAsJson(final List<FailureReason> failureReasons) {
     return Jsons.arrayNode().addAll(failureReasons
         .stream()
-        .sorted(Comparator.comparing(FailureReason::getTimestamp))
         .map(TrackingMetadata::failureReasonAsJson)
         .toList());
   }

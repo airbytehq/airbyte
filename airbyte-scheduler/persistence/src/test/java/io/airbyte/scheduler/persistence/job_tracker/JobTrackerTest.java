@@ -538,7 +538,9 @@ class JobTrackerTest {
     final Attempt attemptWithNoFailures = getAttemptMock();
     when(attemptWithNoFailures.getFailureSummary()).thenReturn(Optional.empty());
 
-    return List.of(attemptWithSingleFailure, attemptWithMultipleFailures, attemptWithNoFailures);
+    // in non-test cases we shouldn't actually get failures out of order chronologically
+    // this is to verify that we are explicitly sorting the results with tracking failure metadata
+    return List.of(attemptWithMultipleFailures, attemptWithSingleFailure, attemptWithNoFailures);
   }
 
   private Job getJobWithFailuresMock(final ConfigType configType, final long jobId)
