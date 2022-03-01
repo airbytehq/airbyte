@@ -27,7 +27,7 @@ class AppleSearchAdsStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pagination = response.json()["pagination"]
+        pagination = response.json().get("pagination")
 
         if pagination == None:
             return None

@@ -127,9 +127,14 @@ class WithCampaignReportAppleSearchAdsStreamGulpErrors(WithCampaignReportAppleSe
         if response.status_code in [400]:
             # example response:
             # {'data': None, 'pagination': None, 'error': {'errors': [{'messageCode': 'INVALID_INPUT', 'message': 'APPSTORE_SEARCH_TAB CAMPAIGN DOES NOT CONTAIN KEYWORD', 'field': ''}]}}
-            err_body = response.json()["error"]["errors"][0]
-            if re.match(r"DOES NOT CONTAIN KEYWORD", err_body["message"]):
-                return True
+            try:
+                error = response.json().get("error")
+                if error:
+                    err_body = error["errors"][0]
+                    if re.match(r"DOES NOT CONTAIN", err_body["message"]):
+                        return True
+            except Exception as e:
+                return False
 
         return False
 
