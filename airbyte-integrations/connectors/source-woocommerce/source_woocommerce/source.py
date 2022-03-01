@@ -68,8 +68,8 @@ class WoocommerceStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         else:
+            params.update({"after": pendulum.parse(self.start_date).replace(tzinfo=None), "before": pendulum.now().replace(tzinfo=None)})
             params.update({"orderby": self.order_field, "order": "asc"})
-            params = {"after": pendulum.parse(self.start_date).replace(tzinfo=None), "before": pendulum.now().replace(tzinfo=None)}
         
         return params
 
