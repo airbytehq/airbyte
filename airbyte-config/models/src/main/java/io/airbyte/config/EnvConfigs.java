@@ -388,7 +388,8 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
   }
 
-  @Override public int getTemporalRetentionInDays() {
+  @Override
+  public int getTemporalRetentionInDays() {
     return getEnvOrDefault(TEMPORAL_HISTORY_RETENTION_IN_DAYS, DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS);
   }
 
