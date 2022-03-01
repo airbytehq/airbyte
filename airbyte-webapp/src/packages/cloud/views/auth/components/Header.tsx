@@ -7,6 +7,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 import { CloudRoutes } from "../../../cloudRoutes";
+import { useConfig } from "config";
 
 const Links = styled.div`
   width: 100%;
@@ -42,9 +43,11 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = ({ toLogin }) => {
+  const { ui } = useConfig();
+
   return (
     <Links>
-      <BackLink href="https://airbyte.com">
+      <BackLink href={ui.webpageLink}>
         <FontAwesomeIcon icon={faArrowLeft} />
         <TextBlock>Back</TextBlock>
       </BackLink>
