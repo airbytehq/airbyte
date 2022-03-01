@@ -163,7 +163,7 @@ public class MetrisQueriesTest {
         configDb.transaction(
             ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
-        final var res = configDb.query(MetricQueries::oldestPendingJob);
+        final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
         assertEquals(1000, res);
       }
 
@@ -177,7 +177,7 @@ public class MetrisQueriesTest {
         configDb.transaction(
             ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
 
-        final var res = configDb.query(MetricQueries::oldestPendingJob);
+        final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
         assertEquals(0L, res);
       }
 
@@ -210,7 +210,7 @@ public class MetrisQueriesTest {
         configDb.transaction(
             ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
-        final var res = configDb.query(MetricQueries::oldestRunningJob);
+        final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
         assertEquals(1000, res);
       }
 
@@ -224,7 +224,7 @@ public class MetrisQueriesTest {
         configDb.transaction(
             ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
 
-        final var res = configDb.query(MetricQueries::oldestRunningJob);
+        final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
         assertEquals(0L, res);
       }
 

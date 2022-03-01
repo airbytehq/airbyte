@@ -52,6 +52,22 @@ public class ReporterApp {
         e.printStackTrace();
       }
     }, 0, 15, TimeUnit.SECONDS);
+    pollers.scheduleAtFixedRate(() -> {
+      try {
+        final var age = configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
+        DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
+      } catch (final SQLException e) {
+        e.printStackTrace();
+      }
+    }, 0, 15, TimeUnit.SECONDS);
+    pollers.scheduleAtFixedRate(() -> {
+      try {
+        final var age = configDatabase.query(MetricQueries::numberOfPendingJobs);
+        DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+      } catch (final SQLException e) {
+        e.printStackTrace();
+      }
+    }, 0, 15, TimeUnit.SECONDS);
 
     Thread.sleep(1000_000 * 1000);
   }

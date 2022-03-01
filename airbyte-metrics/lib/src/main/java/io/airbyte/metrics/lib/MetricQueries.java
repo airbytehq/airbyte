@@ -56,15 +56,16 @@ public class MetricQueries {
     return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
   }
 
-  public static Long oldestPendingJob(final DSLContext ctx) {
-    return oldestJob(ctx, JobStatus.pending);
+  public static Long oldestPendingJobAgeSecs(final DSLContext ctx) {
+    return oldestJobAgeSecs(ctx, JobStatus.pending);
   }
 
-  public static Long oldestRunningJob(final DSLContext ctx) {
-    return oldestJob(ctx, JobStatus.running);
+  public static Long oldestRunningJobAgeSecs(final DSLContext ctx) {
+    return oldestJobAgeSecs(ctx, JobStatus.running);
   }
 
-  static Long oldestJob(final DSLContext ctx, final JobStatus status) {
+
+  private static Long oldestJobAgeSecs(final DSLContext ctx, final JobStatus status) {
     final var durationSecField = "run_duration_secs";
     final var query = String.format("""
                                     with

@@ -70,12 +70,12 @@ public enum MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_running_jobs",
       "number of running jobs"),
-  OLDEST_PENDING_JOB(MetricEmittingApps.METRICS_REPORTER,
-      "oldest_pending_job",
-      "oldest pending job"),
-  OLDEST_RUNNING_JOB(MetricEmittingApps.METRICS_REPORTER,
-      "oldest_running_job",
-      "oldest running job");
+  OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "oldest_pending_job_age_secs",
+      "oldest pending job in seconds"),
+  OLDEST_RUNNING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "oldest_running_job_age_secs",
+      "oldest running job in seconds");
 
   public final MetricEmittingApp application;
   public final String metricName;
