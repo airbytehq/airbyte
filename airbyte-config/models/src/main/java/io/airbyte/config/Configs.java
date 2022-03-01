@@ -179,6 +179,11 @@ public interface Configs {
   String getTemporalHost();
 
   /**
+   * Define the number of retention days for the temporal history
+   */
+  int getTemporalRetentionInDays();
+
+  /**
    * Define the url where the Airbyte Server is hosted at. Airbyte services use this information.
    * Manipulates the `INTERNAL_API_HOST` variable.
    */

@@ -73,6 +73,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
   public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
@@ -165,6 +166,8 @@ public class EnvConfigs implements Configs {
   public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
 
   public static final String DEFAULT_NETWORK = "host";
+
+  public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -383,6 +386,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getTemporalHost() {
     return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  }
+
+  @Override
+  public int getTemporalRetentionInDays() {
+    return getEnvOrDefault(TEMPORAL_HISTORY_RETENTION_IN_DAYS, DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS);
   }
 
   @Override
@@ -813,6 +821,10 @@ public class EnvConfigs implements Configs {
 
   public long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
+  }
+
+  public int getEnvOrDefault(final String key, final int defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Integer::parseInt, false);
   }
 
   public boolean getEnvOrDefault(final String key, final boolean defaultValue) {

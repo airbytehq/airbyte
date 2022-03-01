@@ -71,7 +71,7 @@ public class TemporalUtils {
 
   public static final String DEFAULT_NAMESPACE = "default";
 
-  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(7);
+  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(configs.getTemporalRetentionInDays());
   private static final String HUMAN_READABLE_WORKFLOW_EXECUTION_TTL =
       DurationFormatUtils.formatDurationWords(WORKFLOW_EXECUTION_TTL.toMillis(), true, true);
 
