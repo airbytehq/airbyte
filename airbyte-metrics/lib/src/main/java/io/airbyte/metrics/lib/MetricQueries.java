@@ -81,7 +81,6 @@ public class MetricQueries {
                                            extract(epoch from run_duration) as %s
                                     from oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
     final var res = ctx.fetch(query);
-    System.out.println(res);
     // unfortunately there are no good Jooq methods for retrieving a single record of a single column
     // forcing the List cast.
     final var duration = res.getValues(durationSecField, Double.class);
