@@ -47,7 +47,7 @@ publishing {
 }
 
 dependencies {
-    implementation 'io.temporal:temporal-sdk:1.6.0'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
 
