@@ -144,7 +144,10 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "string"]
+            "type": ["null", "string", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
           },
           "author_id": {
             "type": ["null", "integer"]
