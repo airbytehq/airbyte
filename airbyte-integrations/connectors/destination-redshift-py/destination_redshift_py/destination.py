@@ -178,7 +178,8 @@ class DestinationRedshiftPy(Destination):
             converter = JsonToTables(stream.stream.json_schema, schema=schema, root_table=stream_name, primary_keys=primary_keys)
             converter.convert()
 
-            self.streams[stream_name] = Stream(name=stream_name, destination_sync_mode=stream.destination_sync_mode, final_tables=converter.tables)
+            sync_mode = stream.destination_sync_mode
+            self.streams[stream_name] = Stream(name=stream_name, destination_sync_mode=sync_mode, final_tables=converter.tables)
 
     def _create_final_tables(self):
         cursor = self._get_connection(autocommit=True).cursor()
