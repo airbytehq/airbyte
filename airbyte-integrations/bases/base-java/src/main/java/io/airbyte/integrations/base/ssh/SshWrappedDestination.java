@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * configuring SSH.
  */
 public class SshWrappedDestination implements Destination {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SshWrappedDestination.class);
 
   private final Destination delegate;
