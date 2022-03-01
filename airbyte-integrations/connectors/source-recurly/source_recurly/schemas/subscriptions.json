@@ -8,7 +8,7 @@
     },
     "uuid": {
       "type": ["null", "string"],
-      "maxLength": 13
+      "maxLength": 32
     },
     "account": {
       "type": "object",
