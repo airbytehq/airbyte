@@ -6,8 +6,7 @@ The following technologies are required to build Airbyte locally.
 2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
-5. `Postgresql`
-6. `Jq`
+5. `Jq`
 
 {% hint style="info" %}
 Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
