@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useResetter } from "rest-hooks";
+import { User as FbUser } from "firebase/auth";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
@@ -35,6 +36,9 @@ export type AuthLogin = (values: {
 export type AuthSignUp = (form: {
   email: string;
   password: string;
+  companyName: string;
+  name: string;
+  news: boolean;
 }) => Promise<User | null>;
 
 export type AuthChangeEmail = (
@@ -64,6 +68,26 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
+const TempSignUpValuesProvider = {
+  get: async (
+    currentUser: FbUser
+  ): Promise<{
+    companyName: string;
+    name: string;
+    news: boolean;
+  }> => {
+    const storedData = JSON.parse(currentUser.displayName ?? "");
+
+    return storedData;
+  },
+  save: async (
+    authService: GoogleAuthService,
+    v: { companyName: string; name: string; news: boolean }
+  ) => {
+    return authService.updateProfile(JSON.stringify(v));
+  },
+};
+
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [
     state,
@@ -89,11 +113,14 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
           );
         } catch (err) {
           if (currentUser.email) {
+            const encodedData = await TempSignUpValuesProvider.get(currentUser);
             user = await userService.create({
               authProvider: AuthProviders.GoogleIdentityPlatform,
               authUserId: currentUser.uid,
               email: currentUser.email,
-              name: currentUser.email,
+              name: encodedData.name,
+              companyName: encodedData.companyName,
+              news: encodedData.news,
             });
           }
         }
@@ -158,14 +185,16 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async signUp(form: {
         email: string;
         password: string;
+        companyName: string;
+        name: string;
+        news: boolean;
       }): Promise<User | null> {
         await authService.signUp(form.email, form.password);
-        // const user = await userService.create({
-        //   authProvider: AuthProviders.GoogleIdentityPlatform,
-        //   authUserId: fbUser.user!.uid,
-        //   email: form.email,
-        //   name: form.email,
-        // });
+        await TempSignUpValuesProvider.save(authService, {
+          companyName: form.companyName,
+          name: form.name,
+          news: form.news,
+        });
 
         await authService.sendEmailVerifiedLink();
         return null;
