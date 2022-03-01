@@ -50,4 +50,8 @@ public class MetricQueries {
     return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.pending)).execute();
   }
 
+  public static int numberOfRunningJobs(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+  }
+
 }

@@ -33,7 +33,7 @@ public class ReporterApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
 
-    final var pollers = Executors.newSingleThreadScheduledExecutor();
+    final var pollers = Executors.newScheduledThreadPool(4);
 
     log.info("Starting pollers..");
     pollers.scheduleAtFixedRate(() -> {
@@ -44,7 +44,15 @@ public class ReporterApp {
         e.printStackTrace();
       }
     }, 0, 15, TimeUnit.SECONDS);
-    
+    pollers.scheduleAtFixedRate(() -> {
+      try {
+        final var runningJobs = configDatabase.query(MetricQueries::numberOfRunningJobs);
+        DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
+      } catch (final SQLException e) {
+        e.printStackTrace();
+      }
+    }, 0, 15, TimeUnit.SECONDS);
+
     Thread.sleep(1000_000 * 1000);
   }
 
