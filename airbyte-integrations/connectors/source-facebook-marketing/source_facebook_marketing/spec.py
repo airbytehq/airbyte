@@ -68,7 +68,7 @@ class InsightConfig(BaseModel):
         title="End Date",
         description=(
             "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. "
-            "All data generated between start_date and this date will be replicated. "
+            "All data generated between the start date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
         pattern=DATE_TIME_PATTERN,
