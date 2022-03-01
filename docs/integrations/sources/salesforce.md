@@ -73,15 +73,12 @@ To create a dedicated read only Salesforce user:
 ### Requirements
 * Salesforce Account with Enterprise access or API quota purchased
 * Dedicated read only Salesforce user (optional)
-* Salesforce OAuth credentials (required)
-
-**Note**: We recommend creating a new Salesforce user, restricted, read-only OAuth credentials specifically for Airbyte access. In addition, you can restrict access to only the data and streams you need by creating a profile in Salesforce and assigning it to the user.
+* Salesforce OAuth credentials 
 
 #### Sandbox accounts
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
 
 If this is Greek to you, then you are likely not using a sandbox account.
-
 
 ### Setup guide
 
