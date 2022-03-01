@@ -4,7 +4,7 @@
 title: ResourceRequirements
 description: generic configuration for pod source requirements
 type: object
-additionalProperties: true
+additionalProperties: false
 properties:
   # todo (cgardens) - should be camel case for consistency.
   cpu_request:
