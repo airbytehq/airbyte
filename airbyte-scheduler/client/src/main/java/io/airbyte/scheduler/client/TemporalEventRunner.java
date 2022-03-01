@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.worker_run;
+package io.airbyte.scheduler.client;
 
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
