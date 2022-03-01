@@ -212,6 +212,11 @@ public class ConnectionsHandler {
         new HashSet<>(connectionUpdate.getOperationIds()));
 
     configRepository.writeStandardSync(newConnection);
+
+    if (featureFlags.usesNewScheduler()) {
+      temporalWorkerRunFactory.update(connectionUpdate);
+    }
+
     return buildConnectionRead(connectionUpdate.getConnectionId());
   }
 
