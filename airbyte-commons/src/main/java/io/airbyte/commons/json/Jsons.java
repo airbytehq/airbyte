@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.util.Separators;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -89,6 +90,10 @@ public class Jsons {
 
   public static JsonNode emptyObject() {
     return jsonNode(Collections.emptyMap());
+  }
+
+  public static ArrayNode arrayNode() {
+    return OBJECT_MAPPER.createArrayNode();
   }
 
   public static <T> T object(final JsonNode jsonNode, final Class<T> klass) {
