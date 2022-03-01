@@ -75,6 +75,8 @@ To create a dedicated read only Salesforce user:
 * Dedicated read only Salesforce user (optional)
 * Salesforce OAuth credentials 
 
+### Setup guide
+
 #### Sandbox accounts
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
 
@@ -130,6 +132,7 @@ We fetch and handle all the possible & available streams dynamically based on:
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
 |:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751) | Fix broken link anchor in connector configuration |
 | 1.0.1 | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
 | 1.0.0 | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
 | 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |
