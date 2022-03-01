@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -20,13 +21,18 @@ import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import io.sentry.SpanStatus;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +44,10 @@ import org.slf4j.LoggerFactory;
 public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
+
+  public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
+  public static final int EXIT_THREAD_DELAY_MINUTES = 4 * 60;
+  public static final int FORCED_EXIT_CODE = 2;
 
   private final IntegrationCliParser cliParser;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -76,7 +86,7 @@ public class IntegrationRunner {
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
-    this.validator = jsonSchemaValidator;
+    validator = jsonSchemaValidator;
   }
 
   public void run(final String[] args) throws Exception {
@@ -137,8 +147,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
-        try (messageIterator) {
+        try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
           AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
         }
       }
@@ -147,8 +156,9 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
-        AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+        try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+          AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+        }
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
@@ -162,7 +172,7 @@ public class IntegrationRunner {
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
     final Thread currentThread = Thread.currentThread();
-    try (consumer) {
+    try {
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
@@ -174,15 +184,48 @@ public class IntegrationRunner {
         }
       }
     } finally {
-      for (final Thread runningThread : ThreadUtils.getAllThreads()) {
-        if (!runningThread.getName().equals(currentThread.getName())
-            && runningThread.getThreadGroup().getName().equals(currentThread.getThreadGroup().getName())
-            && !runningThread.isDaemon()) {
-          LOGGER.warn("A child non-daemon thread is still active {} while the main thread is exiting...\n" +
-              "This should probably need to be be cleaned up properly instead: {}", runningThread, runningThread.getStackTrace());
+      final List<Thread> runningThreads = ThreadUtils.getAllThreads()
+          .stream()
+          .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) &&
+              (runningThread.getThreadGroup() == null || runningThread.getThreadGroup().getName().equals(currentThread.getThreadGroup().getName())) &&
+              !runningThread.isDaemon())
+          .collect(Collectors.toList());
+      if (!runningThreads.isEmpty()) {
+        LOGGER.warn("""
+                    The main thread is exiting while children non-daemon threads from a connector are still active.
+                    Ideally, this situation should not happen...
+                    Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+                    The main thread is: {}""", dumpThread(currentThread));
+        final ScheduledExecutorService scheduledExecutorService = Executors
+            .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
+                // this thread executor will create daemon threads, so it does not block exiting if all other active
+                // threads are already stopped.
+                .daemon(true).build());
+        for (final Thread runningThread : runningThreads) {
+          LOGGER.warn("Active non-daemon thread: {}", dumpThread(runningThread));
+          // even though the main thread is already shutting down, we still leave some chances to the children
+          // threads to close properly on its own.
+          // So, we schedule an interrupt hook after a fixed time delay instead...
+          scheduledExecutorService.schedule(runningThread::interrupt, INTERRUPT_THREAD_DELAY_MINUTES, getDelayTimeUnit());
         }
+        scheduledExecutorService.schedule(() -> {
+          LOGGER.error("Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n");
+          // If children threads are ignoring the InterruptException and are still stuck after an even longer
+          // delay, we resort to System.exit.
+          System.exit(FORCED_EXIT_CODE);
+        }, EXIT_THREAD_DELAY_MINUTES, getDelayTimeUnit());
       }
     }
+  }
+
+  protected static TimeUnit getDelayTimeUnit() {
+    // return TimeUnit.MINUTES;
+    return TimeUnit.SECONDS;
+  }
+
+  private static String dumpThread(final Thread thread) {
+    return String.format("%s (%s)\n Thread stacktrace: %s", thread.getName(), thread.getState(),
+        Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
   private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
