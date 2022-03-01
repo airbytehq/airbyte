@@ -216,3 +216,9 @@
   dockerImageTag: 0.0.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/streamr
   icon: streamr.svg
+- name: Scylla
+  destinationDefinitionId: 3dc6f384-cd6b-4be3-ad16-a41450899bf0
+  dockerRepository: airbyte/destination-scylla
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/scylla
+  icon: scylla.svg
