@@ -55,8 +55,11 @@ To create a dedicated read only Salesforce user:
 10. Under the "Administration" section on the left side of the screen, click "Users" > "Users". 
 11. Click "New User"
 12. Fill out the required fields
+
     a. In the "License" field, select `Salesforce`
+    
     b. In the "Profile" field, select `Airbyte Read Only User`
+    
     c. In the "Email" field, make sure to use an email address which you can access (this will be required later to verify the account)
 13. Click "save"
 14. Copy the "Username" field and keep it handy -- you will use it when setting up Airbyte later
