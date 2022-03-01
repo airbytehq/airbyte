@@ -109,7 +109,7 @@ We fetch and handle all the possible & available streams dynamically based on:
 - User Role & Permissions to read & fetch objects and their data
 - Whether or not the stream has the queryable property set to true. Queryable streams are available to be fetched via the API. If you cannot see your object available via Airbyte, please ensure it is API-accessible to the user you used for authenticating into Airbyte  
 
-**Note**: Using the BULK API is not possible to receive data from the following streams due to limitations from the Salesforce API. The connector will sync them via the REST API whcih will occasionally cost more of your API quota:
+**Note**: Using the BULK API is not possible to receive data from the following streams due to limitations from the Salesforce API. The connector will sync them via the REST API which will occasionally cost more of your API quota:
 
 * AcceptedEventRelation
 * AssetTokenEvent
