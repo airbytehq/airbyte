@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from deprecated import deprecated
 import logging
 import logging.config
 import sys
@@ -10,6 +9,7 @@ import traceback
 from typing import List, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
+from deprecated import deprecated
 
 TRACE_LEVEL_NUM = 5
 
@@ -101,6 +101,7 @@ def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
         rendered_message = msg
 
     return log_level, rendered_message
+
 
 @deprecated(version="0.1.47", reason="Use logging.getLogger('airbyte') instead")
 class AirbyteLogger:
