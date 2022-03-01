@@ -12,9 +12,5 @@ RUN pip install .
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-<<<<<<< HEAD
-LABEL io.airbyte.version=0.2.15
-=======
 LABEL io.airbyte.version=0.2.19
->>>>>>> master
 LABEL io.airbyte.name=airbyte/source-github

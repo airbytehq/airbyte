@@ -844,7 +844,8 @@ class Workflows(GithubStream):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         response = response.json().get("workflows")
-        yield response
+        for record in response:
+            yield record
 
 
 class WorkflowRuns(GithubStream):
@@ -861,42 +862,3 @@ class WorkflowRuns(GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
-
-
-# Security streams
-
-
-class RepositoryVulnerabilityAlert(GithubStream):
-    """
-    Get the dependabot alerts of a GitHub repository
-    API documentation: https://docs.github.com/en/graphql/reference/objects#repositoryvulnerabilityalert
-    """
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "graphql"
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        repository = stream_slice["repository"].split("/")[1]
-        organization = stream_slice["repository"].split("/")[0]
-        body = (
-            '{ repository(name: "'
-            + repository
-            + '", owner: "'
-            + organization
-            + '") { vulnerabilityAlerts(first: 100) { nodes { createdAt dismissedAt securityVulnerability {package { name } advisory { description }}}}}}'
-        )
-        payload = {"query": body}
-        return payload
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("data")
-        yield response

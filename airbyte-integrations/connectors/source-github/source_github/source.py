@@ -35,7 +35,6 @@ from .streams import (
     Releases,
     Repositories,
     RepositoryStats,
-    RepositoryVulnerabilityAlert,
     ReviewComments,
     Reviews,
     Stargazers,
@@ -210,5 +209,4 @@ class SourceGithub(AbstractSource):
             Users(**organization_args),
             Workflows(**repository_args),
             WorkflowRuns(**repository_args),
-            RepositoryVulnerabilityAlert(**repository_args),
         ]
