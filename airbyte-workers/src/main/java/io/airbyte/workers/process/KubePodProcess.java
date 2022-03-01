@@ -10,8 +10,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
-import io.airbyte.metrics.lib.AirbyteMetricsRegistry;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricsRegistry;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -32,6 +32,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -300,8 +301,18 @@ public class KubePodProcess extends Process implements KubePod {
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
+    final PodResource<Pod> pod =
+        client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
+    try {
+      pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      LOGGER.error("Init pod not found after 5 minutes");
+      LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
+          podDefinition.getMetadata().getNamespace(),
+          podDefinition.getMetadata().getName(),
+          pod.get().toString());
+      throw e;
+    }
     LOGGER.info("Init container present..");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
@@ -510,7 +521,7 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
-    DogStatsDMetricSingleton.recordTimeGlobal(AirbyteMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
+    DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");

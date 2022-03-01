@@ -2797,9 +2797,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          nullable: true
-          allOf:
-            - $ref: "#/components/schemas/ConnectionSchedule"
+          $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2881,6 +2879,7 @@ components:
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
+      nullable: true
       required:
         - units
         - timeUnit
@@ -2911,9 +2910,9 @@ components:
     OperationIdRequestBody:
       type: object
       required:
-        - OperationId
+        - operationId
       properties:
-        OperationId:
+        operationId:
           $ref: "#/components/schemas/OperationId"
     OperationCreate:
       type: object
