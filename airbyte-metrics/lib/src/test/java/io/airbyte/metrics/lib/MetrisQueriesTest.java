@@ -183,6 +183,53 @@ public class MetrisQueriesTest {
 
     }
 
+    @Nested
+    class oldestRunningJob {
+
+      @AfterEach
+      void tearDown() throws SQLException {
+        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
+      }
+
+      @Test
+      @DisplayName("should return only the running job's age in seconds")
+      void shouldReturnOnlyRunningSeconds() throws SQLException {
+        final var expAgeSecs = 1000;
+        final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+        // oldest pending job
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.running, oldestCreateAt)
+                .execute());
+        // second oldest pending job
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.running, OffsetDateTime.now())
+                .execute());
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::oldestRunningJob);
+        assertEquals(1000, res);
+      }
+
+      @Test
+      @DisplayName("should not error out or return any result if not applicable")
+      void shouldReturnNothingIfNotApplicable() throws SQLException {
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::oldestRunningJob);
+        assertEquals(0L, res);
+      }
+
+    }
+
   }
 
 }

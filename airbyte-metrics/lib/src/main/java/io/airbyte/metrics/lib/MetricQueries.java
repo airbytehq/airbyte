@@ -61,7 +61,7 @@ public class MetricQueries {
   }
 
   public static Long oldestRunningJob(final DSLContext ctx) {
-    return 0L;
+    return oldestJob(ctx, JobStatus.running);
   }
 
   static Long oldestJob(final DSLContext ctx, final JobStatus status) {
