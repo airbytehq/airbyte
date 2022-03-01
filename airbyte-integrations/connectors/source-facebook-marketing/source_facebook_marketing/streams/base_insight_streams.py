@@ -131,6 +131,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     @state.setter
     def state(self, value: Mapping[str, Any]):
         """State setter, will ignore saved state if time_increment is different from previous."""
+        # if the time increment configured for this stream is different from the one in the previous state
+        # then the previous state object is invalid and we should start replicating data from scratch
+        # to achieve this, we skip setting the state 
         if value.get("time_increment", 1) != self.time_increment:
             logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
             return
