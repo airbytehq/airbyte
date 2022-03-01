@@ -111,7 +111,9 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in: 
+   * Example - us-west-1: `xy12345.snowflakecomputing.com`
+   * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
 * **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
 * **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
 * **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
