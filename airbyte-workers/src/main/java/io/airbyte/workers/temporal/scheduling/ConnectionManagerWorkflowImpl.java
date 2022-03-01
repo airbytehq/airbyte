@@ -148,8 +148,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         standardSyncOutput = runChildWorkflow(jobInputs);
 
-        Workflow.sleep(Duration.ofMinutes(1L));
-
         workflowState.setFailed(getFailStatus(standardSyncOutput));
 
         if (workflowState.isFailed()) {
