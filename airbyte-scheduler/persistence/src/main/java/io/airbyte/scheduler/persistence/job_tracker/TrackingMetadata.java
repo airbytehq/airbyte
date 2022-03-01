@@ -4,8 +4,13 @@
 
 package io.airbyte.scheduler.persistence.job_tracker;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -15,7 +20,11 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.util.Strings;
 
@@ -102,9 +111,50 @@ public class TrackingMetadata {
             metadata.put("volume_rows", syncSummary.getRecordsSynced());
           }
         }
+
+        final List<FailureReason> failureReasons = failureReasonsList(attempts);
+        if (!failureReasons.isEmpty()) {
+          metadata.put("failure_reasons", failureReasonsListAsJson(failureReasons).toString());
+          metadata.put("main_failure_reason", failureReasonAsJson(failureReasons.get(0)).toString());
+        }
       }
     }
     return metadata.build();
+  }
+
+  private static List<FailureReason> failureReasonsList(final List<Attempt> attempts) {
+    return attempts
+        .stream()
+        .map(Attempt::getFailureSummary)
+        .flatMap(Optional::stream)
+        .map(AttemptFailureSummary::getFailures)
+        .flatMap(Collection::stream)
+        .sorted(Comparator.comparing(FailureReason::getTimestamp))
+        .toList();
+  }
+
+  private static ArrayNode failureReasonsListAsJson(final List<FailureReason> failureReasons) {
+    return Jsons.arrayNode().addAll(failureReasons
+        .stream()
+        .map(TrackingMetadata::failureReasonAsJson)
+        .toList());
+  }
+
+  private static JsonNode failureReasonAsJson(final FailureReason failureReason) {
+    // we want the json to always include failureOrigin and failureType, even when they are null
+    return Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", failureReason.getFailureOrigin());
+        put("failureType", failureReason.getFailureType());
+        put("internalMessage", failureReason.getInternalMessage());
+        put("externalMessage", failureReason.getExternalMessage());
+        put("metadata", failureReason.getMetadata());
+        put("retryable", failureReason.getRetryable());
+        put("timestamp", failureReason.getTimestamp());
+      }
+
+    });
   }
 
 }
