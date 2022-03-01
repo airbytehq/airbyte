@@ -38,6 +38,7 @@ We welcome community contributions!
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-02-06 | Implement `octavia generate`|
 | 2022-01-25 | Implement `octavia init` + some context checks|
 | 2022-01-19 | Implement `octavia list workspace sources`, `octavia list workspace destinations`, `octavia list workspace connections`|
 | 2022-01-17 | Implement `octavia list connectors source` and `octavia list connectors destinations`|

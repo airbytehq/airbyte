@@ -62,7 +62,7 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations))
+    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null))
         .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
@@ -77,7 +77,7 @@ class DefaultSyncJobFactoryTest {
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations);
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null);
   }
 
 }
