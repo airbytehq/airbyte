@@ -117,9 +117,11 @@ const MainViewRoutes = () => {
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map(
         (r) => (
           <Route
+            key={r}
             path={`${r}/*`}
             element={
               <Navigate
+                // @ts-expect-error state is now unkown, needs proper typing
                 to={location.state?.from ?? `/${CloudRoutes.SelectWorkspace}`}
                 replace
               />

@@ -494,6 +494,29 @@ paths:
                 $ref: "#/components/schemas/SourceReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/clone:
+    post:
+      tags:
+        - source
+      summary: Clone source
+      operationId: cloneSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
     post:
       tags:
@@ -888,6 +911,29 @@ paths:
       responses:
         "204":
           description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/clone:
+    post:
+      tags:
+        - destination
+      summary: Clone destination
+      operationId: cloneDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2078,6 +2124,8 @@ components:
           format: uri
         icon:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionUpdate:
       type: object
       description: Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
@@ -2089,6 +2137,8 @@ components:
           $ref: "#/components/schemas/SourceDefinitionId"
         dockerImageTag:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionRead:
       type: object
       required:
@@ -2116,6 +2166,8 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:
       type: object
       required:
@@ -2347,6 +2399,8 @@ components:
           format: uri
         icon:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionUpdate:
       type: object
       required:
@@ -2357,6 +2411,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         dockerImageTag:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionRead:
       type: object
       required:
@@ -2385,6 +2441,8 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionReadList:
       type: object
       required:
@@ -3429,6 +3487,40 @@ components:
           $ref: "#/components/schemas/ConnectionStateObject"
     ConnectionStateObject:
       type: object
+    ActorDefinitionResourceRequirements:
+      description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
+      type: object
+      additionalProperties: false
+      properties:
+        default:
+          "$ref": "#/definitions/ResourceRequirements"
+        jobSpecific:
+          type: array
+          items:
+            "$ref": "#/definitions/JobTypeResourceLimit"
+    JobTypeResourceLimit:
+      description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
+      type: object
+      additionalProperties: false
+      required:
+        - jobType
+        - resourceRequirements
+      properties:
+        jobType:
+          "$ref": "#/definitions/JobType"
+        resourceRequirements:
+          "$ref": "#/definitions/ResourceRequirements"
+    JobType:
+      description: enum that describes the different types of jobs that the platform runs.
+      type: string
+      enum:
+        - get_spec
+        - check_connection
+        - discover_schema
+        - sync
+        - reset_connection
+        - connection_updater
+        - replicate
     ResourceRequirements:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object

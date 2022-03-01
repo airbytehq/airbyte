@@ -29,6 +29,10 @@ spec:
       {{- if .Values.temporal.affinity }}
       affinity: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.affinity "context" $) | nindent 8 }}
       {{- end }}
+{{- if .Values.temporal.extraInitContainers }}
+      initContainers:
+{{- toYaml .Values.temporal.extraInitContainers | nindent 6 }}
+{{- end }}
       containers:
       - name: airbyte-temporal
         image: {{ include "airbyte.temporalImage" . }}
@@ -64,11 +68,43 @@ spec:
         {{- end }}
         ports:
         - containerPort: 7233
+        {{- if .Values.temporal.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.temporal.containerSecurityContext | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
         {{- if .Values.temporal.resources }}
         resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.temporal.extraVolumeMounts }}
+  {{ toYaml .Values.temporal.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        {{- if .Values.temporal.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - 'test $(ps -ef | grep -v grep | grep temporal-server | wc -l) -eq 1'
+          initialDelaySeconds: {{ .Values.temporal.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.temporal.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.temporal.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.temporal.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.temporal.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.temporal.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - 'test $(ps -ef | grep -v grep | grep temporal-server | wc -l) -eq 1'
+          initialDelaySeconds: {{ .Values.temporal.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.temporal.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.temporal.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.temporal.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.temporal.readinessProbe.failureThreshold }}
         {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
@@ -77,3 +113,6 @@ spec:
           items:
           - key: development.yaml
             path: development.yaml
+      {{- if .Values.temporal.extraVolumes }}
+{{ toYaml .Values.temporal.extraVolumes | nindent 6 }}
+      {{- end }}

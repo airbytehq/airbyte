@@ -30,6 +30,8 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
+import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -61,15 +63,22 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
+  private final ExceptionWrappingDatabase database;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
                           final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence,
+                          final Database database) {
     this.persistence = persistence;
     this.secretsHydrator = secretsHydrator;
     this.longLivedSecretPersistence = longLivedSecretPersistence;
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
+    this.database = new ExceptionWrappingDatabase(database);
+  }
+
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -79,7 +88,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 

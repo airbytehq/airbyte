@@ -113,8 +113,14 @@ class WebBackendConnectionsHandlerTest {
     featureFlags = mock(FeatureFlags.class);
     temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
     connectionHelper = mock(ConnectionHelper.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler, featureFlags, temporalWorkerRunFactory, connectionHelper);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        featureFlags,
+        temporalWorkerRunFactory);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -573,7 +579,7 @@ class WebBackendConnectionsHandlerTest {
         .status(expected.getStatus())
         .schedule(expected.getSchedule());
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
-    when(connectionHelper.buildConnectionRead(any())).thenReturn(connectionRead);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
     when(featureFlags.usesNewScheduler()).thenReturn(true);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
@@ -583,7 +589,8 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
+    verify(connectionsHandler, times(1)).updateConnection(any());
+    final InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
     orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
     orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
