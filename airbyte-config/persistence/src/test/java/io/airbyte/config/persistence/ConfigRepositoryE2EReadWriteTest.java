@@ -12,8 +12,8 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
@@ -34,11 +34,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class ConfigRepositoryE2EReadWriteTest {
 
-  private final StandardWorkspace workspace = new StandardWorkspace()
-      .withWorkspaceId(UUID.randomUUID())
-      .withName("Default workspace")
-      .withSlug("default-workspace")
-      .withInitialSetupComplete(true);
   private static PostgreSQLContainer<?> container;
   private Database database;
   private ConfigRepository configRepository;
@@ -65,7 +60,27 @@ public class ConfigRepositoryE2EReadWriteTest {
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspace(MockData.standardWorkspace());
+    for (final StandardSourceDefinition sourceDefinition : MockData.standardSourceDefinitions()) {
+      configRepository.writeStandardSourceDefinition(sourceDefinition);
+    }
+    for (final StandardDestinationDefinition destinationDefinition : MockData.standardDestinationDefinitions()) {
+      configRepository.writeStandardDestinationDefinition(destinationDefinition);
+    }
+    final ConnectorSpecification specification = new ConnectorSpecification()
+        .withConnectionSpecification(Jsons.deserialize("{}"));
+    for (final SourceConnection connection : MockData.sourceConnections()) {
+      configRepository.writeSourceConnection(connection, specification);
+    }
+    for (final DestinationConnection connection : MockData.destinationConnections()) {
+      configRepository.writeDestinationConnection(connection, specification);
+    }
+    for (final StandardSyncOperation operation : MockData.standardSyncOperations()) {
+      configRepository.writeStandardSyncOperation(operation);
+    }
+    for (final StandardSync sync : MockData.standardSyncs()) {
+      configRepository.writeStandardSync(sync);
+    }
   }
 
   @AfterAll
@@ -74,58 +89,12 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testWorkspaceCountConnections() throws IOException, JsonValidationException {
+  void testWorkspaceCountConnections() throws IOException {
 
-    assertEquals(0, configRepository.countConnectionsForWorkspace(workspace.getWorkspaceId()));
-    assertEquals(0, configRepository.countDestinationsForWorkspace(workspace.getWorkspaceId()));
-    assertEquals(0, configRepository.countSourcesForWorkspace(workspace.getWorkspaceId()));
-
-    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withSourceType(SourceType.DATABASE)
-        .withDockerRepository("docker-repo")
-        .withDockerImageTag("1.2.0")
-        .withName("sourceDefinition");
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-        .withDestinationDefinitionId(UUID.randomUUID())
-        .withDockerRepository("docker-repo")
-        .withDockerImageTag("1.4.0")
-        .withName("destinationDefinition");
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-
-    final int sourceCount = 3;
-    for (int i = 0; i < sourceCount; i++) {
-      final SourceConnection source = new SourceConnection()
-          .withSourceDefinitionId(sourceDefinition.getSourceDefinitionId())
-          .withSourceId(UUID.randomUUID())
-          .withName("SomeConnector")
-          .withWorkspaceId(workspace.getWorkspaceId())
-          .withConfiguration(Jsons.deserialize("{}"));
-      final ConnectorSpecification specification = new ConnectorSpecification()
-          .withConnectionSpecification(Jsons.deserialize("{}"));
-      configRepository.writeSourceConnection(source, specification);
-    }
-
-    final int destinationCount = 4;
-    for (int i = 0; i < destinationCount; i++) {
-      final DestinationConnection destination = new DestinationConnection()
-          .withDestinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
-          .withDestinationId(UUID.randomUUID())
-          .withName("SomeConnector")
-          .withWorkspaceId(workspace.getWorkspaceId())
-          .withConfiguration(Jsons.deserialize("{}"));
-      final ConnectorSpecification specification = new ConnectorSpecification()
-          .withConnectionSpecification(Jsons.deserialize("{}"));
-      configRepository.writeDestinationConnection(destination, specification);
-    }
-
-    final int connectionCount = 0;
-
-    assertEquals(connectionCount, configRepository.countConnectionsForWorkspace(workspace.getWorkspaceId()));
-    assertEquals(destinationCount, configRepository.countDestinationsForWorkspace(workspace.getWorkspaceId()));
-    assertEquals(sourceCount, configRepository.countSourcesForWorkspace(workspace.getWorkspaceId()));
+    final UUID workspaceId = MockData.standardWorkspace().getWorkspaceId();
+    assertEquals(MockData.standardSyncs().size(), configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(MockData.destinationConnections().size(), configRepository.countDestinationsForWorkspace(workspaceId));
+    assertEquals(MockData.sourceConnections().size(), configRepository.countSourcesForWorkspace(workspaceId));
   }
 
 }
