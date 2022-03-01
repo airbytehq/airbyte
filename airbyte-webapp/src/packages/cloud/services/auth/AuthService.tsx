@@ -76,9 +76,17 @@ const TempSignUpValuesProvider = {
     name: string;
     news: boolean;
   }> => {
-    const storedData = JSON.parse(currentUser.displayName ?? "");
+    try {
+      const storedData = JSON.parse(currentUser.displayName ?? "");
 
-    return storedData;
+      return storedData;
+    } catch (err) {
+      return {
+        companyName: "",
+        name: currentUser.email ?? "",
+        news: false,
+      };
+    }
   },
   save: async (
     authService: GoogleAuthService,
