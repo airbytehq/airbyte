@@ -69,4 +69,5 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       throw new RuntimeException(e);
     }
   }
+
 }
