@@ -4,9 +4,9 @@
 
 from abc import ABC
 from base64 import b64encode
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urljoin
-from datetime import datetime
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
+
 
 # Basic full refresh stream
 class ChartmogulStream(HttpStream, ABC):
