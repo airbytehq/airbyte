@@ -30,7 +30,7 @@ class WithCampaignAppleSearchAdsStream(AppleSearchAdsStream, ABC):
                 url=f"{self.url_base}campaigns",
                 headers={
                     "X-AP-Context": f"orgId={self.org_id}",
-                    **self.authenticator.get_auth_header()
+                    **self.my_auth.get_auth_header()
                 },
                 params=params
             )

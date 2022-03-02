@@ -16,14 +16,11 @@ class AppleSearchAdsStream(HttpStream, ABC):
 
     org_id: str
 
-    def __init__(
-        self,
-        org_id: str,
-        authenticator: AppleSearchAdsAuthenticator,
-        **kwargs,
-    ):
-        self.org_id = org_id
+    my_auth: AppleSearchAdsAuthenticator
 
+    def __init__(self, org_id: str, authenticator: AppleSearchAdsAuthenticator, **kwargs):
+        self.org_id = org_id
+        self.my_auth = authenticator
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

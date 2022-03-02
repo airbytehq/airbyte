@@ -33,7 +33,7 @@ class WithCampaignAdgroupAppleSearchAdsStream(WithCampaignAppleSearchAdsStream):
                   url=f"{self.url_base}campaigns/{campaign['campaign_id']}/adgroups",
                   headers={
                       "X-AP-Context": f"orgId={self.org_id}",
-                      **self.authenticator.get_auth_header()
+                      **self.my_auth.get_auth_header()
                   },
                   params=params
               )
