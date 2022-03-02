@@ -8,10 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcceptanceTest {
+
+  private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -58,6 +62,16 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
         .build());
 
     setupBigQuery(bigqueryConfigFromSecretFile);
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
   }
 
 }
