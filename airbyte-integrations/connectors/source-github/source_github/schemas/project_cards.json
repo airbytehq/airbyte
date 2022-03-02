@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": ["null", "string"]
+    },
+    "project_url": {
+      "type": ["null", "string"]
+    },
+    "cards_url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "string"]
+    }
+  }
+}
