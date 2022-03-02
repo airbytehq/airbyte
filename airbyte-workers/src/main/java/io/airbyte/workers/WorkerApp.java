@@ -386,6 +386,7 @@ public class WorkerApp {
         configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
+        configs.connectorSpecificResourceDefaultsEnabled(),
         new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
