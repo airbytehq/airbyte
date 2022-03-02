@@ -139,7 +139,8 @@ def test_stream_slices(patch_base_class):
         client_id=DEFAULT_CONFIG["client_id"],
         team_id=DEFAULT_CONFIG["team_id"],
         key_id=DEFAULT_CONFIG["key_id"],
-        private_key=DEFAULT_CONFIG["private_key"]
+        private_key=DEFAULT_CONFIG["private_key"],
+        algorithm=DEFAULT_CONFIG["algorithm"]
     )
 
     stream = CreativeSets(org_id=DEFAULT_CONFIG["org_id"], authenticator=auth)
