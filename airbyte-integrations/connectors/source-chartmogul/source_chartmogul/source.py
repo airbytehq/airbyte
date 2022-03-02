@@ -75,12 +75,9 @@ class Activities(ChartmogulStream):
 class CustomerCount(ChartmogulStream):
     primary_key = "date"
 
-    # customer-count API requires start date.
-    default_start_date = "2020-01-01"
-
     def __init__(self, start_date: str, interval: str, **kwargs):
         super().__init__(**kwargs)
-        self.start_date = start_date or self.default_start_date
+        self.start_date = start_date
         self.end_date = datetime.now().strftime("%Y-%m-%d")
         self.interval = interval
 

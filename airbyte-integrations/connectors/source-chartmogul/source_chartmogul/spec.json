@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Chartmogul Spec",
     "type": "object",
-    "required": ["api_key", "interval"],
+    "required": ["api_key", "start_date", "interval"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
@@ -22,7 +22,7 @@
       },
       "interval": {
         "type": "string",
-        "description": "Some APIs such as Metrics requires intervals to cluster data.",
+        "description": "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\">Metrics</a> require intervals to cluster data.",
         "enum": ["day", "week", "month", "quarter"],
         "default": "month",
         "order": 2
