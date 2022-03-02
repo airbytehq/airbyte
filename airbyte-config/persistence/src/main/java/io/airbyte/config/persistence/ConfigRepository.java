@@ -4,6 +4,9 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
@@ -32,6 +35,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -77,6 +81,10 @@ public class ConfigRepository {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
+  }
+
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
@@ -84,7 +92,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
@@ -649,6 +656,30 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
         actorCatalogFetchEvent.getId().toString(),
         actorCatalogFetchEvent);
+  }
+
+  public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countSourcesForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countDestinationsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
   /**

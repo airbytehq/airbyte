@@ -952,7 +952,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.8"
+- dockerImage: "airbyte/source-chargebee:0.1.9"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -1205,7 +1205,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.9"
+- dockerImage: "airbyte/source-cockroachdb:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -1648,7 +1648,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.36"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2457,7 +2457,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.27"
+- dockerImage: "airbyte/source-google-ads:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3022,7 +3022,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.7"
+- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports"
     connectionSpecification:
@@ -3281,7 +3281,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.43"
+- dockerImage: "airbyte/source-hubspot:0.1.44"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -5976,7 +5976,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.1"
+- dockerImage: "airbyte/source-pinterest:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
     connectionSpecification:
@@ -6205,7 +6205,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.8"
+- dockerImage: "airbyte/source-postgres:0.4.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6631,9 +6631,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.8"
+- dockerImage: "airbyte/source-redshift:0.3.9"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Redshift Source Spec"
@@ -7064,7 +7064,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.23"
+- dockerImage: "airbyte/source-salesforce:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7077,6 +7077,15 @@
       - "refresh_token"
       additionalProperties: true
       properties:
+        is_sandbox:
+          title: "Sandbox"
+          description: "Whether the app is in a Salesforce sandbox or not. If you\
+            \ do not know what this is, assume it as false. We provide more info on\
+            \ this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#sandbox-accounts\"\
+            >docs</a>."
+          type: "boolean"
+          default: false
+          order: 1
         auth_type:
           type: "string"
           const: "Client"
@@ -7084,11 +7093,13 @@
           title: "Client ID"
           description: "The Client ID of your Salesforce developer application."
           type: "string"
+          order: 2
         client_secret:
           title: "Client Secret"
           description: "The Client Secret of your Salesforce developer application."
           type: "string"
           airbyte_secret: true
+          order: 3
         refresh_token:
           title: "Refresh Token"
           description: "Salesforce Refresh Token used for Airbyte to access your Salesforce\
@@ -7096,6 +7107,7 @@
             >guide</a> to retrieve it."
           type: "string"
           airbyte_secret: true
+          order: 4
         start_date:
           title: "Start Date"
           description: "Date in the format 2017-01-25. Any data before this date will\
@@ -7107,16 +7119,10 @@
           examples:
           - "2021-07-25"
           - "2021-07-25T00:00:00Z"
-        is_sandbox:
-          title: "Sandbox"
-          description: "Whether the app is in a Salesforce sandbox or not. If you\
-            \ do not know what this is, assume it as false. We provide more info on\
-            \ this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#is_sandbox\"\
-            >docs</a>."
-          type: "boolean"
-          default: false
+          order: 5
         streams_criteria:
           type: "array"
+          order: 6
           items:
             type: "object"
             required:
@@ -7135,13 +7141,15 @@
                 - "ends not with"
                 - "not contains"
                 - "not exacts"
+                order: 1
                 default: "contains"
               value:
                 type: "string"
                 title: "Search value"
-          title: "Streams filter criteria"
-          description: "Add selection criteria for streams to get only streams that\
-            \ are relevant to you"
+                order: 2
+          title: "Salesforce Object filtering criteria (Optional)"
+          description: "Add selection criteria for streams to read only the Salesforce\
+            \ objects which are relevant to you."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8013,7 +8021,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.6"
+- dockerImage: "airbyte/source-surveymonkey:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -8757,7 +8765,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.1.12"
+- dockerImage: "airbyte/source-zendesk-support:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
