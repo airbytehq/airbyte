@@ -19,6 +19,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
@@ -27,6 +28,7 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -64,16 +66,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -915,6 +922,55 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
+  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource("namespace_test_cases.json"));
+      return MoreIterators.toList(testCases.elements()).stream()
+          .filter(testCase -> testCase.get("enabled").asBoolean())
+          .map(testCase -> Arguments.of(
+              testCase.get("id").asText(),
+              testCase.get("namespace").asText(),
+              testCase.get("normalized").asText()));
+    }
+
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(NamespaceTestCaseProvider.class)
+  public void testNamespaces(final String testCaseId, final String namespace, final String normalizedNamespace) throws Exception {
+    final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
+    nameTransformer.ifPresent(namingConventionTransformer ->
+        assertNamespaceNormalization(testCaseId, normalizedNamespace, namingConventionTransformer.getIdentifier(namespace)));
+
+    if (!implementsNamespaces() || !supportNamespaceTest()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.catalogFile), AirbyteCatalog.class);
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    messages.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace);
+          }
+        });
+
+    final JsonNode config = getConfig();
+    try {
+      runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    } catch (final Exception e) {
+      throw new IOException(String.format("[%s] Destination failed to sync data to namespace %s", testCaseId, namespace), e);
+    }
+  }
+
   /**
    * In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint.
    * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
@@ -933,10 +989,38 @@ public abstract class DestinationAcceptanceTest {
     assertFalse(entrypoint.isBlank());
   }
 
+  /**
+   * Whether the destination should be tested against different namespaces.
+   */
+  protected boolean supportNamespaceTest() {
+    return false;
+  }
+
+  /**
+   * Set up the name transformer used by a destination to test it
+   * against a variety of namespaces.
+   */
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.empty();
+  }
+
+  /**
+   * Override this method if the normalized namespace is different from the default one.
+   * E.g. S3 does not allow a name starting with a number. So it should change the
+   * expected normalized namespace when testCaseId = "s3a-1". Find the testCaseId
+   * in "namespace_test_cases.json".
+   */
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace,
+        String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId));
+  }
+
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {

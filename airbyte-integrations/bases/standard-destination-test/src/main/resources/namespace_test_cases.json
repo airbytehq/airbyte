@@ -1,0 +1,51 @@
+[
+  {
+    "id": "s1-1",
+    "description": "namespace are converted to lowercase",
+    "namespace": "NAMESPACE",
+    "enabled": true,
+    "normalized": "namespace"
+  },
+  {
+    "id": "s2-1",
+    "description": "namespace allows alphabets, numbers, and underscore",
+    "namespace": "Dest_1001_Namespace",
+    "enabled": true,
+    "normalized": "dest_1001_namespace"
+  },
+  {
+    "id": "s2a-1",
+    "description": "namespace romanization",
+    "namespace": "namespace_with_spécial_character",
+    "enabled": true,
+    "normalized": "namespace_with_special_character"
+  },
+  {
+    "id": "s2a-2",
+    "description": "namespace romanization (japanese)",
+    "namespace": "namespace_こんにちは",
+    "enabled": false,
+    "normalized": "namespace_konnichiwa"
+  },
+  {
+    "id": "s3a-1",
+    "description": "namespace starting with a number",
+    "namespace": "99namespace",
+    "enabled": true,
+    "normalized": "99namespace"
+  },
+  {
+    "id": "s3b-1",
+    "description": "long namespace (300 characters)",
+    "namespace": "a_300_characters_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo_namespace",
+    "enabled": false,
+    "normalized": ""
+  },
+  {
+    "id": "s3c-1",
+    "description": "reserved word (for future testing)",
+    "namespace": "select",
+    "enabled": false,
+    "normalized": ""
+  }
+]

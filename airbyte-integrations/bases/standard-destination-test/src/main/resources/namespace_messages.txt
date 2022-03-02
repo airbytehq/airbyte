@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "data_stream", "emitted_at": 1602637589000, "data": { "field1" : true }}}
