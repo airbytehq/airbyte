@@ -967,7 +967,9 @@ public abstract class DestinationAcceptanceTest {
     try {
       runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     } catch (final Exception e) {
-      throw new IOException(String.format("[Test Case %s] Destination failed to sync data to namespace %s", testCaseId, namespace), e);
+      throw new IOException(String.format(
+          "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
+          testCaseId, namespace), e);
     }
   }
 
