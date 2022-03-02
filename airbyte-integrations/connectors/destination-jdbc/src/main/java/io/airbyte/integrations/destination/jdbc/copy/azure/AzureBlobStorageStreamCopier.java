@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.jdbc.copy.azure;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -261,6 +262,11 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   @Override
   public String getCurrentFile() {
     return currentFile;
+  }
+
+  @VisibleForTesting
+  public String getTmpTableName() {
+    return tmpTableName;
   }
 
   public abstract void copyAzureBlobCsvFileIntoTable(JdbcDatabase database,
