@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import io.sentry.SpanStatus;
 import java.nio.file.Path;
 import java.util.List;
@@ -202,23 +203,29 @@ public class IntegrationRunner {
           .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
+        final StringBuilder sentryMessageBuilder = new StringBuilder();
         LOGGER.warn("""
                     The main thread is exiting while children non-daemon threads from a connector are still active.
                     Ideally, this situation should not happen...
                     Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
                     The main thread is: {}""", dumpThread(currentThread));
+        sentryMessageBuilder.append("The main thread is exiting while children non-daemon threads are still active.\nMain Thread:")
+            .append(dumpThread(currentThread));
         final ScheduledExecutorService scheduledExecutorService = Executors
             .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
                 // this thread executor will create daemon threads, so it does not block exiting if all other active
                 // threads are already stopped.
                 .daemon(true).build());
         for (final Thread runningThread : runningThreads) {
-          LOGGER.warn("Active non-daemon thread: {}", dumpThread(runningThread));
+          final String str = "Active non-daemon thread: " + dumpThread(runningThread);
+          LOGGER.warn(str);
+          sentryMessageBuilder.append(str);
           // even though the main thread is already shutting down, we still leave some chances to the children
           // threads to close properly on its own.
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
+        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
