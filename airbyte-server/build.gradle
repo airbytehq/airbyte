@@ -47,7 +47,7 @@ publishing {
 }
 
 dependencies {
-    implementation 'io.temporal:temporal-sdk:1.6.0'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
 
@@ -103,7 +103,7 @@ mainClassName = 'io.airbyte.server.ServerApp'
 
 application {
     mainClass = mainClassName
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 Properties env = new Properties()

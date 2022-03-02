@@ -14,6 +14,8 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -33,9 +35,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeStagingSqlOperations();
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      AirbyteSentry.runWithSpan("CreateAndDropTable",
+      AirbyteSentry.executeWithTracing("CreateAndDropTable",
           () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
-      AirbyteSentry.runWithSpan("CreateAndDropStage",
+      AirbyteSentry.executeWithTracing("CreateAndDropStage",
           () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeStagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -54,7 +56,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
     // verify we have permissions to create/drop stage
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);;
+    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
     sqlOperations.dropStageIfExists(database, stageName);
   }
@@ -62,6 +64,11 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   @Override
   protected JdbcDatabase getDatabase(final JsonNode config) {
     return SnowflakeDatabase.getDatabase(config);
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
   // this is a no op since we override getDatabase.

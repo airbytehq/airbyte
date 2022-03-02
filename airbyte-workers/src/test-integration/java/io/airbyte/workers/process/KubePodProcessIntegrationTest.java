@@ -24,7 +24,6 @@ import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,7 @@ import org.junit.jupiter.api.Timeout;
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
-@Timeout(value = 5,
+@Timeout(value = 6,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
@@ -85,8 +84,7 @@ public class KubePodProcessIntegrationTest {
             fabricClient,
             heartbeatUrl,
             getHost(),
-            false,
-            Duration.ofSeconds(1));
+            false);
   }
 
   @BeforeEach

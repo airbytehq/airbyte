@@ -13,7 +13,7 @@ dependencies {
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-scheduler:models')
 
-    implementation 'io.temporal:temporal-sdk:1.6.0'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation "org.flywaydb:flyway-core:7.14.0"
 
     testImplementation "org.testcontainers:postgresql:1.15.3"
@@ -23,7 +23,7 @@ dependencies {
 application {
     applicationName = "airbyte-bootloader"
     mainClass = 'io.airbyte.bootloader.BootloaderApp'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 // Publish this so Airbyte Cloud can consume and extend the classes within this jar.

@@ -4,7 +4,6 @@ set -e
 set -x
 
 . tools/lib/lib.sh
-. tools/lib/databricks.sh
 
 USAGE="
 Usage: $(basename "$0") <cmd>
@@ -39,10 +38,6 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
-
-  if [[ "airbyte-integrations/connectors/destination-databricks" == "${path}" ]]; then
-    _get_databricks_jdbc_driver
-  fi
 
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"

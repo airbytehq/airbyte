@@ -20,7 +20,7 @@ export const Actions = styled.div`
 export const Body = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 70px 25px 0;
+  padding: 70px 35px 20px;
 `;
 
 export const Close = styled.div`

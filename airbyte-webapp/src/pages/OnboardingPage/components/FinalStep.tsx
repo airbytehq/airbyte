@@ -41,7 +41,8 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
   const {
     feedbackPassed,
     passFeedback,
-    useCases,
+    visibleUseCases,
+    useCaseLinks,
     skipCase,
   } = useOnboardingService();
   const connection = useResource(ConnectionResource.detailShape(), {
@@ -95,22 +96,22 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (...name: React.ReactNode[]) => (
+            name: (name: React.ReactNode[]) => (
               <HighlightedText>{name}</HighlightedText>
             ),
           }}
         />
       </Title>
 
-      {useCases &&
-        useCases.map((item, key) => (
-          <UseCaseBlock
-            key={item}
-            count={key + 1}
-            onSkip={skipCase}
-            id={item}
-          />
-        ))}
+      {visibleUseCases?.map((item, key) => (
+        <UseCaseBlock
+          key={item}
+          count={key + 1}
+          href={useCaseLinks[item]}
+          onSkip={skipCase}
+          id={item}
+        />
+      ))}
 
       {isOpen ? (
         <SyncCompletedModal
