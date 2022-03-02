@@ -70,14 +70,15 @@ export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 const getTempSignUpStorageKey = (currentUser: FbUser): string =>
   `${currentUser.uid}/temp-signup-data`;
+
 const TempSignUpValuesProvider = {
-  get: async (
+  get: (
     currentUser: FbUser
-  ): Promise<{
+  ): {
     companyName: string;
     name: string;
     news: boolean;
-  }> => {
+  } => {
     try {
       const key = getTempSignUpStorageKey(currentUser);
 
@@ -96,12 +97,12 @@ const TempSignUpValuesProvider = {
       news: false,
     };
   },
-  save: async (
+  save: (
     currentUser: FbUser,
     v: { companyName: string; name: string; news: boolean }
   ) => {
     localStorage.setItem(
-      `${currentUser.uid}/temp-signup-data`,
+      getTempSignUpStorageKey(currentUser),
       JSON.stringify(v)
     );
   },
@@ -132,7 +133,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
           );
         } catch (err) {
           if (currentUser.email) {
-            const encodedData = await TempSignUpValuesProvider.get(currentUser);
+            const encodedData = TempSignUpValuesProvider.get(currentUser);
             user = await userService.create({
               authProvider: AuthProviders.GoogleIdentityPlatform,
               authUserId: currentUser.uid,
@@ -209,7 +210,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         news: boolean;
       }): Promise<void> {
         const creds = await authService.signUp(form.email, form.password);
-        await TempSignUpValuesProvider.save(creds.user, {
+        TempSignUpValuesProvider.save(creds.user, {
           companyName: form.companyName,
           name: form.name,
           news: form.news,
