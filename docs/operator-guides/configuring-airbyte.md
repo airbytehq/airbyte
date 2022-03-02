@@ -73,7 +73,20 @@ The following variables are relevant to both Docker and Kubernetes.
 6. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 
 #### Logging
+
+Note that Airbyte does not support logging to separate Cloud Storage providers.
+
+Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kuberentes logging.
+
 1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
+2. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
+3. `GOOGLE_APPLICATION_CREDENTIALS` - Define the GCS credentials to use to write to the GCS bucket.
+4. `S3_LOG_BUCKET` - Define the S3 bucket to store logs.
+5. `S3_LOG_BUCKET_REGION` - Define the S3 region the S3 log bucket is in.
+6. `S3_MINIO_ENDPOINT` - Define the url Minio is hosted at so Airbyte can use Minio to store logs. Set to empty string if logging to S3.
+7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
+
+See **AWS** below for information on providing AWS credentials for access to S3.
 
 #### Worker
 1. `MAX_SPEC_WORKERS` - Define the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
@@ -87,6 +100,25 @@ The following variables are relevant to both Docker and Kubernetes.
 2. `MINIMUM_WORKSPACE_RETENTION_DAYS` - Defines the minimum configuration file age for sweeping. The Scheduler will do it's best to now sweep files younger than this. Defaults to 1 day.
 3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
 4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
+
+### AWS
+
+The Airbyte server makes use of the AWS Java SDK's [DefaultCredentialsProvider](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/DefaultCredentialsProvider.html) to utilise AWS credentials.
+
+From the [AWS documentation](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html):
+
+> AWS credentials provider chain that looks for credentials in this order:
+> * Java System Properties - aws.accessKeyId and aws.secretAccessKey
+> * Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+> * Web Identity Token credentials from system properties or environment variables
+> * Credential profiles file at the default location (~/.aws/credentials) shared by all AWS SDKs and the AWS CLI
+> * Credentials delivered through the Amazon EC2 container service if AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" environment variable is set and security manager has permission to access the variable,
+> * Instance profile credentials delivered through the Amazon EC2 metadata service
+
+**NOTE**
+
+This applies ONLY to the server at the moment. There are a number of AWS connectors that need to be updated use this credential provider.
+In the meantime, those components and services must be configured to use the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables.
 
 ### Docker-Only
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
@@ -106,16 +138,3 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Worker
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
-
-#### Logging
-Note that Airbyte does not support logging to separate Cloud Storage providers.
-
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kuberentes logging.
-
-1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
-2. `S3_BUCKET` - Define the S3 bucket to store logs.
-3. `S3_RREGION` - Define the S3 region the S3 log bucket is in.
-4. `S3_AWS_KEY` - Define the key used to access the S3 log bucket.
-5. `S3_AWS_SECRET` - Define the secret used to access the S3 log bucket.
-6. `S3_MINIO_ENDPOINT` - Define the url Minio is hosted at so Airbyte can use Minio to store logs.
-7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
