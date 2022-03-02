@@ -503,7 +503,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -578,7 +578,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -631,6 +631,43 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that resetting a non-running workflow starts a reset")
+    public void failedResetContinueAsReset() throws InterruptedException {
+
+      Mockito.when(mConfigFetchActivity.getMaxAttempt())
+          .thenReturn(new GetMaxAttemptOutput(3));
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+          UUID.randomUUID(),
+          JOB_ID,
+          ATTEMPT_ID,
+          false,
+          1,
+          workflowState,
+          false);
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+      testEnv.sleep(Duration.ofSeconds(30L));
+      workflow.simulateFailure();
+      testEnv.sleep(Duration.ofMinutes(5L));
+      workflow.resetConnection();
+      testEnv.sleep(Duration.ofMinutes(15L));
+
+      final Queue<ChangedStateEvent> events = testStateListener.events(testId);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CONTINUE_AS_RESET && changedStateEvent.isValue())
+          .hasSizeGreaterThanOrEqualTo(1);
+
+    }
+
+    @RepeatedTest(10)
     @DisplayName("Test workflow which receives an update signal waits for the current run and reports the job status")
     public void updatedSignalReceivedWhileRunning() throws InterruptedException {
 
@@ -667,7 +704,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -883,7 +920,7 @@ public class ConnectionManagerWorkflowTest {
 
     @ParameterizedTest
     @MethodSource("getSetupFailingFailingActivityBeforeRun")
-    void testGetStuckBeforeRun(Thread mockSetup) throws InterruptedException {
+    void testGetStuckBeforeRun(final Thread mockSetup) throws InterruptedException {
       mockSetup.run();
       Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
           Duration.ZERO));
@@ -973,7 +1010,7 @@ public class ConnectionManagerWorkflowTest {
 
     @ParameterizedTest
     @MethodSource("getSetupFailingFailingActivityAfterRun")
-    void testGetStuckAfterRun(Consumer<ConnectionManagerWorkflow> signalSender, Thread mockSetup) throws InterruptedException {
+    void testGetStuckAfterRun(final Consumer<ConnectionManagerWorkflow> signalSender, final Thread mockSetup) throws InterruptedException {
       mockSetup.run();
 
       final UUID testId = UUID.randomUUID();
@@ -1055,7 +1092,7 @@ public class ConnectionManagerWorkflowTest {
     while (!isReady) {
       try {
         isReady = workflow.getState() != null;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.info("retrying...");
         Thread.sleep(100);
       }
