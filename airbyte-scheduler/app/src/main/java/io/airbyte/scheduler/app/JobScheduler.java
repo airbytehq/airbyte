@@ -47,7 +47,8 @@ public class JobScheduler implements Runnable {
     this.jobFactory = jobFactory;
   }
 
-  public JobScheduler(final JobPersistence jobPersistence,
+  public JobScheduler(final boolean connectorSpecificResourceDefaultsEnabled,
+                      final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
                       final TrackingClient trackingClient,
                       final WorkerConfigs workerConfigs) {
@@ -56,6 +57,7 @@ public class JobScheduler implements Runnable {
         configRepository,
         new ScheduleJobPredicate(Instant::now),
         new DefaultSyncJobFactory(
+            connectorSpecificResourceDefaultsEnabled,
             new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()),
             configRepository,
             new OAuthConfigSupplier(configRepository, trackingClient)));
