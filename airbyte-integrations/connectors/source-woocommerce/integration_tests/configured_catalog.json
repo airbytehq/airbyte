@@ -167,10 +167,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["date_modified"]
+        "default_cursor_field": ["date_created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["date_modified"],
+      "cursor_field": ["date_created"],
       "destination_sync_mode": "append"
     },
     {
@@ -391,7 +391,7 @@
                     "type": ["null", "integer"]
                   },
                   "quantity": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   },
                   "tax_class": {
                     "type": ["null", "string"]
@@ -475,7 +475,7 @@
                     "type": ["null", "string"]
                   },
                   "price": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   }
                 }
               }
@@ -894,9 +894,7 @@
                   "key": {
                     "type": ["null", "string"]
                   },
-                  "value": {
-                    "type": ["null", "string"]
-                  }
+                  "value": {}
                 }
               }
             },

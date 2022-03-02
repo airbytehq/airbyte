@@ -5,12 +5,12 @@
 
 from abc import ABC
 from base64 import b64encode
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
-import requests
 import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -18,7 +18,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-user_agent_header = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+user_agent_header = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
+)
+
+
 # Basic full refresh stream
 class WoocommerceStream(HttpStream, ABC):
 
@@ -44,15 +48,12 @@ class WoocommerceStream(HttpStream, ABC):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
-        
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        #for some source user-agent is expected by the woo-commerce API
-        return {
-            'User-Agent' : user_agent_header,
-            'Content-Type': 'application/json'
-        }
+        # for some source user-agent is expected by the woo-commerce API
+        return {"User-Agent": user_agent_header, "Content-Type": "application/json"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -70,7 +71,7 @@ class WoocommerceStream(HttpStream, ABC):
         else:
             params.update({"after": pendulum.parse(self.start_date).replace(tzinfo=None), "before": pendulum.now().replace(tzinfo=None)})
             params.update({"orderby": self.order_field, "order": "asc"})
-        
+
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -87,7 +88,6 @@ class WoocommerceStream(HttpStream, ABC):
                 # add shop_url to the record to make querying easy
                 record["shop_url"] = self.shop
                 yield record
-        
 
 
 class IncrementalWoocommerceStream(WoocommerceStream, ABC):
@@ -116,8 +116,8 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
             if stream_state:
                 start_date = stream_state.get(self.cursor_field)
                 start_date = pendulum.parse(start_date).replace(tzinfo=None)
-                start_date = start_date.subtract(days = self.conversion_window_days)
-                
+                start_date = start_date.subtract(days=self.conversion_window_days)
+
                 params["after"] = start_date
         return params
 
@@ -129,11 +129,11 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                    record['shop_url'] = self.shop
+                    record["shop_url"] = self.shop
                     yield record
         else:
             for record in records_slice:
-                record['shop_url'] = self.shop
+                record["shop_url"] = self.shop
                 yield record
 
 
@@ -187,7 +187,7 @@ class SourceWoocommerce(AbstractSource):
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
             headers = dict(Accept="application/json", **auth.get_auth_header())
-            headers['User-Agent']=user_agent_header
+            headers["User-Agent"] = user_agent_header
             session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
@@ -205,7 +205,7 @@ class SourceWoocommerce(AbstractSource):
             "start_date": config["start_date"],
             "api_key": config["api_key"],
             "api_secret": config["api_secret"],
-            "conversion_window_days":  config["conversion_window_days"]
+            "conversion_window_days": config["conversion_window_days"],
         }
 
         return [Customers(**args), Coupons(**args), Orders(**args)]
