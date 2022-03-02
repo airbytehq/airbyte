@@ -46,7 +46,8 @@ public class IntegrationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
-  public static final int EXIT_THREAD_DELAY_MINUTES = 4 * 60;
+  public static final int EXIT_THREAD_DELAY_MINUTES = 70;
+
   public static final int FORCED_EXIT_CODE = 2;
 
   private final IntegrationCliParser cliParser;
@@ -168,6 +169,18 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
+    consumeWriteStream(consumer,
+        INTERRUPT_THREAD_DELAY_MINUTES, TimeUnit.MINUTES,
+        EXIT_THREAD_DELAY_MINUTES, TimeUnit.MINUTES);
+  }
+
+  @VisibleForTesting
+  static void consumeWriteStream(final AirbyteMessageConsumer consumer,
+                                 final int interruptTimeDelay,
+                                 final TimeUnit interruptTimeUnit,
+                                 final int exitTimeDelay,
+                                 final TimeUnit exitTimeUnit)
+      throws Exception {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
@@ -186,9 +199,7 @@ public class IntegrationRunner {
     } finally {
       final List<Thread> runningThreads = ThreadUtils.getAllThreads()
           .stream()
-          .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) &&
-              (runningThread.getThreadGroup() == null || runningThread.getThreadGroup().getName().equals(currentThread.getThreadGroup().getName())) &&
-              !runningThread.isDaemon())
+          .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
         LOGGER.warn("""
@@ -206,20 +217,17 @@ public class IntegrationRunner {
           // even though the main thread is already shutting down, we still leave some chances to the children
           // threads to close properly on its own.
           // So, we schedule an interrupt hook after a fixed time delay instead...
-          scheduledExecutorService.schedule(runningThread::interrupt, INTERRUPT_THREAD_DELAY_MINUTES, getDelayTimeUnit());
+          scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
         scheduledExecutorService.schedule(() -> {
-          LOGGER.error("Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n");
-          // If children threads are ignoring the InterruptException and are still stuck after an even longer
-          // delay, we resort to System.exit.
-          System.exit(FORCED_EXIT_CODE);
-        }, EXIT_THREAD_DELAY_MINUTES, getDelayTimeUnit());
+          if (ThreadUtils.getAllThreads().stream()
+              .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
+            LOGGER.error("Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n");
+            System.exit(FORCED_EXIT_CODE);
+          }
+        }, exitTimeDelay, exitTimeUnit);
       }
     }
-  }
-
-  protected static TimeUnit getDelayTimeUnit() {
-    return TimeUnit.MINUTES;
   }
 
   private static String dumpThread(final Thread thread) {

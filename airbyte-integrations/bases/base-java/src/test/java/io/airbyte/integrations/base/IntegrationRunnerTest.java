@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -38,13 +41,23 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ThreadUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class IntegrationRunnerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunnerTest.class);
 
   private static final String CONFIG_FILE_NAME = "config.json";
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
@@ -61,6 +74,7 @@ class IntegrationRunnerTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
+  private static final NoExitSecurityManager noExitSecurityManager = new NoExitSecurityManager();
 
   private IntegrationCliParser cliParser;
   private Consumer<AirbyteMessage> stdoutConsumer;
@@ -82,6 +96,13 @@ class IntegrationRunnerTest {
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
+
+    final String testName = Thread.currentThread().getName();
+    noExitSecurityManager.setExitStatus(false);
+    ThreadUtils.getAllThreads()
+        .stream()
+        .filter(runningThread -> !runningThread.isDaemon())
+        .forEach(runningThread -> runningThread.setName(testName));
   }
 
   @Test
@@ -273,6 +294,129 @@ class IntegrationRunnerTest {
       inOrder.verify(airbyteMessageConsumerMock).accept(message1);
       inOrder.verifyNoMoreInteractions();
     }
+  }
+
+  @Test
+  void testInterruptOrphanThreadFailure() {
+    System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
+    final String testName = Thread.currentThread().getName();
+    noExitSecurityManager.setExitStatus(false);
+    try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(false)) {
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock,
+          3, TimeUnit.SECONDS,
+          10, TimeUnit.SECONDS));
+      try {
+        TimeUnit.SECONDS.sleep(10);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+          .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+          .collect(Collectors.toList());
+      // all threads should be interrupted
+      assertEquals(List.of(), runningThreads);
+      assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
+      // We don't need to force a system.exit
+      assertFalse(noExitSecurityManager.checkExitStatus());
+    }
+  }
+
+  @Test
+  void testNoInterruptOrphanThreadFailure() {
+    System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
+    final String testName = Thread.currentThread().getName();
+    noExitSecurityManager.setExitStatus(false);
+    try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(true)) {
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock,
+          3, TimeUnit.SECONDS,
+          10, TimeUnit.SECONDS));
+      try {
+        TimeUnit.SECONDS.sleep(10);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+          .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+          .collect(Collectors.toList());
+      // A remaining thread is still alive as it refuses to be interrupted
+      assertEquals(1, runningThreads.size());
+      assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
+      // We need to force a system.exit
+      assertTrue(noExitSecurityManager.checkExitStatus());
+    }
+  }
+
+  private static class MultiThreadTestConsumer implements AirbyteMessageConsumer, Runnable {
+
+    final private ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private final boolean ignoreInterrupt;
+    private boolean interruptException = false;
+
+    public MultiThreadTestConsumer(final boolean ignoreInterrupt) {
+      this.ignoreInterrupt = ignoreInterrupt;
+    }
+
+    @Override
+    public void start() {
+      executorService.submit(this);
+    }
+
+    @Override
+    public void accept(AirbyteMessage message) throws Exception {
+      throw new IOException("Some random exceptions");
+    }
+
+    @Override
+    public void run() {
+      try {
+        TimeUnit.MINUTES.sleep(5);
+      } catch (Exception e) {
+        LOGGER.info("Caught Exception", e);
+        interruptException = true;
+        if (ignoreInterrupt) {
+          // for test purposes, we simulate a consumer that refuses to be interrupted...
+          run();
+        } else {
+          close();
+        }
+      }
+    }
+
+    @Override
+    public void close() {
+      executorService.shutdownNow();
+    }
+
+    public boolean hasCaughtExceptions() {
+      return interruptException;
+    }
+
+  }
+
+  private static class NoExitSecurityManager extends SecurityManager {
+
+    private boolean triedToExit = false;
+
+    public NoExitSecurityManager() {
+      System.setSecurityManager(this);
+    }
+
+    @Override
+    public void checkExit(int status) {
+      LOGGER.info("Trying to exit");
+      triedToExit = true;
+      super.checkExit(status);
+      throw new SecurityException("Not allowed in this test.");
+    }
+
+    public boolean checkExitStatus() {
+      return triedToExit;
+    }
+
+    public void setExitStatus(boolean triedToExit) {
+      this.triedToExit = triedToExit;
+    }
+
   }
 
 }
