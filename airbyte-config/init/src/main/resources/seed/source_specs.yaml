@@ -1000,7 +1000,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chartmogul:0.1.0"
+- dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
     connectionSpecification:
@@ -1009,6 +1009,8 @@
       type: "object"
       required:
       - "api_key"
+      - "start_date"
+      - "interval"
       additionalProperties: false
       properties:
         api_key:
@@ -1024,6 +1026,17 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 1
+        interval:
+          type: "string"
+          description: "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\"\
+            >Metrics</a> require intervals to cluster data."
+          enum:
+          - "day"
+          - "week"
+          - "month"
+          - "quarter"
+          default: "month"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
