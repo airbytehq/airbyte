@@ -251,7 +251,7 @@ class BaseResource(abc.ABC):
         """
         search_results = self._search().get(f"{self.resource_type}s", [])
         if len(search_results) > 1:
-            raise DuplicateRessourceError("Two or more ressource exist with the same name.")
+            raise DuplicateRessourceError("Two or more ressources exist with the same name.")
         if len(search_results) == 1:
             return search_results[0]
         else:
