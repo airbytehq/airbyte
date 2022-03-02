@@ -62,7 +62,7 @@ public class ReporterApp {
     }, 0, 15, TimeUnit.SECONDS);
     pollers.scheduleAtFixedRate(() -> {
       try {
-        final var age = configDatabase.query(MetricQueries::numberOfPendingJobs);
+        final var age = configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
         DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
       } catch (final SQLException e) {
         e.printStackTrace();

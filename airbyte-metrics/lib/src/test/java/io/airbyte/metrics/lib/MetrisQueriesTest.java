@@ -184,6 +184,72 @@ public class MetrisQueriesTest {
     }
 
     @Nested
+    class numJobs {
+
+      @AfterEach
+      void tearDown() throws SQLException {
+        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
+      }
+
+      @Test
+      void runningJobsShouldReturnCorrectCount() throws SQLException {
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
+
+        final var res = configDb.query(MetricQueries::numberOfRunningJobs);
+        assertEquals(2, res);
+      }
+
+      @Test
+      void runningJobsShouldReturnZero() throws SQLException {
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::numberOfRunningJobs);
+        assertEquals(0, res);
+      }
+
+      @Test
+      void pendingJobsShouldReturnCorrectCount() throws SQLException {
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
+
+        final var res = configDb.query(MetricQueries::numberOfPendingJobs);
+        assertEquals(2, res);
+      }
+
+      @Test
+      void pendingJobsShouldReturnZero() throws SQLException {
+        // non-pending jobs
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute());
+        configDb.transaction(
+            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+
+        final var res = configDb.query(MetricQueries::numberOfPendingJobs);
+        assertEquals(0, res);
+      }
+
+    }
+
+    @Nested
     class oldestRunningJob {
 
       @AfterEach

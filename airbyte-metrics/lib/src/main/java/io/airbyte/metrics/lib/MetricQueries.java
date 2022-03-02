@@ -49,11 +49,11 @@ public class MetricQueries {
   }
 
   public static int numberOfPendingJobs(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.pending)).execute();
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.pending)).fetchOne(0, int.class);
   }
 
   public static int numberOfRunningJobs(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).execute();
+    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).fetchOne(0, int.class);
   }
 
   public static Long oldestPendingJobAgeSecs(final DSLContext ctx) {
