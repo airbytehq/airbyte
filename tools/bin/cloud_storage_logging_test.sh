@@ -2,6 +2,9 @@
 
 set -e
 
+# GCS Resources for the following tests are located in the dataline-integration-testing GCP project.
+#
+
 echo "Writing cloud storage credentials.."
 
 # S3
@@ -17,7 +20,7 @@ export GCS_LOG_BUCKET=airbyte-kube-integration-logging-test
 
 # Run the logging test first since the same client is used in the log4j2 integration test.
 echo "Running log client tests.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  --info --scan
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  --scan
 
 echo "Running cloud storage tests.."
 SUB_BUILD=PLATFORM ./gradlew :airbyte-workers:cloudStorageIntegrationTest  --scan

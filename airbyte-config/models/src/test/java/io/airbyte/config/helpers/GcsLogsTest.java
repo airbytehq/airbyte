@@ -35,22 +35,15 @@ public class GcsLogsTest {
    * Generate enough files to force pagination and confirm all data is read.
    */
   @Test
-  public void testRetrieveAllLogs() {
+  public void testRetrieveAllLogs() throws IOException {
     final File data;
-    try {
-      data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
-      final var retrieved = new ArrayList<String>();
-      Files.lines(data.toPath()).forEach(retrieved::add);
+    data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
+    final var retrieved = new ArrayList<String>();
+    Files.lines(data.toPath()).forEach(retrieved::add);
 
-      final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
-      assertEquals(expected, retrieved);
-      log.info("======= we are here...");
-      System.out.println("==== we are here");
-    } catch (final Exception e) {
-      log.error("Gcs test error: ", e);
-      e.printStackTrace();
-    }
+    assertEquals(expected, retrieved);
 
   }
 
@@ -63,15 +56,10 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    // try {
     final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
-    // } catch (final Exception e) {
-    // log.error("Gcs test error: ", e);
-    // e.printStackTrace();
-    // }
   }
 
 }
