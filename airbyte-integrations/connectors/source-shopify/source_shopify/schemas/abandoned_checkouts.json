@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "note_attributes": {
       "type": ["null", "array"],
@@ -485,7 +485,7 @@
               "type": ["null", "integer"]
             },
             "default": {
-              "type": ["null", "boolean"]
+              "type": ["null", "string"]
             },
             "last_name": {
               "type": ["null", "string"]
@@ -574,7 +574,7 @@
                 "type": ["null", "integer"]
               },
               "default": {
-                "type": ["null", "boolean"]
+                "type": ["null", "string"]
               },
               "last_name": {
                 "type": ["null", "string"]
@@ -642,7 +642,7 @@
       "type": ["null", "string"]
     },
     "taxes_included": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     }
   }
 }
