@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 import { useConfig } from "config";
 
@@ -12,14 +12,26 @@ export function FeatureService({
   children: React.ReactNode;
   features?: Feature[];
 }) {
-  const { features } = useConfig();
+  const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
+  const { features: mainFeatures } = useConfig();
+  const features = useMemo(() => [...mainFeatures, ...additionFeatures], [
+    mainFeatures,
+    additionFeatures,
+  ]);
+
   const featureService = useMemo(
     () => ({
       features,
       hasFeature: (featureId: FeatureItem): boolean =>
         !!features.find((feature) => feature.id === featureId),
+      registerFeature: (newFeatures: Feature[]): void =>
+        setAdditionFeatures([...additionFeatures, ...newFeatures]),
+      unregisterFeature: (features: FeatureItem[]): void =>
+        setAdditionFeatures(
+          additionFeatures.filter((feature) => features.includes(feature.id))
+        ),
     }),
-    [features]
+    [features, additionFeatures, setAdditionFeatures]
   );
 
   return (
@@ -43,4 +55,20 @@ export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({
 }) => {
   const { hasFeature } = useFeatureService();
   return hasFeature(featureId) ? <>{children}</> : null;
+};
+
+export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
+  const { registerFeature, unregisterFeature } = useFeatureService();
+
+  useEffect(() => {
+    if (props) {
+      registerFeature(props);
+
+      return () =>
+        unregisterFeature(props.map((feature: Feature) => feature.id));
+    }
+
+    return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props]);
 };

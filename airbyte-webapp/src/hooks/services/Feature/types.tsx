@@ -13,6 +13,8 @@ type Feature = {
 
 type FeatureServiceApi = {
   features: Feature[];
+  registerFeature: (props: Feature[]) => void;
+  unregisterFeature: (props: FeatureItem[]) => void;
   hasFeature: (featureId: FeatureItem) => boolean;
 };
 

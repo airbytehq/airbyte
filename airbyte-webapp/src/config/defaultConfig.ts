@@ -13,6 +13,12 @@ const features: Feature[] = [
   {
     id: FeatureItem.AllowUpdateConnectors,
   },
+  {
+    id: FeatureItem.AllowCreateConnection,
+  },
+  {
+    id: FeatureItem.AllowSync,
+  },
 ];
 
 const defaultConfig: Config = {
