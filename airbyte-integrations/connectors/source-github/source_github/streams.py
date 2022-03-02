@@ -14,27 +14,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
+from .utils import del_value_by_path, get_value_by_path, set_value_by_path
+
 DEFAULT_PAGE_SIZE = 100
-
-
-def get_value_by_path(D: Mapping[str, Any], path: List[str]):
-    for k in path:
-        if k not in D:
-            return None
-        D = D[k]
-    return D
-
-
-def set_value_by_path(D: Mapping[str, Any], path: List[str], value):
-    for k in path[:-1]:
-        D = D.setdefault(k, {})
-    D[path[-1]] = value
-
-
-def del_value_by_path(D, path):
-    for k in path[:1]:
-        D = D[k]
-    del D[path[-1]]
 
 
 class GithubStream(HttpStream, ABC):
@@ -866,14 +848,14 @@ class Deployments(SemiIncrementalGithubStream):
         return f"repos/{stream_slice['repository']}/deployments"
 
 
-class ProjectColumns(GithubStream):
+class ProjectColumns(SemiIncrementalGithubStream):
 
     cursor_field = "updated_at"
+    state_path = ["repository", "project_id"]
 
-    def __init__(self, parent: HttpStream, start_date: str, **kwargs):
+    def __init__(self, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
-        self._start_date = start_date
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"projects/{stream_slice['project_id']}/columns"
@@ -891,40 +873,39 @@ class ProjectColumns(GithubStream):
             for record in parent_records:
                 yield {"repository": record["repository"], "project_id": str(record["id"])}
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if record[self.cursor_field] > starting_point:
-                yield record
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["project_id"] = stream_slice["project_id"]
+        return record
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        if stream_state:
-            repository = stream_slice["repository"]
-            project_id = stream_slice["project_id"]
-            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
-            if stream_state_value:
-                return max(self._start_date, stream_state_value)
-        return self._start_date
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        repository = latest_record["repository"]
-        project_id = latest_record["project_id"]
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {})[self.cursor_field] = updated_state
-        return current_stream_state
+class ProjectCards(SemiIncrementalGithubStream):
+
+    cursor_field = "updated_at"
+    state_path = ["repository", "project_id", "column_id"]
+
+    def __init__(self, parent: HttpStream, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/columns/{stream_slice['column_id']}/cards"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
         record["project_id"] = stream_slice["project_id"]
+        record["column_id"] = stream_slice["column_id"]
         return record
