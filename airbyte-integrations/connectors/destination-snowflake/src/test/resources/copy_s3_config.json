@@ -1,17 +1,17 @@
 {
-  "host": "gz45853.us-east-2",
+  "host": "test.us-east-2.aws",
   "role": "AIRBYTE_ROLE",
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
-  "username": "AIRBYTE_INTEGRATION_TEST",
-  "password": "1Yiyu!U01&$%s0",
+  "username": "AIRBYTE_USERNAME_TEST",
+  "password": "test",
   "loading_method": {
     "method": "S3 Staging",
     "s3_bucket_name": "airbyte-snowflake-integration-tests",
     "s3_bucket_region": "us-east-2",
-    "access_key_id": "AKIAUTX4YQY3E5AXSQYH",
-    "secret_access_key": "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",
+    "access_key_id": "test",
+    "secret_access_key": "test",
     "part_size": 5
   }
 }
