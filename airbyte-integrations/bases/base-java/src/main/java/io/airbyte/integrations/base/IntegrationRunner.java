@@ -170,13 +170,14 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
-    consumeWriteStream(consumer,
+    consumeWriteStream(consumer, false,
         INTERRUPT_THREAD_DELAY_MINUTES, TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES, TimeUnit.MINUTES);
   }
 
   @VisibleForTesting
   static void consumeWriteStream(final AirbyteMessageConsumer consumer,
+                                 final boolean testRun,
                                  final int interruptTimeDelay,
                                  final TimeUnit interruptTimeUnit,
                                  final int exitTimeDelay,
@@ -225,12 +226,16 @@ public class IntegrationRunner {
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
-        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
+        if (!testRun) {
+          Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
+        }
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
             LOGGER.error("Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n");
-            System.exit(FORCED_EXIT_CODE);
+            if (!testRun) {
+              System.exit(FORCED_EXIT_CODE);
+            }
           }
         }, exitTimeDelay, exitTimeUnit);
       }

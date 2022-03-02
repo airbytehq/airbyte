@@ -5,7 +5,6 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,7 +73,6 @@ class IntegrationRunnerTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
-  private static final NoExitSecurityManager noExitSecurityManager = new NoExitSecurityManager();
 
   private IntegrationCliParser cliParser;
   private Consumer<AirbyteMessage> stdoutConsumer;
@@ -98,7 +96,6 @@ class IntegrationRunnerTest {
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
 
     final String testName = Thread.currentThread().getName();
-    noExitSecurityManager.setExitStatus(false);
     ThreadUtils.getAllThreads()
         .stream()
         .filter(runningThread -> !runningThread.isDaemon())
@@ -300,9 +297,9 @@ class IntegrationRunnerTest {
   void testInterruptOrphanThreadFailure() {
     System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
     final String testName = Thread.currentThread().getName();
-    noExitSecurityManager.setExitStatus(false);
+
     try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(false)) {
-      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock,
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock, true,
           3, TimeUnit.SECONDS,
           10, TimeUnit.SECONDS));
       try {
@@ -316,8 +313,7 @@ class IntegrationRunnerTest {
       // all threads should be interrupted
       assertEquals(List.of(), runningThreads);
       assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
-      // We don't need to force a system.exit
-      assertFalse(noExitSecurityManager.checkExitStatus());
+
     }
   }
 
@@ -325,9 +321,8 @@ class IntegrationRunnerTest {
   void testNoInterruptOrphanThreadFailure() {
     System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
     final String testName = Thread.currentThread().getName();
-    noExitSecurityManager.setExitStatus(false);
     try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(true)) {
-      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock,
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock, true,
           3, TimeUnit.SECONDS,
           10, TimeUnit.SECONDS));
       try {
@@ -341,8 +336,6 @@ class IntegrationRunnerTest {
       // A remaining thread is still alive as it refuses to be interrupted
       assertEquals(1, runningThreads.size());
       assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
-      // We need to force a system.exit
-      assertTrue(noExitSecurityManager.checkExitStatus());
     }
   }
 
@@ -389,32 +382,6 @@ class IntegrationRunnerTest {
 
     public boolean hasCaughtExceptions() {
       return interruptException;
-    }
-
-  }
-
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    private boolean triedToExit = false;
-
-    public NoExitSecurityManager() {
-      System.setSecurityManager(this);
-    }
-
-    @Override
-    public void checkExit(int status) {
-      LOGGER.info("Trying to exit");
-      triedToExit = true;
-      super.checkExit(status);
-      throw new SecurityException("Not allowed in this test.");
-    }
-
-    public boolean checkExitStatus() {
-      return triedToExit;
-    }
-
-    public void setExitStatus(boolean triedToExit) {
-      this.triedToExit = triedToExit;
     }
 
   }
