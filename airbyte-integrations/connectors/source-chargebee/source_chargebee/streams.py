@@ -321,6 +321,7 @@ class Coupon(IncrementalChargebeeStream):
         params["sort_by[asc]"] = "created_at"
         return params
 
+
 class CreditNote(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/credit_notes?prod_cat_ver=2#list_credit_notes

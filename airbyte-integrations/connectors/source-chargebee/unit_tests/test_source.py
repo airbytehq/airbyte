@@ -85,9 +85,20 @@ def test_check_error_v2(test_config_v2):
 def test_source_streams_v1(test_config_v1):
     source = SourceChargebee()
     streams = source.streams(test_config_v1)
-    assert len(streams) == 9
+    assert len(streams) == 10
     actual_stream_names = {stream.name for stream in streams}
-    expected_stream_names = {"coupon", "customer", "event", "invoice", "order", "subscription", "addon", "plan", "transaction"}
+    expected_stream_names = {
+        "coupon",
+        "credit_note",
+        "customer",
+        "event",
+        "invoice",
+        "order",
+        "subscription",
+        "addon",
+        "plan",
+        "transaction",
+    }
     assert expected_stream_names == actual_stream_names
 
 
@@ -95,10 +106,11 @@ def test_source_streams_v1(test_config_v1):
 def test_source_streams_v2(test_config_v2):
     source = SourceChargebee()
     streams = source.streams(test_config_v2)
-    assert len(streams) == 10
+    assert len(streams) == 11
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = {
         "coupon",
+        "credit_note",
         "customer",
         "event",
         "invoice",
