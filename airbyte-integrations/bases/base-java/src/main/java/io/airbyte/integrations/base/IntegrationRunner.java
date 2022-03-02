@@ -201,6 +201,7 @@ public class IntegrationRunner {
     } finally {
       final List<Thread> runningThreads = ThreadUtils.getAllThreads()
           .stream()
+          // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
           .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
@@ -222,7 +223,7 @@ public class IntegrationRunner {
           LOGGER.warn(str);
           sentryMessageBuilder.append(str);
           // even though the main thread is already shutting down, we still leave some chances to the children
-          // threads to close properly on its own.
+          // threads to close properly on their own.
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
