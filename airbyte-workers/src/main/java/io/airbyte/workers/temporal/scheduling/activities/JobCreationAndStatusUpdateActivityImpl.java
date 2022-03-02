@@ -127,6 +127,24 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   @Override
+  public AttemptNumberCreationOutput createNewAttemptNumber(AttemptCreationInput input) throws RetryableException {
+    try {
+      final long jobId = input.getJobId();
+      final Job createdJob = jobPersistence.getJob(jobId);
+
+      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
+      final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
+      final int persistedAttemptNumber = jobPersistence.createAttempt(jobId, logFilePath);
+      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
+
+      LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
+      return new AttemptNumberCreationOutput(persistedAttemptNumber);
+    } catch (final IOException e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  @Override
   public void jobSuccess(final JobSuccessInput input) {
     try {
       final long jobId = input.getJobId();

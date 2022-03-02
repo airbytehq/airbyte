@@ -75,6 +75,24 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberCreationOutput {
+
+    private int attemptNumber;
+
+  }
+
+  /**
+   * Create a new attempt for a given job ID
+   *
+   * @param input POJO containing the jobId
+   * @return A POJO containing the attemptNumber
+   */
+  @ActivityMethod
+  AttemptNumberCreationOutput createNewAttemptNumber(AttemptCreationInput input) throws RetryableException;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobSuccessInput {
 
     private long jobId;

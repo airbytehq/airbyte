@@ -29,6 +29,7 @@ import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
@@ -84,6 +85,7 @@ public class JobCreationAndStatusUpdateActivityTest {
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final long JOB_ID = 123L;
   private static final int ATTEMPT_ID = 0;
+  private static final int ATTEMPT_NUMBER = 1;
   private static final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
       .withStandardSyncSummary(
           new StandardSyncSummary()
@@ -160,6 +162,56 @@ public class JobCreationAndStatusUpdateActivityTest {
 
       Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.createNewAttempt(new AttemptCreationInput(
           JOB_ID)))
+          .isInstanceOf(RetryableException.class)
+          .hasCauseInstanceOf(IOException.class);
+    }
+
+    @Test
+    @DisplayName("Test attempt creation")
+    public void createAttemptNumber() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+
+      final Job mJob = Mockito.mock(Job.class);
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
+      final WorkerRun mWorkerRun = Mockito.mock(WorkerRun.class);
+
+      Mockito.when(mTemporalWorkerRunFactory.create(mJob))
+          .thenReturn(mWorkerRun);
+
+      final Path mPath = Mockito.mock(Path.class);
+      final Path path = Path.of("test");
+      Mockito.when(mPath.resolve(Mockito.anyString()))
+          .thenReturn(path);
+      Mockito.when(mWorkerRun.getJobRoot())
+          .thenReturn(mPath);
+
+      Mockito.when(mJobPersistence.createAttempt(JOB_ID, path))
+          .thenReturn(ATTEMPT_NUMBER);
+
+      final LogClientSingleton mLogClientSingleton = Mockito.mock(LogClientSingleton.class);
+      try (final MockedStatic<LogClientSingleton> utilities = Mockito.mockStatic(LogClientSingleton.class)) {
+        utilities.when(() -> LogClientSingleton.getInstance())
+            .thenReturn(mLogClientSingleton);
+
+        final AttemptNumberCreationOutput output = jobCreationAndStatusUpdateActivity.createNewAttemptNumber(new AttemptCreationInput(
+            JOB_ID));
+
+        Mockito.verify(mLogClientSingleton).setJobMdc(mWorkerEnvironment, mLogConfigs, mPath);
+        Assertions.assertThat(output.getAttemptNumber()).isEqualTo(ATTEMPT_NUMBER);
+      }
+    }
+
+    @Test
+    @DisplayName("Test exception errors are properly wrapped")
+    public void createAttemptNumberThrowException() throws IOException {
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenThrow(new IOException());
+
+      Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.createNewAttemptNumber(new AttemptCreationInput(
+              JOB_ID)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
