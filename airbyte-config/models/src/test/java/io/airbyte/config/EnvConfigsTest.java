@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -183,6 +185,33 @@ class EnvConfigsTest {
     assertEquals(config.getJobKubeTolerations(), List.of(
         new TolerationPOJO("airbyte-server", "NoSchedule", null, "Exists"),
         new TolerationPOJO("airbyte-server", "NoSchedule", "true", "Equals")));
+  }
+
+  @Test
+  void testSplitKVPairsFromEnvString() {
+    String input = "key1=value1,key2=value2";
+    Optional<Map<String, String>> map = config.splitKVPairsFromEnvString(input);
+    assertTrue(map.isPresent());
+    assertEquals(2, map.get().size());
+    assertEquals(map.get(), Map.of("key1", "value1", "key2", "value2"));
+
+    input = "key=k,,;$%&^#";
+    map = config.splitKVPairsFromEnvString(input);
+    assertTrue(map.isPresent());
+    assertEquals(map.get(), Map.of("key", "k"));
+
+    input = null;
+    map = config.splitKVPairsFromEnvString(input);
+    assertFalse(map.isPresent());
+
+    input = " key1= value1,  key2 =    value2";
+    map = config.splitKVPairsFromEnvString(input);
+    assertTrue(map.isPresent());
+    assertEquals(map.get(), Map.of("key1", "value1", "key2", "value2"));
+
+    input = "key1:value1,key2:value2";
+    map = config.splitKVPairsFromEnvString(input);
+    assertFalse(map.isPresent());
   }
 
   @Test

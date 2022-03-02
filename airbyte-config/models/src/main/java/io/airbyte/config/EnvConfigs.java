@@ -564,13 +564,16 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs
    */
   public Optional<Map<String, String>> splitKVPairsFromEnvString(String input) {
-    final Map<String, String> kv = Splitter.on(",")
+    if (input == null) {
+      input = "";
+    }
+    final Map<String, String> map = Splitter.on(",")
         .splitToStream(input)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
-        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+        .collect(Collectors.toMap(s -> s[0].trim(), s -> s[1].trim()));
 
-    return kv.isEmpty() ? Optional.empty() : Optional.of(kv);
+    return map.isEmpty() ? Optional.empty() : Optional.of(map);
   }
 
   @Override
