@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import io.airbyte.config.StandardSyncInput;
@@ -13,8 +17,12 @@ import java.util.UUID;
 /**
  * Test sync workflow to simulate a hearbeat timeout. It will:
  * <li>
- *   <ol>sleep for 10 minutes</ol>
- *   <ol>throw a temporal timeout exception</ol>
+ * <ol>
+ * sleep for 10 minutes
+ * </ol>
+ * <ol>
+ * throw a temporal timeout exception
+ * </ol>
  * </li>
  */
 public class SyncWorkflowFailingWithHearbeatTimeoutException implements SyncWorkflow {
@@ -28,4 +36,5 @@ public class SyncWorkflowFailingWithHearbeatTimeoutException implements SyncWork
     Workflow.sleep(SleepingSyncWorkflow.RUN_TIME);
     throw new TimeoutFailure("heartbeat timeout", null, TimeoutType.TIMEOUT_TYPE_HEARTBEAT);
   }
+
 }

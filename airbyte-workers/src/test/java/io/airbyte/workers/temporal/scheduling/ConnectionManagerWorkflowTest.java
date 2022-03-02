@@ -1054,6 +1054,7 @@ public class ConnectionManagerWorkflowTest {
   @Nested
   @DisplayName("Test workflow where the child workflow throw a hearbeat timeout exception")
   class HeartbeatFailureWorkflow {
+
     @BeforeEach
     public void setup() {
       testEnv = TestWorkflowEnvironment.newInstance();
@@ -1077,15 +1078,20 @@ public class ConnectionManagerWorkflowTest {
                   .build());
     }
 
-    //@RepeatedTest(1)
-    @Test
-    @Timeout(value = 2,
-        unit = TimeUnit.SECONDS)
-    @DisplayName("Test that resetting a non-running workflow starts a reset")
-    public void failedResetContinueAsReset() throws InterruptedException {
+    public static Stream<Arguments> getMaxAttemptForResetRetry() {
+      return Stream.of(
+          Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
+                           // reset")
+          Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
+      );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getMaxAttemptForResetRetry")
+    public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
 
       Mockito.when(mConfigFetchActivity.getMaxAttempt())
-          .thenReturn(new GetMaxAttemptOutput(3));
+          .thenReturn(new GetMaxAttemptOutput(maxAttempt));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
@@ -1111,6 +1117,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CONTINUE_AS_RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
     }
+
   }
 
   private class HasFailureFromOrigin implements ArgumentMatcher<AttemptFailureInput> {
