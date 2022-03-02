@@ -96,8 +96,8 @@ The following variables are relevant to both Docker and Kubernetes.
 ### Kubernetes-Only
 #### Jobs
 1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
-2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
-3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each kv-pair is separated by a `,`.
+2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
 5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
 6. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
