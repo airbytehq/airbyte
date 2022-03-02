@@ -942,8 +942,8 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(NamespaceTestCaseProvider.class)
   public void testNamespaces(final String testCaseId, final String namespace, final String normalizedNamespace) throws Exception {
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
-    nameTransformer.ifPresent(namingConventionTransformer ->
-        assertNamespaceNormalization(testCaseId, normalizedNamespace, namingConventionTransformer.getIdentifier(namespace)));
+    nameTransformer.ifPresent(namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
+        namingConventionTransformer.getIdentifier(namespace)));
 
     if (!implementsNamespaces() || !supportNamespaceTest()) {
       return;
@@ -997,18 +997,16 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Set up the name transformer used by a destination to test it
-   * against a variety of namespaces.
+   * Set up the name transformer used by a destination to test it against a variety of namespaces.
    */
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.empty();
   }
 
   /**
-   * Override this method if the normalized namespace is different from the default one.
-   * E.g. S3 does not allow a name starting with a number. So it should change the
-   * expected normalized namespace when testCaseId = "s3a-1". Find the testCaseId
-   * in "namespace_test_cases.json".
+   * Override this method if the normalized namespace is different from the default one. E.g. S3 does
+   * not allow a name starting with a number. So it should change the expected normalized namespace
+   * when testCaseId = "s3a-1". Find the testCaseId in "namespace_test_cases.json".
    */
   protected void assertNamespaceNormalization(final String testCaseId,
                                               final String expectedNormalizedNamespace,
@@ -1020,7 +1018,7 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
