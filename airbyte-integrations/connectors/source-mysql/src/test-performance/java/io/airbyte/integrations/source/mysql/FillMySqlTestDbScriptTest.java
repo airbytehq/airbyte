@@ -12,6 +12,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +36,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
+  protected Database setupDatabase(final String dbName) throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "your_host")
         .put("port", 3306)
@@ -54,7 +55,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             dbName),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
-        "zeroDateTimeBehavior=convertToNull");
+        Map.of("zeroDateTimeBehavior", "convertToNull"));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
