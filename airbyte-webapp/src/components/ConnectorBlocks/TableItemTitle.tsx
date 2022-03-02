@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 type IProps = {
   type: "source" | "destination";
@@ -46,6 +47,8 @@ const TableItemTitle: React.FC<IProps> = ({
   entityName,
   entityIcon,
 }) => {
+  const { hasFeature } = useFeatureService();
+  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
   const formatMessage = useIntl().formatMessage;
   const options = [
     {
@@ -84,7 +87,7 @@ const TableItemTitle: React.FC<IProps> = ({
           }}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen}>
+            <Button onClick={onOpen} disabled={!allowCreateConnection}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}
