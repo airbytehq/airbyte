@@ -12,10 +12,14 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -91,6 +95,27 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return new HashSet<>(database.bufferedResultSetQuery(
+        connection -> {
+          connection.setAutoCommit(true);
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT schemaname, tablename "
+                  + "FROM   pg_tables "
+                  + "WHERE  has_table_privilege(schemaname||'.'||tablename, 'select') = true AND schemaname = ?;");
+          ps.setString(1, schema);
+          return ps.executeQuery();
+        },
+        resultSet -> {
+          final JsonNode json = sourceOperations.rowToJson(resultSet);
+          return JdbcPrivilegeDto.builder()
+              .schemaName(json.get("schemaname").asText())
+              .tableName(json.get("tablename").asText())
+              .build();
+        }));
   }
 
   public static void main(final String[] args) throws Exception {

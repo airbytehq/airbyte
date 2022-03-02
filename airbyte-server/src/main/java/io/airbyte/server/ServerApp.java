@@ -31,7 +31,9 @@ import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.TemporalEventRunner;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -47,7 +49,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -141,6 +142,7 @@ public class ServerApp implements ServerRunnable {
 
   public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
@@ -159,12 +161,12 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = jobsDatabaseInstance.getInitialized();
@@ -184,16 +186,14 @@ public class ServerApp implements ServerRunnable {
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
-        new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
+        new DefaultSchedulerJobClient(jobPersistence,
+            new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs),
-        configs.getWorkspaceRoot(),
-        configs.getAirbyteVersionOrWarning(),
-        featureFlags);
+    final EventRunner eventRunner = new TemporalEventRunner(
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
 
     LOGGER.info("Starting server...");
 
@@ -209,23 +209,23 @@ public class ServerApp implements ServerRunnable {
         trackingClient,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        new WorkerConfigs(configs),
+        workerConfigs,
         configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
         httpClient,
         featureFlags,
-        temporalWorkerRunFactory);
+        eventRunner);
   }
 
-  private static void migrateExistingConnection(final ConfigRepository configRepository, final TemporalWorkerRunFactory temporalWorkerRunFactory)
+  private static void migrateExistingConnection(final ConfigRepository configRepository, final EventRunner eventRunner)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     LOGGER.info("Start migration to the new scheduler...");
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
             .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
-    temporalWorkerRunFactory.migrateSyncIfNeeded(connectionIds);
+    eventRunner.migrateSyncIfNeeded(connectionIds);
     LOGGER.info("Done migrating to the new scheduler...");
   }
 

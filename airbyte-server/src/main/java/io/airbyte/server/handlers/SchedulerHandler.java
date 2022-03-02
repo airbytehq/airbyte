@@ -29,6 +29,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -44,6 +45,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -60,7 +62,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -87,7 +88,8 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
+  private final FeatureFlags featureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SchedulerJobClient schedulerJobClient,
@@ -98,7 +100,8 @@ public class SchedulerHandler {
                           final OAuthConfigSupplier oAuthConfigSupplier,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                          final EventRunner eventRunner,
+                          final FeatureFlags featureFlags) {
     this(
         configRepository,
         schedulerJobClient,
@@ -111,7 +114,9 @@ public class SchedulerHandler {
         oAuthConfigSupplier,
         workerEnvironment,
         logConfigs,
-        temporalWorkerRunFactory);
+        eventRunner,
+        featureFlags,
+        new JobConverter(workerEnvironment, logConfigs));
   }
 
   @VisibleForTesting
@@ -126,7 +131,9 @@ public class SchedulerHandler {
                    final OAuthConfigSupplier oAuthConfigSupplier,
                    final WorkerEnvironment workerEnvironment,
                    final LogConfigs logConfigs,
-                   final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                   final EventRunner eventRunner,
+                   final FeatureFlags featureFlags,
+                   final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -138,8 +145,9 @@ public class SchedulerHandler {
     this.oAuthConfigSupplier = oAuthConfigSupplier;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobConverter = new JobConverter(workerEnvironment, logConfigs);
-    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.eventRunner = eventRunner;
+    this.featureFlags = featureFlags;
+    this.jobConverter = jobConverter;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -307,6 +315,9 @@ public class SchedulerHandler {
 
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    if (featureFlags.usesNewScheduler()) {
+      return createManualRun(connectionIdRequestBody.getConnectionId());
+    }
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
@@ -342,25 +353,18 @@ public class SchedulerHandler {
         standardSync,
         sourceImageName,
         destinationImageName,
-        standardSyncOperations);
-
-    return jobConverter.getJobInfoRead(job);
-  }
-
-  public JobInfoRead resetConnection(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.resetConnection(connectionId);
-
-    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
-    }
-
-    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
+        standardSyncOperations,
+        sourceDef.getResourceRequirements(),
+        destinationDef.getResourceRequirements());
 
     return jobConverter.getJobInfoRead(job);
   }
 
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
+    if (featureFlags.usesNewScheduler()) {
+      return resetConnectionWithNewScheduler(connectionIdRequestBody.getConnectionId());
+    }
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
@@ -394,6 +398,10 @@ public class SchedulerHandler {
 
   // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    if (featureFlags.usesNewScheduler()) {
+      createNewSchedulerCancellation(jobIdRequestBody.getId());
+    }
+
     final long jobId = jobIdRequestBody.getId();
 
     // prevent this job from being scheduled again
@@ -453,8 +461,21 @@ public class SchedulerHandler {
     return destinationDef.getSpec();
   }
 
-  public JobInfoRead createManualRun(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.startNewManualSync(connectionId);
+  private JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
+    final Job job = jobPersistence.getJob(id);
+
+    final ManualSyncSubmissionResult cancellationSubmissionResult = eventRunner.startNewCancelation(UUID.fromString(job.getScope()));
+
+    if (cancellationSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
+    }
+
+    final Job cancelledJob = jobPersistence.getJob(id);
+    return jobConverter.getJobInfoRead(cancelledJob);
+  }
+
+  private JobInfoRead createManualRun(final UUID connectionId) throws IOException {
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.startNewManualSync(connectionId);
 
     if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
@@ -465,17 +486,16 @@ public class SchedulerHandler {
     return jobConverter.getJobInfoRead(job);
   }
 
-  public JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
-    final Job job = jobPersistence.getJob(id);
+  private JobInfoRead resetConnectionWithNewScheduler(final UUID connectionId) throws IOException {
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.resetConnection(connectionId);
 
-    final ManualSyncSubmissionResult cancellationSubmissionResult = temporalWorkerRunFactory.startNewCancelation(UUID.fromString(job.getScope()));
-
-    if (cancellationSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
+    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
     }
 
-    final Job cancelledJob = jobPersistence.getJob(id);
-    return jobConverter.getJobInfoRead(cancelledJob);
+    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
+
+    return jobConverter.getJobInfoRead(job);
   }
 
 }

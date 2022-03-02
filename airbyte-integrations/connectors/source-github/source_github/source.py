@@ -146,8 +146,21 @@ class SourceGithub(AbstractSource):
             for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
                 next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
             return True, None
+
         except Exception as e:
-            return False, repr(e)
+            message = repr(e)
+            if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
+                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')"
+                full_repo_name = message.split("https://api.github.com/repos/")[1]
+                full_repo_name = full_repo_name.split("?")[0]
+                message = f'Unknown repo name: "{full_repo_name}", use existing full repo name <organization>/<repository>'
+            elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
+                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')"
+                org_name = message.split("https://api.github.com/orgs/")[1]
+                org_name = org_name.split("/")[0]
+                message = f'Unknown organization name: "{org_name}"'
+
+            return False, message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)

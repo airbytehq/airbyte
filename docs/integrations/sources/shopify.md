@@ -33,6 +33,7 @@ This Source is capable of syncing the following core Streams:
 * [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
+* [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction))
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
 * [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
@@ -101,7 +102,10 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.30 | 2021-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
+| 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions |
+| 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
+| 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
+| 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
 | 0.1.29 | 2022-01-20 | [9049](https://github.com/airbytehq/airbyte/pull/9248) | Added `shop_url` to the record for all streams |
 | 0.1.28 | 2022-01-19 | [9591](https://github.com/airbytehq/airbyte/pull/9591) | Implemented `OAuth2.0` authentication method for Airbyte Cloud |
 | 0.1.27 | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049) | Update connector fields title/description |

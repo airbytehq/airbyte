@@ -63,8 +63,10 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
     return Object.entries(widgetsInfo)
       .filter(([_, v]) => isDefined(v.const))
       .reduce((acc, [k, v]) => setIn(acc, k, v.const), values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setValues(formInitialValues), [formInitialValues]);
 
   return null;

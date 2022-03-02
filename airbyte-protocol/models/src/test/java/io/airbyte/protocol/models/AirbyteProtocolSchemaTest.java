@@ -26,4 +26,11 @@ class AirbyteProtocolSchemaTest {
     }
   }
 
+  @Test
+  void testJsonSchemaType() {
+    for (final AirbyteProtocolSchema value : AirbyteProtocolSchema.values()) {
+      assertTrue(Files.exists(value.getFile().toPath()));
+    }
+  }
+
 }

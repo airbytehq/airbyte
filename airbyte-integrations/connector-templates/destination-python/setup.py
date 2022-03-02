@@ -15,7 +15,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="destination_{{snakeCase name}}",
-    description="Destination implementation for {{titleCase name}}.",
+    description="Destination implementation for {{capitalCase name}}.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

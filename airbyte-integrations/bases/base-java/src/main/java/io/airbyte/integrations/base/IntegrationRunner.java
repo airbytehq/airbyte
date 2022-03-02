@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -84,6 +85,7 @@ public class IntegrationRunner {
         integration.getClass().getSimpleName(),
         parsed.getCommand().toString(),
         true);
+    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
     try {
       runInternal(transaction, parsed);
       transaction.finish(SpanStatus.OK);
@@ -114,14 +116,8 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
         } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector
-              .accept(
-                  new AirbyteMessage()
-                      .withType(Type.CONNECTION_STATUS)
-                      .withConnectionStatus(
-                          new AirbyteConnectionStatus()
-                              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                              .withMessage(e.getMessage())));
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
@@ -139,9 +135,8 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
-        try (messageIterator) {
-          messageIterator.forEachRemaining(outputRecordCollector::accept);
+        try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+          AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
         }
       }
       // destination only
@@ -149,8 +144,9 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
-        consumeWriteStream(consumer);
+        try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+          AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+        }
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
     }
@@ -163,16 +159,14 @@ public class IntegrationRunner {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
-    try (consumer) {
-      consumer.start();
-      while (input.hasNext()) {
-        final String inputString = input.next();
-        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (messageOptional.isPresent()) {
-          consumer.accept(messageOptional.get());
-        } else {
-          LOGGER.error("Received invalid message: " + inputString);
-        }
+    consumer.start();
+    while (input.hasNext()) {
+      final String inputString = input.next();
+      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+      if (messageOptional.isPresent()) {
+        consumer.accept(messageOptional.get());
+      } else {
+        LOGGER.error("Received invalid message: " + inputString);
       }
     }
   }
@@ -202,7 +196,7 @@ public class IntegrationRunner {
 
     // https://docs.sentry.io/platforms/java/configuration/
     Sentry.init(options -> {
-      options.setDsn(env.getOrDefault("SENTRY_DSN", ""));
+      options.setDsn(enableSentry ? env.getOrDefault("SENTRY_DSN", "") : "");
       options.setEnableExternalConfiguration(true);
       options.setTracesSampleRate(enableSentry ? 1.0 : 0.0);
       options.setRelease(String.format("%s@%s", connector, version));

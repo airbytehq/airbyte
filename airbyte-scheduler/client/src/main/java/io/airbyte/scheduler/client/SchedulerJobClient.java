@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.client;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -11,6 +12,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.scheduler.models.Job;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Exposes a way of executing short-lived jobs as RPC calls. If it returns successfully, it
@@ -24,7 +26,9 @@ public interface SchedulerJobClient {
                                StandardSync standardSync,
                                String sourceDockerImage,
                                String destinationDockerImage,
-                               List<StandardSyncOperation> standardSyncOperations)
+                               List<StandardSyncOperation> standardSyncOperations,
+                               @Nullable ActorDefinitionResourceRequirements sourceResourceRequirements,
+                               @Nullable ActorDefinitionResourceRequirements destinationResourceRequirements)
       throws IOException;
 
   Job createOrGetActiveResetConnectionJob(DestinationConnection destination,

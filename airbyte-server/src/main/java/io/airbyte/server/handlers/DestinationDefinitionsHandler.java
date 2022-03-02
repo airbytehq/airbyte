@@ -13,14 +13,17 @@ import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -28,6 +31,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -73,10 +77,28 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
-          .icon(loadIcon(standardDestinationDefinition.getIcon()));
+          .icon(loadIcon(standardDestinationDefinition.getIcon()))
+          .releaseStage(getReleaseStage(standardDestinationDefinition))
+          .releaseDate(getReleaseDate(standardDestinationDefinition))
+          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
+  }
+
+  private static ReleaseStage getReleaseStage(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseStage() == null) {
+      return null;
+    }
+    return ReleaseStage.fromValue(standardDestinationDefinition.getReleaseStage().value());
+  }
+
+  private static LocalDate getReleaseDate(final StandardDestinationDefinition standardDestinationDefinition) {
+    if (standardDestinationDefinition.getReleaseDate() == null || standardDestinationDefinition.getReleaseDate().isBlank()) {
+      return null;
+    }
+
+    return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
@@ -108,22 +130,24 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(
-        destinationDefinitionCreate.getDockerRepository(),
-        destinationDefinitionCreate.getDockerImageTag());
+        destinationDefCreate.getDockerRepository(),
+        destinationDefCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(id)
-        .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
-        .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
-        .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
-        .withName(destinationDefinitionCreate.getName())
-        .withIcon(destinationDefinitionCreate.getIcon())
+        .withDockerRepository(destinationDefCreate.getDockerRepository())
+        .withDockerImageTag(destinationDefCreate.getDockerImageTag())
+        .withDocumentationUrl(destinationDefCreate.getDocumentationUrl().toString())
+        .withName(destinationDefCreate.getName())
+        .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -142,6 +166,9 @@ public class DestinationDefinitionsHandler {
     final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
+    final ActorDefinitionResourceRequirements updatedResourceReqs = destinationDefinitionUpdate.getResourceRequirements() != null
+        ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
+        : currentDestination.getResourceRequirements();
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
@@ -151,7 +178,10 @@ public class DestinationDefinitionsHandler {
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
         .withSpec(spec)
-        .withTombstone(currentDestination.getTombstone());
+        .withTombstone(currentDestination.getTombstone())
+        .withReleaseStage(currentDestination.getReleaseStage())
+        .withReleaseDate(currentDestination.getReleaseDate())
+        .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);

@@ -10,10 +10,12 @@ import { LoadingPage } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
 import ConnectionBlock from "components/ConnectionBlock";
 import HeadTitle from "components/HeadTitle";
+import CreateConnectionContent from "components/CreateConnectionContent";
+
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
-import CreateConnectionContent from "components/CreateConnectionContent";
+
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -25,10 +27,6 @@ import {
   SourceDefinition,
 } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
-
-type IProps = {
-  type?: "source" | "destination" | "connection";
-};
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -42,6 +40,24 @@ export enum EntityStepsTypes {
   CONNECTION = "connection",
 }
 
+const hasSourceId = (state: unknown): state is { sourceId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceId?: string }).sourceId === "string"
+  );
+};
+
+const hasDestinationId = (
+  state: unknown
+): state is { destinationId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationId?: string }).destinationId === "string"
+  );
+};
+
 function usePreloadData(): {
   sourceDefinition?: SourceDefinition;
   destination?: Destination;
@@ -52,7 +68,7 @@ function usePreloadData(): {
 
   const source = useResource(
     SourceResource.detailShape(),
-    location.state?.sourceId
+    hasSourceId(location.state)
       ? {
           sourceId: location.state.sourceId,
         }
@@ -70,7 +86,7 @@ function usePreloadData(): {
 
   const destination = useResource(
     DestinationResource.detailShape(),
-    location.state?.destinationId
+    hasDestinationId(location.state)
       ? {
           destinationId: location.state.destinationId,
         }
@@ -88,27 +104,27 @@ function usePreloadData(): {
   return { source, sourceDefinition, destination, destinationDefinition };
 }
 
-const CreationFormPage: React.FC<IProps> = ({}) => {
+const CreationFormPage: React.FC = () => {
   const { location, push } = useRouter();
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
 
-  const type =
+  const type: EntityStepsTypes =
     locationType === "connections"
-      ? "connection"
+      ? EntityStepsTypes.CONNECTION
       : locationType === "source"
-      ? "destination"
-      : "source";
+      ? EntityStepsTypes.DESTINATION
+      : EntityStepsTypes.SOURCE;
 
   const hasConnectors =
-    location.state?.sourceId && location.state?.destinationId;
+    hasSourceId(location.state) && hasDestinationId(location.state);
   const [currentStep, setCurrentStep] = useState(
     hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
   );
 
   const [currentEntityStep, setCurrentEntityStep] = useState(
-    location.state?.sourceId
+    hasSourceId(location.state)
       ? EntityStepsTypes.DESTINATION
       : EntityStepsTypes.SOURCE
   );
@@ -150,7 +166,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
           <>
-            {type === "connection" && (
+            {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm
                 type="source"
                 onSubmit={onSelectExistingSource}
@@ -172,7 +188,7 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         return (
           <>
-            {type === "connection" && (
+            {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm
                 type="destination"
                 onSubmit={onSelectExistingDestination}
@@ -191,10 +207,10 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
 
     const afterSubmitConnection = (connection: Connection) => {
       switch (type) {
-        case "destination":
+        case EntityStepsTypes.DESTINATION:
           push(`../${source?.sourceId}`);
           break;
-        case "source":
+        case EntityStepsTypes.SOURCE:
           push(`../${destination?.destinationId}`);
           break;
         default:
@@ -222,15 +238,15 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
       ? [
           {
             id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id={"onboarding.createSource"} />,
+            name: <FormattedMessage id="onboarding.createSource" />,
           },
           {
             id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id={"onboarding.createDestination"} />,
+            name: <FormattedMessage id="onboarding.createDestination" />,
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+            name: <FormattedMessage id="onboarding.setUpConnection" />,
           },
         ]
       : [
@@ -238,27 +254,22 @@ const CreationFormPage: React.FC<IProps> = ({}) => {
             id: StepsTypes.CREATE_ENTITY,
             name:
               type === "destination" ? (
-                <FormattedMessage id={"onboarding.createDestination"} />
+                <FormattedMessage id="onboarding.createDestination" />
               ) : (
-                <FormattedMessage id={"onboarding.createSource"} />
+                <FormattedMessage id="onboarding.createSource" />
               ),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+            name: <FormattedMessage id="onboarding.setUpConnection" />,
           },
         ];
 
-  const titleId = (() => {
-    switch (type) {
-      case "connection":
-        return "connection.newConnectionTitle";
-      case "destination":
-        return "destinations.newDestinationTitle";
-      case "source":
-        return "sources.newSourceTitle";
-    }
-  })();
+  const titleId: string = ({
+    [EntityStepsTypes.CONNECTION]: "connection.newConnectionTitle",
+    [EntityStepsTypes.DESTINATION]: "destinations.newDestinationTitle",
+    [EntityStepsTypes.SOURCE]: "sources.newSourceTitle",
+  } as Record<EntityStepsTypes, string>)[type];
 
   return (
     <MainPageWithScroll

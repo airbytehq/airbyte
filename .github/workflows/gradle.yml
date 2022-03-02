@@ -112,7 +112,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build -x :airbyte-workers:test --scan
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
@@ -305,8 +305,8 @@ jobs:
         with:
           java-version: "17"
 
-      # octavia-cli install and testing requires Python. 
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1. 
+      # octavia-cli install and testing requires Python.
+      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8"
@@ -482,8 +482,8 @@ jobs:
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
-          # github-self-hosted-runner-ubuntu-20-with-120gdisk-docker-20.10.7
-          ec2-image-id: ami-0d4083c04fde515c4
+          # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
+          ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -523,16 +523,6 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Install socat (required for port forwarding)
-        run: |
-          # wait to receive lock (see https://askubuntu.com/questions/132059/how-to-make-a-package-manager-wait-if-another-instance-of-apt-is-running)
-          while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
-             sleep 1
-          done
-
-          sudo apt-get update
-          sudo apt-get install socat
-
       - name: Create cluster config file
         run: |
           cat > /tmp/kind-config.yaml <<EOF
@@ -564,7 +554,7 @@ jobs:
           HOME: /home/runner
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
@@ -626,3 +616,125 @@ jobs:
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
+
+  ## Kube Acceptance Tests (with scheduler v2 - both temporal changes and container orchestrator)
+  # In case of self-hosted EC2 errors, remove this block.
+  # Docker acceptance tests run as part of the build job.
+  start-kube-acceptance-test-runner-v2:
+    name: Start Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
+          ec2-image-id: ami-0c1a9bc22624339d8
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+  kube-acceptance-test-v2:
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    needs: start-kube-acceptance-test-runner-v2 # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }} # run the job on the newly created runner
+    environment: more-secrets
+    name: Acceptance Tests (Kube v2)
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.13.0"
+
+      - name: Fix EC-2 Runner
+        run: |
+          mkdir -p /home/runner
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Create cluster config file
+        run: |
+          cat > /tmp/kind-config.yaml <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+          EOF
+
+      - name: KIND Kubernetes Cluster Setup
+        uses: helm/kind-action@v1.2.0
+        with:
+          node_image: kindest/node:v1.21.2
+          config: /tmp/kind-config.yaml
+        # In case of self-hosted EC2 errors, remove this env block.
+        env:
+          USER: root
+          HOME: /home/runner
+          CHANGE_MINIKUBE_NONE_USER: true
+
+      - name: Build Platform Docker Images
+        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+        run: |
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: Kubernetes Logs
+          path: /tmp/kubernetes_logs/*
+
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-kube-acceptance-test-runner-v2:
+    name: Stop Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
+    needs:
+      - start-kube-acceptance-test-runner-v2 # required to get output from the start-runner job
+      - kube-acceptance-test-v2 # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.3.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
+          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
