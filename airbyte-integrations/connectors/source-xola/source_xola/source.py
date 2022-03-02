@@ -1,4 +1,3 @@
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -8,6 +7,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 import json
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 
 # Basic full refresh stream
@@ -31,7 +32,17 @@ class XolaStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        paging_info = None
+
+        if "paging" in response.json().keys():
+            next_url = response.json()["paging"]["next"]
+            parsed_url = urlparse(next_url)
+            limit = parse_qs(parsed_url.query)['limit'][0]
+            skip = parse_qs(parsed_url.query)['skip'][0]
+
+            paging_info = {'limit': limit, 'skip': skip}
+
+        return paging_info
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -184,6 +195,7 @@ class Transactions(XolaStream):
 
             modified_response.append(resp)
         return modified_response
+
 
 # Basic incremental stream
 
