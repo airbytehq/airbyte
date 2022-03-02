@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 @Tag("logger-client")
 public class GcsLogsTest {
 
@@ -33,15 +35,21 @@ public class GcsLogsTest {
    * Generate enough files to force pagination and confirm all data is read.
    */
   @Test
-  public void testRetrieveAllLogs() throws IOException {
-    final File data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
+  public void testRetrieveAllLogs() {
+    final File data;
+    try {
+      data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
+      final var retrieved = new ArrayList<String>();
+      Files.lines(data.toPath()).forEach(retrieved::add);
 
-    final var retrieved = new ArrayList<String>();
-    Files.lines(data.toPath()).forEach(retrieved::add);
+      final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
-    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+      assertEquals(expected, retrieved);
+    } catch (final Exception e) {
+      log.error("Gcs test error: ", e);
+      e.printStackTrace();
+    }
 
-    assertEquals(expected, retrieved);
   }
 
   /**
