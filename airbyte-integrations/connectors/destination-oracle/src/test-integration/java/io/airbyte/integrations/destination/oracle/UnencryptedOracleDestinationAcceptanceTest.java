@@ -75,7 +75,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override
