@@ -111,7 +111,9 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in: 
+   * Example - us-west-1: `xy12345.snowflakecomputing.com`
+   * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
 * **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
 * **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
 * **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
@@ -224,7 +226,10 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
-| 0.4.15  | 2022-02-23 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
+| 0.4.18  | 2022-02-23 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
+| 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
+| 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |
 | 0.4.14  | 2022-02-17 | [\#10394](https://github.com/airbytehq/airbyte/pull/10394) | Reduce memory footprint. |
 | 0.4.13  | 2022-02-16 | [\#10212](https://github.com/airbytehq/airbyte/pull/10212) | Execute COPY command in parallel for S3 and GCS staging |
 | 0.4.12  | 2022-02-15 | [\#10342](https://github.com/airbytehq/airbyte/pull/10342) | Use connection pool, and fix connection leak. |
