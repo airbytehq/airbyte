@@ -309,7 +309,7 @@ public class KubePodProcess extends Process implements KubePod {
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
     try {
       pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Init pod not found after 5 minutes");
       LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
           podDefinition.getMetadata().getNamespace(),
