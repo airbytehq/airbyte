@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -87,13 +88,14 @@ public abstract class S3StreamCopier implements StreamCopier {
 
     this.maxPartsPerFile = maxPartsPerFile;
     this.partsAddedToCurrentFile = 0;
+
+    LOGGER.info("Constructed S3 stream copier with upload part size: {} MB", s3Config.getPartSize());
   }
 
   @Override
   public String prepareStagingFile() {
+    LOGGER.info("Preparing staging file...");
     if (partsAddedToCurrentFile == 0) {
-      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
-
       try {
         final S3CsvWriter writer = new S3CsvWriter.Builder(
             // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
@@ -106,38 +108,41 @@ public abstract class S3StreamCopier implements StreamCopier {
                 .queueCapacity(DEFAULT_QUEUE_CAPACITY)
                 .csvSettings(CSVFormat.DEFAULT)
                 .withHeader(false)
-                .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+                .csvSheetGenerator(StagingDatabaseCsvSheetGenerator.INSTANCE)
                 .build();
         currentFile = writer.getOutputPath();
         stagingWritersByFile.put(currentFile, writer);
         activeStagingWriterFileNames.add(currentFile);
         stagingFileNames.add(currentFile);
+
+        LOGGER.info("Created a new writer for file {}", currentFile);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
     }
     partsAddedToCurrentFile = (partsAddedToCurrentFile + 1) % maxPartsPerFile;
+    LOGGER.info("Parts added to current file: {}, {}", partsAddedToCurrentFile, currentFile);
     return currentFile;
   }
 
   @Override
   public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String filename) throws Exception {
-    if (stagingWritersByFile.containsKey(filename)) {
-      stagingWritersByFile.get(filename).write(id, recordMessage);
-    }
+    Preconditions.checkState(stagingWritersByFile.containsKey(filename));
+    stagingWritersByFile.get(filename).write(id, recordMessage);
   }
 
   @Override
   public void closeNonCurrentStagingFileWriters() throws Exception {
-    Set<String> removedKeys = new HashSet<>();
-    for (String key : activeStagingWriterFileNames) {
-      if (!key.equals(currentFile)) {
-        stagingWritersByFile.get(key).close(false);
-        stagingWritersByFile.remove(key);
-        removedKeys.add(key);
+    Set<String> closedWriters = new HashSet<>();
+    for (String filename : activeStagingWriterFileNames) {
+      LOGGER.info("Closing staging writer for file {} (current file: {})", filename, currentFile);
+      if (!filename.equals(currentFile)) {
+        stagingWritersByFile.remove(filename).close(false);
+        closedWriters.add(filename);
       }
     }
-    activeStagingWriterFileNames.removeAll(removedKeys);
+    LOGGER.info("Closed {} writers: {}", closedWriters.size(), closedWriters);
+    activeStagingWriterFileNames.removeAll(closedWriters);
   }
 
   @Override

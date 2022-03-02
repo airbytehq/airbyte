@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -36,6 +37,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
   private final CSVPrinter csvPrinter;
   private final String objectKey;
   private final String gcsFileLocation;
+  private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
 
   private S3CsvWriter(final S3DestinationConfig config,
                       final AmazonS3 s3Client,
@@ -51,7 +53,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
 
     this.csvSheetGenerator = csvSheetGenerator;
 
-    final String fileSuffix = "_" + UUID.randomUUID();
+    final String fileSuffix = "_" + ID_GENERATOR.incrementAndGet();
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 

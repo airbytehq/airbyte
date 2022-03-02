@@ -24,6 +24,8 @@ import java.util.UUID;
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
+  public static final StagingDatabaseCsvSheetGenerator INSTANCE = new StagingDatabaseCsvSheetGenerator();
+
   /**
    * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on
    * S3CsvWriter.

@@ -266,7 +266,7 @@ class S3CsvWriterTest {
             .queueCapacity(QUEUE_CAPACITY)
             .withHeader(false)
             .csvSettings(CSVFormat.DEFAULT)
-            .csvSheetGenerator(new StagingDatabaseCsvSheetGenerator())
+            .csvSheetGenerator(StagingDatabaseCsvSheetGenerator.INSTANCE)
             .build();
 
     writer.write(

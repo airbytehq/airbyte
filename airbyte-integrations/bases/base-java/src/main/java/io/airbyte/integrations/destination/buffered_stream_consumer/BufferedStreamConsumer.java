@@ -184,6 +184,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
         LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
         recordWriter.accept(entry.getKey(), entry.getValue());
+
         if (checkAndRemoveRecordWriter != null) {
           fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
         }

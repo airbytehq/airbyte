@@ -31,7 +31,7 @@ interface SnowflakeParallelCopyStreamCopier {
     ExecutorService executorService = Executors.newFixedThreadPool(5);
     List<CompletableFuture<Void>> futures = partitions.stream()
         .map(partition -> CompletableFuture.runAsync(() -> copyIntoStage(partition), executorService))
-        .collect(Collectors.toList());
+        .toList();
 
     try {
       // wait until all futures ready
