@@ -7,7 +7,7 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+    && apk --no-cache add tzdata build-base libffi-dev
 
 
 COPY setup.py ./
