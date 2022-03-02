@@ -113,9 +113,10 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
 
-      if (networkName != null) {
-        cmd.add("--network");
-        cmd.add(networkName);
+      if (imageName.startsWith("airbyte/destination-snowflake")) {
+        LOGGER.info("Exposing image {} port 6000", imageName);
+        cmd.add("-p");
+        cmd.add("6000:6000");
       }
 
       if (workspaceMountSource != null) {
