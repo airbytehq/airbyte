@@ -6,6 +6,7 @@ import { useAsyncFn } from "react-use";
 import { LoadingButton, Toggle } from "components";
 
 type IProps = {
+  allowSync?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
@@ -29,6 +30,7 @@ const StatusCell: React.FC<IProps> = ({
   onChangeStatus,
   isSyncing,
   onSync,
+  allowSync,
 }) => {
   const [{ loading }, OnLaunch] = useAsyncFn(
     async (event: React.SyntheticEvent) => {
@@ -44,7 +46,13 @@ const StatusCell: React.FC<IProps> = ({
   };
 
   if (!isManual) {
-    return <Toggle checked={enabled} onChange={OnToggleClick} />;
+    return (
+      <Toggle
+        checked={enabled}
+        onChange={OnToggleClick}
+        disabled={!allowSync}
+      />
+    );
   }
 
   if (isSyncing) {
@@ -56,7 +64,7 @@ const StatusCell: React.FC<IProps> = ({
   }
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading}>
+    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
       <FormattedMessage id="tables.launch" />
     </SmallButton>
   );

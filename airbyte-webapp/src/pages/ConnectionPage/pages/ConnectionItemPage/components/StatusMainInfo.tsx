@@ -35,6 +35,7 @@ type IProps = {
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
+  allowSync?: boolean;
 };
 
 const StatusMainInfo: React.FC<IProps> = ({
@@ -42,6 +43,7 @@ const StatusMainInfo: React.FC<IProps> = ({
   frequencyText,
   destinationDefinition,
   sourceDefinition,
+  allowSync,
 }) => {
   return (
     <MainInfo>
@@ -69,6 +71,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
           <EnabledControl
+            disabled={!allowSync}
             connection={connection}
             frequencyText={frequencyText}
           />
