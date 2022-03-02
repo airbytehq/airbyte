@@ -39,7 +39,7 @@ export type AuthSignUp = (form: {
   companyName: string;
   name: string;
   news: boolean;
-}) => Promise<User | null>;
+}) => Promise<void>;
 
 export type AuthChangeEmail = (
   email: string,
@@ -68,6 +68,8 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
+const getTempSignUpStorageKey = (currentUser: FbUser): string =>
+  `${currentUser.uid}/temp-signup-data`;
 const TempSignUpValuesProvider = {
   get: async (
     currentUser: FbUser
@@ -77,22 +79,31 @@ const TempSignUpValuesProvider = {
     news: boolean;
   }> => {
     try {
-      const storedData = JSON.parse(currentUser.displayName ?? "");
+      const key = getTempSignUpStorageKey(currentUser);
 
-      return storedData;
+      const storedValue = localStorage.getItem(key);
+
+      if (storedValue) {
+        return JSON.parse(storedValue);
+      }
     } catch (err) {
-      return {
-        companyName: "",
-        name: currentUser.email ?? "",
-        news: false,
-      };
+      // passthrough and return default values
     }
+
+    return {
+      companyName: "",
+      name: currentUser.email ?? "",
+      news: false,
+    };
   },
   save: async (
-    authService: GoogleAuthService,
+    currentUser: FbUser,
     v: { companyName: string; name: string; news: boolean }
   ) => {
-    return authService.updateProfile(JSON.stringify(v));
+    localStorage.setItem(
+      `${currentUser.uid}/temp-signup-data`,
+      JSON.stringify(v)
+    );
   },
 };
 
@@ -196,16 +207,15 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         companyName: string;
         name: string;
         news: boolean;
-      }): Promise<User | null> {
-        await authService.signUp(form.email, form.password);
-        await TempSignUpValuesProvider.save(authService, {
+      }): Promise<void> {
+        const creds = await authService.signUp(form.email, form.password);
+        await TempSignUpValuesProvider.save(creds.user, {
           companyName: form.companyName,
           name: form.name,
           news: form.news,
         });
 
         await authService.sendEmailVerifiedLink();
-        return null;
       },
       user: state.currentUser,
     }),
