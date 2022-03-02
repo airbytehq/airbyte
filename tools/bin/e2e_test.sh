@@ -16,9 +16,9 @@ mkdir -p /tmp/airbyte_local
 
 # Detach so we can run subsequent commands
 VERSION=dev TRACKING_STRATEGY=logging docker-compose up -d
-trap 'echo "docker-compose logs:" && docker-compose logs -t --tail 1000 && docker-compose down && docker rm -f $(docker ps -q --filter name=airbyte_ci_pg)' EXIT
+trap 'echo "docker-compose logs:" && docker-compose logs -t --tail 1000 && docker-compose down && docker stop airbyte_ci_pg' EXIT
 
-docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci --name airbyte_ci_pg postgres
+docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci --name airbyte_ci_pg postgres
 echo "Waiting for services to begin"
 sleep 30 # TODO need a better way to wait
 
