@@ -47,6 +47,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public JdbcDatabase getDatabase(final JsonNode config) {
+
     return SnowflakeDatabase.getDatabase(config);
   }
 
