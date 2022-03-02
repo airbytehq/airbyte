@@ -9,7 +9,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 from .definitions import BaseDefinition
 
-JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
+JINJA_ENV = Environment(loader=PackageLoader(__package__), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
 
 class FieldToRender:
