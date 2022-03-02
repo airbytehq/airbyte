@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 interface SnowflakeParallelCopyStreamCopier {
 
+  int STAGE_COPY_THREAD_SIZE = 5;
+
   /**
    * Generates list of staging files. See more
    * https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
@@ -28,7 +30,7 @@ interface SnowflakeParallelCopyStreamCopier {
    * completed.
    */
   default void copyFilesInParallel(List<List<String>> partitions) {
-    ExecutorService executorService = Executors.newFixedThreadPool(5);
+    ExecutorService executorService = Executors.newFixedThreadPool(STAGE_COPY_THREAD_SIZE);
     List<CompletableFuture<Void>> futures = partitions.stream()
         .map(partition -> CompletableFuture.runAsync(() -> copyIntoStage(partition), executorService))
         .toList();

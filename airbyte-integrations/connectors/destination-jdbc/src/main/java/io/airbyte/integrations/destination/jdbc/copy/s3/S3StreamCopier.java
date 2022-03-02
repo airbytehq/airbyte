@@ -36,7 +36,9 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
-  private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
+  // The S3 cli uses 10 threads by default, but each thread will hold
+  // upto partSize amount of memory. So we cannot set it to very high.
+  private static final int DEFAULT_UPLOAD_THREADS = 2;
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
 
   protected final AmazonS3 s3Client;
