@@ -13,7 +13,7 @@ from .resources import BaseResource
 from .resources import factory as resource_factory
 
 
-@click.command(name="apply", help="Create an Airbyte resources from a YAML definition")
+@click.command(name="apply", help="Create or update Airbyte remote resources according local YAML configurations.")
 @click.option("--file", "-f", "configurations_files", type=click.Path(), multiple=True)
 @click.option("--force", is_flag=True, default=False, help="Does not display the diff and updates without user prompt.")
 @click.pass_context
