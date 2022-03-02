@@ -61,10 +61,15 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
+    try {
+      final var data = new GcsLogs(GcsLogsTest::getClientFactory).tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
-    final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
-    assertEquals(data, expected);
+      final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+      assertEquals(data, expected);
+    } catch (final Exception e) {
+      log.error("Gcs test error: ", e);
+      e.printStackTrace();
+    }
   }
 
 }
