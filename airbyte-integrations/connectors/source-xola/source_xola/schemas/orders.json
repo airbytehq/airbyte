@@ -5,7 +5,7 @@
       "type":"object",
       "additionalProperties": false,
       "properties":{
-         "id":{
+         "order_id":{
             "type":["null","string"]
          },
          "tags":{
@@ -56,6 +56,9 @@
          "quantity":{
             "type":["null","integer"]
          },
+        "createdAt": {
+          "type":["null","string"]
+        },
          "event":{
             "type":["null","string"]
          },

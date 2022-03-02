@@ -70,7 +70,7 @@ class XolaStream(HttpStream, ABC):
 
 
 class Orders(XolaStream):
-    primary_key = "id"
+    primary_key = "order_id"
     seller_id = None
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
@@ -107,6 +107,9 @@ class Orders(XolaStream):
             resp = {"tags": []}
             for tag in data["tags"]:
                 resp["tags"].append({"id": tag["id"]})
+            # customerName
+            resp["order_id"] = data["id"]
+            resp["createdAt"] = data["createdAt"]
             # customerName
             resp["customerName"] = data["customerName"]
             # customerEmail
