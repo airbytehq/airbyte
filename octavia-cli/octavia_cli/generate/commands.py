@@ -7,7 +7,7 @@ import octavia_cli.generate.connection as connection
 import octavia_cli.generate.definitions as definitions
 from octavia_cli.check_context import ProjectNotInitializedError
 
-from .renderer import ConnectionSpecificationRenderer
+from .renderer import ConnectionRenderer, ConnectionSpecificationRenderer
 
 
 @click.command(name="generate", help="Generate a YAML template for a source or a destination.")
@@ -40,9 +40,8 @@ def generate_connection(ctx: click.Context, source_id: str, destination_id: str,
     #         "Your octavia project is not initialized, please run 'octavia init' before running 'octavia generate'."
     #     )
 
-    connection.Connection(ctx.obj["API_CLIENT"], source_id, destination_id, resource_name).generate()
-    # renderer = Connection2SpecificationRenderer(conn)
-    # output_path = renderer.write_yaml(project_path=".")
-    # message = f"✅ - Created the specification template for {resource_name} in {output_path}."
-    message = "ohoy"
+    catalog = connection.Connection(ctx.obj["API_CLIENT"], source_id, destination_id, resource_name).generate()
+    renderer = ConnectionRenderer(resource_name, source_id, destination_id, catalog)
+    output_path = renderer.write_yaml(project_path=".")
+    message = f"✅ - Created the specification template for {resource_name} in {output_path}."
     click.echo(click.style(message, fg="green"))

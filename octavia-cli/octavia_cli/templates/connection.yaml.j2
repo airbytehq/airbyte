@@ -1,43 +1,42 @@
 name: {{ resource_name }}
 source_id: {{ source_id }}
 destination_id: {{ destination_id }}
-namespace_definition: {{ namespace_def }}
-namespace_format: {{ namespace_format }}
+namespace_definition: source
+namespace_format: ${SOURCE_NAMESPACE}
+prefix: ""
 operation_ids:
-{%- for op in op_ids %}
-- {{ op }}
-{%- endfor %}
-prefix: {{ prefix }}
+- 6c9e2330-4af3-47a9-b252-12fcfefcab55
 resource_requirements:
-  cpu_limit: {{ cpu_limit }}
-  cpu_request: {{ cpu_request }}
-  memory_limit: {{ memory_limit }}
-  memory_request: {{ memory_request }}
+  cpu_limit: ""
+  cpu_request: ""
+  memory_limit: ""
+  memory_request: ""
 schedule:
-  time_unit: {{ schedule_time_unit }}
-  units: {{ schedule_time_value }}
-status: {{ status }}
+  time_unit: 24
+  units: hours
+status: active
 sync_catalog:
   streams:
-  {%- for stream in stream_list %}
-  - config:
-      alias_name: {{ stream.config.alias_name }}
-      cursor_field:
-      - {{ stream.config.cursor_field }}
-      destination_sync_mode: {{ stream.config.destination_sync_mode }}
-      primary_key:
-      - - {{ stream.config.primary_key }}
-      selected: {{ stream.config.selected }}
-      sync_mode: {{ stream.config.sync_mode }}
-    stream:
-      default_cursor_field:
-      - {{ stream.stream.cursor_field }}
-      json_schema: {}
+  {%- for stream in catalog %}
+  -  stream:
       name: {{ stream.stream.name }}
       namespace: {{ stream.stream.namespace }}
-      source_defined_cursor: {{ stream.stream.source_defined_cursor }}
+      json_schema: {}
+      default_cursor_field:
+      - {{ stream.stream.cursorField }}
+      source_defined_cursor: {{ stream.stream.sourceDefinedCursor }}
       source_defined_primary_key:
-      - - {{ stream.stream.primary_key }} 
+      - - {{ stream.stream.primaryKey }} 
       supported_sync_modes:
-      - {{ stream.stream.sync_modes }}
+      - {{ stream.stream.supportedSyncModes }}
+    config:
+      alias_name: {{ stream.config.aliasName }}
+      cursor_field:
+      - {{ stream.config.cursorField }}
+      destination_sync_mode: {{ stream.config.destinationSyncMode }}
+      primary_key:
+      - - {{ stream.config.primaryKey }}
+      selected: {{ stream.config.selected }}
+      sync_mode: {{ stream.config.syncMode }}
   {% endfor %}
+
