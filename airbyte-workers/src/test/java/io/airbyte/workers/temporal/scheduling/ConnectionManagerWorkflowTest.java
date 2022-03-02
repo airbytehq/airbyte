@@ -18,8 +18,8 @@ import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.G
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
@@ -104,8 +104,8 @@ public class ConnectionManagerWorkflowTest {
         .thenReturn(new JobCreationOutput(
             1L));
 
-    Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttempt(Mockito.any()))
-        .thenReturn(new AttemptCreationOutput(
+    Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
+        .thenReturn(new AttemptNumberCreationOutput(
             1));
 
     Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
@@ -503,7 +503,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -578,7 +578,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -667,7 +667,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
 
-      for (ChangedStateEvent event : events) {
+      for (final ChangedStateEvent event : events) {
         if (event.isValue()) {
           log.info("event = " + event);
         }
@@ -873,7 +873,7 @@ public class ConnectionManagerWorkflowTest {
       return Stream.of(
           Arguments.of(new Thread(() -> Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
-          Arguments.of(new Thread(() -> Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttempt(Mockito.any()))
+          Arguments.of(new Thread(() -> Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
           Arguments.of(new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
               .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any()))),
@@ -883,7 +883,7 @@ public class ConnectionManagerWorkflowTest {
 
     @ParameterizedTest
     @MethodSource("getSetupFailingFailingActivityBeforeRun")
-    void testGetStuckBeforeRun(Thread mockSetup) throws InterruptedException {
+    void testGetStuckBeforeRun(final Thread mockSetup) throws InterruptedException {
       mockSetup.run();
       Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
           Duration.ZERO));
@@ -973,7 +973,7 @@ public class ConnectionManagerWorkflowTest {
 
     @ParameterizedTest
     @MethodSource("getSetupFailingFailingActivityAfterRun")
-    void testGetStuckAfterRun(Consumer<ConnectionManagerWorkflow> signalSender, Thread mockSetup) throws InterruptedException {
+    void testGetStuckAfterRun(final Consumer<ConnectionManagerWorkflow> signalSender, final Thread mockSetup) throws InterruptedException {
       mockSetup.run();
 
       final UUID testId = UUID.randomUUID();
@@ -1055,7 +1055,7 @@ public class ConnectionManagerWorkflowTest {
     while (!isReady) {
       try {
         isReady = workflow.getState() != null;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.info("retrying...");
         Thread.sleep(100);
       }

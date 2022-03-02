@@ -211,7 +211,7 @@ public class JobCreationAndStatusUpdateActivityTest {
           .thenThrow(new IOException());
 
       Assertions.assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.createNewAttemptNumber(new AttemptCreationInput(
-              JOB_ID)))
+          JOB_ID)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
