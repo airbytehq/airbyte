@@ -1,16 +1,23 @@
 package io.airbyte.db.instance.jobs.migrations;
 
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.NEW_CONFIG_ERROR;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.NEW_MANUAL_CANCELLATION;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.NEW_REPLICATION_ORIGIN;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.NEW_SYSTEM_ERROR;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.OLD_CONFIG_ERROR;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.OLD_REPLICATION_ORIGIN;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.OLD_SYSTEM_ERROR;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.OLD_UNKNOWN;
+import static io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.OLD_MANUAL_CANCELLATION;
 import static org.jooq.impl.DSL.asterisk;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Metadata;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.jobs.AbstractJobsDatabaseTest;
 import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.AttemptFailureSummaryForMigration;
 import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration;
-import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration.FailureOrigin;
-import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration.FailureType;
-import io.airbyte.db.instance.jobs.AbstractJobsDatabaseTest;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
@@ -23,27 +30,31 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
 
   private static int currJobId = 1;
   private static final long timeNowMillis = System.currentTimeMillis();
+  private static final String ORIGIN_SOURCE = "source";
 
   // create pairs of old failure reasons and their fixed versions.
-  private static final FailureReasonForMigration originReplicationWorker = baseFailureReason().withFailureOrigin(FailureOrigin.REPLICATION_WORKER);
-  private static final FailureReasonForMigration fixedOriginReplicationWorker = baseFailureReason().withFailureOrigin(FailureOrigin.REPLICATION);
+  private static final FailureReasonForMigration originReplicationWorker = baseFailureReason().withFailureOrigin(OLD_REPLICATION_ORIGIN);
+  private static final FailureReasonForMigration fixedOriginReplicationWorker = baseFailureReason().withFailureOrigin(NEW_REPLICATION_ORIGIN);
 
-  private static final FailureReasonForMigration originUnknown = baseFailureReason().withFailureOrigin(FailureOrigin.UNKNOWN);
+  private static final FailureReasonForMigration originUnknown = baseFailureReason().withFailureOrigin(OLD_UNKNOWN);
   private static final FailureReasonForMigration fixedOriginUnknown = baseFailureReason().withFailureOrigin(null);
 
-  private static final FailureReasonForMigration typeManualCancellation = baseFailureReason().withFailureType(FailureType.MANUAL_CANCELLATION_OLD);
-  private static final FailureReasonForMigration fixedTypeManualCancellation = baseFailureReason().withFailureType(FailureType.MANUAL_CANCELLATION);
+  private static final FailureReasonForMigration typeManualCancellation = baseFailureReason().withFailureType(OLD_MANUAL_CANCELLATION);
+  private static final FailureReasonForMigration fixedTypeManualCancellation = baseFailureReason().withFailureType(NEW_MANUAL_CANCELLATION);
 
-  private static final FailureReasonForMigration typeSystemError = baseFailureReason().withFailureType(FailureType.SYSTEM_ERROR_OLD);
-  private static final FailureReasonForMigration fixedTypeSystemError = baseFailureReason().withFailureType(FailureType.SYSTEM_ERROR);
+  private static final FailureReasonForMigration typeSystemError = baseFailureReason().withFailureType(OLD_SYSTEM_ERROR);
+  private static final FailureReasonForMigration fixedTypeSystemError = baseFailureReason().withFailureType(NEW_SYSTEM_ERROR);
 
-  private static final FailureReasonForMigration typeConfigError = baseFailureReason().withFailureType(FailureType.CONFIG_ERROR_OLD);
-  private static final FailureReasonForMigration fixedTypeConfigError = baseFailureReason().withFailureType(FailureType.CONFIG_ERROR);
+  private static final FailureReasonForMigration typeConfigError = baseFailureReason().withFailureType(OLD_CONFIG_ERROR);
+  private static final FailureReasonForMigration fixedTypeConfigError = baseFailureReason().withFailureType(NEW_CONFIG_ERROR);
 
-  private static final FailureReasonForMigration typeUnknown = baseFailureReason().withFailureType(FailureType.UNKNOWN);
+  private static final FailureReasonForMigration typeUnknown = baseFailureReason().withFailureType(OLD_UNKNOWN);
   private static final FailureReasonForMigration fixedTypeUnknown = baseFailureReason().withFailureType(null);
 
-  private static final FailureReasonForMigration noChangeNeeded = baseFailureReason().withFailureOrigin(FailureOrigin.SOURCE);
+  // enum values that don't need updating, or aren't recognized at all, should be left untouched
+  private static final FailureReasonForMigration noChangeNeeded = baseFailureReason().withFailureOrigin(ORIGIN_SOURCE);
+  private static final FailureReasonForMigration unrecognizedValue = baseFailureReason().withFailureType("someUnrecognizedValue");
+
 
   // create failure summaries containing failure reasons that need fixing.
   // mixing in noChangeNeeded reasons in different spots to make sure the migration properly leaves those untouched.
@@ -53,6 +64,7 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
   private static final AttemptFailureSummaryForMigration summaryFixMultipleSystemErrorType = getFailureSummary(typeSystemError, typeSystemError);
   private static final AttemptFailureSummaryForMigration summaryFixConfigErrorType = getFailureSummary(typeConfigError);
   private static final AttemptFailureSummaryForMigration summaryNoChangeNeeded = getFailureSummary(noChangeNeeded, noChangeNeeded);
+  private static final AttemptFailureSummaryForMigration summaryFixOriginAndLeaveUnrecognizedValue = getFailureSummary(originReplicationWorker, unrecognizedValue);
 
   // define attempt ids corresponding to each summary above
   private static final Long attemptIdForFixReplicationOrigin = 1L;
@@ -61,6 +73,7 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
   private static final Long attemptIdForFixMultipleSystemErrorType = 4L;
   private static final Long attemptIdForFixConfigErrorType = 5L;
   private static final Long attemptIdForNoChangeNeeded = 6L;
+  private static final Long attemptIdForFixOriginAndLeaveUnrecognizedValue = 7L;
 
   // create expected fixed failure summaries after migration.
   private static final AttemptFailureSummaryForMigration expectedSummaryFixReplicationOrigin =
@@ -75,6 +88,8 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
       getFailureSummary(fixedTypeConfigError);
   private static final AttemptFailureSummaryForMigration expectedSummaryNoChangeNeeded =
       getFailureSummary(noChangeNeeded, noChangeNeeded);
+  private static final AttemptFailureSummaryForMigration expectedFixOriginAndLeaveUnrecognizedValue =
+      getFailureSummary(fixedOriginReplicationWorker, unrecognizedValue);
 
   @Test
   public void test() throws Exception {
@@ -98,6 +113,7 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
     insertAttemptWithSummary(ctx, attemptIdForFixMultipleSystemErrorType, summaryFixMultipleSystemErrorType);
     insertAttemptWithSummary(ctx, attemptIdForFixConfigErrorType, summaryFixConfigErrorType);
     insertAttemptWithSummary(ctx, attemptIdForNoChangeNeeded, summaryNoChangeNeeded);
+    insertAttemptWithSummary(ctx, attemptIdForFixOriginAndLeaveUnrecognizedValue, summaryFixOriginAndLeaveUnrecognizedValue);
   }
 
   private static void verifyEnumValuesFixed(final DSLContext ctx) {
@@ -107,7 +123,7 @@ public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJo
     assertEquals(expectedSummaryFixMultipleSystemErrorType, fetchFailureSummary(ctx, attemptIdForFixMultipleSystemErrorType));
     assertEquals(expectedSummaryFixConfigErrorType, fetchFailureSummary(ctx, attemptIdForFixConfigErrorType));
     assertEquals(expectedSummaryNoChangeNeeded, fetchFailureSummary(ctx, attemptIdForNoChangeNeeded));
-
+    assertEquals(expectedFixOriginAndLeaveUnrecognizedValue, fetchFailureSummary(ctx, attemptIdForFixOriginAndLeaveUnrecognizedValue));
   }
 
   private static void insertAttemptWithSummary(final DSLContext ctx, final Long attemptId, final AttemptFailureSummaryForMigration summary) {

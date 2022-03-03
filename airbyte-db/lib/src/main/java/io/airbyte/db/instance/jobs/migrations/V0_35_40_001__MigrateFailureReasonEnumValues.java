@@ -1,19 +1,14 @@
 package io.airbyte.db.instance.jobs.migrations;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.Metadata;
-import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration.FailureOrigin;
-import io.airbyte.db.instance.jobs.migrations.V0_35_40_001__MigrateFailureReasonEnumValues.FailureReasonForMigration.FailureType;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -32,6 +27,17 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_40_001__MigrateFailureReasonEnumValues.class);
 
+  @VisibleForTesting
+  static String OLD_MANUAL_CANCELLATION = "manualCancellation";
+  static String NEW_MANUAL_CANCELLATION = "manual_cancellation";
+  static String OLD_SYSTEM_ERROR = "systemError";
+  static String NEW_SYSTEM_ERROR = "system_error";
+  static String OLD_CONFIG_ERROR = "configError";
+  static String NEW_CONFIG_ERROR = "config_error";
+  static String OLD_REPLICATION_ORIGIN = "replicationWorker";
+  static String NEW_REPLICATION_ORIGIN = "replication";
+  static String OLD_UNKNOWN = "unknown";
+
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
@@ -44,15 +50,15 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
    * Finds all attempt record that have a failure summary containing a deprecated enum value. For each record, calls method to fix and update.
    */
   static void updateRecordsWithNewEnumValues(final DSLContext ctx) {
-    final Result<Record> results = ctx.fetch("""
+    final Result<Record> results = ctx.fetch(String.format("""
         SELECT A.* FROM attempts A, jsonb_array_elements(A.failure_summary->'failures') as f
-        WHERE f->>'failureOrigin' = 'unknown'
-        OR f->>'failureOrigin' = 'replicationWorker'
-        OR f->>'failureType' = 'unknown'
-        OR f->>'failureType' = 'configError'
-        OR f->>'failureType' = 'systemError'
-        OR f->>'failureType' = 'manualCancellation'
-        """);
+        WHERE f->>'failureOrigin' = '%s'
+        OR f->>'failureOrigin' = '%s'
+        OR f->>'failureType' = '%s'
+        OR f->>'failureType' = '%s'
+        OR f->>'failureType' = '%s'
+        OR f->>'failureType' = '%s'
+        """, OLD_UNKNOWN, OLD_REPLICATION_ORIGIN, OLD_UNKNOWN, OLD_CONFIG_ERROR, OLD_SYSTEM_ERROR, OLD_MANUAL_CANCELLATION));
     results.forEach(record -> updateAttemptFailureReasons(ctx, record));
   }
 
@@ -82,27 +88,27 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
    * Takes in a FailureSummary and replaces deprecated enum values with their updated versions.
    */
   private static AttemptFailureSummaryForMigration getFixedAttemptFailureSummary(final AttemptFailureSummaryForMigration failureSummary) {
-    final Map<FailureType, FailureType> oldFailureTypeToFixedFailureType = ImmutableMap.of(
-        FailureType.MANUAL_CANCELLATION_OLD, FailureType.MANUAL_CANCELLATION,
-        FailureType.SYSTEM_ERROR_OLD, FailureType.SYSTEM_ERROR,
-        FailureType.CONFIG_ERROR_OLD, FailureType.CONFIG_ERROR
+    final Map<String, String> oldFailureTypeToFixedFailureType = ImmutableMap.of(
+        OLD_MANUAL_CANCELLATION, NEW_MANUAL_CANCELLATION,
+        OLD_SYSTEM_ERROR, NEW_SYSTEM_ERROR,
+        OLD_CONFIG_ERROR, NEW_CONFIG_ERROR
     );
 
-    final Map<FailureOrigin, FailureOrigin> oldFailureOriginToFixedFailureOrigin = ImmutableMap.of(
-        FailureOrigin.REPLICATION_WORKER, FailureOrigin.REPLICATION
+    final Map<String, String> oldFailureOriginToFixedFailureOrigin = ImmutableMap.of(
+        OLD_REPLICATION_ORIGIN, NEW_REPLICATION_ORIGIN
     );
 
     final List<FailureReasonForMigration> fixedFailureReasons = new ArrayList<>();
 
     failureSummary.getFailures().stream().forEach(failureReason -> {
-      final FailureType failureType = failureReason.getFailureType();
-      final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
+      final String failureType = failureReason.getFailureType();
+      final String failureOrigin = failureReason.getFailureOrigin();
 
       // null failureType is valid and doesn't need correction
       if (failureType != null) {
         if (oldFailureTypeToFixedFailureType.containsKey(failureType)) {
           failureReason.setFailureType(oldFailureTypeToFixedFailureType.get(failureType));
-        } else if (failureType.equals(FailureType.UNKNOWN)) {
+        } else if (failureType.equals(OLD_UNKNOWN)) {
           failureReason.setFailureType(null);
         }
       }
@@ -111,7 +117,7 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       if (failureOrigin != null) {
         if (oldFailureOriginToFixedFailureOrigin.containsKey(failureOrigin)) {
           failureReason.setFailureOrigin(oldFailureOriginToFixedFailureOrigin.get(failureOrigin));
-        } else if (failureOrigin.equals(FailureOrigin.UNKNOWN)) {
+        } else if (failureOrigin.equals(OLD_UNKNOWN)) {
           failureReason.setFailureOrigin(null);
         }
       }
@@ -130,161 +136,117 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
    * will have those deprecated enum values removed, which would break deserialization within this migration.
    */
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  @JsonPropertyOrder({
-      "failureOrigin",
-      "failureType",
-      "internalMessage",
-      "externalMessage",
-      "metadata",
-      "stacktrace",
-      "retryable",
-      "timestamp"
-  })
-  static
-  class FailureReasonForMigration {
-
-    @JsonProperty("failureOrigin")
-    @JsonPropertyDescription("Indicates where the error originated. If not set, the origin of error is not well known.")
-    private FailureReasonForMigration.FailureOrigin failureOrigin;
-    @JsonProperty("failureType")
-    @JsonPropertyDescription("Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.")
-    private FailureReasonForMigration.FailureType failureType;
-    @JsonProperty("internalMessage")
-    @JsonPropertyDescription("Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.")
+  static class FailureReasonForMigration implements Serializable {
+    private String failureOrigin;
+    private String failureType;
     private String internalMessage;
-    @JsonProperty("externalMessage")
-    @JsonPropertyDescription("Human readable failure description for presentation in the UI to non-technical users.")
     private String externalMessage;
-    @JsonProperty("metadata")
-    @JsonPropertyDescription("Key-value pairs of relevant data")
     private Metadata metadata;
-    @JsonProperty("stacktrace")
-    @JsonPropertyDescription("Raw stacktrace associated with the failure.")
     private String stacktrace;
-    @JsonProperty("retryable")
-    @JsonPropertyDescription("True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.")
     private Boolean retryable;
-    @JsonProperty("timestamp")
     private Long timestamp;
     private final static long serialVersionUID = -1485119682657564218L;
 
-    @JsonProperty("failureOrigin")
-    public FailureReasonForMigration.FailureOrigin getFailureOrigin() {
+    public String getFailureOrigin() {
       return failureOrigin;
     }
 
-    @JsonProperty("failureOrigin")
-    public void setFailureOrigin(final FailureReasonForMigration.FailureOrigin failureOrigin) {
+    public void setFailureOrigin(final String failureOrigin) {
       this.failureOrigin = failureOrigin;
     }
 
-    public FailureReasonForMigration withFailureOrigin(final FailureReasonForMigration.FailureOrigin failureOrigin) {
+    public FailureReasonForMigration withFailureOrigin(final String failureOrigin) {
       this.failureOrigin = failureOrigin;
       return this;
     }
 
-    @JsonProperty("failureType")
-    public FailureReasonForMigration.FailureType getFailureType() {
+    public String getFailureType() {
       return failureType;
     }
 
-    @JsonProperty("failureType")
-    public void setFailureType(final FailureReasonForMigration.FailureType failureType) {
+    public void setFailureType(final String failureType) {
       this.failureType = failureType;
     }
 
-    public FailureReasonForMigration withFailureType(final FailureReasonForMigration.FailureType failureType) {
+    public FailureReasonForMigration withFailureType(final String failureType) {
       this.failureType = failureType;
       return this;
     }
 
-    @JsonProperty("internalMessage")
     public String getInternalMessage() {
       return internalMessage;
     }
 
-    @JsonProperty("internalMessage")
-    public void setInternalMessage(final String internalMessage) {
+    public void setInternalMessage(String internalMessage) {
       this.internalMessage = internalMessage;
     }
 
-    public FailureReasonForMigration withInternalMessage(final String internalMessage) {
+    public FailureReasonForMigration withInternalMessage(String internalMessage) {
       this.internalMessage = internalMessage;
       return this;
     }
 
-    @JsonProperty("externalMessage")
     public String getExternalMessage() {
       return externalMessage;
     }
 
-    @JsonProperty("externalMessage")
-    public void setExternalMessage(final String externalMessage) {
+    public void setExternalMessage(String externalMessage) {
       this.externalMessage = externalMessage;
     }
 
-    public FailureReasonForMigration withExternalMessage(final String externalMessage) {
+    public FailureReasonForMigration withExternalMessage(String externalMessage) {
       this.externalMessage = externalMessage;
       return this;
     }
 
-    @JsonProperty("metadata")
     public Metadata getMetadata() {
       return metadata;
     }
 
-    @JsonProperty("metadata")
-    public void setMetadata(final Metadata metadata) {
+    public void setMetadata(Metadata metadata) {
       this.metadata = metadata;
     }
 
-    public FailureReasonForMigration withMetadata(final Metadata metadata) {
+    public FailureReasonForMigration withMetadata(Metadata metadata) {
       this.metadata = metadata;
       return this;
     }
 
-    @JsonProperty("stacktrace")
     public String getStacktrace() {
       return stacktrace;
     }
 
-    @JsonProperty("stacktrace")
-    public void setStacktrace(final String stacktrace) {
+    public void setStacktrace(String stacktrace) {
       this.stacktrace = stacktrace;
     }
 
-    public FailureReasonForMigration withStacktrace(final String stacktrace) {
+    public FailureReasonForMigration withStacktrace(String stacktrace) {
       this.stacktrace = stacktrace;
       return this;
     }
 
-    @JsonProperty("retryable")
     public Boolean getRetryable() {
       return retryable;
     }
 
-    @JsonProperty("retryable")
-    public void setRetryable(final Boolean retryable) {
+    public void setRetryable(Boolean retryable) {
       this.retryable = retryable;
     }
 
-    public FailureReasonForMigration withRetryable(final Boolean retryable) {
+    public FailureReasonForMigration withRetryable(Boolean retryable) {
       this.retryable = retryable;
       return this;
     }
 
-    @JsonProperty("timestamp")
     public Long getTimestamp() {
       return timestamp;
     }
 
-    @JsonProperty("timestamp")
-    public void setTimestamp(final Long timestamp) {
+    public void setTimestamp(Long timestamp) {
       this.timestamp = timestamp;
     }
 
-    public FailureReasonForMigration withTimestamp(final Long timestamp) {
+    public FailureReasonForMigration withTimestamp(Long timestamp) {
       this.timestamp = timestamp;
       return this;
     }
@@ -359,122 +321,17 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return (((((((((this.retryable == rhs.retryable)||((this.retryable!= null)&&this.retryable.equals(rhs.retryable)))&&((this.metadata == rhs.metadata)||((this.metadata!= null)&&this.metadata.equals(rhs.metadata))))&&((this.stacktrace == rhs.stacktrace)||((this.stacktrace!= null)&&this.stacktrace.equals(rhs.stacktrace))))&&((this.failureOrigin == rhs.failureOrigin)||((this.failureOrigin!= null)&&this.failureOrigin.equals(rhs.failureOrigin))))&&((this.failureType == rhs.failureType)||((this.failureType!= null)&&this.failureType.equals(rhs.failureType))))&&((this.internalMessage == rhs.internalMessage)||((this.internalMessage!= null)&&this.internalMessage.equals(rhs.internalMessage))))&&((this.externalMessage == rhs.externalMessage)||((this.externalMessage!= null)&&this.externalMessage.equals(rhs.externalMessage))))&&((this.timestamp == rhs.timestamp)||((this.timestamp!= null)&&this.timestamp.equals(rhs.timestamp))));
     }
 
-    public enum FailureOrigin {
-
-      UNKNOWN("unknown"),
-      SOURCE("source"),
-      DESTINATION("destination"),
-      REPLICATION("replication"),
-      REPLICATION_WORKER("replicationWorker"),
-      PERSISTENCE("persistence"),
-      NORMALIZATION("normalization"),
-      DBT("dbt");
-      private final String value;
-      private final static Map<String, FailureReasonForMigration.FailureOrigin> CONSTANTS = new HashMap<String, FailureReasonForMigration.FailureOrigin>();
-
-      static {
-        for (final FailureReasonForMigration.FailureOrigin c: values()) {
-          CONSTANTS.put(c.value, c);
-        }
-      }
-
-      private FailureOrigin(final String value) {
-        this.value = value;
-      }
-
-      @Override
-      public String toString() {
-        return this.value;
-      }
-
-      @JsonValue
-      public String value() {
-        return this.value;
-      }
-
-      @JsonCreator
-      public static FailureReasonForMigration.FailureOrigin fromValue(final String value) {
-        final FailureReasonForMigration.FailureOrigin constant = CONSTANTS.get(value);
-        if (constant == null) {
-          throw new IllegalArgumentException(value);
-        } else {
-          return constant;
-        }
-      }
-
-    }
-
-
-    public enum FailureType {
-
-      UNKNOWN("unknown"),
-      CONFIG_ERROR_OLD("configError"),
-      SYSTEM_ERROR_OLD("systemError"),
-      MANUAL_CANCELLATION_OLD("manualCancellation"),
-      CONFIG_ERROR("config_error"),
-      SYSTEM_ERROR("system_error"),
-      MANUAL_CANCELLATION("manual_cancellation");
-      private final String value;
-      private final static Map<String, FailureReasonForMigration.FailureType> CONSTANTS = new HashMap<String, FailureReasonForMigration.FailureType>();
-
-      static {
-        for (final FailureReasonForMigration.FailureType c : values()) {
-          CONSTANTS.put(c.value, c);
-        }
-      }
-
-      private FailureType(final String value) {
-        this.value = value;
-      }
-
-      @Override
-      public String toString() {
-        return this.value;
-      }
-
-      @JsonValue
-      public String value() {
-        return this.value;
-      }
-
-      @JsonCreator
-      public static FailureReasonForMigration.FailureType fromValue(final String value) {
-        final FailureReasonForMigration.FailureType constant = CONSTANTS.get(value);
-        if (constant == null) {
-          throw new IllegalArgumentException(value);
-        } else {
-          return constant;
-        }
-      }
-
-    }
-
   }
 
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  @JsonPropertyOrder({
-      "failures",
-      "partialSuccess"
-  })
-  static
-  class AttemptFailureSummaryForMigration implements Serializable {
-
-    @JsonProperty("failures")
-    @JsonPropertyDescription("Ordered list of failures that occurred during the attempt.")
-    private List<FailureReasonForMigration> failures = new ArrayList<FailureReasonForMigration>();
-
-    @JsonProperty("partialSuccess")
-    @JsonPropertyDescription("True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed records is unknown.")
+  static class AttemptFailureSummaryForMigration implements Serializable {
+    private List<FailureReasonForMigration> failures = new ArrayList<>();
     private Boolean partialSuccess;
     private final static long serialVersionUID = -9065693637249217586L;
 
-    @JsonProperty("failures")
     public List<FailureReasonForMigration> getFailures() {
       return failures;
     }
 
-    @JsonProperty("failures")
     public void setFailures(final List<FailureReasonForMigration> failures) {
       this.failures = failures;
     }
@@ -484,25 +341,15 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       return this;
     }
 
-    /**
-     * True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed
-     * records is unknown.
-     */
-    @JsonProperty("partialSuccess")
     public Boolean getPartialSuccess() {
       return partialSuccess;
     }
 
-    /**
-     * True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. Blank if number of committed
-     * records is unknown.
-     */
-    @JsonProperty("partialSuccess")
-    public void setPartialSuccess(final Boolean partialSuccess) {
+    public void setPartialSuccess(Boolean partialSuccess) {
       this.partialSuccess = partialSuccess;
     }
 
-    public AttemptFailureSummaryForMigration withPartialSuccess(final Boolean partialSuccess) {
+    public AttemptFailureSummaryForMigration withPartialSuccess(Boolean partialSuccess) {
       this.partialSuccess = partialSuccess;
       return this;
     }
