@@ -516,11 +516,7 @@ public class AcceptanceTests {
   @Order(8)
   @RepeatedTest(10)
   public void testCancelSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -529,7 +525,7 @@ public class AcceptanceTests {
         Jsons.jsonNode(ImmutableMap.builder()
             .put("type", "INFINITE_FEED")
             .put("message_interval", 1000)
-            .put("max_records", 300) // emit records for 5 minutes, should be plenty of time for cancel to take effect
+            .put("max_records", Duration.ofMinutes(5).toSeconds())
             .build()));
 
     final String connectionName = "test-connection";
@@ -544,10 +540,9 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-//    if (!featureFlags.usesNewScheduler()) {
-      // wait to get out of PENDING
-      waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
-//    }
+    // wait to get out of PENDING
+    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    assertEquals(JobStatus.RUNNING, jobRead.getStatus());
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
@@ -611,9 +606,9 @@ public class AcceptanceTests {
 
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (featureFlags.usesNewScheduler()) {
-      waitForJob(apiClient.getJobsApi(), jobInfoRead.getJob(),
+      waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
           Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
     } else {
       waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
@@ -761,18 +756,8 @@ public class AcceptanceTests {
   @Test
   @Order(14)
   public void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -812,9 +797,9 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
@@ -859,18 +844,8 @@ public class AcceptanceTests {
   @Test
   @Order(16)
   public void testBackpressure() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -902,9 +877,9 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
 
     final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
     final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
@@ -933,18 +908,8 @@ public class AcceptanceTests {
   @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -980,10 +945,10 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
 
     // wait for job for max of 3 minutes, by which time the job attempt should have failed
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
 
     final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
     final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
@@ -1022,7 +987,7 @@ public class AcceptanceTests {
 
         try {
           connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error("retrying after error", e);
         }
       }
@@ -1084,7 +1049,7 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     Thread.sleep(5000);
 
@@ -1122,7 +1087,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for job to run...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Scale down workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
@@ -1166,7 +1131,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for job to run...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Waiting for job to run a little...");
     Thread.sleep(5000);
@@ -1187,7 +1152,7 @@ public class AcceptanceTests {
             final JobInfoRead jobInfoRead = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
             LOGGER.info("jobInfoRead = " + jobInfoRead);
             return jobInfoRead;
-          } catch (ApiException e) {
+          } catch (final ApiException e) {
             LOGGER.error("Failed to read from api", e);
             throw e;
           }
@@ -1456,6 +1421,22 @@ public class AcceptanceTests {
     return dbConfig;
   }
 
+  private SourceDefinitionRead createE2eSourceDefinition() throws ApiException {
+    return apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+  }
+
+  private DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().createDestinationDefinition(new DestinationDefinitionCreate()
+        .name("E2E Test Destination")
+        .dockerRepository("airbyte/destination-e2e-test")
+        .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+  }
+
   private SourceRead createPostgresSource() throws ApiException {
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
@@ -1526,7 +1507,7 @@ public class AcceptanceTests {
   }
 
   private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
-    final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+    final JobRead job = waitWhileJobHasStatus(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
 
     if (!JobStatus.SUCCEEDED.equals(job.getStatus())) {
       // If a job failed during testing, show us why.
@@ -1540,13 +1521,16 @@ public class AcceptanceTests {
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
+  private static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
-    return waitForJob(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
+    return waitWhileJobHasStatus(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
   }
 
   @SuppressWarnings("BusyWait")
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses, final Duration maxWaitTime)
+  private static JobRead waitWhileJobHasStatus(final JobsApi jobsApi,
+                                               final JobRead originalJob,
+                                               final Set<JobStatus> jobStatuses,
+                                               final Duration maxWaitTime)
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
 
