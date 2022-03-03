@@ -17,7 +17,6 @@ AVAILABLE_COMMANDS: List[click.Command] = [
     list_commands._list,
     init_commands.init,
     generate_commands.generate,
-    generate_commands.generate_connection,
 ]
 
 
