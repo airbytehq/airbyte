@@ -225,6 +225,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           "Job failed after too many retries for connection " + connectionId));
 
       resetNewConnectionInput(connectionUpdaterInput);
+      if (workflowState.isResetConnection()) {
+        connectionUpdaterInput.setFromJobResetFailure(true);
+      }
     }
   }
 
@@ -318,9 +321,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
-    if (workflowState.isFailed() && workflowState.isContinueAsReset()) {
-      connectionUpdaterInput.setFromJobResetFailure(true);
-    }
     connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
