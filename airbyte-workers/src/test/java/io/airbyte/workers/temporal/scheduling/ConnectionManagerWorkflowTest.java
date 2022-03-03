@@ -1051,6 +1051,14 @@ public class ConnectionManagerWorkflowTest {
       runRetryResetTest(maxAttempt);
     }
 
+    @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that a reset job that fails throttle after retrying")
+    public void failedResetJobThrottleOnRestart() throws InterruptedException {
+      runRetryResetThrottleAfterJobFailureTest();
+    }
+
   }
 
   @Nested
@@ -1156,6 +1164,14 @@ public class ConnectionManagerWorkflowTest {
       runRetryResetTest(maxAttempt);
     }
 
+    @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that a reset job that fails throttle after retrying")
+    public void failedResetJobThrottleOnRestart() throws InterruptedException {
+      runRetryResetThrottleAfterJobFailureTest();
+    }
+
   }
 
   @Nested
@@ -1179,6 +1195,14 @@ public class ConnectionManagerWorkflowTest {
     @MethodSource("getMaxAttemptForResetRetry")
     public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
       runRetryResetTest(maxAttempt);
+    }
+
+    @RepeatedTest(10)
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that a reset job that fails throttle after retrying")
+    public void failedResetJobThrottleOnRestart() throws InterruptedException {
+      runRetryResetThrottleAfterJobFailureTest();
     }
 
   }
@@ -1282,6 +1306,35 @@ public class ConnectionManagerWorkflowTest {
     Assertions.assertThat(events)
         .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CONTINUE_AS_RESET && changedStateEvent.isValue())
         .hasSizeGreaterThanOrEqualTo(1);
+  }
+
+  private void runRetryResetThrottleAfterJobFailureTest() throws InterruptedException {
+    Mockito.when(mConfigFetchActivity.getMaxAttempt())
+        .thenReturn(new GetMaxAttemptOutput(1));
+
+    final UUID testId = UUID.randomUUID();
+    final TestStateListener testStateListener = new TestStateListener();
+    final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(
+        UUID.randomUUID(),
+        JOB_ID,
+        ATTEMPT_ID,
+        false,
+        1,
+        workflowState,
+        false,
+        false);
+
+    startWorkflowAndWaitUntilReady(workflow, input);
+    testEnv.sleep(Duration.ofMinutes(5L));
+    workflow.resetConnection();
+    testEnv.sleep(SleepingSyncWorkflow.RUN_TIME.plusMinutes(2));
+
+    final WorkflowState state = workflow.getState();
+
+    Assertions.assertThat(state.isRunning())
+        .isFalse();
   }
 
 }
