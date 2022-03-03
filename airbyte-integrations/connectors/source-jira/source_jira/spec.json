@@ -32,7 +32,7 @@
           "type": "string"
         },
         "examples": ["PROJ1", "PROJ2"],
-        "description": "Comma-separated list of Jira project keys to replicate data for."
+        "description": "List of Jira project keys to replicate data for."
       },
       "start_date": {
         "type": "string",
