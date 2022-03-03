@@ -1,0 +1,55 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Emarsys Spec",
+    "type": "object",
+    "required": [
+      "username",
+      "password",
+      "contact_fields"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "username": {
+        "type": "string",
+        "title": "Emarsys API username",
+        "description": "The username of your Emarsys API user."
+      },
+      "password": {
+        "type": "string",
+        "title": "Emarsys API secret",
+        "description": "The secret of your Emarsys API user.",
+        "airbyte_secret": "true"
+      },
+      "contact_fields": {
+        "type": "array",
+        "title": "Contact fields",
+        "description": "List of contact data fields to be fetched. Should be snake-cased string ID like 'zip_code' or 'birth_date'.",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "limit": {
+        "title": "API call limit",
+        "description": "Max number of records returned per call",
+        "type": "number",
+        "default": 10000,
+        "examples": [10000],
+        "minimum": 0,
+        "maximum": 1000000
+      },
+      "recurring_contact_lists": {
+        "title": "Recurring contact list name patterns",
+        "description": "Name patterns of recurring contact list. Connector will load contact data from the latest recurring list only, thus reduce API calls",
+        "type":"array",
+        "items":{
+          "type": "string"
+        },
+        "default": []
+      }
+    }
+  }
+}
