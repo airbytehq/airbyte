@@ -1,11 +1,12 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.jobs.migrations;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AttemptFailureSummary;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.Metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,23 +48,26 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
   }
 
   /**
-   * Finds all attempt record that have a failure summary containing a deprecated enum value. For each record, calls method to fix and update.
+   * Finds all attempt record that have a failure summary containing a deprecated enum value. For each
+   * record, calls method to fix and update.
    */
   static void updateRecordsWithNewEnumValues(final DSLContext ctx) {
-    final Result<Record> results = ctx.fetch(String.format("""
-        SELECT A.* FROM attempts A, jsonb_array_elements(A.failure_summary->'failures') as f
-        WHERE f->>'failureOrigin' = '%s'
-        OR f->>'failureOrigin' = '%s'
-        OR f->>'failureType' = '%s'
-        OR f->>'failureType' = '%s'
-        OR f->>'failureType' = '%s'
-        OR f->>'failureType' = '%s'
-        """, OLD_UNKNOWN, OLD_REPLICATION_ORIGIN, OLD_UNKNOWN, OLD_CONFIG_ERROR, OLD_SYSTEM_ERROR, OLD_MANUAL_CANCELLATION));
+    final Result<Record> results =
+        ctx.fetch(String.format("""
+                                SELECT A.* FROM attempts A, jsonb_array_elements(A.failure_summary->'failures') as f
+                                WHERE f->>'failureOrigin' = '%s'
+                                OR f->>'failureOrigin' = '%s'
+                                OR f->>'failureType' = '%s'
+                                OR f->>'failureType' = '%s'
+                                OR f->>'failureType' = '%s'
+                                OR f->>'failureType' = '%s'
+                                """, OLD_UNKNOWN, OLD_REPLICATION_ORIGIN, OLD_UNKNOWN, OLD_CONFIG_ERROR, OLD_SYSTEM_ERROR, OLD_MANUAL_CANCELLATION));
     results.forEach(record -> updateAttemptFailureReasons(ctx, record));
   }
 
   /**
-   * Takes in a single record from the above query and performs an UPDATE to set the failure summary to the fixed version.
+   * Takes in a single record from the above query and performs an UPDATE to set the failure summary
+   * to the fixed version.
    */
   private static void updateAttemptFailureReasons(final DSLContext ctx, final Record record) {
     final Field<Long> attemptIdField = DSL.field("id", SQLDataType.BIGINT);
@@ -72,8 +76,7 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
     final Long attemptId = record.get(attemptIdField);
     final AttemptFailureSummaryForMigration oldFailureSummary = Jsons.deserialize(
         record.get(failureSummaryField).data(),
-        AttemptFailureSummaryForMigration.class
-    );
+        AttemptFailureSummaryForMigration.class);
 
     final AttemptFailureSummaryForMigration fixedFailureSummary = getFixedAttemptFailureSummary(oldFailureSummary);
 
@@ -83,7 +86,6 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         .execute();
   }
 
-
   /**
    * Takes in a FailureSummary and replaces deprecated enum values with their updated versions.
    */
@@ -91,12 +93,10 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
     final Map<String, String> oldFailureTypeToFixedFailureType = ImmutableMap.of(
         OLD_MANUAL_CANCELLATION, NEW_MANUAL_CANCELLATION,
         OLD_SYSTEM_ERROR, NEW_SYSTEM_ERROR,
-        OLD_CONFIG_ERROR, NEW_CONFIG_ERROR
-    );
+        OLD_CONFIG_ERROR, NEW_CONFIG_ERROR);
 
     final Map<String, String> oldFailureOriginToFixedFailureOrigin = ImmutableMap.of(
-        OLD_REPLICATION_ORIGIN, NEW_REPLICATION_ORIGIN
-    );
+        OLD_REPLICATION_ORIGIN, NEW_REPLICATION_ORIGIN);
 
     final List<FailureReasonForMigration> fixedFailureReasons = new ArrayList<>();
 
@@ -129,14 +129,16 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
     return failureSummary;
   }
 
-
   /**
-   * The following classes are essentially a copy of the FailureReason and AttemptFailureSummary classes at the time of this migration. They support
-   * both deprecated and new enum values and are used for record deserialization in this migration because in the future, the real FailureReason class
-   * will have those deprecated enum values removed, which would break deserialization within this migration.
+   * The following classes are essentially a copy of the FailureReason and AttemptFailureSummary
+   * classes at the time of this migration. They support both deprecated and new enum values and are
+   * used for record deserialization in this migration because in the future, the real FailureReason
+   * class will have those deprecated enum values removed, which would break deserialization within
+   * this migration.
    */
 
   static class FailureReasonForMigration implements Serializable {
+
     private String failureOrigin;
     private String failureType;
     private String internalMessage;
@@ -257,38 +259,38 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
       sb.append(FailureReasonForMigration.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
       sb.append("failureOrigin");
       sb.append('=');
-      sb.append(((this.failureOrigin == null)?"<null>":this.failureOrigin));
+      sb.append(((this.failureOrigin == null) ? "<null>" : this.failureOrigin));
       sb.append(',');
       sb.append("failureType");
       sb.append('=');
-      sb.append(((this.failureType == null)?"<null>":this.failureType));
+      sb.append(((this.failureType == null) ? "<null>" : this.failureType));
       sb.append(',');
       sb.append("internalMessage");
       sb.append('=');
-      sb.append(((this.internalMessage == null)?"<null>":this.internalMessage));
+      sb.append(((this.internalMessage == null) ? "<null>" : this.internalMessage));
       sb.append(',');
       sb.append("externalMessage");
       sb.append('=');
-      sb.append(((this.externalMessage == null)?"<null>":this.externalMessage));
+      sb.append(((this.externalMessage == null) ? "<null>" : this.externalMessage));
       sb.append(',');
       sb.append("metadata");
       sb.append('=');
-      sb.append(((this.metadata == null)?"<null>":this.metadata));
+      sb.append(((this.metadata == null) ? "<null>" : this.metadata));
       sb.append(',');
       sb.append("stacktrace");
       sb.append('=');
-      sb.append(((this.stacktrace == null)?"<null>":this.stacktrace));
+      sb.append(((this.stacktrace == null) ? "<null>" : this.stacktrace));
       sb.append(',');
       sb.append("retryable");
       sb.append('=');
-      sb.append(((this.retryable == null)?"<null>":this.retryable));
+      sb.append(((this.retryable == null) ? "<null>" : this.retryable));
       sb.append(',');
       sb.append("timestamp");
       sb.append('=');
-      sb.append(((this.timestamp == null)?"<null>":this.timestamp));
+      sb.append(((this.timestamp == null) ? "<null>" : this.timestamp));
       sb.append(',');
-      if (sb.charAt((sb.length()- 1)) == ',') {
-        sb.setCharAt((sb.length()- 1), ']');
+      if (sb.charAt((sb.length() - 1)) == ',') {
+        sb.setCharAt((sb.length() - 1), ']');
       } else {
         sb.append(']');
       }
@@ -298,14 +300,14 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
     @Override
     public int hashCode() {
       int result = 1;
-      result = ((result* 31)+((this.retryable == null)? 0 :this.retryable.hashCode()));
-      result = ((result* 31)+((this.metadata == null)? 0 :this.metadata.hashCode()));
-      result = ((result* 31)+((this.stacktrace == null)? 0 :this.stacktrace.hashCode()));
-      result = ((result* 31)+((this.failureOrigin == null)? 0 :this.failureOrigin.hashCode()));
-      result = ((result* 31)+((this.failureType == null)? 0 :this.failureType.hashCode()));
-      result = ((result* 31)+((this.internalMessage == null)? 0 :this.internalMessage.hashCode()));
-      result = ((result* 31)+((this.externalMessage == null)? 0 :this.externalMessage.hashCode()));
-      result = ((result* 31)+((this.timestamp == null)? 0 :this.timestamp.hashCode()));
+      result = ((result * 31) + ((this.retryable == null) ? 0 : this.retryable.hashCode()));
+      result = ((result * 31) + ((this.metadata == null) ? 0 : this.metadata.hashCode()));
+      result = ((result * 31) + ((this.stacktrace == null) ? 0 : this.stacktrace.hashCode()));
+      result = ((result * 31) + ((this.failureOrigin == null) ? 0 : this.failureOrigin.hashCode()));
+      result = ((result * 31) + ((this.failureType == null) ? 0 : this.failureType.hashCode()));
+      result = ((result * 31) + ((this.internalMessage == null) ? 0 : this.internalMessage.hashCode()));
+      result = ((result * 31) + ((this.externalMessage == null) ? 0 : this.externalMessage.hashCode()));
+      result = ((result * 31) + ((this.timestamp == null) ? 0 : this.timestamp.hashCode()));
       return result;
     }
 
@@ -318,12 +320,20 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         return false;
       }
       final FailureReasonForMigration rhs = ((FailureReasonForMigration) other);
-      return (((((((((this.retryable == rhs.retryable)||((this.retryable!= null)&&this.retryable.equals(rhs.retryable)))&&((this.metadata == rhs.metadata)||((this.metadata!= null)&&this.metadata.equals(rhs.metadata))))&&((this.stacktrace == rhs.stacktrace)||((this.stacktrace!= null)&&this.stacktrace.equals(rhs.stacktrace))))&&((this.failureOrigin == rhs.failureOrigin)||((this.failureOrigin!= null)&&this.failureOrigin.equals(rhs.failureOrigin))))&&((this.failureType == rhs.failureType)||((this.failureType!= null)&&this.failureType.equals(rhs.failureType))))&&((this.internalMessage == rhs.internalMessage)||((this.internalMessage!= null)&&this.internalMessage.equals(rhs.internalMessage))))&&((this.externalMessage == rhs.externalMessage)||((this.externalMessage!= null)&&this.externalMessage.equals(rhs.externalMessage))))&&((this.timestamp == rhs.timestamp)||((this.timestamp!= null)&&this.timestamp.equals(rhs.timestamp))));
+      return (((((((((this.retryable == rhs.retryable) || ((this.retryable != null) && this.retryable.equals(rhs.retryable)))
+          && ((this.metadata == rhs.metadata) || ((this.metadata != null) && this.metadata.equals(rhs.metadata))))
+          && ((this.stacktrace == rhs.stacktrace) || ((this.stacktrace != null) && this.stacktrace.equals(rhs.stacktrace))))
+          && ((this.failureOrigin == rhs.failureOrigin) || ((this.failureOrigin != null) && this.failureOrigin.equals(rhs.failureOrigin))))
+          && ((this.failureType == rhs.failureType) || ((this.failureType != null) && this.failureType.equals(rhs.failureType))))
+          && ((this.internalMessage == rhs.internalMessage) || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
+          && ((this.externalMessage == rhs.externalMessage) || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
+          && ((this.timestamp == rhs.timestamp) || ((this.timestamp != null) && this.timestamp.equals(rhs.timestamp))));
     }
 
   }
 
   static class AttemptFailureSummaryForMigration implements Serializable {
+
     private List<FailureReasonForMigration> failures = new ArrayList<>();
     private Boolean partialSuccess;
     private final static long serialVersionUID = -9065693637249217586L;
@@ -391,14 +401,10 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         return false;
       }
       final AttemptFailureSummaryForMigration rhs = ((AttemptFailureSummaryForMigration) other);
-      return (((this.partialSuccess == rhs.partialSuccess) || ((this.partialSuccess != null) && this.partialSuccess.equals(rhs.partialSuccess))) && (
-          (this.failures == rhs.failures) || ((this.failures != null) && this.failures.equals(rhs.failures))));
+      return (((this.partialSuccess == rhs.partialSuccess) || ((this.partialSuccess != null) && this.partialSuccess.equals(rhs.partialSuccess)))
+          && ((this.failures == rhs.failures) || ((this.failures != null) && this.failures.equals(rhs.failures))));
     }
 
   }
 
-
 }
-
-
-
