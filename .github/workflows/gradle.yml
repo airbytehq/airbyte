@@ -49,33 +49,10 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Pip Caching
-        uses: actions/cache@v2
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
         with:
-          path: |
-            ~/.cache/pip
-          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
-
-      - name: Npm Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.npm
-          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
-
-      # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle and Python Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          cache-key: ${{ secrets.CACHE_VERSION }}
 
       - uses: actions/setup-java@v1
         with:
@@ -189,24 +166,11 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Npm Caching
-        uses: actions/cache@v2
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
         with:
-          path: |
-            ~/.npm
-          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
-
-      # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
 
       - uses: actions/setup-java@v1
         with:
@@ -315,15 +279,11 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle Caching
-        uses: actions/cache@v2
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
 
       - uses: actions/setup-java@v1
         with:
@@ -406,6 +366,12 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
 
       - uses: actions/setup-java@v1
         with:
@@ -498,6 +464,12 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
 
       - uses: actions/setup-java@v1
         with:
@@ -650,6 +622,12 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
 
       - uses: actions/setup-java@v1
         with:
