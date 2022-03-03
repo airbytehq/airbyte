@@ -516,8 +516,23 @@ public class AcceptanceTests {
   @Order(8)
   @RepeatedTest(10)
   public void testCancelSync() throws Exception {
+    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("message_interval", 100)
+            .build()));
+
     final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID sourceId = source.getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
     final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -528,9 +543,9 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    if (!featureFlags.usesNewScheduler()) {
+//    if (!featureFlags.usesNewScheduler()) {
       waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
-    }
+//    }
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
