@@ -281,7 +281,7 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrderRefunds(ChildSubstream):
+class OrdersRefund(ChildSubstream):
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -295,7 +295,7 @@ class OrderRefunds(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrderRisks(ChildSubstream):
+class OrdersRisk(ChildSubstream):
     parent_stream_class: object = Orders
     slice_key = "order_id"
 
@@ -480,8 +480,8 @@ class SourceShopify(AbstractSource):
             Metafields(config),
             CustomCollections(config),
             Collects(config),
-            OrderRefunds(config),
-            OrderRisks(config),
+            OrdersRefund(config),
+            OrdersRisk(config),
             TenderTransactions(config),
             Transactions(config),
             Pages(config),
