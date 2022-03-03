@@ -100,7 +100,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.34 | 2022-03-02 | [10794](https://github.com/airbytehq/airbyte/pull/10794) | Fixed `Abandoned_checkouts` stream issue during normalisation, minor specification fix, fixed links in documentation |
+| 0.1.34 | 2022-03-02 | [10794](https://github.com/airbytehq/airbyte/pull/10794) | Fixed `Abandoned_checkouts` stream issue during normalisation, minor specification fix, fixed links in documentation, restored natural order of the sync for all `Orders`-dependent streams |
 | 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions |
 | 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
 | 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
