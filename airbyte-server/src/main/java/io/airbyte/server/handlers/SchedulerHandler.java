@@ -29,8 +29,8 @@ import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchema;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.SynchronousJobRead;
@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 public class SchedulerHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
+  private static final HashFunction hashFunction = Hashing.md5();
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
@@ -241,21 +242,20 @@ public class SchedulerHandler {
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
-  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchema discoverSchemaRequestBody)
+  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final HashFunction hashFunction = Hashing.md5();
     final String configHash = hashFunction.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
         Charsets.UTF_8)).toString();
     final String connectorVersion = sourceDef.getDockerImageTag();
     final Optional<ActorCatalog> currentCatalog =
         configRepository.getSourceCatalog(discoverSchemaRequestBody.getSourceId(), configHash, connectorVersion);
-    final SynchronousResponse<AirbyteCatalog> response;
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
+      final SynchronousResponse<AirbyteCatalog> response;
       response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), configHash, connectorVersion);
       return discoverJobToOutput(response);
@@ -270,7 +270,8 @@ public class SchedulerHandler {
         .logs(new LogRead().logLines(new ArrayList<>()))
         .succeeded(true);
     return new SourceDiscoverSchemaRead()
-        .catalog(CatalogConverter.toApi(airbyteCatalog));
+        .catalog(CatalogConverter.toApi(airbyteCatalog))
+        .jobInfo(emptyJob);
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)

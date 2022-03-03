@@ -31,8 +31,8 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchema;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
@@ -374,7 +374,7 @@ class SchedulerHandlerTest {
   @Test
   void testDiscoverSchemaForSourceFromSourceId() throws IOException, JsonValidationException, ConfigNotFoundException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    final SourceDiscoverSchema request = new SourceDiscoverSchema().sourceId(source.getSourceId());
+    final SourceDiscoverSchemaRequestBody request = new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId());
 
     final SynchronousResponse<AirbyteCatalog> discoverResponse = (SynchronousResponse<AirbyteCatalog>) jobResponse;
     final SynchronousJobMetadata metadata = mock(SynchronousJobMetadata.class);
@@ -404,7 +404,7 @@ class SchedulerHandlerTest {
   @Test
   void testDiscoverSchemaForSourceFromSourceIdFailed() throws IOException, JsonValidationException, ConfigNotFoundException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    final SourceDiscoverSchema request = new SourceDiscoverSchema().sourceId(source.getSourceId());
+    final SourceDiscoverSchemaRequestBody request = new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
@@ -623,10 +623,10 @@ class SchedulerHandlerTest {
   void testNewSchedulerSync() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(featureFlags.usesNewScheduler()).thenReturn(true);
 
-    UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
 
-    long jobId = 123L;
-    ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+    final long jobId = 123L;
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
         .builder()
         .failingReason(Optional.empty())
         .jobId(Optional.of(jobId))

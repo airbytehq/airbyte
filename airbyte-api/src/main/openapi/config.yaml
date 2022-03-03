@@ -592,7 +592,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDiscoverSchema"
+              $ref: "#/components/schemas/SourceDiscoverSchemaRequestBody"
         required: true
       responses:
         "200":
@@ -2298,7 +2298,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
-    SourceDiscoverSchema:
+    SourceDiscoverSchemaRequestBody:
       type: object
       required:
         - sourceId
