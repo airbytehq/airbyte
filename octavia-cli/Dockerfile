@@ -7,7 +7,7 @@ WORKDIR /home/octavia-cli
 COPY . ./
 
 
-RUN pip install . --no-cache-dir
+RUN pip install --no-cache-dir .
 RUN useradd --create-home --shell /bin/bash octavia-cli
 USER octavia-cli
 
