@@ -1,6 +1,6 @@
 {
   "type": ["null", "array", "object"],
-  "oneOf" : [
+  "oneOf": [
     {
       "type": ["null", "object"],
       "properties": {
@@ -15,22 +15,22 @@
         }
       }
     },
-   {
-     "type" : "array",
-     "items": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "key": {
-          "type": ["null", "string"]
-        },
-        "value": {
-          "type": ["null", "object", "string"]
+    {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "object", "string"]
+          }
         }
       }
-     }
     }
   ]
 }
