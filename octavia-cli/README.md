@@ -11,7 +11,7 @@ It has the following features:
 The project is under development: readers can refer to our [tech spec deck](https://docs.google.com/presentation/d/10RjkCzBiVhCivnjSh63icYI7wG6S0N0ZIErEIsmXTqM/edit?usp=sharing) for an introduction to the tool.
 
 # Install
-We are packaging this CLI as a docker image to avoid dependency hell, please install and run Docker if you are not. 
+We are packaging this CLI as a Docker image to avoid dependency hell, please install and run Docker if you are not. 
 The project is under development: **we have not yet published any Docker image to our Docker registry.**
 
 1. Build the project locally (from the root of the repo):
