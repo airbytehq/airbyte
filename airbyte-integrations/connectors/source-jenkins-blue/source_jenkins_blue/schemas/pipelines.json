@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java",
+  "properties": {
+    "_class": {
+      "type": ["string"]
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "actions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "$comment": "TODO: Figure out the type here."
+      }
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "displayName": {
+      "type": ["null", "string"]
+    },
+    "estimatedDurationInMillis": {
+      "type": ["null", "integer"]
+    },
+    "fullDisplayName": {
+      "type": ["null", "string"]
+    },
+    "fullName": {
+      "type": ["string"]
+    },
+    "latestRun": {
+      "type": ["null", "object"],
+      "$comment": "TODO: io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl$PipelineRunSummary",
+      "properties": {
+        "_class": {"type": "string"},
+        "_links": {"$ref": "links.json"},
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "artifactsZipFile": {"type": ["null", "string"]},
+        "causeOfBlockage": {"type": ["null", "string"]},
+        "causes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$comment": "io.jenkins.blueocean.service.embedded.rest.AbstractRunImpl$BlueCauseImpl",
+            "additionalProperties": true,
+            "properties": {
+              "_class": {"type": "string"},
+              "shortDescription": {"type": "string"},
+              "upstreamBuild": {"type": ["null", "integer"]},
+              "upstreamProject": {"type": ["null", "string"]},
+              "upstreamUrl": {"type": ["null", "string"]}
+            }
+          }
+        },
+        "description": {"type": ["null", "string"]},
+        "durationInMillis": {"type": "integer"},
+        "enQueueTime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "estimatedDurationInMillis": {"type": "integer"},
+        "id": {"type": "string"},
+        "name": {"type": ["null", "string"]},
+        "organization": {"type": "string"},
+        "pipeline": {"type": "string"},
+        "replayable": {"type": "boolean"},
+        "result": {"type": "string"},
+        "runSummary": {"type": "string"},
+        "startTime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "state": {"type": "string"},
+        "type": {"type": "string"},
+        "changeSet": {
+          "type": ["null", "array"],
+          "items": {
+            "$ref": "changeSetResource.json"
+          }
+        }
+      }
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "organization": {
+      "type": ["string"]
+    },
+    "parameters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "$comment": "Lots of different types here"
+      }
+    },
+    "permissions": {
+      "type": ["object"],
+      "properties": {
+        "create": {"type": "boolean"},
+        "configure": {"type": "boolean"},
+        "read": {"type": "boolean"},
+        "start": {"type": "boolean"},
+        "stop": {"type": "boolean"}
+      }
+    },
+    "weatherScore": {
+      "type": ["null", "integer"]
+    },
+    "branch": {
+      "$ref": "branch.json"
+    },
+    "pullRequest": {
+      "$ref": "pullRequest.json"
+    }
+  }
+}

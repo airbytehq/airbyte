@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "An action.",
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueActionProxy.java",
+  "additionalProperties": true,
+  "properties": {
+    "_class": {
+      "type": ["string"]
+    },
+    "urlName": {
+      "type": ["string"]
+    }
+  }
+}

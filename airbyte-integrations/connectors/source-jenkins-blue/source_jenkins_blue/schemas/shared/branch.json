@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "title": "A branch reference.",
+  "additionalProperties": true,
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java",
+  "properties": {
+    "isPrimary": {"type": "boolean"},
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "blueIssue.json"
+      }
+    },
+    "url": {"type": "string"}
+  }
+}

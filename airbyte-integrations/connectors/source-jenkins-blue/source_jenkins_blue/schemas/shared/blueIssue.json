@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Represents an issue or ticket",
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueIssue.java",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "url": {
+      "type": ["string"]
+    }
+  }
+}

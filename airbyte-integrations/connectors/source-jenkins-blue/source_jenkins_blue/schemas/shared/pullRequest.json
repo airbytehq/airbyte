@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "title": "Represents a (GitHub) pull request.",
+  "additionalProperties": true,
+  "$comment": "https://javadoc.jenkins.io/plugin/blueocean-pipeline-api-impl/io/jenkins/blueocean/rest/impl/pipeline/BranchImpl.PullRequest.html",
+  "properties": {
+    "author": {"type": "string"},
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "url": {"type": "string"}
+  }
+}

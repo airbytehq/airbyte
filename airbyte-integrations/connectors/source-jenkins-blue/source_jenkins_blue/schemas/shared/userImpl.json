@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "A Jenkins user.",
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-rest-impl/src/main/java/io/jenkins/blueocean/service/embedded/rest/UserImpl.java",
+  "additionalProperties": true,
+  "properties": {
+    "_class": {
+      "type": ["string"]
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "avatar": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "fullName": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "permission": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "_class": {"type": "string"},
+        "administrator": {"type": "boolean"},
+        "credential": {
+          "type": "object",
+          "properties": {
+            "create": {"type": "boolean"},
+            "view": {"type": "boolean"},
+            "delete": {"type": "boolean"},
+            "update": {"type": "boolean"},
+            "manageDomains": {"type": "boolean"}
+          }
+        },
+        "pipeline": {
+          "type": "object",
+          "properties": {
+            "create": {"type": "boolean"},
+            "read": {"type": "boolean"},
+            "start": {"type": "boolean"},
+            "stop": {"type": "boolean"},
+            "configure": {"type": "boolean"}
+          }
+        }
+      },
+      "$comment": "TODO: Figure out the structure of this. https://javadoc.jenkins.io/plugin/blueocean-rest/io/jenkins/blueocean/rest/model/BlueUserPermission.html"
+    }
+  }
+}

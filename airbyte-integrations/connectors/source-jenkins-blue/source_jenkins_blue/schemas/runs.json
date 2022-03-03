@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java",
+  "properties": {
+    "_class": {
+      "type": ["string"]
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "actions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "$comment": "TODO: Figure out the type here."
+      }
+    },
+    "causes": {
+      "type": ["null", "object"],
+      "properties": {
+        "_class": {
+          "type": ["null", "string"]
+        },
+        "shortDescription": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "durationInMillis": {
+      "type": ["null", "integer"]
+    },
+    "enQueueTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "endTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "estimatedDurationInMillis": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "organization": {
+      "type": ["null", "string"]
+    },
+    "pipeline": {
+      "type": ["null", "string"]
+    },
+    "pipelineFullName": {
+      "type": ["string"]
+    },
+    "replayable": {
+      "type": ["null", "boolean"]
+    },
+    "result": {
+      "type": ["null", "string"]
+    },
+    "runSummary": {
+      "type": ["null", "string"]
+    },
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "changeSet": {
+      "$comment": "https://javadoc.jenkins.io/plugin/blueocean-rest-impl/io/jenkins/blueocean/service/embedded/rest/ChangeSetResource.html",
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "changeSetResource.json"
+      }
+    },
+    "branch": {
+      "$ref": "branch.json"
+    },
+    "commitId": {
+      "type": ["null", "string"]
+    },
+    "commitUrl": {
+      "type": ["null", "string"]
+    },
+    "pullRequest": {
+      "$ref": "pullRequest.json"
+    }
+  }
+}

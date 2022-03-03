@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepImpl.java",
+  "properties": {
+    "_class": {
+      "type": "string"
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "actions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "_class": {
+            "type": "string"
+          },
+          "_links": {
+            "$ref": "links.json"
+          },
+          "urlName": {
+            "type": ["null", "string"]
+          },
+          "displayName": {
+            "type": ["null", "string"]
+          }
+        },
+        "$comment": "TODO: Figure out the type here. Likely multiple types"
+      }
+    },
+    "displayDescription": {
+      "type": ["null", "string"]
+    },
+    "displayName": {
+      "type": ["null", "string"]
+    },
+    "durationInMillis": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "$comment": "always null in current impl"
+    },
+    "result": {
+      "type": "string"
+    },
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "state": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    }
+  }
+}

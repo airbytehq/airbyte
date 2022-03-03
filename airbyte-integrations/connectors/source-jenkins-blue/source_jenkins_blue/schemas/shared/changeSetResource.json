@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Represents a single commit as a REST resource.",
+  "$comment": "https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-rest-impl/src/main/java/io/jenkins/blueocean/service/embedded/rest/ChangeSetResource.java",
+  "additionalProperties": true,
+  "properties": {
+    "_class": {
+      "type": ["string"]
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "affectedPaths": {
+      "type": ["array"],
+      "items": {
+        "type": ["string"]
+      }
+    },
+    "author": {
+      "$ref": "userImpl.json"
+    },
+    "checkoutCount": {
+      "type": ["integer"]
+    },
+    "commitId": {
+      "type": ["string"]
+    },
+    "issues": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "blueIssue.json"
+      }
+    },
+    "msg": {
+      "type": ["string"]
+    },
+    "timestamp": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["string"]
+    }
+  }
+}

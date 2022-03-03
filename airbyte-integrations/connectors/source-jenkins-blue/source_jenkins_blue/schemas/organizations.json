@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_class": {
+      "type": "string"
+    },
+    "_links": {
+      "$ref": "links.json"
+    },
+    "displayName": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["string"]
+    }
+  }
+}
