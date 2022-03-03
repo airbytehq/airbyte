@@ -683,12 +683,10 @@ public class ConfigRepository {
         .on(ACTOR_CATALOG.ID.eq(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(actorId))
         .and(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION.eq(actorVersion))
-        .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))).fetch();
+        .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (records.size() > 1) {
-      throw new IllegalStateException(
-          String.format("Multiple catalog stored for ActorId=%s,ActorVersion=%s,ConfigHash=%s", actorId.toString(), actorVersion, configHash));
-    } else if (records.size() == 1) {
+    if (records.size() >= 1) {
       final JSONB record = records.get(0).get(ACTOR_CATALOG.CATALOG);
       return Optional.of(Jsons.deserialize(record.toString(), AirbyteCatalog.class));
     }
