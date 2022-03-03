@@ -27,6 +27,15 @@
     "durationInMillis": {
       "type": "integer"
     },
+    "organization": {
+      "type": "string"
+    },
+    "pipelineFullName": {
+      "type": "string"
+    },
+    "runId": {
+      "type": "string"
+    },
     "id": {
       "type": "string"
     },
