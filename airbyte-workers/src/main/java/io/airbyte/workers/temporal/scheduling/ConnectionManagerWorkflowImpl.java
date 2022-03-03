@@ -150,11 +150,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         standardSyncOutput = runChildWorkflow(jobInputs);
 
-        // There is a signal method to mock the fact that a child workflow is a failure
-        // This is use in testing to avoid doing a static mock
-        if (!workflowState.isFailed()) {
-          workflowState.setFailed(getFailStatus(standardSyncOutput));
-        }
+        workflowState.setFailed(getFailStatus(standardSyncOutput));
+
 
         if (workflowState.isFailed()) {
           reportFailure(connectionUpdaterInput, standardSyncOutput);
@@ -282,11 +279,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void retryFailedActivity() {
     workflowState.setRetryFailedActivity(true);
-  }
-
-  @Override
-  public void simulateFailure() {
-    workflowState.setFailed(true);
   }
 
   @Override
@@ -505,10 +497,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return true;
     }
 
-    // For testing purpose we simulate a failure using a signal method to avoid having to do a static
-    // mock.
-    // We do override failure reason in this case.
-    return false || workflowState.isFailed();
+    return false;
   }
 
   /**
