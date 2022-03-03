@@ -23,6 +23,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.jdbc.copy.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -83,10 +84,10 @@ public class SnowflakeDestinationTest {
   public void testCleanupStageOnFailure() throws Exception {
 
     JdbcDatabase mockDb = mock(JdbcDatabase.class);
-    SnowflakeStagingSqlOperations sqlOperations = mock(SnowflakeStagingSqlOperations.class);
+    SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-    AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
+    AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());

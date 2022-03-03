@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.nio.file.Files;
@@ -17,7 +18,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implements SqlOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 

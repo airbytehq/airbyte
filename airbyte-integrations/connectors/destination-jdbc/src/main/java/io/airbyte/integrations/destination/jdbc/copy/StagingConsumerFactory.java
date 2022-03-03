@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingSqlOperations;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -33,28 +34,19 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Snowflake Internal Staging consists of 4 main parts
- *
- * CREATE STAGE @TEMP_STAGE_NAME -- Creates a new named internal stage to use for loading data from
- * files into Snowflake tables and unloading data from tables into files PUT
- * file://local/<file-patterns> @TEMP_STAGE_NAME. --JDBC Driver will upload the files into stage
- * COPY FROM @TEMP_STAGE_NAME -- Loads data from staged files to an existing table.
- * DROP @TEMP_STAGE_NAME -- Drop temporary stage after sync
- */
-public class SnowflakeInternalStagingConsumerFactory {
+public class StagingConsumerFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingConsumerFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
   private static final long MAX_BATCH_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
   private final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final JdbcDatabase database,
-                                       final SnowflakeStagingSqlOperations sqlOperations,
-                                       final SnowflakeSQLNameTransformer namingResolver,
-                                       final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog) {
+      final JdbcDatabase database,
+      final StagingSqlOperations sqlOperations,
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(
@@ -68,15 +60,15 @@ public class SnowflakeInternalStagingConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog) {
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog) {
 
     return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(Collectors.toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-                                                                              final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config) {
+      final NamingConventionTransformer namingResolver,
+      final JsonNode config) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
@@ -96,17 +88,17 @@ public class SnowflakeInternalStagingConsumerFactory {
   }
 
   private static String getOutputSchema(final AirbyteStream stream,
-                                        final String defaultDestSchema,
-                                        final NamingConventionTransformer namingResolver) {
+      final String defaultDestSchema,
+      final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
         ? namingResolver.getIdentifier(stream.getNamespace())
         : namingResolver.getIdentifier(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
-                                                 final SnowflakeStagingSqlOperations snowflakeSqlOperations,
-                                                 final List<WriteConfig> writeConfigs,
-                                                 final SnowflakeSQLNameTransformer namingResolver) {
+      final StagingSqlOperations stagingSqlOperations,
+      final List<WriteConfig> writeConfigs,
+      final NamingConventionTransformer namingResolver) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
 
@@ -121,9 +113,9 @@ public class SnowflakeInternalStagingConsumerFactory {
 
         AirbyteSentry.executeWithTracing("PrepareStreamStage",
             () -> {
-              snowflakeSqlOperations.createSchemaIfNotExists(database, schema);
-              snowflakeSqlOperations.createTableIfNotExists(database, schema, tmpTable);
-              snowflakeSqlOperations.createStageIfNotExists(database, stage);
+              stagingSqlOperations.createSchemaIfNotExists(database, schema);
+              stagingSqlOperations.createTableIfNotExists(database, schema, tmpTable);
+              stagingSqlOperations.createStageIfNotExists(database, stage);
             },
             Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stage));
 
@@ -139,14 +131,14 @@ public class SnowflakeInternalStagingConsumerFactory {
   }
 
   private RecordWriter recordWriterFunction(final JdbcDatabase database,
-                                            final SqlOperations snowflakeSqlOperations,
-                                            final List<WriteConfig> writeConfigs,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final SnowflakeSQLNameTransformer namingResolver) {
+      final SqlOperations stagingSqlOperations,
+      final List<WriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final NamingConventionTransformer namingResolver) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(
-                SnowflakeInternalStagingConsumerFactory::toNameNamespacePair, Function.identity()));
+                StagingConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (pair, records) -> {
       if (!pairToWriteConfig.containsKey(pair)) {
@@ -159,14 +151,14 @@ public class SnowflakeInternalStagingConsumerFactory {
       final String tableName = writeConfig.getOutputTableName();
       final String path = namingResolver.getStagingPath(schemaName, tableName, CURRENT_SYNC_PATH);
 
-      snowflakeSqlOperations.insertRecords(database, records, schemaName, path);
+      stagingSqlOperations.insertRecords(database, records, schemaName, path);
     };
   }
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
-                                          final SnowflakeStagingSqlOperations sqlOperations,
-                                          final List<WriteConfig> writeConfigs,
-                                          final SnowflakeSQLNameTransformer namingResolver) {
+      final StagingSqlOperations sqlOperations,
+      final List<WriteConfig> writeConfigs,
+      final NamingConventionTransformer namingResolver) {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
@@ -219,5 +211,4 @@ public class SnowflakeInternalStagingConsumerFactory {
       LOGGER.info("Cleaning tmp tables and stages in destination completed.");
     };
   }
-
 }

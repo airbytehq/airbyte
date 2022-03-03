@@ -45,4 +45,8 @@ public interface NamingConventionTransformer {
   @Deprecated
   String getTmpTableName(String name);
 
+  String getStageName(String schemaName, String outputTableName);
+
+  String getStagingPath(String schemaName, String tableName, String currentSyncPath);
+
 }
