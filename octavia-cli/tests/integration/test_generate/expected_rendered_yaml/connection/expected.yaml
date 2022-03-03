@@ -1,0 +1,60 @@
+name: mock_connection
+source_id: mock_source
+destination_id: mock_destination
+namespace_definition: source
+namespace_format: ${SOURCE_NAMESPACE}
+prefix: ""
+operation_ids:
+  - 6c9e2330-4af3-47a9-b252-12fcfefcab55
+resource_requirements:
+  cpu_limit: ""
+  cpu_request: ""
+  memory_limit: ""
+  memory_request: ""
+schedule:
+  time_unit: 24
+  units: hours
+status: active
+sync_catalog:
+  streams:
+    - stream:
+        name: campaigns
+        namespace: None
+        json_schema: {}
+        default_cursor_field:
+          -
+        source_defined_cursor: None
+        source_defined_primary_key:
+          - -
+        supported_sync_modes:
+          - ["full_refresh"]
+      config:
+        alias_name: campaigns
+        cursor_field:
+          - []
+        destination_sync_mode: append
+        primary_key:
+          - - []
+        selected: True
+        sync_mode: full_refresh
+
+    - stream:
+        name: companies
+        namespace: None
+        json_schema: {}
+        default_cursor_field:
+          -
+        source_defined_cursor: True
+        source_defined_primary_key:
+          - -
+        supported_sync_modes:
+          - ["full_refresh", "incremental"]
+      config:
+        alias_name: companies
+        cursor_field:
+          - ["updatedAt"]
+        destination_sync_mode: append
+        primary_key:
+          - - []
+        selected: True
+        sync_mode: full_refresh

@@ -17,7 +17,7 @@ schedule:
 status: active
 sync_catalog:
   streams:
-  {%- for stream in catalog %}
+  {%- for stream in streams %}
   -  stream:
       name: {{ stream.stream.name }}
       namespace: {{ stream.stream.namespace }}

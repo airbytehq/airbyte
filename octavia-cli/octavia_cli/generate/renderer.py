@@ -163,11 +163,11 @@ class ConnectionSpecificationRenderer:
 class ConnectionRenderer:
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
 
-    def __init__(self, resource_name: str, source_id: str, destination_id: str, catalog: dict) -> None:
+    def __init__(self, resource_name: str, source_id: str, destination_id: str, streams: dict) -> None:
         self.resource_name = resource_name
         self.source_id = source_id
         self.destination_id = destination_id
-        self.catalog = catalog
+        self.streams = streams
 
     def _get_output_path(self, project_path: str) -> str:
         return os.path.join(project_path, "connections", f"{self.resource_name}.yaml")
@@ -179,7 +179,7 @@ class ConnectionRenderer:
                 "resource_name": self.resource_name,
                 "source_id": self.source_id,
                 "destination_id": self.destination_id,
-                "catalog": self.catalog,
+                "streams": self.streams,
             }
         )
 
