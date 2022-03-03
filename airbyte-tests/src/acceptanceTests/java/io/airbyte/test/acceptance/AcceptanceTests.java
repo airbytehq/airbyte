@@ -74,19 +74,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -121,7 +115,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
@@ -156,7 +149,6 @@ public class AcceptanceTests {
 
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
-  private static final boolean IS_CONTAINER_ORCHESTRATOR = System.getenv().containsKey("CONTAINER_ORCHESTRATOR");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
@@ -189,9 +181,6 @@ public class AcceptanceTests {
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
-
-  private static FeatureFlags featureFlags;
-  private static TemporalClient temporalClient;
 
   private static KubernetesClient kubernetesClient = null;
 
@@ -232,15 +221,6 @@ public class AcceptanceTests {
       LOGGER.info("Using external deployment of airbyte.");
     }
 
-    featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
-      final Configs configs = new EnvConfigs();
-      final Path workspaceRoot = Path.of("/tmp");
-      final String temporalHost = "localhost:7233";
-      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-
-      temporalClient = new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
-    }
   }
 
   @AfterAll
@@ -513,7 +493,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(8)
-  @RepeatedTest(10)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
 
