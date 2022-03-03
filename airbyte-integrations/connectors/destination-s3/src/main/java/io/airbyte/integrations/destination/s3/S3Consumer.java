@@ -48,7 +48,6 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     this.writerFactory = writerFactory;
     this.outputRecordCollector = outputRecordCollector;
     this.streamNameAndNamespaceToWriters = new HashMap<>(configuredCatalog.getStreams().size());
-
   }
 
   @Override
