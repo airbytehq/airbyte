@@ -1,6 +1,6 @@
 {
   "projectId": "916nvw",
-  "baseUrl": "http://localhost:3000",
+  "baseUrl": "http://localhost:8000",
   "testFiles": [
     "base.spec.js",
     "onboarding.spec.js",
