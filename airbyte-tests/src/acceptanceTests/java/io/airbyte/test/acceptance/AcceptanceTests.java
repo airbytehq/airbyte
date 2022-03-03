@@ -528,7 +528,8 @@ public class AcceptanceTests {
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
             .put("type", "INFINITE_FEED")
-            .put("message_interval", 100)
+            .put("message_interval", 1000)
+            .put("max_records", 300) // emit records for 5 minutes, should be plenty of time for cancel to take effect
             .build()));
 
     final String connectionName = "test-connection";
