@@ -136,7 +136,7 @@
             "type": ["null", "integer"]
           },
           "quantity": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           },
           "tax_class": {
             "type": ["null", "string"]
@@ -163,7 +163,7 @@
             "type": ["null", "string"]
           },
           "price": {
-            "type": ["null", "string"]
+            "type": ["null", "number"]
           }
         }
       }
