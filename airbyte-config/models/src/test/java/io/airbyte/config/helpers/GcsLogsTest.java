@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 @Tag("logger-client")
 public class GcsLogsTest {
 
@@ -34,14 +36,15 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final File data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
-
+    final File data;
+    data = GcsLogs.getFile(getClientFactory(), (new EnvConfigs()).getLogConfigs(), "paginate", 6);
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
 
     final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
     assertEquals(expected, retrieved);
+
   }
 
   /**
