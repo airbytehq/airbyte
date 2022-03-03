@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 
@@ -24,9 +25,13 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -101,7 +106,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testSimpleInsertActorCatalog() throws IOException, JsonValidationException {
+  void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
 
     final StandardWorkspace workspace = MockData.standardWorkspace();
 
@@ -123,7 +128,7 @@ public class ConfigRepositoryE2EReadWriteTest {
         .withConnectionSpecification(Jsons.deserialize("{}"));
     configRepository.writeSourceConnection(source, specification);
 
-    final AirbyteCatalog actorCatalog = new AirbyteCatalog();
+    final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), "1.2.0", "ConfigHash");
 
@@ -133,6 +138,21 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertEquals(actorCatalog, catalog.get());
     assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
     assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
+
+    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", "ConfigHash");
+    final Optional<AirbyteCatalog> catalogNewConnectorVersion =
+        configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash");
+    assertTrue(catalogNewConnectorVersion.isPresent());
+    assertEquals(actorCatalog, catalogNewConnectorVersion.get());
+
+    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
+    final Optional<AirbyteCatalog> catalogNewConfig =
+        configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash");
+    assertTrue(catalogNewConfig.isPresent());
+    assertEquals(actorCatalog, catalogNewConfig.get());
+
+    final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
+    assertEquals(1, catalogDbEntry);
   }
 
 }
