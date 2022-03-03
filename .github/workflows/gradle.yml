@@ -52,7 +52,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: secrets.CACHE_VERSION
+          cache-key: ${{ secrets.CACHE_VERSION }}
 
       - uses: actions/setup-java@v1
         with:
@@ -169,7 +169,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: secrets.CACHE_VERSION
+          cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
       - uses: actions/setup-java@v1
