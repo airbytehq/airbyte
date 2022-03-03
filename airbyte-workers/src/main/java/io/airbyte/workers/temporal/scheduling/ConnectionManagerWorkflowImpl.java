@@ -122,6 +122,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // resetConnection flag to the next run so that that run can execute the actual reset
       workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
+      workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
+
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
@@ -270,6 +272,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void resetConnection() {
     workflowState.setResetConnection(true);
+    workflowState.setResetWithScheduling(false);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
@@ -318,7 +321,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * delete
    */
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() || workflowState.isResetConnection();
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() ||
+        (!workflowState.isResetWithScheduling() && workflowState.isResetConnection());
   }
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {

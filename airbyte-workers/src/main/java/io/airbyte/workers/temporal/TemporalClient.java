@@ -219,7 +219,7 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false, false);
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);

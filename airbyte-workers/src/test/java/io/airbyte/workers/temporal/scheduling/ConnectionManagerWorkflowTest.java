@@ -170,6 +170,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -207,6 +208,7 @@ public class ConnectionManagerWorkflowTest {
           true,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -240,6 +242,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -283,6 +286,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -326,6 +330,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -369,6 +374,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -443,6 +449,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -482,6 +489,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -534,6 +542,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -566,6 +575,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -614,7 +624,8 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
-          true));
+          true,
+          false));
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -651,6 +662,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -683,6 +695,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -760,7 +773,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false, false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -787,7 +800,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false, false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -813,7 +826,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false, false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -839,7 +852,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false, false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -865,7 +878,7 @@ public class ConnectionManagerWorkflowTest {
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
       final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(UUID.randomUUID(), JOB_ID, ATTEMPT_ID, false, 1, workflowState, false, false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
@@ -938,6 +951,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -974,6 +988,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -1025,6 +1040,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
@@ -1104,6 +1120,7 @@ public class ConnectionManagerWorkflowTest {
           false,
           1,
           workflowState,
+          false,
           false);
 
       startWorkflowAndWaitUntilReady(workflow, input);
