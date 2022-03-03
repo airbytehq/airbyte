@@ -25,10 +25,6 @@
     "entry_type": {
       "type": "string"
     },
-    "expiry_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
     "new_block_expiry_date": {
       "type": ["null", "string"],
       "format": "date-time"
