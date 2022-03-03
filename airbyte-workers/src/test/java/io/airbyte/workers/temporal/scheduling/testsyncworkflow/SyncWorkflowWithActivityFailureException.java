@@ -6,35 +6,29 @@ package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import java.util.ArrayList;
+import io.temporal.api.enums.v1.RetryState;
+import io.temporal.failure.ActivityFailure;
+import io.temporal.workflow.Workflow;
 import java.util.UUID;
 
-public class SyncWorkflowFailingOutputWorkflow implements SyncWorkflow {
+/**
+ * Test sync that simulate an activity failure of the child workflow.
+ */
+public class SyncWorkflowWithActivityFailureException implements SyncWorkflow {
 
-  /**
-   * Return an output that report a failure without throwing an exception. This failure is not a
-   * partial success.
-   */
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
-    final StandardSyncSummary standardSyncSummary = new StandardSyncSummary()
-        .withStatus(ReplicationStatus.FAILED)
-        .withRecordsSynced(0L);
-
-    final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
-        .withStandardSyncSummary(standardSyncSummary)
-        .withFailures(new ArrayList<>());
-
-    return null;
+    Workflow.sleep(SleepingSyncWorkflow.RUN_TIME);
+    throw new ActivityFailure(1L, 1L, "Replication", "id", RetryState.RETRY_STATE_RETRY_POLICY_NOT_SET,
+        "identity",
+        new Exception("Error"));
   }
 
 }

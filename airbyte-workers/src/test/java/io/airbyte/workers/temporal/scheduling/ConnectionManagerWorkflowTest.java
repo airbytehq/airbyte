@@ -34,6 +34,7 @@ import io.airbyte.workers.temporal.scheduling.testsyncworkflow.ReplicateFailureS
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SourceAndDestinationFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SyncWorkflowFailingWithHearbeatTimeoutException;
+import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SyncWorkflowWithActivityFailureException;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
@@ -1055,6 +1056,7 @@ public class ConnectionManagerWorkflowTest {
   @Nested
   @DisplayName("Test workflow where the child workflow failed and report it in its output")
   class OutputFailureWorkflow {
+
     @BeforeEach
     public void setup() {
       setupSpecificChildWorkflow(SyncWorkflowFailingWithHearbeatTimeoutException.class);
@@ -1062,7 +1064,7 @@ public class ConnectionManagerWorkflowTest {
 
     @RepeatedTest(10)
     @Timeout(value = 2,
-        unit = TimeUnit.SECONDS)
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset")
     public void failedResetContinueAsReset() throws InterruptedException {
 
@@ -1099,7 +1101,7 @@ public class ConnectionManagerWorkflowTest {
 
     @RepeatedTest(10)
     @Timeout(value = 2,
-        unit = TimeUnit.SECONDS)
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that we are getting stuck if the report of a failure happen")
     void testGetStuckAfterRun() throws InterruptedException {
       Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
@@ -1138,6 +1140,31 @@ public class ConnectionManagerWorkflowTest {
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.QUARANTINED && changedStateEvent.isValue())
           .hasSize(1);
+    }
+
+    public static Stream<Arguments> getMaxAttemptForResetRetry() {
+      return Stream.of(
+          Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
+          // reset")
+          Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
+      );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getMaxAttemptForResetRetry")
+    public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
+      runRetryResetTest(maxAttempt);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test workflow where the child workflow throw an activity failure exception")
+  class ActivityFailureWorkflow {
+
+    @BeforeEach
+    public void setup() {
+      setupSpecificChildWorkflow(SyncWorkflowWithActivityFailureException.class);
     }
 
     public static Stream<Arguments> getMaxAttemptForResetRetry() {
@@ -1256,4 +1283,5 @@ public class ConnectionManagerWorkflowTest {
         .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CONTINUE_AS_RESET && changedStateEvent.isValue())
         .hasSizeGreaterThanOrEqualTo(1);
   }
+
 }

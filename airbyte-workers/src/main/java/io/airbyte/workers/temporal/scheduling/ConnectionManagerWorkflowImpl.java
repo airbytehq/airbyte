@@ -152,7 +152,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
         workflowState.setFailed(getFailStatus(standardSyncOutput));
 
-
         if (workflowState.isFailed()) {
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
