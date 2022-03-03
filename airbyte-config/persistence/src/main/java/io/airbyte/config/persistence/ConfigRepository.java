@@ -501,17 +501,15 @@ public class ConfigRepository {
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
-      final UUID connectionId = record.get(ACTOR.ID);
-      final Result<Record> connectionIds = database.query(ctx -> ctx.select(asterisk())
+      final UUID connectionId = record.get(CONNECTION.ID);
+      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
           .from(CONNECTION_OPERATION)
           .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
           .fetch());
 
-      final List<UUID> ids = new ArrayList<>();
-      for (final Record r : connectionIds) {
-        ids.add(r.get(CONNECTION_OPERATION.OPERATION_ID));
-      }
-      standardSyncs.add(DbConverter.buildStandardSync(record, ids));
+      final List<UUID> connectionOperationIds =
+          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
+      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
     }
     return standardSyncs;
   }
