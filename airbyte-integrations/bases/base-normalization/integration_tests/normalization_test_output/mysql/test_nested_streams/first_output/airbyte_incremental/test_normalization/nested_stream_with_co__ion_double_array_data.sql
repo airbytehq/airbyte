@@ -74,7 +74,7 @@ and double_array_data is not null
 -- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab1
 select
     _airbyte_partition_hashid,
-    cast(id as char) as id,
+    cast(id as char(1024)) as id,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     
