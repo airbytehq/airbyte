@@ -1,6 +1,9 @@
 name: "Cache Build Artifacts"
 description: "Cache Java, Javascript and Python build artifacts to reduce build time"
 inputs:
+  cache-key:
+    description: "Key to use for caching"
+    required: true
   cache-python:
     description: "Whether to cache Python dependencies. Only relevant if building connector modules. true or false"
     default: "true"
@@ -15,18 +18,18 @@ runs:
       with:
         path: |
           ~/.cache/pip
-        key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ inputs.cache-key }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
-          ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
+          ${{ inputs.cache-key }}-pip-${{ runner.os }}-
 
     - name: Npm Caching
       uses: actions/cache@v2
       with:
         path: |
           ~/.npm
-        key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ inputs.cache-key }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+          ${{ inputs.cache-key }}-npm-${{ runner.os }}-
 
     # this intentionally does not use restore-keys so we don't mess with gradle caching
     - name: Gradle and Python Caching
@@ -36,4 +39,4 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           **/.venv
-        key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ inputs.cache-key }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}

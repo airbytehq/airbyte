@@ -51,6 +51,8 @@ jobs:
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: secrets.CACHE_VERSION
 
       - uses: actions/setup-java@v1
         with:
