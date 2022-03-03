@@ -912,6 +912,9 @@ class ProjectCards(SemiIncrementalGithubStream):
 
 
 class PullRequestCommits(GithubStream):
+
+    primary_key = "sha"
+
     def __init__(self, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
