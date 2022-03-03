@@ -902,7 +902,7 @@ class ProjectCards(SemiIncrementalGithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
+                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": str(record["id"])}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
