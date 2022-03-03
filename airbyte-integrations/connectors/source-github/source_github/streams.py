@@ -828,6 +828,9 @@ class Deployments(SemiIncrementalGithubStream):
 
 
 class ProjectColumns(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
+    """
 
     cursor_field = "updated_at"
 
