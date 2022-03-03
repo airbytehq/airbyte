@@ -40,13 +40,16 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -295,95 +298,74 @@ class IntegrationRunnerTest {
 
   @Test
   void testInterruptOrphanThreadFailure() {
-    System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
     final String testName = Thread.currentThread().getName();
-
-    try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(false)) {
-      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock, true,
-          3, TimeUnit.SECONDS,
-          10, TimeUnit.SECONDS));
-      try {
-        TimeUnit.SECONDS.sleep(10);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-      final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-          .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
-          .collect(Collectors.toList());
-      // all threads should be interrupted
-      assertEquals(List.of(), runningThreads);
-      assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
-
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    startSleepingThread(caughtExceptions, false);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        Assertions::fail,
+        false,
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(10);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // all threads should be interrupted
+    assertEquals(List.of(), runningThreads);
+    assertEquals(1, caughtExceptions.size());
   }
 
   @Test
   void testNoInterruptOrphanThreadFailure() {
-    System.setIn(new ByteArrayInputStream("{}\n{}".getBytes()));
     final String testName = Thread.currentThread().getName();
-    try (final MultiThreadTestConsumer airbyteMessageConsumerMock = new MultiThreadTestConsumer(true)) {
-      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock, true,
-          3, TimeUnit.SECONDS,
-          10, TimeUnit.SECONDS));
-      try {
-        TimeUnit.SECONDS.sleep(10);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-      final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-          .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
-          .collect(Collectors.toList());
-      // A remaining thread is still alive as it refuses to be interrupted
-      assertEquals(1, runningThreads.size());
-      assertTrue(airbyteMessageConsumerMock.hasCaughtExceptions());
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    final AtomicBoolean exitCalled = new AtomicBoolean(false);
+    startSleepingThread(caughtExceptions, true);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        () -> exitCalled.set(true),
+        false,
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(10);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // a thread that refuses to be interrupted should remain
+    assertEquals(1, runningThreads.size());
+    assertEquals(1, caughtExceptions.size());
+    assertTrue(exitCalled.get());
   }
 
-  private static class MultiThreadTestConsumer implements AirbyteMessageConsumer, Runnable {
-
-    final private ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private final boolean ignoreInterrupt;
-    private boolean interruptException = false;
-
-    public MultiThreadTestConsumer(final boolean ignoreInterrupt) {
-      this.ignoreInterrupt = ignoreInterrupt;
-    }
-
-    @Override
-    public void start() {
-      executorService.submit(this);
-    }
-
-    @Override
-    public void accept(AirbyteMessage message) throws Exception {
-      throw new IOException("Some random exceptions");
-    }
-
-    @Override
-    public void run() {
-      try {
-        TimeUnit.MINUTES.sleep(5);
-      } catch (Exception e) {
-        LOGGER.info("Caught Exception", e);
-        interruptException = true;
-        if (ignoreInterrupt) {
-          // for test purposes, we simulate a consumer that refuses to be interrupted...
-          run();
-        } else {
-          close();
+  private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
+    final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    executorService.submit(() -> {
+      for (int tries = 0; tries < 3; tries++) {
+        try {
+          TimeUnit.MINUTES.sleep(5);
+        } catch (Exception e) {
+          LOGGER.info("Caught Exception", e);
+          caughtExceptions.add(e);
+          if (!ignoreInterrupt) {
+            executorService.shutdownNow();
+            break;
+          }
         }
       }
-    }
-
-    @Override
-    public void close() {
-      executorService.shutdownNow();
-    }
-
-    public boolean hasCaughtExceptions() {
-      return interruptException;
-    }
-
+    });
   }
 
 }
