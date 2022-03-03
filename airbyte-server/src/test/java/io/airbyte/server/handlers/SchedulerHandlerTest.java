@@ -91,7 +91,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -447,7 +446,6 @@ class SchedulerHandlerTest {
     verify(configRepository, never()).writeActorCatalogFetchEvent(any(), any(), any(), any());
     verify(synchronousSchedulerClient, never()).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
-
 
   @Test
   void testDiscoverSchemaForSourceFromSourceIdDisableCache() throws IOException, JsonValidationException, ConfigNotFoundException {
