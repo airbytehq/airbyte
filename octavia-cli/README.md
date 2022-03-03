@@ -14,6 +14,7 @@ The project is under development: readers can refer to our [tech spec deck](http
 We are packaging this CLI as a Docker image to avoid dependency hell, please install and run Docker if you are not. 
 The project is under development: **we have not yet published any Docker image to our Docker registry.**
 
+0. Clone the Airbyte repository if you did not already.
 1. Build the project locally (from the root of the repo):
 ```bash
 SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo
