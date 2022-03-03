@@ -60,8 +60,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         Map.of(
             "role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()
-        ));
+            "database", config.get("database").asText()));
   }
 
   @Override
