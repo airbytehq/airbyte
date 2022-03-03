@@ -52,7 +52,10 @@ class InsightConfig(BaseModel):
 
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
-        description="Time window in days to get statistic from.",
+        description=(
+            "Time window in days to get statistic from. The sync will chunk period between the start_date and the end_date by the number of days you specified. "
+            "For example if you specify time_increment = 7 then all statistics will be aggregated by 7 days starting from the start_date."
+        ),
         exclusiveMaximum=90,
         default=1,
     )
