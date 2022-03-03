@@ -15,6 +15,7 @@ If `start_date` is set, it will only apply to `Activities` stream. `Customers`' 
 This Source is capable of syncing the following streams:
 
 * [Customers](https://dev.chartmogul.com/reference/list-customers)
+* [CustomerCount] (https://dev.chartmogul.com/reference/retrieve-customer-count)
 * [Activities](https://dev.chartmogul.com/reference/list-activities)
 
 ### Features
@@ -44,4 +45,5 @@ Please read [How to find your API key](https://dev.chartmogul.com/docs/authentic
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count |
 | 0.1.0 | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381) | New Source: Chartmogul |
