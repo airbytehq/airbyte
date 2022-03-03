@@ -650,6 +650,16 @@ public class ConfigRepository {
     return result;
   }
 
+  /**
+   * Store an Airbyte catalog in DB if it is not present already
+   *
+   * Checks in the config DB if the catalog is present already, if so returns it identifier. It is
+   * not present, it is inserted in DB with a new identifier and that identifier is returned.
+   *
+   * @param airbyteCatalog An Airbyte catalog to cache
+   * @param context
+   * @return the db identifier for the cached catalog.
+   */
   private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
                                        final DSLContext context) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
@@ -694,6 +704,24 @@ public class ConfigRepository {
 
   }
 
+  /**
+   * Stores source catalog information.
+   *
+   * This function is called each time the schema of a source is fetched. This can occur because
+   * the source is set up for the first time, because the configuration or version of the connector
+   * changed or because the user explicitly requested a schema refresh.
+   * Schemas are stored separately and de-duplicated upon insertion.
+   * Once a schema has been successfully stored, a call to getActorCatalog(sourceId,
+   * connectionVersion, configurationHash) will return the most recent schema stored for those
+   * parameters.
+   *
+   * @param catalog
+   * @param sourceId
+   * @param connectorVersion
+   * @param configurationHash
+   * @return The identifier (UUID) of the fetch event inserted in the database
+   * @throws IOException
+   */
   public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
                                           final UUID sourceId,
                                           final String connectorVersion,
