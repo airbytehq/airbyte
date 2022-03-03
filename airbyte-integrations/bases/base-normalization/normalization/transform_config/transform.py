@@ -279,7 +279,7 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
-            "secure": config["ssl"]
+            "secure": config["ssl"],
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
