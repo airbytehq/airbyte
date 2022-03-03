@@ -10,23 +10,25 @@ It has the following features:
 
 The project is under development: readers can refer to our [tech spec deck](https://docs.google.com/presentation/d/10RjkCzBiVhCivnjSh63icYI7wG6S0N0ZIErEIsmXTqM/edit?usp=sharing) for an introduction to the tool.
 
-# Usage
-We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
-The project is under development: we have not yet published any docker image to our Docker registry.
+# Install
+We are packaging this CLI as a docker image to avoid dependency hell, please install and run Docker if you are not. 
+The project is under development: **we have not yet published any Docker image to our Docker registry.**
 
 1. Build the project locally (from the root of the repo):
 ```bash
-SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
+SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo
 ```
-2. Run the CLI from docker:
+
+2a. **If you are using ZSH**:
 ```bash
-docker run airbyte/octavia-cli:dev 
-````
-3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
-````bash
-echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
+./install.sh # from airbyte/octavia-cli directory
 source ~/.zshrc
 octavia
+```
+
+2b. If you are not using ZSH you can create an alias in your shell of the following command: 
+````bash
+docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
 ````
 
 # Current development status
