@@ -669,8 +669,8 @@ public class ConfigRepository {
         .set(ACTOR_CATALOG.ID, catalogId)
         .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(airbyteCatalog)))
         .set(ACTOR_CATALOG.CATALOG_HASH, catalogHash)
-        .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp)
-        .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp).execute();
+        .set(ACTOR_CATALOG.CREATED_AT, timestamp)
+        .set(ACTOR_CATALOG.MODIFIED_AT, timestamp).execute();
     return catalogId;
   }
 
