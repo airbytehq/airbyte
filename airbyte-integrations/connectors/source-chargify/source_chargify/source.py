@@ -46,7 +46,8 @@ class ChargifyStream(HttpStream, ABC):
             for param in query_params:
                 if param == "page":
                     new_params[param] = int(query_params[param][0]) + 1
-                new_params[param] = query_params[param][0]
+                else:
+                    new_params[param] = query_params[param][0]
 
             return new_params
         return None
@@ -56,7 +57,11 @@ class ChargifyStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         
         if next_page_token is None and self.is_first_requests:
+            self.is_first_requests == False
             return {"page": self._page, "per_page": self._per_page}
+
+        if next_page_token is not None and self.is_first_requests is False:
+            return None
 
         return next_page_token
 
@@ -106,7 +111,7 @@ class Subscriptions(ChargifyStream):
 
 # Source
 class SourceChargify(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             auth = HTTPBasicAuth(config["api_key"], "X")
             converted_args = self.convert_config2stream_args(config)
