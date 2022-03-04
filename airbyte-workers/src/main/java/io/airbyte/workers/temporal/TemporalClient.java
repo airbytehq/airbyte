@@ -219,6 +219,7 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
+    // TODO: bmoric -> move to builder, magic values are not clear
     final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false, false);
     signalRequest.add(connectionManagerWorkflow::run, input);
 

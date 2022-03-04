@@ -1256,6 +1256,7 @@ public class ConnectionManagerWorkflowTest {
     }
   }
 
+  // TODO: bmoric -> use that in all test.
   private <T extends SyncWorkflow> void setupSpecificChildWorkflow(final Class<T> mockedSyncedWorkflow) {
     testEnv = TestWorkflowEnvironment.newInstance();
 
