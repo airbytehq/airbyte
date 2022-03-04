@@ -283,6 +283,6 @@ class SourceXola(AbstractSource):
         # TODO remove the authenticator if not required.
 
         return [
-            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
-            # Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
+            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]
