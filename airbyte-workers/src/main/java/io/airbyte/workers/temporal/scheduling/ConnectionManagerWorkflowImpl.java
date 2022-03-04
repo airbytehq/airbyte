@@ -57,6 +57,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
 
+  private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
+  private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
+
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
   private final WorkflowInternalState workflowInternalState = new WorkflowInternalState();
@@ -408,11 +411,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * @return The attempt number
    */
   private Integer createAttempt(final long jobId) {
-    final int currentVersion = 1;
-    final int attemptCreationVersion = Workflow.getVersion("rename_attempt_id_to_number", Workflow.DEFAULT_VERSION, currentVersion);
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
 
     // Retrieve the attempt number but name it attempt id
-    if (attemptCreationVersion < currentVersion) {
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
       final AttemptCreationOutput attemptCreationOutput =
           runMandatoryActivityWithOutput(
               jobCreationAndStatusUpdateActivity::createNewAttempt,
