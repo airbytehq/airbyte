@@ -22,6 +22,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.TestStateListener;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
@@ -592,7 +593,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any());
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any(JobCancelledInput.class));
 
     }
 
@@ -681,7 +682,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.UPDATED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any());
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any(JobSuccessInput.class));
     }
 
   }
@@ -877,7 +878,7 @@ public class ConnectionManagerWorkflowTest {
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
           Arguments.of(new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
               .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any()))),
-          Arguments.of(new Thread(() -> Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any()))
+          Arguments.of(new Thread(() -> Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))));
     }
 
@@ -959,16 +960,16 @@ public class ConnectionManagerWorkflowTest {
       return Stream.of(
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> System.out.println("do Nothing")),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any()))),
+                  .when(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any(JobSuccessInput.class)))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.cancelJob()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any()))),
+                  .when(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any(JobCancelledInput.class)))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.deleteConnection()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
                   .when(mConnectionDeletionActivity).deleteConnection(Mockito.any()))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any()))));
+                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any(AttemptFailureInput.class)))));
     }
 
     @ParameterizedTest

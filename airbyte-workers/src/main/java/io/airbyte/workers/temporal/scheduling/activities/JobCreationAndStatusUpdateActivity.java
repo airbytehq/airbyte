@@ -110,6 +110,23 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class JobSuccessInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private StandardSyncOutput standardSyncOutput;
+
+  }
+
+  /**
+   * Set a job status as successful
+   */
+  @ActivityMethod
+  void jobSuccessWithAttemptNumber(JobSuccessInputWithAttemptNumber input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobFailureInput {
 
     private long jobId;
@@ -144,6 +161,24 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberFailureInput {
+
+    private long jobId;
+    private int attemptNumber;
+    private StandardSyncOutput standardSyncOutput;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set an attempt status as failed
+   */
+  @ActivityMethod
+  void attemptFailureWithAttemptNumber(AttemptNumberFailureInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobCancelledInput {
 
     private long jobId;
@@ -157,6 +192,23 @@ public interface JobCreationAndStatusUpdateActivity {
    */
   @ActivityMethod
   void jobCancelled(JobCancelledInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class JobCancelledInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set a job status as cancelled
+   */
+  @ActivityMethod
+  void jobCancelledWithAttemptNumber(JobCancelledInputWithAttemptNumber input);
 
   @Data
   @NoArgsConstructor
