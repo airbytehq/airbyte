@@ -399,7 +399,7 @@ public class SchedulerHandler {
   // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     if (featureFlags.usesNewScheduler()) {
-      createNewSchedulerCancellation(jobIdRequestBody.getId());
+      return createNewSchedulerCancellation(jobIdRequestBody.getId());
     }
 
     final long jobId = jobIdRequestBody.getId();
