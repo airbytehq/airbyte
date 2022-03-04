@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -37,7 +38,8 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
     container = new OracleContainer()
         .withUsername("test")
         .withPassword("oracle")
-        .usingSid();;
+        .usingSid();
+    ;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -60,8 +62,8 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get("port").asText(),
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )");
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
+            "oracle.net.encryption_types_client=( 3DES168 )"));
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -105,18 +107,18 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING),
-                Field.of("POWER", JsonSchemaType.NUMBER))
+                    STREAM_NAME,
+                    Field.of("ID", JsonSchemaType.NUMBER),
+                    Field.of("NAME", JsonSchemaType.STRING),
+                    Field.of("POWER", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("ID", JsonSchemaType.NUMBER),
-                Field.of("NAME", JsonSchemaType.STRING))
+                    STREAM_NAME2,
+                    Field.of("ID", JsonSchemaType.NUMBER),
+                    Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
