@@ -62,7 +62,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get("port").asText(),
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
             "oracle.net.encryption_types_client=( 3DES168 )"));
 
     database.execute(connection -> {
