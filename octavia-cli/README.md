@@ -15,14 +15,14 @@ The project is under development: readers can refer to our [tech spec deck](http
 ## 1. Install and run Docker
 We are packaging this CLI as a Docker image to avoid dependency hell, **[please install and run Docker if you are not](https://docs.docker.com/get-docker/)**. 
 
-## 2.a If you are using ZSH / Bash
+## 2.a If you are using ZSH / Bash:
 ```bash
 curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
 ```
 
 This script:
-1. Pulls the octavia image from our docker registry
-2. Creates an `octavia` alias in your profile
+1. Pulls the [octavia-cli image](https://hub.docker.com/r/airbyte/octavia-cli/tags) from our Docker registry.
+2. Creates an `octavia` alias in your profile.
 
 ## 2.b If you want to directly run the CLI without alias:
 ```bash
