@@ -230,13 +230,13 @@ public class TemporalClient {
           do {
             Thread.sleep(DELAY_BETWEEN_QUERY_MS);
           } while (!isWorkflowRunning(getConnectionManagerName(connectionId)));
-        } catch (InterruptedException e) {}
+        } catch (final InterruptedException e) {}
 
         return null;
       }).get(60, TimeUnit.SECONDS);
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (final InterruptedException | ExecutionException e) {
       log.error("Failed to create a new connection manager workflow", e);
-    } catch (TimeoutException e) {
+    } catch (final TimeoutException e) {
       log.error("Can't create a new connection manager workflow due to timeout", e);
     }
   }
@@ -471,11 +471,11 @@ public class TemporalClient {
    */
   public boolean isWorkflowRunning(final String workflowName) {
     try {
-      ConnectionManagerWorkflow connectionManagerWorkflow = getExistingWorkflow(ConnectionManagerWorkflow.class, workflowName);
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getExistingWorkflow(ConnectionManagerWorkflow.class, workflowName);
       connectionManagerWorkflow.getState();
 
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
   }

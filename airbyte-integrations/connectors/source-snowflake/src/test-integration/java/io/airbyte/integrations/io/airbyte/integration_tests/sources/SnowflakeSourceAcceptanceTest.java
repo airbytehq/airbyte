@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -96,10 +97,9 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format("jdbc:snowflake://%s/",
             config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,
-        String.format("role=%s;warehouse=%s;database=%s",
-            config.get("role").asText(),
-            config.get("warehouse").asText(),
-            config.get("database").asText()));
+        Map.of("role", config.get("role").asText(),
+            "warehouse", config.get("warehouse").asText(),
+            "database", config.get("database").asText()));
 
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String

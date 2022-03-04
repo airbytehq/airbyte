@@ -131,7 +131,12 @@ public class SchedulerApp {
           featureFlags);
       final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
       final TrackingClient trackingClient = TrackingClientSingleton.get();
-      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient, workerConfigs);
+      final JobScheduler jobScheduler = new JobScheduler(
+          configs.connectorSpecificResourceDefaultsEnabled(),
+          jobPersistence,
+          configRepository,
+          trackingClient,
+          workerConfigs);
       final JobSubmitter jobSubmitter = new JobSubmitter(
           workerThreadPool,
           jobPersistence,
