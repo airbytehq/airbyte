@@ -2,12 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Tuple
 import json
-import os
 from datetime import datetime
 from typing import Dict, Generator, Mapping, Any, List
-import pendulum
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -24,9 +21,15 @@ from airbyte_cdk.sources import Source
 from googleapiclient.discovery import build
 from  google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
-from .streams import DBMStream
-from .streams import CookieReach
-from .streams import Standard
+from .streams import (
+    DBMStream,
+    Standard, 
+    AudienceComposition,
+    Floodlight,
+    Reach,
+    UniqueReachAudience
+)
+from airbyte_cdk.sources.streams import Stream
 
 class SourceDV360(Source):
 
@@ -53,8 +56,8 @@ class SourceDV360(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            dv360 = build('displayvideo','v1', credentials=self.get_credentials(config))
-            request = dv360.partners().list().execute()
+            dbm_service = build('doubleclickbidmanager','v1.1', credentials=self.get_credentials(config))
+            request = dbm_service.queries().listqueries().execute()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Unable to connect to Google Ads API with the provided credentials - {repr(err)}")
@@ -77,15 +80,32 @@ class SourceDV360(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        streams = []
-        schemas_path = './source_dv_360/schemas'
-        for file in os.listdir(schemas_path):
-            with open(os.path.join(schemas_path, file)) as schema:
-                stream_name = os.path.splitext(file)[0]
-                json_schema = json.loads(schema.read())
-            streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
-        return AirbyteCatalog(streams=streams)
+        #streams = []
+        #schemas_path = './source_dv_360/schemas'
+        #for file in os.listdir(schemas_path):
+        #    with open(os.path.join(schemas_path, file)) as schema:
+        #        stream_name = os.path.splitext(file)[0]
+        #        json_schema = json.loads(schema.read())
+        #    streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
+        #return AirbyteCatalog(streams=streams)
 
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        args= dict(
+            credentials=self.get_credentials(config),
+            partner_id = config.get('partner_id'), 
+            start_date=config.get("start_date"), 
+            end_date=config.get("end_date")
+        )
+        streams = [
+            Reach(**args),
+            Standard(**args), 
+            AudienceComposition(**args),
+            Floodlight(**args),
+            UniqueReachAudience(**args),
+        ]
+        return streams
+        
 
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
@@ -109,18 +129,21 @@ class SourceDV360(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        dbm_service = build('doubleclickbidmanager','v1.1', credentials=self.get_credentials(config))
         start_date = config.get("start_date")
         end_date = config.get("end_date")
+        filters = config.get("filters")
         stream_name = "cookie_reach"  # Example
-        data = {"Advertiser ID":705159561,"Advertiser":"Stage Entertainment_Germany","Insertion Order ID":22061360,"Insertion Order":"de_2021-7_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_multipleshows_usecase1googleinmarketaudience","Line Item ID":55828118,"Line Item":"de_2021-8_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_dynamic-image_h5_multipleshows_usecase1googleinmarketaudience-mmr","Partner          ID":694186226,"Partner":"TP - Stage Entertainment - DQ&A - DV360 - DE","Cookie Reach: Impression Reach":310859}
+        #data = {"Advertiser ID":705159561,"Advertiser":"Stage Entertainment_Germany","Insertion Order ID":22061360,"Insertion Order":"de_2021-7_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_multipleshows_usecase1googleinmarketaudience","Line Item ID":55828118,"Line Item":"de_2021-8_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_interest_mi_dynamic-image_h5_multipleshows_usecase1googleinmarketaudience-mmr","Partner ID":694186226,"Partner":"TP - Stage Entertainment - DQ&A - DV360 - DE","Cookie Reach: Impression Reach":310859}
+        #data = {'Advertiser ID': '705159561', 'Advertiser': 'Stage Entertainment_Germany', 'Insertion Order ID': '21950660', 'Insertion Order': 'de_2021-7_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_look-a-like_mi_multipleshows_usecase1lalshowpagevisitors', 'Line Item ID': '54854397', 'Line Item': 'de_2021-7_restart_ps_multipleshows_national_multiaudience_auction_cps_multiplacement_look-a-like_mi_dynamic-image_h5_multipleshows_usecase1lalshowpagevisitors', 'Partner ID': '694186226', 'Partner': 'TP - Stage Entertainment - DQ&A - DV360 - DE', 'Cookie Reach: Impression Reach': '156386'}
+        # Example
+        dbm_stream = Reach(credentials=self.get_credentials(config),partner_id = config.get('partner_id'), start_date=start_date, end_date=end_date, filters=filters)
+        #dbm_stream = Standard(credentials=self.get_credentials(config),partner_id = config.get('partner_id'), start_date=start_date, end_date=end_date)
 
- # Example
-        dbm_stream = CookieReach(credentials=self.get_credentials(config),partner_id = config.get('partner_id'), start_date=start_date, end_date=end_date)
-
-        #data=dbm_stream.read_records(sync_mode=None)
-
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+        for configured_stream in catalog.streams:
+            stream = configured_stream.stream
+            data=dbm_stream.read_records(catalog_fields=stream.json_schema.get('properties').keys())
+            for row in data:
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )

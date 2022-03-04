@@ -1,108 +1,134 @@
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping
 from xmlrpc.client import Boolean
 
 import pendulum
 from airbyte_cdk.sources.streams import Stream
-from typing import Tuple
 import json
-import os
-from datetime import datetime
-from typing import Dict, Generator, Mapping, Any, List
+from typing import  Mapping, Any, List
 import pendulum
 from  google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
-from datetime import timedelta
-from contextlib import closing
-from six.moves.urllib.request import urlopen
-import pandas as pd
 import io
 import csv
+import requests
+from .fields import API_REPORT_BUILDER_MAPPING, sanitize
 
 REPORT_TYPE_MAPPING = {
     "audience_composition": "TYPE_AUDIENCE_COMPOSITION",
-    "cookie_reach": "TYPE_REACH_AND_FREQUENCY",
+    "reach": "TYPE_REACH_AND_FREQUENCY",
     "floodlight": "FLOODLIGHT",
     "standard": "TYPE_GENERAL",
-    "unique_reach_audience": "TYPE_REACH_AUDIENCE",
-    "unique_reach": "TYPE_REACH_AND_FREQUENCY"
+    "unique_reach_audience": "TYPE_REACH_AUDIENCE"
 }
 
 class DBM:
-  QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json"
-  DBM_SCOPE = 'doubleclickbidmanager'
+  QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json" #Template for creating the query object
+  DBM_SCOPE = 'doubleclickbidmanager' #Scope required to fetch data
 
   def __init__(self, credentials: Credentials, partner_id: str, scope: str = DBM_SCOPE, version: str = 'v1.1'):
-    self.service = build(scope,version, credentials= credentials)
+    self.service = build(scope,version, credentials= credentials) #build a service with scope dbm
     self.partner_id = partner_id
 
+  def convert_fields(self,fields:List[str]) -> List[str]:
+    """
+    Convert a list of fields into the API naming
+    :param fields: the list of fields to be converted
+
+    :return: A list of converted fields
+    """
+    return [API_REPORT_BUILDER_MAPPING[key] for key in fields]
+
+  def get_fields_from_schema(self, schema: Mapping[str, Any],catalog_fields: List[str]) -> List[str]:
+    schema_fields = schema.get('properties').keys()
+    fields = [field for field in schema_fields if field in catalog_fields]
+    return fields
+
+  def get_dimensions_from_fields(self, fields: List[str]) -> List[str]:
+    """
+    Get a list of dimensions from a list of fields. Dimensions start with FILTER_
+    :param fields: A list of fields from the stream
+
+    :return: A list of dimensions in the naming form of the API
+    """
+    conv_fields = self.convert_fields(fields)
+    dimensions = [field for field in conv_fields if field.startswith('FILTER')]
+    return dimensions
+
+  def get_metrics_from_fields(self, fields: List[str]) -> List[str]:
+    """
+    Get a list of metrics from from a list of fields. Metrics start with METRIC_
+    :param fields: A list of fields from the stream
+
+    :return: A list of metrics in the naming form of the API
+    """
+    conv_fields = self.convert_fields(fields)
+    metrics = [field for field in conv_fields if field.startswith('METRIC')]
+    return metrics
+
   def set_partner_filter(self,query: Mapping[str, Any]):
-    #print(query)
+    """
+    set the partner id filter to the partner id in the config
+    :param query: the query object where the filter is to be set
+    """
     filters = query.get("params").get("filters")
     if filters:
-      partner_filter_index = next((index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None)
+      partner_filter_index = next((index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None) #get the index of the partner filter
       if partner_filter_index is not None:
-        query["params"]["filters"][partner_filter_index]["value"] = self.partner_id
+        query["params"]["filters"][partner_filter_index]["value"] = self.partner_id #set filter to the partner id in the config
 
   def create_query_object(self, report_name:str, dimensions:List[str], metrics:List[str],
     start_date_ms:str, end_date_ms:str, filters:List[dict] = [] ) -> Mapping[str, Any]:
     """
-    Create a query object from the template and a list of dimensions and metrics
+    Create a query object using the query template and a list of parameter for the query
+    :param report_name: Name of the report
+    :param dimensions: List of dimensions
+    :param metrics: list of metrics
+    :param start_date_ms: Start date of the report in ms
+    :param end_date_ms: End date of the report in ms
+    :param filters: additional filters to be set
+
+    :return the query object created according to the template
     """
-    with open(DBM.QUERY_TEMPLATE_PATH, 'r') as template:
+    with open(self.QUERY_TEMPLATE_PATH, 'r') as template:
       query_body = json.loads(template.read())
 
     self.set_partner_filter(query_body) #Set partner Id in the filter
     query_body["metadata"]["title"] = report_name
-    query_body["params"]["type"] = REPORT_TYPE_MAPPING[report_name]
-    query_body["params"]["groupBys"] = dimensions
-    query_body["params"]["filters"].extend(filters)
+    query_body["params"]["type"] = REPORT_TYPE_MAPPING[report_name] #get the report type from the mapping
+    query_body["params"]["groupBys"] = dimensions #dimensions are put in the groupBy section of the query
+    query_body["params"]["filters"].extend(filters) #Add additional filters if needed
     query_body["params"]["metrics"] = metrics
     query_body["reportDataStartTimeMs"] = start_date_ms
     query_body["reportDataEndTimeMs"] = end_date_ms
     return query_body
 
+  def convert_schema_into_query(self,schema: Mapping[str, Any], report_name: str,catalog_fields: List[str],filters:List[dict],start_date: str, end_date: str = None) -> str:
+    """
+    Create and run a query from the given schema
+    :param report_name: Name of the report
+    :param catalog_fields: List of fields which names are sanitized
+    :param start_date: Start date of the report, in the same form of the date in the config, as specified in the spec
+    :param end_date: End date of the report, in the same form of the date in the config, as specified in the spec
+    :param filters: additional filters to be set
 
-  def get_dimensions_from_schema(self, schema: Mapping[str, Any]) -> List[str]:
+    :return the query object created according to the template
     """
-    Return a list of dimensions from the givem schema
-    """
-    dimensions = [key for key in schema.get("properties").keys() if key.startswith('FILTER')]
-    return dimensions
-
-  def get_metrics_from_schema(self, schema: Mapping[str, Any]) -> List[str]:
-    """
-    Return a list of metrics from the givem schema
-    """
-    metrics = [key for key in schema.get("properties").keys() if key.startswith('METRIC')]
-    return metrics
-
-  def get_report_type_from_schema(self, schema: Mapping[str, Any]) -> str:
-    """
-    Return the report type from the given schema
-    """
-    properties = schema.get("properties")
-    return list(properties.get("params").get("report_type"))
-
-  def convert_schema_into_query(self,schema: Mapping[str, Any], report_name: str, start_date: str, end_date: str = None) -> str:
-    """
-    Create a query from the given schema
-    """
+    fields = self.get_fields_from_schema(schema,catalog_fields)
     start_date = pendulum.parse(start_date)
     end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
     query = self.create_query_object(
       report_name = report_name,
-      dimensions = self.get_dimensions_from_schema(schema),
-      metrics = self.get_metrics_from_schema(schema),
-      start_date_ms = str(int(start_date.timestamp() * 1000)),   ## Convert dates to ms --> checkeck for timezone
+      dimensions = self.get_dimensions_from_fields(fields),
+      metrics = self.get_metrics_from_fields(fields),
+      start_date_ms = str(int(start_date.timestamp() * 1000)),   ##TODO Convert dates to ms --> check for timezone
       end_date_ms = str(int(end_date.timestamp() * 1000)),
+      filters = filters,
     )
-    print(query)
-    create_query =self.service.queries().createquery(body=query).execute()
-    get_query=self.service.queries().getquery(queryId=create_query.get('queryId')).execute()
-    print(get_query)
+    create_query =self.service.queries().createquery(body=query).execute() #Create query
+    get_query=self.service.queries().getquery(queryId=create_query.get('queryId')).execute() #get the query which will include the report url
     return get_query
 
 
@@ -110,81 +136,54 @@ class DBMStream(Stream, ABC):
   """
   Base stream class
   """
-  OUTPUT_DIR = "source_dv_360/reports"
+  primary_key = None
 
-  def __init__(self, credentials: Credentials, partner_id: str, start_date: str, end_date: str=None):
+  def __init__(self, credentials: Credentials, partner_id: str, filters:List[dict], start_date: str, end_date: str=None):
     self.dbm = DBM(credentials= credentials, partner_id=partner_id)
     self._start_date = start_date
     self._end_date = end_date
+    self._filters = filters
 
-  def get_query(self, stream_slice:Mapping[str, Any] ) -> Iterable[Mapping]:
+  def get_query(self, catalog_fields: List[str], stream_slice:Mapping[str, Any]) -> Iterable[Mapping]:
     """
-    Return a query
+    Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
+    :param catalog_fields: A list of fields provided in the configured catalog
+
+    :return the created query
     """
-    query = self.dbm.convert_schema_into_query(schema= self.get_json_schema(), report_name= self.name,
+    query = self.dbm.convert_schema_into_query(schema= self.get_json_schema(),catalog_fields=catalog_fields, filters= self._filters,report_name= self.name,
     start_date=self._start_date, end_date=self._end_date)
     return query
 
-  def fetch_report(self, query: dict, output_dir: str = OUTPUT_DIR) -> str:
+  def read_records(self,catalog_fields: List[str],stream_slice: Mapping[str, Any]=None):
     """
-    Fetch a report and save the CSV file in the reports directory
-    """
-    output_file = ""
-    query_id = query.get("queryId")
-    print(query_id)
-    if query_id:
-      try:
-        if not os.path.isabs(output_dir):
-          output_dir = os.path.expanduser(output_dir)
-          # Grab the report and write contents to a file.
-          report_url = query['metadata']['googleCloudStoragePathForLatestReport']
-          output_file = '%s/%s.csv' % (output_dir, query['queryId'])
-          with open(output_file, 'wb') as output:
-            with closing(urlopen(report_url)) as url:
-              output.write(url.read())
-          print('Download complete.')
-        else:
-          print('No reports for queryId "%s"' %query['queryId'])
-      except KeyError:
-        print('No report found for queryId "%s".' % query_id)
-    else:
-      print('No queries exist.')
-    return output_file
+    Get the report from the url specified in the created query. The report is in csv form, with 
+    additional meta data below the data that need to be remove.
+    :param catalog_fields: A list of fields provided in the configured catalog to create the query
 
+    :return a generator of dict rows from the file
+    """
+    query = self.get_query(catalog_fields=catalog_fields,stream_slice=stream_slice) # create and run the query
+    report_url = query['metadata']['googleCloudStoragePathForLatestReport'] # Take the url of the generated report
+    with io.StringIO(requests.get(report_url).text) as csv_response:
+      header = csv_response.readline().split(',') #get the header of the file
+      header = [sanitize(field) for field in header] #sanitize the field names
+      data = self.buffer_reader(csv_response) # Remove the unnecessary rows that do not have data
+      reader = csv.DictReader(data, fieldnames=header) #convert csv data into dict rows to be yielded by the generator
+      for row in reader:
+        yield row
 
-  def file_reader(self,filename):
+  def buffer_reader(self, buffer:io.StringIO):
     """
-    Read file until an empty line is encountered
-    """
-    with open(filename) as f:
-      for line in f:
-        if line and line != '\n':
-          yield line
-        else:
-          break
+    Yield all lines from a file text buffer until the empty line is reached
 
-  def get_list_of_columns(self,csv_file_path:str) -> List[str]:
+    :return a generator of dict rows from the file
     """
-    Get the list of columns from a csv file, which are the header of the file
-    """
-    with open(csv_file_path, 'r') as csvfile:
-      reader = csv.reader(csvfile)
-      field_names_list = next(reader)
-    return field_names_list
-
-  def read_records(self, stream_slice: Mapping[str, Any]=None,sync_mode=None, **kwargs) -> Iterable[Mapping[str, Any]]:
-    """
-    Read records and store them in json
-    """
-    report_file= self.fetch_report(self.get_query(stream_slice))
-    if report_file != "":
-      data = io.StringIO(''.join(self.file_reader(report_file)))
-      final_data = pd.read_csv(data)
-      json_data = final_data.to_json(orient='records',lines=True)
-      print(json_data)
-      return json_data
-    else:
-      return {}
+    for line in buffer.readlines():
+      if line != '\n':
+        yield line
+      else:
+        break
 
 
 class DBMIncrementalStream(DBMStream, ABC):
@@ -200,18 +199,13 @@ class AudienceComposition(DBMStream):
   """
   Audience Composition stream
   """
-
-
-class CookieReach(DBMStream):
-  """
-  Cookie Reach stream
-  """
   primary_key = None
 
 class Floodlight(DBMStream):
   """
   Floodlight stream
   """
+  primary_key = None
 
 class Standard(DBMStream):
   """
@@ -225,8 +219,8 @@ class UniqueReachAudience(DBMStream):
   """
   primary_key = None
 
-class UniqueReach(DBMStream):
+class Reach(DBMStream):
   """
-  Unique Reach stream
+  Reach stream
   """
   primary_key = None

@@ -2,94 +2,274 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "FILTER_ADVERTISER": {
+    "advertiser ": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_ADVERTISER_NAME": {
+    "advertiser_id ": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_AGE": {
+    "age ": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_COUNTRY": {
+    "country ": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_GENDER": {
+    "gender ": {
       "type": [
         "null",
         "string"
       ]
     },
-    "METRIC_CLICKS": {
+    "date ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_DEMO_COMPOSITION_IMPRESSION": {
+    "insertion_order_id ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_DEMO_POPULATION": {
+    "insertion_order_integration_code ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_GRP_CORRECTED_IMPRESSIONS": {
+    "insertion_order ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_TARGET_RATING_POINTS": {
+    "insertion_order_status ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_UNIQUE_REACH_AVERAGE_IMPRESSION_FREQUENCY": {
+    "line_item_id ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_UNIQUE_REACH_CLICK_REACH": {
+    "line_item_integration_code ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_UNIQUE_REACH_IMPRESSION_REACH": {
+    "line_item ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_PERCENT": {
+    "line_item_status ": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_VIRTUAL_PEOPLE_IMPRESSION_REACH_SHARE_PERCENT": {
+    "line_item_type ": {
       "type": [
         "null",
-        "number"
+        "string"
+      ]
+    },
+    "device_type ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_height ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_id ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_size ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_source ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_status ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_type ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creative_width ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "partner_id ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "partner ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "month ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign_id ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_composition_impressions ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_composition_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_population_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "clicks ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "impressions ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "population ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "target_rating_points ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unique_reach_average_impression_frequency ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unique_reach_click_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unique_reach_impression_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unique_reach_viewable_impression_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "viewable_target_rating_points ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "viewable_impressions ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_viewable_composition_impressions ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_viewable_composition_reach ": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "pct_viewable_population_reach ": {
+      "type": [
+        "null",
+        "string"
       ]
     }
   }

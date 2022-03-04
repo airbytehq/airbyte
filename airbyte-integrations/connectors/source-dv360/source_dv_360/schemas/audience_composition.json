@@ -2,46 +2,94 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "FILTER_USER_LIST_FIRST_PARTY_NAME": {
+    "audience_list": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_MATCH_RATIO": {
+    "date": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_ELIGIBLE_COOKIES_ON_FIRST_PARTY_AUDIENCE_LIST": {
+    "eligible_cookies_on_first_party_audience_list": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_USER_LIST_THIRD_PARTY_NAME": {
+    "eligible_cookies_on_third_party_audience_list_and_interest": {
       "type": [
         "null",
         "string"
       ]
     },
-    "FILTER_ELIGIBLE_COOKIES_ON_THIRD_PARTY_AUDIENCE_LIST_AND_INTEREST": {
+    "first_party_audience_list": {
       "type": [
         "null",
         "string"
       ]
     },
-    "METRIC_BID_REQUESTS": {
+    "first_party_audience_list_cost": {
       "type": [
         "null",
-        "number"
+        "string"
       ]
     },
-    "METRIC_UNIQUE_VISITORS_COOKIES": {
+    "first_party_audience_list_id": {
       "type": [
         "null",
-        "number"
+        "string"
+      ]
+    },
+    "first_party_audience_list_type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "match_ratio": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "third_party_audience_list": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "third_party_audience_list_cost": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "third_party_audience_list_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "third_party_audience_list_type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "potential_impressions": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "unique_cookies_with_impressions": {
+      "type": [
+        "null",
+        "string"
       ]
     }
   }

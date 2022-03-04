@@ -62,6 +62,10 @@
         "type": "string",
         "description": "",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      },
+      "filters":{
+        "type":"array",
+        "description": "filters for the dimensions. each filter object had 2 keys: 'type' for the name of the dimension to be used as. and 'value' for the value of the filter"
       }
     }
   }
