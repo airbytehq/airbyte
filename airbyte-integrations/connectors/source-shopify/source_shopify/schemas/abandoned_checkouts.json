@@ -485,7 +485,7 @@
               "type": ["null", "integer"]
             },
             "default": {
-              "type": ["null", "string"]
+              "type": ["null", "boolean"]
             },
             "last_name": {
               "type": ["null", "string"]
