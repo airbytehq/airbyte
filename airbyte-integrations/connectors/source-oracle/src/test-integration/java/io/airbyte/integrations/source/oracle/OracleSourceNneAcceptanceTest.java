@@ -39,7 +39,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             clone.get("port").asText(),
             clone.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
             "oracle.net.encryption_types_client=( "
             + algorithm + " )"));
 
