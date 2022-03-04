@@ -65,7 +65,7 @@ class IntegrationRunnerTest {
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
   private static final String STATE_FILE_NAME = "state.json";
 
-  private static final String[] ARGS = new String[] {"args"};
+  private static final String[] ARGS = new String[]{"args"};
 
   private static final String CONFIG_STRING = "{ \"username\": \"airbyte\" }";
   private static final JsonNode CONFIG = Jsons.deserialize(CONFIG_STRING);
@@ -311,7 +311,7 @@ class IntegrationRunnerTest {
         10, TimeUnit.SECONDS));
     try {
       TimeUnit.SECONDS.sleep(10);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -337,8 +337,8 @@ class IntegrationRunnerTest {
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(10);
-    } catch (Exception e) {
+      TimeUnit.SECONDS.sleep(11);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -356,7 +356,7 @@ class IntegrationRunnerTest {
       for (int tries = 0; tries < 3; tries++) {
         try {
           TimeUnit.MINUTES.sleep(5);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.info("Caught Exception", e);
           caughtExceptions.add(e);
           if (!ignoreInterrupt) {
