@@ -34,6 +34,7 @@ check_docker_is_running() {
 }
 
 delete_previous_alias() {
+    # TODO alafanechere: prompt for validation for deletion of previous alias
     sed -i'' -e '/^alias octavia=/d' ${DETECTED_PROFILE}
 }
 
