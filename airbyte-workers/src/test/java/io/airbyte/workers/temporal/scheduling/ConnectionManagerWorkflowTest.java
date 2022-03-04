@@ -92,6 +92,14 @@ public class ConnectionManagerWorkflowTest {
   private WorkflowClient client;
   private ConnectionManagerWorkflow workflow;
 
+  public static Stream<Arguments> getMaxAttemptForResetRetry() {
+    return Stream.of(
+        Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
+        // reset")
+        Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
+    );
+  }
+
   @BeforeEach
   public void setUp() {
     Mockito.reset(mConfigFetchActivity);
@@ -1037,16 +1045,8 @@ public class ConnectionManagerWorkflowTest {
       setupSpecificChildWorkflow(SyncWorkflowFailingWithHearbeatTimeoutException.class);
     }
 
-    public static Stream<Arguments> getMaxAttemptForResetRetry() {
-      return Stream.of(
-          Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
-                           // reset")
-          Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
-      );
-    }
-
     @ParameterizedTest
-    @MethodSource("getMaxAttemptForResetRetry")
+    @MethodSource("io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowTest#getMaxAttemptForResetRetry")
     public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
       runRetryResetTest(maxAttempt);
     }
@@ -1054,9 +1054,9 @@ public class ConnectionManagerWorkflowTest {
     @RepeatedTest(10)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
-    @DisplayName("Test that a reset job that fails throttle after retrying")
-    public void failedResetJobThrottleOnRestart() throws InterruptedException {
-      runRetryResetThrottleAfterJobFailureTest();
+    @DisplayName("Test that a reset job that fails waits after retrying")
+    public void failedResetJobWaitsOnRestart() throws InterruptedException {
+      runRetryResetWaitsAfterJobFailureTest();
     }
 
   }
@@ -1150,16 +1150,8 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
     }
 
-    public static Stream<Arguments> getMaxAttemptForResetRetry() {
-      return Stream.of(
-          Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
-          // reset")
-          Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
-      );
-    }
-
     @ParameterizedTest
-    @MethodSource("getMaxAttemptForResetRetry")
+    @MethodSource("io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowTest#getMaxAttemptForResetRetry")
     public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
       runRetryResetTest(maxAttempt);
     }
@@ -1167,9 +1159,9 @@ public class ConnectionManagerWorkflowTest {
     @RepeatedTest(10)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
-    @DisplayName("Test that a reset job that fails throttle after retrying")
-    public void failedResetJobThrottleOnRestart() throws InterruptedException {
-      runRetryResetThrottleAfterJobFailureTest();
+    @DisplayName("Test that a reset job that fails wait after retrying")
+    public void failedResetJobWaitOnRestart() throws InterruptedException {
+      runRetryResetWaitsAfterJobFailureTest();
     }
 
   }
@@ -1183,16 +1175,8 @@ public class ConnectionManagerWorkflowTest {
       setupSpecificChildWorkflow(SyncWorkflowWithActivityFailureException.class);
     }
 
-    public static Stream<Arguments> getMaxAttemptForResetRetry() {
-      return Stream.of(
-          Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
-          // reset")
-          Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
-      );
-    }
-
     @ParameterizedTest
-    @MethodSource("getMaxAttemptForResetRetry")
+    @MethodSource("io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowTest#getMaxAttemptForResetRetry")
     public void failedResetContinueAttemptAsReset(final int maxAttempt) throws InterruptedException {
       runRetryResetTest(maxAttempt);
     }
@@ -1200,9 +1184,9 @@ public class ConnectionManagerWorkflowTest {
     @RepeatedTest(10)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
-    @DisplayName("Test that a reset job that fails throttle after retrying")
-    public void failedResetJobThrottleOnRestart() throws InterruptedException {
-      runRetryResetThrottleAfterJobFailureTest();
+    @DisplayName("Test that a reset job that fails waits after retrying")
+    public void failedResetJobWaitsOnRestart() throws InterruptedException {
+      runRetryResetWaitsAfterJobFailureTest();
     }
 
   }
@@ -1309,7 +1293,7 @@ public class ConnectionManagerWorkflowTest {
         .hasSizeGreaterThanOrEqualTo(1);
   }
 
-  private void runRetryResetThrottleAfterJobFailureTest() throws InterruptedException {
+  private void runRetryResetWaitsAfterJobFailureTest() throws InterruptedException {
     Mockito.when(mConfigFetchActivity.getMaxAttempt())
         .thenReturn(new GetMaxAttemptOutput(1));
 
