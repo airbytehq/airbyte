@@ -115,7 +115,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Redshift](sources/redshift.md) | Alpha |
 | [Retently](sources/retently.md) | Alpha |
 | [S3](sources/s3.md) | Beta |
-| [Salesforce](sources/salesforce.md) | Certified |
+| [Salesforce](sources/salesforce.md) | Generally Available |
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Alpha |
 | [SearchMetrics](./sources/search-metrics.md)| Alpha |
