@@ -251,7 +251,7 @@ jobs:
   ## Gradle Build (Platform)
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-new-scheduler-acceptance-runner:
-    name: "Acceptance Tests (Docker w/ Scheduler v2)"
+    name: "Start Acceptance Tests (Docker w/ Scheduler v2) Runner"
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -271,7 +271,7 @@ jobs:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }} # run the job on the newly created runner
-    name: "Platform: Run new scheduler acceptance test."
+    name: "Acceptance Tests (Docker w/ Scheduler v2)"
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
