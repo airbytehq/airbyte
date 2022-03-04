@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# THIS INSTALL SCRIPT IS A WORK IN PROGRESS
-# It currently only works for ZSH and Bash profiles, and does not check for previous install.
-# It creates an octavia alias in ~/.zshrc bound to a docker run command
-set -e
+
+# This install scripts currently only works for ZSH and Bash profiles.
+# It creates an octavia alias in your profile bound to a docker run command
+
 VERSION=dev
 
 detect_profile() {
@@ -66,7 +66,7 @@ update_or_install() {
     fi
 }
 
-
+set -e
 check_docker_is_running
 detect_profile
 set -u
