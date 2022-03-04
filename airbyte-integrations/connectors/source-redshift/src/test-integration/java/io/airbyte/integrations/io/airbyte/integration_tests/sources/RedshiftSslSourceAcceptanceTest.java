@@ -22,7 +22,7 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
             config.get("port").asText(),
             config.get("database").asText()),
         RedshiftSource.DRIVER_CLASS,
-        JdbcUtils.parseJdbcParameters("ssl=true;" +
+        JdbcUtils.parseJdbcParameters("ssl=true&" +
             "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory"));
   }
 
