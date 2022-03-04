@@ -574,7 +574,7 @@
                 "type": ["null", "integer"]
               },
               "default": {
-                "type": ["null", "string"]
+                "type": ["null", "boolean"]
               },
               "last_name": {
                 "type": ["null", "string"]
@@ -642,7 +642,7 @@
       "type": ["null", "string"]
     },
     "taxes_included": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     }
   }
 }
