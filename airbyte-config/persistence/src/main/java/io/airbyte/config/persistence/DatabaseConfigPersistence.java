@@ -1952,7 +1952,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
-    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdated(new AirbyteVersion(currentVersion));
+    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
   }
 
   static class ConnectorInfo {

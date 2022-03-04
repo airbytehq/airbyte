@@ -103,10 +103,10 @@ public class AirbyteVersionTest {
 
   @Test
   public void testCheckOnlyPatchVersion() {
-    assertFalse(new AirbyteVersion("6.7.8").checkOnlyPatchVersionIsUpdated(new AirbyteVersion("6.7.8")));
-    assertFalse(new AirbyteVersion("6.7.8").checkOnlyPatchVersionIsUpdated(new AirbyteVersion("6.8.8")));
-    assertFalse(new AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdated(new AirbyteVersion("6.7.11")));
-    assertTrue(new AirbyteVersion("6.7.9").checkOnlyPatchVersionIsUpdated(new AirbyteVersion("6.7.8")));
+    assertFalse(new AirbyteVersion("6.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.8")));
+    assertFalse(new AirbyteVersion("6.9.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.8.9")));
+    assertFalse(new AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.11")));
+    assertTrue(new AirbyteVersion("6.7.9").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.8")));
   }
 
 }

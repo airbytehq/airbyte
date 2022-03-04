@@ -117,7 +117,7 @@ public class AirbyteVersion {
   /**
    * Compares two Airbyte Version to check if only the patch version was updated.
    */
-  public boolean checkOnlyPatchVersionIsUpdated(final AirbyteVersion another) {
+  public boolean checkOnlyPatchVersionIsUpdatedComparedTo(final AirbyteVersion another) {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
       return false;
     }
