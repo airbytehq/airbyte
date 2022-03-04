@@ -310,8 +310,8 @@ class IntegrationRunnerTest {
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(15);
-    } catch (final Exception e) {
+      TimeUnit.SECONDS.sleep(10);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -337,8 +337,8 @@ class IntegrationRunnerTest {
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(15);
-    } catch (final Exception e) {
+      TimeUnit.SECONDS.sleep(10);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -356,7 +356,7 @@ class IntegrationRunnerTest {
       for (int tries = 0; tries < 3; tries++) {
         try {
           TimeUnit.MINUTES.sleep(5);
-        } catch (final Exception e) {
+        } catch (Exception e) {
           LOGGER.info("Caught Exception", e);
           caughtExceptions.add(e);
           if (!ignoreInterrupt) {
