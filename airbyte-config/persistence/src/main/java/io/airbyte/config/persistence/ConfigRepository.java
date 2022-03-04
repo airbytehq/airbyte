@@ -711,19 +711,19 @@ public class ConfigRepository {
    * the source is set up for the first time, because the configuration or version of the connector
    * changed or because the user explicitly requested a schema refresh.
    * Schemas are stored separately and de-duplicated upon insertion.
-   * Once a schema has been successfully stored, a call to getActorCatalog(sourceId,
+   * Once a schema has been successfully stored, a call to getActorCatalog(actorId,
    * connectionVersion, configurationHash) will return the most recent schema stored for those
    * parameters.
    *
    * @param catalog
-   * @param sourceId
+   * @param actorId
    * @param connectorVersion
    * @param configurationHash
    * @return The identifier (UUID) of the fetch event inserted in the database
    * @throws IOException
    */
   public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
-                                          final UUID sourceId,
+                                          final UUID actorId,
                                           final String connectorVersion,
                                           final String configurationHash)
       throws IOException {
@@ -733,7 +733,7 @@ public class ConfigRepository {
       final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
       return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
-          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, sourceId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
           .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, configurationHash)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
