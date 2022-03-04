@@ -38,8 +38,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
     container = new OracleContainer()
         .withUsername("test")
         .withPassword("oracle")
-        .usingSid();
-    ;
+        .usingSid();;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -107,18 +106,18 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    Field.of("ID", JsonSchemaType.NUMBER),
-                    Field.of("NAME", JsonSchemaType.STRING),
-                    Field.of("POWER", JsonSchemaType.NUMBER))
+                STREAM_NAME,
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING),
+                Field.of("POWER", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    Field.of("ID", JsonSchemaType.NUMBER),
-                    Field.of("NAME", JsonSchemaType.STRING))
+                STREAM_NAME2,
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 

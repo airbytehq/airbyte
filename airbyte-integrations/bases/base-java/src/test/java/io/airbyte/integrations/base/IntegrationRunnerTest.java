@@ -65,7 +65,7 @@ class IntegrationRunnerTest {
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
   private static final String STATE_FILE_NAME = "state.json";
 
-  private static final String[] ARGS = new String[]{"args"};
+  private static final String[] ARGS = new String[] {"args"};
 
   private static final String CONFIG_STRING = "{ \"username\": \"airbyte\" }";
   private static final JsonNode CONFIG = Jsons.deserialize(CONFIG_STRING);
