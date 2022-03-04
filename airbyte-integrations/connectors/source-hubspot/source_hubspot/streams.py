@@ -1001,34 +1001,6 @@ class ContactsListMemberships(Stream):
         return params
 
 
-class DealStageHistoryStream(Stream):
-    """Deal stage history, API v1
-    Deal stage history is exposed by the v1 API, but not the v3 API.
-    The v1 endpoint requires the contacts scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
-    """
-
-    url = "/deals/v1/deal/paged"
-    more_key = "hasMore"
-    data_field = "deals"
-    updated_at_field = "timestamp"
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in super()._transform(records):
-            dealstage = record.get("properties", {}).get("dealstage", {})
-            updated_at = dealstage.get(self.updated_at_field)
-            if updated_at:
-                yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        return {"propertiesWithHistory": "dealstage"}
-
-
 class Deals(CRMSearchStream):
     """Deals, API v3"""
 
