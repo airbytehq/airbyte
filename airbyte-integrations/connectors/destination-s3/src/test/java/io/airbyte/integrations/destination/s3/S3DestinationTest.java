@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -25,20 +26,30 @@ public class S3DestinationTest {
   @BeforeEach
   public void setup() {
     s3 = mock(AmazonS3.class);
-    config = new S3DestinationConfig(
+    config = spy(new S3DestinationConfig(
         "fake-endpoint",
         "fake-bucket",
         "fake-bucketPath",
         "fake-region",
         "fake-accessKeyId",
         "fake-secretAccessKey",
-        null);
+        null));
+    Mockito.doReturn(s3).when(config).getS3Client();
   }
 
   @Test
   public void createsThenDeletesTestFile() {
     S3Destination.attemptS3WriteAndDelete(config, "fake-fileToWriteAndDelete", s3);
+    createThenDeleteTestFile();
+  }
 
+  @Test
+  public void createsThenDeletesTestFileWithDefaultS3() {
+    S3Destination.attemptS3WriteAndDelete(config, "fake-fileToWriteAndDelete");
+    createThenDeleteTestFile();
+  }
+
+  private void createThenDeleteTestFile() {
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);
 
