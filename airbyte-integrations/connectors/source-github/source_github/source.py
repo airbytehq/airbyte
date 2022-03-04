@@ -204,7 +204,7 @@ class SourceGithub(AbstractSource):
             project_columns_stream,
             projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
-            PullRequestCommits(pull_requests_stream, **repository_args),
+            PullRequestCommits(parent=pull_requests_stream, **repository_args),
             PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
