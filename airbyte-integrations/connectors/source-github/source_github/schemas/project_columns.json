@@ -2,10 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "organization": {
+    "url": {
       "type": ["null", "string"]
     },
-    "repository": {
+    "project_url": {
+      "type": ["null", "string"]
+    },
+    "cards_url": {
       "type": ["null", "string"]
     },
     "id": {
@@ -14,35 +17,20 @@
     "node_id": {
       "type": ["null", "string"]
     },
-    "url": {
-      "type": ["null", "string"]
-    },
-    "html_url": {
-      "type": ["null", "string"]
-    },
     "name": {
       "type": ["null", "string"]
     },
-    "slug": {
+    "created_at": {
       "type": ["null", "string"]
     },
-    "description": {
+    "updated_at": {
       "type": ["null", "string"]
     },
-    "privacy": {
+    "repository": {
       "type": ["null", "string"]
     },
-    "permission": {
+    "project_id": {
       "type": ["null", "string"]
-    },
-    "members_url": {
-      "type": ["null", "string"]
-    },
-    "repositories_url": {
-      "type": ["null", "string"]
-    },
-    "parent": {
-      "type": ["null", "object"]
     }
   }
 }
