@@ -54,7 +54,7 @@ We welcome community contributions!
 3. Activate the virtualenv: `source .venv/bin/activate`
 4. Install dev dependencies: `pip install -e .\[dev\]`
 5. Install `pre-commit` hooks: `pre-commit install`
-6. Run the test suite: `pytest --cov=octavia_cli unit_tests`
+6. Run the test suite: `pytest --cov=octavia_cli tests`
 7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
 # Contributing
