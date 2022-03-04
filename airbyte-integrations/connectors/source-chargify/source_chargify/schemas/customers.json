@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": ["string"]
+    },
+    "last_name": {
+      "type": ["string"]
+    },
+    "email": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "cc_emails": {
+      "type": ["null", "string"]
+    },
+    "organization": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["integer"]
+    },
+    "created_at": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "address": {
+      "type": ["null", "string"]
+    },
+    "address_2": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "state_name": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "verified": {
+      "type": ["null", "string"]
+    },
+    "portal_customer_created_at": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "portal_invite_last_sent_at": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "portal_invite_last_accepted_at": {
+      "type": ["null","string"],
+      "format": "date-time"
+    },
+    "tax_exempt": {
+      "type": ["boolean"]
+    },
+    "vat_number": {
+      "type": ["null", "string"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "locale": {
+      "type": ["null", "string"]
+    },
+    "default_subscription_group_uid": {
+      "type": ["null", "integer"]
+    }
+  }
+}
