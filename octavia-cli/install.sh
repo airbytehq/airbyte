@@ -50,7 +50,7 @@ install () {
     check_docker_is_running
     detect_profile
     set -u
-    # pull_image # uncomment this when we publish the image to our docker registry
+    pull_image
     delete_previous_alias
     add_alias
 }

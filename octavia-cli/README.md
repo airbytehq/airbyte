@@ -12,22 +12,17 @@ The project is under development: readers can refer to our [tech spec deck](http
 
 # Install
 We are packaging this CLI as a Docker image to avoid dependency hell, please install and run Docker if you are not. 
-The project is under development: **we have not yet published any Docker image to our Docker registry.**
 
-0. Clone the Airbyte repository if you did not already.
-1. Build the project locally (from the root of the repo):
+## If you are using ZSH / Bash
 ```bash
-SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo
-```
+curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
+````
 
-2a. **If you are using ZSH**:
-```bash
-./install.sh # from airbyte/octavia-cli directory
-source ~/.zshrc
-octavia
-```
+This script:
+1. Pulls the octavia image from our docker registry
+2. Creates an `octavia` alias in your profile
 
-2b. If you are not using ZSH you can create an alias in your shell of the following command: 
+## If you want to directly run the CLI without alias:
 ````bash
 docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
 ````
@@ -57,6 +52,11 @@ We welcome community contributions!
 6. Run the test suite: `pytest --cov=octavia_cli tests`
 7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
+## Build
+Build the project locally (from the root of the repo):
+```bash
+SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo
+```
 # Contributing
 1. Please sign up to [Airbyte's Slack workspace](https://slack.airbyte.io/) and join the `#octavia-cli`. We'll sync up community efforts in this channel.
 2. Read the [execution plan](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0) and find a task you'd like to work on.
