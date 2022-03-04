@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.scheduling.state.listener;
 
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
