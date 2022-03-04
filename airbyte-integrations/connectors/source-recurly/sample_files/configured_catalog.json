@@ -3,8 +3,10 @@
     {
       "stream": {
         "name": "accounts",
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]],
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -87,6 +89,9 @@
             "has_past_due_invoice": {
               "type": "boolean"
             },
+            "dunning_campaign_id": {
+              "type": ["null", "string"]
+            },
             "created_at": {
               "type": "string"
             },
@@ -99,7 +104,7 @@
           }
         }
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]

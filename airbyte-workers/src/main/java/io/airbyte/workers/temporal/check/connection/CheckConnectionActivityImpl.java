@@ -13,9 +13,10 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -26,33 +27,30 @@ import java.util.function.Supplier;
 
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
 
-  public CheckConnectionActivityImpl(final ProcessFactory processFactory,
+  public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
+                                     final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-                                     final String databaseUser,
-                                     final String databasePassword,
-                                     final String databaseUrl,
+                                     final JobPersistence jobPersistence,
                                      final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -73,7 +71,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
             jobRunConfig,
             getWorkerFactory(launcherConfig),
             inputSupplier,
-            new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+            new CancellationHandler.TemporalCancellationHandler(),
+            jobPersistence,
+            airbyteVersion);
 
     return temporalAttemptExecution.get();
   }
@@ -86,9 +86,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+          workerConfigs.getResourceRequirements());
 
-      return new DefaultCheckConnectionWorker(integrationLauncher);
+      return new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher);
     };
   }
 

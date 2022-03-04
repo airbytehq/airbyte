@@ -4,13 +4,13 @@
 
 
 import json
+import logging
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk import AirbyteSpec, Connector
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus
 
 
@@ -39,7 +39,7 @@ class TestAirbyteSpec:
 
 
 class MockConnector(Connector):
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         pass
 
 
@@ -68,6 +68,6 @@ def test_read_config(nonempty_file, integration: Connector, mock_config):
 
 def test_write_config(integration, mock_config):
     config_path = Path(tempfile.gettempdir()) / "config.json"
-    integration.write_config(mock_config, config_path)
+    integration.write_config(mock_config, str(config_path))
     with open(config_path, "r") as actual:
         assert mock_config == json.loads(actual.read())

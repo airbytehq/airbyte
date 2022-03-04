@@ -1,7 +1,37 @@
-import { ConnectionSpecification } from "core/domain/connection";
+import {
+  ConnectionConfiguration,
+  ConnectionSpecification,
+} from "core/domain/connection";
 import { DestinationSyncMode } from "core/domain/catalog";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
+
+export enum ReleaseStage {
+  "ALPHA" = "alpha",
+  "BETA" = "beta",
+  "GENERALLY_AVAILABLE" = "generally_available",
+  "CUSTOM" = "custom",
+}
+
+export interface DestinationDefinition {
+  destinationDefinitionId: string;
+  name: string;
+  dockerRepository: string;
+  dockerImageTag: string;
+  latestDockerImageTag: string;
+  documentationUrl: string;
+  icon: string;
+  releaseStage?: ReleaseStage;
+}
+
+export interface SourceDefinition {
+  sourceDefinitionId: string;
+  name: string;
+  dockerRepository: string;
+  dockerImageTag: string;
+  latestDockerImageTag: string;
+  documentationUrl: string;
+  icon: string;
+  releaseStage?: ReleaseStage;
+}
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
 
@@ -70,4 +100,22 @@ export interface DestinationGetConsentPayload {
   destinationDefinitionId: string;
   workspaceId: string;
   oAuthInputConfiguration: Record<string, unknown>;
+}
+
+export interface Source {
+  sourceId: string;
+  name: string;
+  sourceName: string;
+  workspaceId: string;
+  sourceDefinitionId: string;
+  connectionConfiguration: ConnectionConfiguration;
+}
+
+export interface Destination {
+  destinationId: string;
+  name: string;
+  destinationName: string;
+  workspaceId: string;
+  destinationDefinitionId: string;
+  connectionConfiguration: ConnectionConfiguration;
 }

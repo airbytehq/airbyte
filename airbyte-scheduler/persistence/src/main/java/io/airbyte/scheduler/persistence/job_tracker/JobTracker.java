@@ -4,13 +4,17 @@
 
 package io.airbyte.scheduler.persistence.job_tracker;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.JobConfig;
@@ -28,12 +32,13 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 public class JobTracker {
@@ -49,6 +54,8 @@ public class JobTracker {
   public static final String CATALOG = "catalog";
   public static final String OPERATION = "operation.";
   public static final String SET = "set";
+
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -118,8 +125,10 @@ public class JobTracker {
       Preconditions.checkArgument(allowedJob, "Job type " + configType + " is not allowed!");
       final long jobId = job.getId();
       final UUID connectionId = UUID.fromString(job.getScope());
-      final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
-      final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final UUID sourceDefinitionId = sourceDefinition.getSourceDefinitionId();
+      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final UUID destinationDefinitionId = destinationDefinition.getDestinationDefinitionId();
 
       final Map<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
       final Map<String, Object> jobAttemptMetadata = generateJobAttemptMetadata(job.getId(), jobState);
@@ -127,7 +136,10 @@ public class JobTracker {
       final Map<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final Map<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
-      final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
+      final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(
+          job.getConfig(),
+          sourceDefinition.getSpec().getConnectionSpecification(),
+          destinationDefinition.getSpec().getConnectionSpecification());
 
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId);
       track(workspaceId,
@@ -142,18 +154,20 @@ public class JobTracker {
     });
   }
 
-  private Map<String, Object> generateSyncConfigMetadata(final JobConfig config) {
+  private Map<String, Object> generateSyncConfigMetadata(final JobConfig config,
+                                                         final JsonNode sourceConfigSchema,
+                                                         final JsonNode destinationConfigSchema) {
     if (config.getConfigType() == ConfigType.SYNC) {
       final JsonNode sourceConfiguration = config.getSync().getSourceConfiguration();
       final JsonNode destinationConfiguration = config.getSync().getDestinationConfiguration();
 
-      final Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration);
-      final Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration);
+      final Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration, sourceConfigSchema);
+      final Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration, destinationConfigSchema);
       final Map<String, Object> catalogMetadata = getCatalogMetadata(config.getSync().getConfiguredAirbyteCatalog());
 
       return MoreMaps.merge(sourceMetadata, destinationMetadata, catalogMetadata);
     } else {
-      return Collections.emptyMap();
+      return emptyMap();
     }
   }
 
@@ -168,30 +182,95 @@ public class JobTracker {
     return output;
   }
 
-  protected static Map<String, Object> configToMetadata(final String jsonPath, final JsonNode config) {
+  /**
+   * Flattens a config into a map. Uses the schema to determine which fields are const (i.e.
+   * non-sensitive). Non-const, non-boolean values are replaced with {@link #SET} to avoid leaking
+   * potentially-sensitive information.
+   * <p>
+   * anyOf/allOf schemas are treated as non-const values. These aren't (currently) used in config
+   * schemas anyway.
+   *
+   * @param jsonPath A prefix to add to all the keys in the returned map, with a period (`.`)
+   *        separator
+   * @param schema The JSON schema that {@code config} conforms to
+   */
+  protected static Map<String, Object> configToMetadata(final String jsonPath, final JsonNode config, final JsonNode schema) {
+    final Map<String, Object> metadata = configToMetadata(config, schema);
+    // Prepend all the keys with the root jsonPath
+    // But leave the values unchanged
     final Map<String, Object> output = new HashMap<>();
+    Jsons.mergeMaps(output, jsonPath, metadata);
+    return output;
+  }
 
-    if (config.isObject()) {
-      final ObjectNode node = (ObjectNode) config;
-      for (final Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-        final var entry = it.next();
-        final var field = entry.getKey();
-        final var fieldJsonPath = jsonPath + "." + field;
-        final var child = entry.getValue();
-
-        if (child.isBoolean()) {
-          output.put(fieldJsonPath, child.asBoolean());
-        } else if (!child.isNull()) {
-          if (child.isObject()) {
-            output.putAll(configToMetadata(fieldJsonPath, child));
-          } else if (!child.isTextual() || (child.isTextual() && !child.asText().isEmpty())) {
-            output.put(fieldJsonPath, SET);
-          }
+  /**
+   * Does the actually interesting bits of configToMetadata. If config is an object, returns a
+   * flattened map. If config is _not_ an object (i.e. it's a primitive string/number/etc, or it's an
+   * array) then returns a map of {null: toMetadataValue(config)}.
+   */
+  private static Map<String, Object> configToMetadata(final JsonNode config, final JsonNode schema) {
+    if (schema.hasNonNull("const")) {
+      // If this schema is a const, then just dump it into a map:
+      // * If it's an object, flatten it
+      // * Otherwise, do some basic conversions to value-ish data.
+      // It would be a weird thing to declare const: null, but in that case we don't want to report null
+      // anyway, so explicitly use hasNonNull.
+      return Jsons.flatten(config);
+    } else if (schema.has("oneOf")) {
+      // If this schema is a oneOf, then find the first sub-schema which the config matches
+      // and use that sub-schema to convert the config to a map
+      final JsonSchemaValidator validator = new JsonSchemaValidator();
+      for (final Iterator<JsonNode> it = schema.get("oneOf").elements(); it.hasNext();) {
+        final JsonNode subSchema = it.next();
+        if (validator.test(subSchema, config)) {
+          return configToMetadata(config, subSchema);
         }
       }
-    }
+      // If we didn't match any of the subschemas, then something is wrong. Bail out silently.
+      return emptyMap();
+    } else if (config.isObject()) {
+      // If the schema is not a oneOf, but the config is an object (i.e. the schema has "type": "object")
+      // then we need to recursively convert each field of the object to a map.
+      final Map<String, Object> output = new HashMap<>();
+      final JsonNode maybeProperties = schema.get("properties");
 
-    return output;
+      // If additionalProperties is not set, or it's a boolean, then there's no schema for additional
+      // properties. Use the accept-all schema.
+      // Otherwise, it's an actual schema.
+      final JsonNode maybeAdditionalProperties = schema.get("additionalProperties");
+      final JsonNode additionalPropertiesSchema;
+      if (maybeAdditionalProperties == null || maybeAdditionalProperties.isBoolean()) {
+        additionalPropertiesSchema = OBJECT_MAPPER.createObjectNode();
+      } else {
+        additionalPropertiesSchema = maybeAdditionalProperties;
+      }
+
+      for (final Iterator<Entry<String, JsonNode>> it = config.fields(); it.hasNext();) {
+        final Entry<String, JsonNode> entry = it.next();
+        final String field = entry.getKey();
+        final JsonNode value = entry.getValue();
+
+        final JsonNode propertySchema;
+        if (maybeProperties != null && maybeProperties.hasNonNull(field)) {
+          // If this property is explicitly declared, then use its schema
+          propertySchema = maybeProperties.get(field);
+        } else {
+          // otherwise, use the additionalProperties schema
+          propertySchema = additionalPropertiesSchema;
+        }
+
+        Jsons.mergeMaps(output, field, configToMetadata(value, propertySchema));
+      }
+      return output;
+    } else if (config.isBoolean()) {
+      return singletonMap(null, config.asBoolean());
+    } else if ((!config.isTextual() && !config.isNull()) || (config.isTextual() && !config.asText().isEmpty())) {
+      // This is either non-textual (e.g. integer, array, etc) or non-empty text
+      return singletonMap(null, SET);
+    } else {
+      // Otherwise, this is an empty string, so just ignore it
+      return emptyMap();
+    }
   }
 
   private Map<String, Object> generateSyncMetadata(final UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {

@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [3PL Central](sources/tplcentral.md) | Alpha |
 | [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
@@ -29,17 +30,21 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Bing Ads](sources/bing-ads.md) | Beta |
 | [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
+| [Chartmogul](sources/chartmogul.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
 | [CockroachDB](sources/cockroachdb.md) | Beta |
+| [Customer.io](sources/customer-io.md) | Alpha |
 | [Db2](sources/db2.md) | Beta |
 | [Dixa](sources/dixa.md) | Alpha |
 | [Drift](sources/drift.md) | Beta |
 | [Drupal](sources/drupal.md) | Beta |
+| [End-to-End Testing](sources/e2e-test.md) | Alpha |
 | [Exchange Rates API](sources/exchangeratesapi.md) | Certified |
 | [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
 | [Files](sources/file.md) | Certified |
+| [Flexport](sources/flexport.md) | Alpha |
 | [Freshdesk](sources/freshdesk.md) | Certified |
 | [GitHub](sources/github.md) | Beta |
 | [GitLab](sources/gitlab.md) | Beta |
@@ -51,10 +56,12 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Google Sheets](sources/google-sheets.md) | Certified |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Certified |
 | [Greenhouse](sources/greenhouse.md) | Beta |
+| [Harness](sources/harness.md) | Alpha |
 | [HubSpot](sources/hubspot.md) | Certified |
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
+| [Jenkins](sources/jenkins.md) | Alpha |
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
@@ -79,12 +86,15 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
+| [OpenWeather](sources/openweather.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
 | [Outreach](./sources/outreach.md)| Alpha |
+| [PagerDuty](sources/pagerduty.md) | Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
+| [PersistIq](sources/persistiq.md) | Alpha |
 | [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
@@ -92,7 +102,8 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Postgres](sources/postgres.md) | Certified |
 | [PostHog](sources/posthog.md) | Beta |
 | [PrestaShop](sources/presta-shop.md) | Beta |
-| [Quickbooks](sources/quickbooks.md) | Beta |
+| [Qualaroo](sources/qualaroo.md) | Beta |
+| [QuickBooks](sources/quickbooks.md) | Beta |
 | [Recharge](sources/recharge.md) | Beta |
 | [Recurly](sources/recurly.md) | Beta |
 | [Redshift](sources/redshift.md) | Certified |
@@ -100,6 +111,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Salesforce](sources/salesforce.md) | Certified |
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
+| [SearchMetrics](./sources/search-metrics.md)| Alpha |
 | [Sendgrid](sources/sendgrid.md) | Certified |
 | [Sentry](sources/sentry.md) | Alpha |
 | [Shopify](sources/shopify.md) | Certified |
@@ -118,6 +130,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Trello](sources/trello.md) | Beta |
 | [Twilio](sources/twilio.md) | Beta |
 | [US Census](sources/us-census.md) | Alpha |
+| [VictorOps](sources/victorops.md) | Alpha |
 | [WooCommerce](sources/woocommerce.md) | Beta |
 | [Wordpress](sources/wordpress.md) | Beta |
 | [YouTube Analytics](sources/youtube-analytics.md) | Beta |
@@ -138,8 +151,10 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
+| [ClickHouse](destinations/clickhouse.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
 | [Elasticsearch](destinations/elasticsearch.md) | Alpha |
+| [End-to-End Testing](destinations/e2e-test.md) | Beta |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
 | [Google Firestore](destinations/firestore.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
@@ -155,7 +170,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
 | [Pulsar](destinations/pulsar.md) | Alpha |
+| [RabbitMQ](destinations/rabbitmq.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
+| [Rockset](destinations/rockset.md) | Alpha |
 | [S3](destinations/s3.md) | Certified |
 | [SFTP JSON](./destinations/sftp-json.md)| Alpha |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
@@ -164,3 +181,4 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Scylla](destinations/scylla.md) | Alpha |
 | [Redis](destinations/redis.md) | Alpha |
 | [Kinesis](destinations/kinesis.md) | Alpha |
+| [Streamr](destinations/streamr.md) | Alpha |

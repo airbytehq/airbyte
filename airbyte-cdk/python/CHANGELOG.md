@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.49
+Add support for streams with explicit state attribute.
+
+## 0.1.48
+Fix type annotations.
+
+## 0.1.47
+Fix typing errors.
+
+## 0.1.45
+Integrate Sentry for performance and errors tracking.
+
+## 0.1.44
+Log http response status code and its content.
+
+## 0.1.43
+Fix logging of unhandled exceptions: print stacktrace. 
+
 ## 0.1.42
 Add base pydantic model for connector config and schemas.
 

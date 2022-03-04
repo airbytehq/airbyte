@@ -9,15 +9,18 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_zendesk_support.streams import SourceZendeskException
 
 from .streams import (
+    Brands,
+    CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
     Organizations,
     SatisfactionRatings,
+    Schedules,
     SlaPolicies,
-    SourceZendeskException,
     Tags,
     TicketAudits,
     TicketComments,
@@ -65,7 +68,7 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
@@ -108,4 +111,7 @@ class SourceZendeskSupport(AbstractSource):
             TicketMetricEvents(**args),
             Tickets(**args),
             Users(**args),
+            Brands(**args),
+            CustomRoles(**args),
+            Schedules(**args),
         ]

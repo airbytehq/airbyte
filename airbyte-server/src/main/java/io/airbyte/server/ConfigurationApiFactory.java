@@ -5,6 +5,7 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -12,10 +13,12 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -38,10 +41,13 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static TrackingClient trackingClient;
   private static WorkerEnvironment workerEnvironment;
   private static LogConfigs logConfigs;
+  private static WorkerConfigs workerConfigs;
   private static Path workspaceRoot;
   private static String webappUrl;
   private static AirbyteVersion airbyteVersion;
   private static HttpClient httpClient;
+  private static FeatureFlags featureFlags;
+  private static EventRunner eventRunner;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -57,10 +63,13 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final TrackingClient trackingClient,
                                final WorkerEnvironment workerEnvironment,
                                final LogConfigs logConfigs,
+                               final WorkerConfigs workerConfigs,
                                final String webappUrl,
                                final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot,
-                               final HttpClient httpClient) {
+                               final HttpClient httpClient,
+                               final FeatureFlags featureFlags,
+                               final EventRunner eventRunner) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -74,10 +83,13 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.trackingClient = trackingClient;
     ConfigurationApiFactory.workerEnvironment = workerEnvironment;
     ConfigurationApiFactory.logConfigs = logConfigs;
+    ConfigurationApiFactory.workerConfigs = workerConfigs;
     ConfigurationApiFactory.workspaceRoot = workspaceRoot;
     ConfigurationApiFactory.webappUrl = webappUrl;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
     ConfigurationApiFactory.httpClient = httpClient;
+    ConfigurationApiFactory.featureFlags = featureFlags;
+    ConfigurationApiFactory.eventRunner = eventRunner;
   }
 
   @Override
@@ -97,10 +109,13 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.trackingClient,
         ConfigurationApiFactory.workerEnvironment,
         ConfigurationApiFactory.logConfigs,
+        ConfigurationApiFactory.workerConfigs,
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
-        ConfigurationApiFactory.httpClient);
+        ConfigurationApiFactory.httpClient,
+        ConfigurationApiFactory.featureFlags,
+        ConfigurationApiFactory.eventRunner);
   }
 
   @Override

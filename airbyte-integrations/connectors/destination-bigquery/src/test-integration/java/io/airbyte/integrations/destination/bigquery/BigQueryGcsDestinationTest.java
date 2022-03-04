@@ -45,7 +45,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -135,10 +135,10 @@ class BigQueryGcsDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-            Field.of("name", JsonSchemaPrimitive.STRING),
+            Field.of("name", JsonSchemaType.STRING),
             Field
-                .of("id", JsonSchemaPrimitive.STRING)),
-        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
+                .of("id", JsonSchemaType.STRING)),
+        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -299,7 +299,6 @@ class BigQueryGcsDestinationTest {
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
-    assertThrows(RuntimeException.class, () -> consumer.close()); // check if fails when data was not loaded to GCS bucket by some reason
 
     final List<String> tableNames = catalog.getStreams()
         .stream()

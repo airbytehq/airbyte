@@ -1,5 +1,8 @@
 {
   "processed_orders": {
-    "dReceivedDate": "2021-01-01T00:00:00+00:00"
+    "dProcessedOn": "2021-11-24T00:00:00+00:00"
+  },
+  "processed_order_details": {
+    "ProcessedDateTime": "2021-11-24T00:00:00+00:00"
   }
 }

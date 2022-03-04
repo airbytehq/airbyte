@@ -99,9 +99,11 @@ class JobNotifierTest {
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
     metadata.put("connector_source", "source-test");
     metadata.put("connector_source_version", TEST_DOCKER_TAG);
+    metadata.put("connector_source_docker_repository", sourceDefinition.getDockerRepository());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
     metadata.put("connector_destination", "destination-test");
     metadata.put("connector_destination_version", TEST_DOCKER_TAG);
+    metadata.put("connector_destination_docker_repository", destinationDefinition.getDockerRepository());
     metadata.put("notification_type", NotificationType.SLACK);
     verify(trackingClient).track(WORKSPACE_ID, JobNotifier.FAILURE_NOTIFICATION, metadata.build());
   }

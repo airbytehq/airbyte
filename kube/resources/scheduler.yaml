@@ -93,7 +93,7 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOG_LEVEL
-            - name: JOB_POD_KUBE_NAMESPACE
+            - name: JOB_KUBE_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
@@ -102,26 +102,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: SUBMITTER_NUM_THREADS
-            - name: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
+            - name: JOB_MAIN_CONTAINER_CPU_REQUEST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_POD_MAIN_CONTAINER_CPU_REQUEST
-            - name: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
+                  key: JOB_MAIN_CONTAINER_CPU_REQUEST
+            - name: JOB_MAIN_CONTAINER_CPU_LIMIT
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_POD_MAIN_CONTAINER_CPU_LIMIT
-            - name: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
+                  key: JOB_MAIN_CONTAINER_CPU_LIMIT
+            - name: JOB_MAIN_CONTAINER_MEMORY_REQUEST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_POD_MAIN_CONTAINER_MEMORY_REQUEST
-            - name: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
+                  key: JOB_MAIN_CONTAINER_MEMORY_REQUEST
+            - name: JOB_MAIN_CONTAINER_MEMORY_LIMIT
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_POD_MAIN_CONTAINER_MEMORY_LIMIT
+                  key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
             - name: S3_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:

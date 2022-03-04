@@ -38,7 +38,7 @@ We'll need the Airbyte Connection ID so our Prefect Flow knows which Airbyte Con
 
 This ID can be seen in the URL on the connection page in the Airbyte UI. The Airbyte UI can be accessed at `localhost:8000`.
 
-### Creating a simple Airflow DAG to run an Airbyte Sync Job
+### Creating a simple Prefect DAG to run an Airbyte Sync Job
 
 Create a new folder called `airbyte_prefect` and create a file `airbyte_prefect_flow.py`.
 

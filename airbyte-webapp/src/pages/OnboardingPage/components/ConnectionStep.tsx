@@ -1,10 +1,9 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
+import { Destination, Source } from "core/domain/connector";
 import TitlesBlock from "./TitlesBlock";
-import { FormattedMessage } from "react-intl";
 import HighlightedText from "./HighlightedText";
 
 type IProps = {
@@ -26,7 +25,7 @@ const ConnectionStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createConnection"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode[]) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}

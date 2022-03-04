@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
     }
 }
 
@@ -82,6 +82,8 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template-mssql',
         'dbt-project-template-mysql',
         'dbt-project-template-oracle',
+        'dbt-project-template-clickhouse',
+        'dbt-project-template-snowflake',
         'dbt_test_config',
         'normalization_test_output',
         'tools',
@@ -171,7 +173,7 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
+    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-webapp-e2e-tests') {
         return
     }
 
@@ -273,10 +275,10 @@ subprojects {
 
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation 'org.apache.logging.log4j:log4j-api:2.15.0'
-        implementation 'org.apache.logging.log4j:log4j-core:2.15.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.15.0'
-        implementation 'org.apache.logging.log4j:log4j-web:2.15.0'
+        implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
+        implementation 'org.apache.logging.log4j:log4j-web:2.17.1'
 
         // Bridges from other logging implementations to SLF4J
         implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
@@ -337,6 +339,7 @@ subprojects {
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
+                    .exclude("**/airbyte_api_client/**/*.py")
                     .exclude("**/__init__.py")
             strictCheck = true
         }
@@ -353,6 +356,7 @@ subprojects {
 }
 
 task('generate-docker') {
+    dependsOn(':airbyte-bootloader:assemble')
     dependsOn(':airbyte-workers:assemble')
     dependsOn(':airbyte-webapp:assemble')
     dependsOn(':airbyte-server:assemble')

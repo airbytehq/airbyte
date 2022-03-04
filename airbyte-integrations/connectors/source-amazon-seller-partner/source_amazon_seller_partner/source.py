@@ -15,11 +15,18 @@ from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
 from source_amazon_seller_partner.streams import (
+    BrandAnalyticsAlternatePurchaseReports,
+    BrandAnalyticsItemComparisonReports,
+    BrandAnalyticsMarketBasketReports,
+    BrandAnalyticsRepeatPurchaseReports,
+    BrandAnalyticsSearchTermsReports,
     FbaInventoryReports,
     FbaOrdersReports,
+    FbaReplacementsReports,
     FbaShipmentsReports,
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
+    FlatFileOrdersReportsByLastUpdate,
     FulfilledShipmentsReports,
     MerchantListingsReports,
     Orders,
@@ -43,6 +50,17 @@ class ConnectorConfig(BaseModel):
         30,
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         examples=["30", "365"],
+    )
+    report_options: str = Field(
+        None,
+        description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
+        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
+    )
+    max_wait_seconds: int = Field(
+        500,
+        title="Max wait time for reports (in seconds)",
+        description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
+        examples=["500", "1980"],
     )
     refresh_token: str = Field(
         description="The Refresh Token obtained via OAuth flow authorization.",
@@ -96,8 +114,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "marketplace_ids": [marketplace_id],
+            "marketplace_id": marketplace_id,
             "period_in_days": config.period_in_days,
+            "report_options": config.report_options,
+            "max_wait_seconds": config.max_wait_seconds,
         }
         return stream_kwargs
 
@@ -128,14 +148,21 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaInventoryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
             FbaShipmentsReports(**stream_kwargs),
+            FbaReplacementsReports(**stream_kwargs),
             FlatFileOpenListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
+            FlatFileOrdersReportsByLastUpdate(**stream_kwargs),
             FulfilledShipmentsReports(**stream_kwargs),
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
+            BrandAnalyticsMarketBasketReports(**stream_kwargs),
+            BrandAnalyticsSearchTermsReports(**stream_kwargs),
+            BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
+            BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
+            BrandAnalyticsItemComparisonReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

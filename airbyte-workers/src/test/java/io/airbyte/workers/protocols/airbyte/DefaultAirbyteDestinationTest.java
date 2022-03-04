@@ -5,12 +5,14 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,11 +21,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -68,6 +72,7 @@ class DefaultAirbyteDestinationTest {
     }
   }
 
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -76,6 +81,7 @@ class DefaultAirbyteDestinationTest {
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
@@ -113,7 +119,7 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -152,7 +158,7 @@ class DefaultAirbyteDestinationTest {
   @Test
   public void testTaggedLogs() throws Exception {
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -174,13 +180,13 @@ class DefaultAirbyteDestinationTest {
 
     logs.forEach(line -> {
       org.assertj.core.api.Assertions.assertThat(line)
-          .startsWith(Color.MAGENTA.getCode() + "destination" + RESET);
+          .startsWith(Color.YELLOW_BACKGROUND.getCode() + "destination" + RESET);
     });
   }
 
   @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -192,12 +198,26 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testNonzeroExitCodeThrowsException() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
     when(process.exitValue()).thenReturn(1);
     Assertions.assertThrows(WorkerException.class, destination::close);
+  }
+
+  @Test
+  public void testGetExitValue() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(2);
+
+    assertEquals(2, destination.getExitValue());
+    // call a second time to verify that exit value is cached
+    assertEquals(2, destination.getExitValue());
+    verify(process, times(1)).exitValue();
   }
 
 }

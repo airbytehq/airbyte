@@ -20,6 +20,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.WorkspaceUpdateName;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -103,7 +104,7 @@ public class WorkspacesHandler {
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     // disable all destinations associated with this workspace
@@ -165,6 +166,21 @@ public class WorkspacesHandler {
     TrackingClientSingleton.get().identify(workspaceId);
 
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
+  }
+
+  public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID workspaceId = workspaceUpdateName.getWorkspaceId();
+
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
+
+    persistedWorkspace
+        .withName(workspaceUpdateName.getName())
+        .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
+
+    configRepository.writeStandardWorkspace(persistedWorkspace);
+
+    return buildWorkspaceReadFromId(workspaceId);
   }
 
   public NotificationRead tryNotification(final Notification notification) {

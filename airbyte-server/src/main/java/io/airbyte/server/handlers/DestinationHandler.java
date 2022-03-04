@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
@@ -101,14 +102,14 @@ public class DestinationHandler {
   public void deleteDestination(final DestinationRead destination)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
-    // Delete connections first in case it it fails in the middle, destination will still be visible
+    // Delete connections first in case it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       if (!connectionRead.getDestinationId().equals(destination.getDestinationId())) {
         continue;
       }
 
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
@@ -152,6 +153,28 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
+  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // read destination configuration from db
+    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationIdRequestBody.getDestinationId());
+    final ConnectorSpecification spec = getSpec(destinationToClone.getDestinationDefinitionId());
+
+    // persist
+    final UUID destinationId = uuidGenerator.get();
+    final String copyText = " (Copy)";
+    final String destinationName = destinationToClone.getName() + copyText;
+    persistDestinationConnection(
+        destinationName,
+        destinationToClone.getDestinationDefinitionId(),
+        destinationToClone.getWorkspaceId(),
+        destinationId,
+        destinationToClone.getConnectionConfiguration(),
+        false);
+
+    // read configuration from db
+    return buildDestinationRead(destinationId, spec);
+  }
+
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
@@ -166,6 +189,24 @@ public class DestinationHandler {
       }
 
       reads.add(buildDestinationRead(dci.getDestinationId()));
+    }
+
+    return new DestinationReadList().destinations(reads);
+  }
+
+  public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<DestinationRead> reads = Lists.newArrayList();
+
+    for (final DestinationConnection destinationConnection : configRepository.listDestinationConnection()) {
+      if (!destinationConnection.getDestinationDefinitionId().equals(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
+        continue;
+      }
+      if (destinationConnection.getTombstone() != null && destinationConnection.getTombstone()) {
+        continue;
+      }
+
+      reads.add(buildDestinationRead(destinationConnection.getDestinationId()));
     }
 
     return new DestinationReadList().destinations(reads);
@@ -225,6 +266,16 @@ public class DestinationHandler {
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
     dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
+    return toDestinationRead(dci, standardDestinationDefinition);
+  }
+
+  private DestinationRead buildDestinationReadWithSecrets(final UUID destinationId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    // remove secrets from config before returning the read
+    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnectionWithSecrets(destinationId));
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return toDestinationRead(dci, standardDestinationDefinition);

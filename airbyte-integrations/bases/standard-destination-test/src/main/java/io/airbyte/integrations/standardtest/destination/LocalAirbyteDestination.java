@@ -61,6 +61,11 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
+  public int getExitValue() {
+    return 0;
+  }
+
+  @Override
   public Optional<AirbyteMessage> attemptRead() {
     return Optional.empty();
   }

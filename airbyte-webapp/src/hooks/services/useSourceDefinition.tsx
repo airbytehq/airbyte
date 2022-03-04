@@ -1,9 +1,8 @@
 import { useResource } from "rest-hooks";
 
-import SourceDefinitionResource, {
-  SourceDefinition,
-} from "core/resources/SourceDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useWorkspace from "./useWorkspace";
+import { SourceDefinition } from "core/domain/connector";
 
 const useSourceDefinitionList = (): {
   sourceDefinitions: SourceDefinition[];
@@ -15,4 +14,10 @@ const useSourceDefinitionList = (): {
   });
 };
 
-export { useSourceDefinitionList };
+const useSourceDefinition = (id: string): SourceDefinition => {
+  return useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: id,
+  });
+};
+
+export { useSourceDefinitionList, useSourceDefinition };

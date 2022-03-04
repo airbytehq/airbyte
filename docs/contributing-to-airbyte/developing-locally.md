@@ -27,21 +27,8 @@ To start contributing:
 
 ## Build with `gradle`
 
-To compile and build just the platform \(not all the connectors\):
-
-```bash
-SUB_BUILD=PLATFORM ./gradlew build
-```
-
 {% hint style="info" %}
-If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
-some additional environment variables:
-
-Build temporal (This is required until official images are available Refer: https://github.com/temporalio/temporal/issues/1305)
-```bash
-cd airbyte-temporal/scripts
-./build-temporal.sh
-```
+If you're using Mac M1 \(Apple Silicon\) machines, you can run Airbyte locally only in `dev` mode and you need to set these environment variables in order to build Airbyte:
 
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
@@ -49,12 +36,17 @@ export DOCKER_BUILD_ARCH=arm64
 export ALPINE_IMAGE=arm64v8/alpine:3.14
 export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
 export JDK_VERSION=17
-SUB_BUILD=PLATFORM ./gradlew build
 ```
 
 There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
 
 {% endhint %}
+
+To compile and build just the platform \(not all the connectors\):
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+```
 
 This will build all the code and run all the unit tests.
 
@@ -142,7 +134,10 @@ npm start
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
+The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options: 
+
+1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache. 
+2. Restart the server by running the following commands:
 
 ```bash
 VERSION=dev docker-compose down -v

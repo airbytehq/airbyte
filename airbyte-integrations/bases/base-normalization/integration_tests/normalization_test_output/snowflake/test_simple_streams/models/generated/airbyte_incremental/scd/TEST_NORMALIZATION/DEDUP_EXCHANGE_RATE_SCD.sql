@@ -2,7 +2,7 @@
     cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
-    post_hook = ['drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG'],
+    post_hook = ["drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
@@ -58,18 +58,18 @@ scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
       {{ dbt_utils.surrogate_key([
-            'ID',
-            'CURRENCY',
-            'NZD',
+      'ID',
+      'CURRENCY',
+      'NZD',
       ]) }} as _AIRBYTE_UNIQUE_KEY,
-        ID,
-        CURRENCY,
-        DATE,
-        TIMESTAMP_COL,
-        {{ adapter.quote('HKD@spéçiäl & characters') }},
-        HKD_SPECIAL___CHARACTERS,
-        NZD,
-        USD,
+      ID,
+      CURRENCY,
+      DATE,
+      TIMESTAMP_COL,
+      {{ adapter.quote('HKD@spéçiäl & characters') }},
+      HKD_SPECIAL___CHARACTERS,
+      NZD,
+      USD,
       DATE as _AIRBYTE_START_AT,
       lag(DATE) over (
         partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
@@ -95,7 +95,10 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _AIRBYTE_UNIQUE_KEY, _AIRBYTE_START_AT, _AIRBYTE_EMITTED_AT
+            partition by
+                _AIRBYTE_UNIQUE_KEY,
+                _AIRBYTE_START_AT,
+                _AIRBYTE_EMITTED_AT
             order by _AIRBYTE_ACTIVE_ROW desc, _AIRBYTE_AB_ID
         ) as _AIRBYTE_ROW_NUM,
         {{ dbt_utils.surrogate_key([
@@ -109,14 +112,14 @@ dedup_data as (
 select
     _AIRBYTE_UNIQUE_KEY,
     _AIRBYTE_UNIQUE_KEY_SCD,
-        ID,
-        CURRENCY,
-        DATE,
-        TIMESTAMP_COL,
-        {{ adapter.quote('HKD@spéçiäl & characters') }},
-        HKD_SPECIAL___CHARACTERS,
-        NZD,
-        USD,
+    ID,
+    CURRENCY,
+    DATE,
+    TIMESTAMP_COL,
+    {{ adapter.quote('HKD@spéçiäl & characters') }},
+    HKD_SPECIAL___CHARACTERS,
+    NZD,
+    USD,
     _AIRBYTE_START_AT,
     _AIRBYTE_END_AT,
     _AIRBYTE_ACTIVE_ROW,

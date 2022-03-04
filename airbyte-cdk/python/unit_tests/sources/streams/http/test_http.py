@@ -6,7 +6,7 @@
 import json
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
-from unittest.mock import ANY
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
@@ -29,18 +29,10 @@ class StubBasicReadHttpStream(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return ""
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
@@ -364,10 +356,10 @@ class CacheHttpSubStream(HttpSubStream):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-    def parse_response(self, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return []
 
-    def next_page_token(self, **kwargs) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
@@ -406,16 +398,17 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
     paths = ["", "search"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f'{stream_slice.get("path")}'
+        return f'{stream_slice["path"]}' if stream_slice else ""
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for path in self.paths:
             yield {"path": path}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response
+        yield {"value": len(response.text)}
 
 
+@patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
 def test_using_cache(mocker):
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")

@@ -202,7 +202,21 @@
       "type": ["null", "string"]
     },
     "discount_codes": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "code": {
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "email": {
       "type": ["null", "string"]
@@ -288,6 +302,9 @@
       "type": ["null", "string"]
     },
     "source_url": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     },
     "subtotal_price": {
@@ -818,13 +835,19 @@
             "type": ["null", "string"]
           },
           "tracking_numbers": {
-            "type": ["null", "array"]
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
           },
           "tracking_url": {
             "type": ["null", "string"]
           },
           "tracking_urls": {
-            "type": ["null", "array"]
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
           },
           "updated_at": {
             "type": ["null", "string"],
@@ -957,7 +980,18 @@
                   "type": ["null", "integer"]
                 },
                 "properties": {
-                  "type": ["null", "array"]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "value": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
                 },
                 "quantity": {
                   "type": ["null", "integer"]
@@ -1336,7 +1370,18 @@
             "type": ["null", "integer"]
           },
           "properties": {
-            "type": ["null", "array"]
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           },
           "quantity": {
             "type": ["null", "integer"]

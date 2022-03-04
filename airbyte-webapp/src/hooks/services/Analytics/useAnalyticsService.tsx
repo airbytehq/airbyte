@@ -55,9 +55,7 @@ function AnalyticsServiceProvider({
 }
 
 export const useAnalyticsService = (): AnalyticsService => {
-  const analyticsService = useAnalytics();
-
-  return analyticsService.service;
+  return useAnalytics().service;
 };
 
 export const useAnalytics = (): AnalyticsServiceProviderValue => {
@@ -79,7 +77,16 @@ export const useAnalyticsIdentifyUser = (userId?: string): void => {
     if (userId) {
       analyticsService.identify(userId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+};
+
+export const useTrackPage = (page: string): void => {
+  const analyticsService = useAnalyticsService();
+
+  useEffect(() => {
+    analyticsService.page(page);
+  }, [analyticsService, page]);
 };
 
 export const useAnalyticsRegisterValues = (
@@ -95,6 +102,7 @@ export const useAnalyticsRegisterValues = (
     }
 
     return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
 

@@ -30,8 +30,8 @@ public class DatabricksDestination extends CopyDestination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,

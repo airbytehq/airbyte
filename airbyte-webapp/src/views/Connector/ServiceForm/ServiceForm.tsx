@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { Formik, setIn, useFormikContext } from "formik";
+import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
@@ -26,7 +26,7 @@ import {
 } from "core/domain/connector";
 import { isDefined } from "utils/common";
 
-type ServiceFormProps = {
+export type ServiceFormProps = {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnector?: ConnectorDefinitionSpecification;
@@ -59,13 +59,26 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
 }) => {
   const { widgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext();
-  const formInitialValues = useMemo(() => {
-    return Object.entries(widgetsInfo)
+
+  useEffect(() => {
+    // set all const fields to form field values, so we could send form
+    const constPatchedValues = Object.entries(widgetsInfo)
       .filter(([_, v]) => isDefined(v.const))
       .reduce((acc, [k, v]) => setIn(acc, k, v.const), values);
-  }, [schema]);
 
-  useEffect(() => setValues(formInitialValues), [formInitialValues]);
+    // set default fields as current values, so values could be populated correctly
+    // fix for https://github.com/airbytehq/airbyte/issues/6791
+    const defaultPatchedValues = Object.entries(widgetsInfo)
+      .filter(
+        ([k, v]) =>
+          isDefined(v.default) && !isDefined(getIn(constPatchedValues, k))
+      )
+      .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
+
+    setValues(defaultPatchedValues);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schema]);
 
   return null;
 };
@@ -146,14 +159,20 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     uiWidgetsInfo
   );
 
+  const getValues = useCallback(
+    (values: ServiceFormValues) =>
+      validationSchema.cast(values, {
+        stripUnknown: true,
+      }),
+    [validationSchema]
+  );
+
   const onFormSubmit = useCallback(
     async (values) => {
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
       return onSubmit(valuesToSend);
     },
-    [onSubmit, validationSchema]
+    [getValues, onSubmit]
   );
 
   const onRetestForm = useCallback(
@@ -161,12 +180,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       if (!onRetest) {
         return null;
       }
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
+
       return onRetest(valuesToSend);
     },
-    [onRetest, validationSchema]
+    [onRetest, getValues]
   );
 
   return (
@@ -180,6 +198,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       {({ values, setSubmitting }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
+          getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
           formType={formType}
           selectedConnector={selectedConnector}

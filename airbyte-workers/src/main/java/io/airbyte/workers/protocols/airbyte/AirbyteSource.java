@@ -34,6 +34,15 @@ public interface AirbyteSource extends AutoCloseable {
   boolean isFinished();
 
   /**
+   * Gets the exit value of the source process. This should only be called after the source process
+   * has finished.
+   *
+   * @return exit code of the source process
+   * @throws IllegalStateException if the source process has not exited
+   */
+  int getExitValue();
+
+  /**
    * Attempts to read an AirbyteMessage from the Source.
    *
    * @return returns an AirbyteMessage is the Source emits one. Otherwise, empty. This method BLOCKS

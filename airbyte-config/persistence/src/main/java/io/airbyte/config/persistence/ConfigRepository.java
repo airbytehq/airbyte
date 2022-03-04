@@ -4,10 +4,20 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -25,10 +35,15 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
+import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,6 +56,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.Record2;
+import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,15 +76,22 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
+  private final ExceptionWrappingDatabase database;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
                           final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
+                          final Optional<SecretPersistence> ephemeralSecretPersistence,
+                          final Database database) {
     this.persistence = persistence;
     this.secretsHydrator = secretsHydrator;
     this.longLivedSecretPersistence = longLivedSecretPersistence;
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
+    this.database = new ExceptionWrappingDatabase(database);
+  }
+
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -73,7 +101,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
@@ -119,7 +146,11 @@ public class ConfigRepository {
 
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
+
+    return persistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceDefinitionId.toString(),
+        StandardSourceDefinition.class);
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -150,8 +181,16 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+  public List<StandardSourceDefinition> listStandardSourceDefinitions(final boolean includeTombstone) throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
+    for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        StandardSourceDefinition.class)) {
+      if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
+        sourceDefinitions.add(sourceDefinition);
+      }
+    }
+
+    return sourceDefinitions;
   }
 
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
@@ -201,8 +240,18 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions(final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> destinationDefinitions = new ArrayList<>();
+
+    for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        StandardDestinationDefinition.class)) {
+      if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
+        destinationDefinitions.add(destinationDefinition);
+      }
+    }
+
+    return destinationDefinitions;
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -218,6 +267,14 @@ public class ConfigRepository {
       persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
+    }
+  }
+
+  public void deleteStandardSyncDefinition(final UUID syncDefId) throws IOException {
+    try {
+      persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, syncDefId.toString());
+    } catch (final ConfigNotFoundException e) {
+      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", syncDefId);
     }
   }
 
@@ -519,6 +576,195 @@ public class ConfigRepository {
     } catch (final JsonValidationException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
+                                                 final String configurationHash,
+                                                 final String connectorVersion)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
+      if (event.getConnectorVersion().equals(connectorVersion)
+          && event.getConfigHash().equals(configurationHash)
+          && event.getActorId().equals(sourceId)) {
+        return getCatalogById(event.getActorCatalogId());
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
+
+    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        ActorCatalogFetchEvent.class)) {
+      actorCatalogFetchEvents.add(event);
+    }
+    return actorCatalogFetchEvents;
+  }
+
+  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
+      throws IOException {
+    try {
+      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
+          ActorCatalog.class));
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
+      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
+        return Optional.of(fetchedCatalog);
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalog> listActorCatalogs()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
+
+    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
+        ActorCatalog.class)) {
+      actorCatalogs.add(event);
+    }
+    return actorCatalogs;
+  }
+
+  private Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash, final DSLContext context) {
+    final Result<Record2<UUID, JSONB>> records = context.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
+        .from(ACTOR_CATALOG)
+        .where(ACTOR_CATALOG.CATALOG_HASH.eq(catalogHash)).fetch();
+
+    final Map<UUID, AirbyteCatalog> result = new HashMap<>();
+    for (final Record record : records) {
+      final AirbyteCatalog catalog = Jsons.deserialize(
+          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      result.put(record.get(ACTOR_CATALOG.ID), catalog);
+    }
+    return result;
+  }
+
+  /**
+   * Store an Airbyte catalog in DB if it is not present already
+   *
+   * Checks in the config DB if the catalog is present already, if so returns it identifier. It is not
+   * present, it is inserted in DB with a new identifier and that identifier is returned.
+   *
+   * @param airbyteCatalog An Airbyte catalog to cache
+   * @param context
+   * @return the db identifier for the cached catalog.
+   */
+  private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
+                                       final DSLContext context) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
+    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
+        Charsets.UTF_8)).toString();
+    final Map<UUID, AirbyteCatalog> catalogs = findCatalogByHash(catalogHash, context);
+
+    for (final Map.Entry<UUID, AirbyteCatalog> entry : catalogs.entrySet()) {
+      if (entry.getValue().equals(airbyteCatalog)) {
+        return entry.getKey();
+      }
+    }
+
+    final UUID catalogId = UUID.randomUUID();
+    context.insertInto(ACTOR_CATALOG)
+        .set(ACTOR_CATALOG.ID, catalogId)
+        .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(airbyteCatalog)))
+        .set(ACTOR_CATALOG.CATALOG_HASH, catalogHash)
+        .set(ACTOR_CATALOG.CREATED_AT, timestamp)
+        .set(ACTOR_CATALOG.MODIFIED_AT, timestamp).execute();
+    return catalogId;
+  }
+
+  public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
+                                                  final String actorVersion,
+                                                  final String configHash)
+      throws IOException {
+    final Result<Record1<JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.CATALOG)
+        .from(ACTOR_CATALOG).join(ACTOR_CATALOG_FETCH_EVENT)
+        .on(ACTOR_CATALOG.ID.eq(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(actorId))
+        .and(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION.eq(actorVersion))
+        .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
+
+    if (records.size() >= 1) {
+      final JSONB record = records.get(0).get(ACTOR_CATALOG.CATALOG);
+      return Optional.of(Jsons.deserialize(record.toString(), AirbyteCatalog.class));
+    }
+    return Optional.empty();
+
+  }
+
+  /**
+   * Stores source catalog information.
+   *
+   * This function is called each time the schema of a source is fetched. This can occur because the
+   * source is set up for the first time, because the configuration or version of the connector
+   * changed or because the user explicitly requested a schema refresh. Schemas are stored separately
+   * and de-duplicated upon insertion. Once a schema has been successfully stored, a call to
+   * getActorCatalog(actorId, connectionVersion, configurationHash) will return the most recent schema
+   * stored for those parameters.
+   *
+   * @param catalog
+   * @param actorId
+   * @param connectorVersion
+   * @param configurationHash
+   * @return The identifier (UUID) of the fetch event inserted in the database
+   * @throws IOException
+   */
+  public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
+                                          final UUID actorId,
+                                          final String connectorVersion,
+                                          final String configurationHash)
+      throws IOException {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final UUID fetchEventID = UUID.randomUUID();
+    database.transaction(ctx -> {
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, configurationHash)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
+          .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp).execute();
+    });
+
+    return fetchEventID;
+  }
+
+  public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countSourcesForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countDestinationsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
   /**

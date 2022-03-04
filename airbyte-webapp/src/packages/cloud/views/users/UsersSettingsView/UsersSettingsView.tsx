@@ -98,7 +98,10 @@ export const UsersSettingsView: React.FC = () => {
         <H5>
           <FormattedMessage id="userSettings.table.title" />
         </H5>
-        <Button onClick={toggleModal}>
+        <Button
+          onClick={toggleModal}
+          data-testid="userSettings.button.addNewUser"
+        >
           + <FormattedMessage id="userSettings.button.addNewUser" />
         </Button>
       </Header>

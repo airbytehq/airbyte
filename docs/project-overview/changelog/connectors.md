@@ -10,6 +10,77 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 1/28/2021
+
+New sources:
+
+* [**Chartmogul**](https://docs.airbyte.io/integrations/sources/chartmogul)
+* [**Hellobaton**](https://docs.airbyte.io/integrations/sources/hellobaton)
+* [**Flexport**](https://docs.airbyte.io/integrations/sources/flexport)
+* [**PersistIq**](https://docs.airbyte.io/integrations/sources/persistiq)
+
+
+## 1/6/2021
+
+New sources:
+
+* [**3PL Central**](https://docs.airbyte.io/integrations/sources/tplcentral)
+* [**My Hours**](https://docs.airbyte.io/integrations/sources/my-hours)
+* [**Qualaroo**](https://docs.airbyte.io/integrations/sources/qualaroo)
+* [**SearchMetrics**](https://docs.airbyte.io/integrations/sources/search-metrics)
+
+## 12/16/2021
+
+New source:
+
+* [**OpenWeather**](https://docs.airbyte.io/integrations/sources/openweather)
+
+New destinations:
+
+* [**ClickHouse**](https://docs.airbyte.io/integrations/destinations/clickhouse)
+* [**RabbitMQ**](https://docs.airbyte.io/integrations/destinations/rabbitmq)
+* [**Amazon SQS**](https://docs.airbyte.io/integrations/destinations/amazon-sqs)
+* [**Rockset**](https://docs.airbyte.io/integrations/destinations/rockset)
+
+
+
+## 12/9/2021
+
+New source:
+
+* [**Mailgun**](https://docs.airbyte.io/integrations/sources/mailgun)
+
+
+## 12/2/2021
+
+New destinations:
+
+* [**Redis**](https://docs.airbyte.io/integrations/destinations/redis)
+* [**MQTT**](https://docs.airbyte.io/integrations/destinations/mqtt)
+* [**Google Firestore**](https://docs.airbyte.io/integrations/destinations/google-firestore)
+* [**Kinesis**](https://docs.airbyte.io/integrations/destinations/kinesis)
+
+## 11/25/2021
+
+New sources:
+
+* [**Airtable**](https://docs.airbyte.io/integrations/sources/airtable)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/notion)
+* [**Pardot**](https://docs.airbyte.io/integrations/sources/pardot)
+* [**Notion**](https://docs.airbyte.io/integrations/sources/linnworks)
+* [**YouTube Analytics**](https://docs.airbyte.io/integrations/sources/youtube-analytics)
+
+New features:
+
+**Exchange Rates** Source: add `ignore_weekends` option.
+**Facebook** Source: add the videos stream.
+**Freshdesk** Source: removed the limitation in streams pagination.
+**Jira** Source: add option to render fields in HTML format. 
+**MongoDB v2** Source: improve read performance. 
+**Pipedrive** Source: specify schema for "persons" stream. 
+**PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
+**SurveyMonkey** Source: improve connection check.
+
 ## 11/17/2021
 
 New destination:
@@ -210,7 +281,7 @@ New features:
 
 Bug fixes:
 
-* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **QuickBooks** source: Now uses the number data type for decimal fields.
 * **HubSpot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
 * **GitHub** source: Validation fixed on non-required fields.
 * **BigQuery** destination: Now supports processing of arrays of records properly.
@@ -520,7 +591,7 @@ Progress on connectors:
 
 * [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
 * [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable)
-* [**Quickbooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
+* [**QuickBooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
 
 Other progress on connectors:
 

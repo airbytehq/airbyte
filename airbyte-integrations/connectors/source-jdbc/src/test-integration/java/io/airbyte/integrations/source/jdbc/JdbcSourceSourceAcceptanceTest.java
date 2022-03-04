@@ -16,11 +16,9 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -88,18 +86,13 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         SCHEMA_NAME,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
   }
 
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return new ArrayList<>();
   }
 
 }

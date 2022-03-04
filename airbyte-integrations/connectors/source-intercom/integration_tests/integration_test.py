@@ -3,16 +3,16 @@
 #
 
 import json
-import pytest
 import time
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from copy import deepcopy
 from pathlib import Path
-from requests.exceptions import HTTPError
 from typing import Mapping
 from unittest.mock import patch
 
+import pytest
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from requests.exceptions import HTTPError
 from source_intercom.source import Companies, ConversationParts, SourceIntercom, VersionApiAuthenticator
 
 LOGGER = AirbyteLogger()
@@ -32,15 +32,15 @@ def stream_attributes() -> Mapping[str, str]:
 @pytest.mark.parametrize(
     "version,not_supported_streams,custom_companies_data_field",
     (
-            (1.0, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-            (1.1, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-            (1.2, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-            (1.3, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
-            (1.4, ["company_segments"], "companies"),
-            (2.0, [], "data"),
-            (2.1, [], "data"),
-            (2.2, [], "data"),
-            (2.3, [], "data"),
+        (1.0, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.1, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.2, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.3, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.4, ["company_segments"], "companies"),
+        (2.0, [], "data"),
+        (2.1, [], "data"),
+        (2.2, [], "data"),
+        (2.3, [], "data"),
     ),
 )
 def test_supported_versions(stream_attributes, version, not_supported_streams, custom_companies_data_field):

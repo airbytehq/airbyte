@@ -83,6 +83,7 @@ You can easily get the page id from the page url. For example, if you have a pag
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032) | Remove deprecated field `live_encoders` from Page stream |
 | 0.1.5 | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/) | updated all empty objects in schemas for Page and Post streams |
 | 0.1.4 | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/) | Remove unsupported insights_export field from Pages request |
 | 0.1.3 | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440) | Generate Page token from config access token |

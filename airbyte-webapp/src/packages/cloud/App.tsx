@@ -9,7 +9,7 @@ import cloudLocales from "packages/cloud/locales/en.json";
 import GlobalStyle from "global-styles";
 import { theme } from "packages/cloud/theme";
 
-import { Routing } from "packages/cloud/routes";
+import { Routing } from "packages/cloud/cloudRoutes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
@@ -23,7 +23,13 @@ import { ConfigProvider } from "./services/ConfigProvider";
 const messages = Object.assign({}, en, cloudLocales);
 
 const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={messages}>
+  <IntlProvider
+    locale="en"
+    messages={messages}
+    defaultRichTextElements={{
+      b: (chunk) => <strong>{chunk}</strong>,
+    }}
+  >
     {children}
   </IntlProvider>
 );
@@ -35,12 +41,36 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      suspense: true,
+    },
+  },
+});
 
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   </CacheProvider>
+);
+
+const Services: React.FC = ({ children }) => (
+  <ConfigProvider>
+    <AnalyticsProvider>
+      <ApiErrorBoundary>
+        <NotificationServiceProvider>
+          <FeatureService>
+            <AppServicesProvider>
+              <AuthenticationProvider>
+                <IntercomProvider>{children}</IntercomProvider>
+              </AuthenticationProvider>
+            </AppServicesProvider>
+          </FeatureService>
+        </NotificationServiceProvider>
+      </ApiErrorBoundary>
+    </AnalyticsProvider>
+  </ConfigProvider>
 );
 
 const App: React.FC = () => {
@@ -50,23 +80,9 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ConfigProvider>
-                <AnalyticsProvider>
-                  <ApiErrorBoundary>
-                    <NotificationServiceProvider>
-                      <FeatureService>
-                        <AppServicesProvider>
-                          <AuthenticationProvider>
-                            <IntercomProvider>
-                              <Routing />
-                            </IntercomProvider>
-                          </AuthenticationProvider>
-                        </AppServicesProvider>
-                      </FeatureService>
-                    </NotificationServiceProvider>
-                  </ApiErrorBoundary>
-                </AnalyticsProvider>
-              </ConfigProvider>
+              <Services>
+                <Routing />
+              </Services>
             </Suspense>
           </StoreProvider>
         </I18NProvider>
