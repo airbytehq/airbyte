@@ -15,6 +15,24 @@ cd airbyte
 docker-compose up
 ```
 
+{% hint style="info" %}
+If you're using Mac M1 \(Apple Silicon\) machines, you can run Airbyte locally only in `dev` mode and you need to set these environment variables in order to build Airbyte:
+
+```bash
+export DOCKER_BUILD_PLATFORM=linux/arm64
+export DOCKER_BUILD_ARCH=arm64
+export ALPINE_IMAGE=arm64v8/alpine:3.14
+export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
+export JDK_VERSION=17
+```
+
+after setting up the environment variables you can start Airbyte locally by running:
+```bash
+VERSION=dev docker-compose up
+```
+
+{% endhint %}
+
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
 * Start moving some data!
 
@@ -26,7 +44,7 @@ We recommend following [this guide](https://docs.docker.com/docker-for-windows/i
 
 **I have a Mac with the M1 chip. Is it possible to run Airbyte?**
 
-Some users using Macs with an M1 chip are facing some problems running Airbyte. The problem is related with the chip and Docker. [Issue \#2017](https://github.com/airbytehq/airbyte/issues/2017) was created to follow up the problem, you can subscribe to it and get updates about the resolution. If you can successfully run Airbyte using a MacBook with the M1 chip, let us know so that we can share the process with the community!
+Yes, you can run Airbyte in dev mode on Macs with M1 chip (see the note above). Some users using Macs with an M1 chip are facing some problems running Airbyte. The problem is related with the chip and Docker. [Issue \#2017](https://github.com/airbytehq/airbyte/issues/2017) was created to follow up the problem, you can subscribe to it and get updates about the resolution. If you can successfully run Airbyte using a MacBook with the M1 chip, let us know so that we can share the process with the community!
 
 **Other issues**
 

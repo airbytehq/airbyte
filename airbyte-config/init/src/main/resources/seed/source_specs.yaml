@@ -952,7 +952,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.9"
+- dockerImage: "airbyte/source-chargebee:0.1.10"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -1000,7 +1000,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chartmogul:0.1.0"
+- dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
     connectionSpecification:
@@ -1009,6 +1009,8 @@
       type: "object"
       required:
       - "api_key"
+      - "start_date"
+      - "interval"
       additionalProperties: false
       properties:
         api_key:
@@ -1024,6 +1026,17 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 1
+        interval:
+          type: "string"
+          description: "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\"\
+            >Metrics</a> require intervals to cluster data."
+          enum:
+          - "day"
+          - "week"
+          - "month"
+          - "quarter"
+          default: "month"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1648,7 +1661,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.36"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -6205,7 +6218,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.8"
+- dockerImage: "airbyte/source-postgres:0.4.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6631,9 +6644,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.8"
+- dockerImage: "airbyte/source-redshift:0.3.9"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Redshift Source Spec"
@@ -7064,7 +7077,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.1"
+- dockerImage: "airbyte/source-salesforce:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7081,7 +7094,7 @@
           title: "Sandbox"
           description: "Whether the app is in a Salesforce sandbox or not. If you\
             \ do not know what this is, assume it as false. We provide more info on\
-            \ this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#is_sandbox\"\
+            \ this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#sandbox-accounts\"\
             >docs</a>."
           type: "boolean"
           default: false
@@ -8765,7 +8778,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.1.12"
+- dockerImage: "airbyte/source-zendesk-support:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
