@@ -848,6 +848,11 @@ class CRMSearchStream(IncrementalStream, ABC):
             payload["after"] = int(response["paging"]["next"]["after"])
 
             return {"params": params, "payload": payload}
+    
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
 
 
 class CRMObjectStream(Stream):
