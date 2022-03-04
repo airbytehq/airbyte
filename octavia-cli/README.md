@@ -11,19 +11,21 @@ It has the following features:
 The project is under development: readers can refer to our [tech spec deck](https://docs.google.com/presentation/d/10RjkCzBiVhCivnjSh63icYI7wG6S0N0ZIErEIsmXTqM/edit?usp=sharing) for an introduction to the tool.
 
 # Install
-We are packaging this CLI as a Docker image to avoid dependency hell, please install and run Docker if you are not. 
 
-## If you are using ZSH / Bash
+## 1. Install and run Docker
+We are packaging this CLI as a Docker image to avoid dependency hell, **[please install and run Docker if you are not](https://docs.docker.com/get-docker/)**. 
+
+## 2.a If you are using ZSH / Bash
 ```bash
 curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
-````
+```
 
 This script:
 1. Pulls the octavia image from our docker registry
 2. Creates an `octavia` alias in your profile
 
-## If you want to directly run the CLI without alias:
-````bash
+## 2.b If you want to directly run the CLI without alias:
+```bash
 docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
 ````
 
