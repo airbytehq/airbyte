@@ -39,9 +39,10 @@ class XolaStream(HttpStream, ABC):
             parsed_url = urlparse(next_url)
             limit = parse_qs(parsed_url.query)['limit'][0]
             skip = 0
+            paging_info = {'limit': limit}
             if 'skip' in parse_qs(parsed_url.query).keys():
                 skip = parse_qs(parsed_url.query)['skip'][0]
-            paging_info = {'limit': limit, 'skip': skip}
+                paging_info['skip'] = skip
 
         return paging_info
 
