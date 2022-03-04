@@ -310,7 +310,7 @@ class IntegrationRunnerTest {
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(10);
+      TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -337,7 +337,7 @@ class IntegrationRunnerTest {
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(11);
+      TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
