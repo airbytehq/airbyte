@@ -34,12 +34,12 @@ check_docker_is_running() {
 }
 
 delete_previous_alias() {
-    # TODO alafanechere: prompt for validation for deletion of previous alias
-    sed -i'' -e '/^alias octavia=/d' ${DETECTED_PROFILE}
+  sed -i'' -e '/^alias octavia=/d' ${DETECTED_PROFILE}
 }
 
+
 pull_image() {
-    docker pull airbyte/octavia-cli:${VERSION}
+    docker pull airbyte/octavia-cli:${VERSION} > /dev/null 2>&1
 }
 
 add_alias() {
@@ -47,13 +47,27 @@ add_alias() {
     echo "octavia alias was added to ${DETECTED_PROFILE} , please open a new terminal window or run source ${DETECTED_PROFILE}"
 }
 
-install () {
-    check_docker_is_running
-    detect_profile
-    set -u
+install() {
     pull_image
-    delete_previous_alias
     add_alias
 }
 
-install
+update_or_install() {
+    if grep -q "^alias octavia=*" ${DETECTED_PROFILE}; then
+        read -p "You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            delete_previous_alias
+            install
+        fi
+    else
+        install
+    fi
+}
+
+
+check_docker_is_running
+detect_profile
+set -u
+update_or_install
