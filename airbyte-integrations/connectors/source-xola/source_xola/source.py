@@ -38,8 +38,9 @@ class XolaStream(HttpStream, ABC):
             next_url = response.json()["paging"]["next"]
             parsed_url = urlparse(next_url)
             limit = parse_qs(parsed_url.query)['limit'][0]
-            skip = parse_qs(parsed_url.query)['skip'][0]
-
+            skip = 0
+            if 'skip' in parse_qs(parsed_url.query).keys():
+                skip = parse_qs(parsed_url.query)['skip'][0]
             paging_info = {'limit': limit, 'skip': skip}
 
         return paging_info
@@ -93,7 +94,13 @@ class Orders(XolaStream):
         """
         seller id is returned as a form of parameters
         """
-        return {'seller': self.seller_id}
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        params['seller'] = self.seller_id
+        params['sort'] = '-id'
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -103,32 +110,33 @@ class Orders(XolaStream):
         raw_response = response.json()["data"]
         modified_response = []
         for data in raw_response:
-            # Tags._id
-            resp = {"tags": []}
-            for tag in data["tags"]:
-                resp["tags"].append({"id": tag["id"]})
-            # customerName
-            resp["order_id"] = data["id"]
-            resp["createdAt"] = data["createdAt"]
-            # customerName
-            resp["customerName"] = data["customerName"]
-            # customerEmail
-            resp["customerEmail"] = data["customerEmail"]
-            # traverlers
-            resp["travelers"] = data["travelers"]
-            # source
-            resp["source"] = data["source"]
-            # createdBy
-            resp["createdBy"] = data["createdBy"]["id"]
-            # arrivalTime
-            resp["arrivalTime"] = data["arrivalTime"]
-            # quantity
-            resp["quantity"] = data["quantity"]
-            # event
-            resp["event"] = data["event"]["id"]
-            # price
-            resp["amount"] = data["amount"]
-            modified_response.append(resp)
+            try:
+                # Tags._id
+                resp = {"tags": []}
+                for tag in data["tags"]:
+                    resp["tags"].append({"id": tag["id"]})
+                # customerName
+                resp["order_id"] = data["id"]
+                resp["createdAt"] = data["createdAt"]
+                # customerName
+                resp["customerName"] = data["customerName"]
+                # customerEmail
+                resp["customerEmail"] = data["customerEmail"]
+                # traverlers
+                resp["travelers"] = data["travelers"]
+                # source
+                resp["source"] = data["source"]
+                # createdBy
+                resp["createdBy"] = data["createdBy"]["id"]
+                # quantity
+                resp["quantity"] = data["quantity"]
+                # event
+                resp["event"] = data["event"]["id"]
+                # price
+                resp["amount"] = data["amount"]
+                modified_response.append(resp)
+            except:
+                pass
         return modified_response
 
 
@@ -156,7 +164,13 @@ class Transactions(XolaStream):
         """
         seller id is returned as a form of parameters
         """
-        return {'seller': self.seller_id}
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        params['seller'] = self.seller_id
+        params['sort'] = '-id'
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -268,6 +282,6 @@ class SourceXola(AbstractSource):
         # TODO remove the authenticator if not required.
 
         return [
-            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            # Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

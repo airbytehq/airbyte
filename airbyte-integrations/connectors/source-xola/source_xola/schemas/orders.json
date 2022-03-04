@@ -5,9 +5,6 @@
       "type":"object",
       "additionalProperties": false,
       "properties":{
-         "order_id":{
-            "type":["null","string"]
-         },
          "tags":{
             "type":["null","array"],
             "default":[],
@@ -20,6 +17,9 @@
                   }
                }
             }
+         },
+         "order_id":{
+            "type":["null","string"]
          },
          "amount": {
             "type": ["null", "number"]
@@ -50,78 +50,15 @@
          "createdBy":{
             "type":["null","string"]
          },
-         "arrivalTime":{
-            "type":["null","integer"]
-         },
          "quantity":{
             "type":["null","integer"]
          },
-        "createdAt": {
+         "createdAt": {
           "type":["null","string"]
         },
          "event":{
             "type":["null","string"]
-         },
-         "items": {
-          "title": "Items",
-          "type": "array",
-          "default": [],
-          "items": {
-            "title": "Items",
-            "type": "object",
-            "properties": {
-              "object": {
-                "type": ["null", "string"]
-              },
-              "id": {
-                "type":["null", "string"]
-              },
-              "name": {
-                "type": ["null", "string"]
-              },
-              "desc": {
-                "type": ["null", "string"]
-              },
-              "currency": {
-                "type": ["null", "string"]
-              },
-              "seller": {
-                "title": "Seller",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": ["null", "string"]
-                  }
-                }
-              },
-              "guestType": {
-                "type": ["null", "string"]
-              },
-              "event": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": ["null", "string"]
-                  }
-                }
-              },
-              "arrivalDatetime": {
-                "type": ["null", "string"]
-              },
-              "quantity": {
-                "type": ["null", "string"]
-              },
-              "ticketCode": {
-                "type": ["null", "string"]
-              },
-              "amount": {
-                "type": ["null", "number"]
-              },
-              "status": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
+         }
       }
-   }
+}
+
