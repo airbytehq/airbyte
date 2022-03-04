@@ -1919,7 +1919,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
       writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
     } else {
-      throw new RuntimeException("Unknown config type " + configType);
+      throw new IllegalArgumentException("Unknown config type " + configType);
     }
   }
 
