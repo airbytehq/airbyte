@@ -132,25 +132,7 @@ public class ConnectionManagerWorkflowTest {
 
     @BeforeEach
     public void setup() {
-      testEnv = TestWorkflowEnvironment.newInstance();
-
-      final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-      syncWorker.registerWorkflowImplementationTypes(EmptySyncWorkflow.class);
-
-      final Worker managerWorker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
-      managerWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
-      managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-          mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
-
-      client = testEnv.getWorkflowClient();
-      testEnv.start();
-
-      workflow = client
-          .newWorkflowStub(
-              ConnectionManagerWorkflow.class,
-              WorkflowOptions.newBuilder()
-                  .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                  .build());
+      setupSpecificChildWorkflow(EmptySyncWorkflow.class);
     }
 
     @RepeatedTest(10)
@@ -417,25 +399,7 @@ public class ConnectionManagerWorkflowTest {
 
     @BeforeEach
     public void setup() {
-      testEnv = TestWorkflowEnvironment.newInstance();
-
-      final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-      syncWorker.registerWorkflowImplementationTypes(SleepingSyncWorkflow.class);
-
-      final Worker managerWorker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
-      managerWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
-      managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-          mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
-
-      client = testEnv.getWorkflowClient();
-      testEnv.start();
-
-      workflow = client
-          .newWorkflowStub(
-              ConnectionManagerWorkflow.class,
-              WorkflowOptions.newBuilder()
-                  .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                  .build());
+      setupSpecificChildWorkflow(SleepingSyncWorkflow.class);
     }
 
     @RepeatedTest(10)
@@ -920,25 +884,7 @@ public class ConnectionManagerWorkflowTest {
 
     @BeforeEach
     public void setup() {
-      testEnv = TestWorkflowEnvironment.newInstance();
-
-      final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-      syncWorker.registerWorkflowImplementationTypes(SleepingSyncWorkflow.class);
-
-      final Worker managerWorker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
-      managerWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
-      managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-          mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
-
-      client = testEnv.getWorkflowClient();
-      testEnv.start();
-
-      workflow = client
-          .newWorkflowStub(
-              ConnectionManagerWorkflow.class,
-              WorkflowOptions.newBuilder()
-                  .setTaskQueue(TemporalJobType.CONNECTION_UPDATER.name())
-                  .build());
+      setupSpecificChildWorkflow(SleepingSyncWorkflow.class);
     }
 
     public static Stream<Arguments> getSetupFailingFailingActivityBeforeRun() {
