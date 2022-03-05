@@ -16,7 +16,6 @@ setuptools.setup(
         "airbyte-protocol",
         "pyyaml",
         "jinja2",
-        "types-PyYAML",
     ],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
