@@ -31,11 +31,10 @@ import org.slf4j.MDC;
 public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
+  private static final String MDC_RESPONSE_BODY_KEY = "responseBody";
 
   @Context
   private HttpServletRequest servletRequest;
-
-  private String requestBody = null;
 
   private final Map<String, String> mdc;
 
@@ -51,6 +50,8 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   @Override
   public void filter(final ContainerRequestContext requestContext) throws IOException {
+    MDC.setContextMap(mdc);
+
     if (requestContext.getMethod().equals("POST")) {
       // hack to refill the entity stream so it doesn't interfere with other operations
       final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -59,17 +60,17 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
-      requestBody = IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType()));
+      MDC.put(MDC_RESPONSE_BODY_KEY, IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
     }
   }
 
   @Override
   public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext) {
-    MDC.setContextMap(mdc);
-
     final String remoteAddr = servletRequest.getRemoteAddr();
     final String method = servletRequest.getMethod();
     final String url = servletRequest.getRequestURI();
+
+    final String requestBody = MDC.get(MDC_RESPONSE_BODY_KEY);
 
     final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
         servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
