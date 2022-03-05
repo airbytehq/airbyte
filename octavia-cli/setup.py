@@ -40,7 +40,7 @@ setup(
         "Source": "https://github.com/airbytehq/airbyte",
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
-    packages=find_packages(exclude=("unit_tests", "docs")),
+    packages=find_packages(exclude=("tests", "docs")),
     package_data={"octavia_cli.generate": ["templates/*.j2"]},
     install_requires=[
         "click~=8.0.3",
