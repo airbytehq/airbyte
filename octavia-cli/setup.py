@@ -49,7 +49,6 @@ setup(
     ],
     python_requires=">=3.8.12",
     extras_require={
-        "dev": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "sphinx-docs": [
             "Sphinx~=4.2",
