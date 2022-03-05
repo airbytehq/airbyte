@@ -19,7 +19,7 @@ detect_profile() {
     fi
 
     if [ -z "${DETECTED_PROFILE}" ]; then
-        echo "Cannot install! This scripts only works if you are using one of these profiles: ~/.bashrc, ~/.bash_profile or ~/.zshrc"
+        echo "🚨 - Cannot install! This scripts only works if you are using one of these profiles: ~/.bashrc, ~/.bash_profile or ~/.zshrc"
         exit 1
     else
         echo "octavia alias will be added to ${DETECTED_PROFILE}"
@@ -28,7 +28,7 @@ detect_profile() {
 
 check_docker_is_running() {
     if ! docker info > /dev/null 2>&1; then
-    echo "This script uses docker, and it isn't running - please start docker and try again!"
+    echo "🚨 - This script uses docker, and it isn't running - please start docker and try again!"
     exit 1
     fi
 }
@@ -44,7 +44,7 @@ pull_image() {
 
 add_alias() {
     echo 'alias octavia="pwd | xargs -I {} docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="\${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="\${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:'${VERSION}'"'  >> ~/.zshrc
-    echo "octavia alias was added to ${DETECTED_PROFILE} , please open a new terminal window or run source ${DETECTED_PROFILE}"
+    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE} , please open a new terminal window or run source ${DETECTED_PROFILE}"
 }
 
 install() {
@@ -54,7 +54,7 @@ install() {
 
 update_or_install() {
     if grep -q "^alias octavia=*" ${DETECTED_PROFILE}; then
-        read -p "You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r
+        read -p "❓ - You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
