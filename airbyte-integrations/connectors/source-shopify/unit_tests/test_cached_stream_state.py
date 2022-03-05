@@ -4,7 +4,7 @@
 
 
 import pytest
-from source_shopify.source import Orders, OrderRefunds
+from source_shopify.source import OrderRefunds, Orders
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 # Define the Stream instances for the tests
