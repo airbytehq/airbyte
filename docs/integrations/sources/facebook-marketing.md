@@ -23,6 +23,7 @@ This Source is capable of syncing the following tables and their data:
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 * [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account) 
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
+* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -103,7 +104,8 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.37  | 2022-02-22 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
+| 0.2.38  | 2022-02-22 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
+| 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
 | 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
 | 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add 104 error code to backoff triggers |
 | 0.2.34  | 2022-02-17 | [10180](https://github.com/airbytehq/airbyte/pull/9805) | Performance and reliability fixes |

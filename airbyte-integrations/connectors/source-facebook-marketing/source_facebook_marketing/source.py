@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig, InsightConfig
 from source_facebook_marketing.streams import (
+    Activities,
     AdAccount,
     AdCreatives,
     Ads,
@@ -61,7 +62,6 @@ class SourceFacebookMarketing(AbstractSource):
             start_date=config.start_date,
             end_date=config.end_date,
         )
-
         streams = [
             AdAccount(api=api),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
@@ -77,6 +77,7 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Activities(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, default_args=insights_args, streams=streams)
