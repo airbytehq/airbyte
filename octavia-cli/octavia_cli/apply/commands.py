@@ -9,6 +9,7 @@ import airbyte_api_client
 import click
 from octavia_cli.check_context import REQUIRED_PROJECT_DIRECTORIES, requires_init
 
+from .diff_helpers import display_diff_line
 from .resources import BaseResource
 from .resources import factory as resource_factory
 
@@ -49,7 +50,7 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
 
     Args:
         resource (BaseResource): The resource to apply.
-        force (bool): Wetheir force mode is on.
+        force (bool): Whether force mode is on.
     """
     if resource.was_created:
         click.echo(
@@ -66,9 +67,9 @@ def should_update_resource(force: bool, diff: str, local_file_changed: bool) -> 
     """Function to decide if the resource needs an update or not.
 
     Args:
-        force (bool): Wetheir force mode is on.
+        force (bool): Whether force mode is on.
         diff (str): The computed diff between local and remote for this resource.
-        local_file_changed (bool): Wetheir the local file describing the resource was modified.
+        local_file_changed (bool): Whether the local file describing the resource was modified.
 
     Returns:
         Tuple[bool, str]: Boolean to know if resource should be updated and string describing the update reason.
@@ -87,27 +88,6 @@ def should_update_resource(force: bool, diff: str, local_file_changed: bool) -> 
     return should_update, click.style(update_reason, fg="green")
 
 
-def display_diff_line(diff_line: str) -> None:
-    """Prettify a diff line and print it to standard output.
-
-    Args:
-        diff_line (str): The diff line to display.
-    """
-    if "changed from" in diff_line:
-        color = "yellow"
-        prefix = "E"
-    elif "added" in diff_line:
-        color = "green"
-        prefix = "+"
-    elif "removed" in diff_line:
-        color = "red"
-        prefix = "-"
-    else:
-        prefix = ""
-        color = None
-    click.echo(click.style(f"\t{prefix} - {diff_line}", fg=color))
-
-
 def prompt_for_diff_validation(resource_name: str, diff: str) -> bool:
     """Display the diff to user and prompt them from validation.
 
@@ -116,7 +96,7 @@ def prompt_for_diff_validation(resource_name: str, diff: str) -> bool:
         diff (str): The diff.
 
     Returns:
-        bool: Wetheir user validated the diff.
+        bool: Whether user validated the diff.
     """
     if diff:
         click.echo(
@@ -150,7 +130,7 @@ def update_resource(resource: BaseResource, force: bool) -> List[str]:
 
     Args:
         resource (BaseResource): Resource to update
-        force (bool): Wetheir force mode is on.
+        force (bool): Whether force mode is on.
 
     Returns:
         List[str]: Post update messages to display to standard output.

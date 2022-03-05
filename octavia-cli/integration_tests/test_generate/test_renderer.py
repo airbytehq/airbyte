@@ -55,12 +55,7 @@ def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
         )
 
 
-def pytest_generate_tests(metafunc):
-    if "stringinput" in metafunc.fixturenames:
-        metafunc.parametrize("stringinput", metafunc.config.getoption("stringinput"))
-
-
-EXPECTED_RENDERED_YAML_PATH = "tests/integration/test_generate/expected_rendered_yaml"
+EXPECTED_RENDERED_YAML_PATH = f"{os.path.dirname(__file__)}/expected_rendered_yaml"
 
 
 @pytest.mark.parametrize(

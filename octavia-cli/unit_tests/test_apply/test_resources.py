@@ -150,7 +150,7 @@ class TestBaseResource:
         [
             ([], None, None),
             (["foo"], None, "foo"),
-            (["foo", "bar"], resources.DuplicateRessourceError, None),
+            (["foo", "bar"], resources.DuplicateResourceError, None),
         ],
     )
     def test_get_remote_resource(self, resource, mocker, search_results, expected_error, expected_output):
@@ -197,7 +197,7 @@ class TestBaseResource:
             resources.compute_diff.assert_called_with(resource.remote_resource.connection_configuration, resource.configuration)
             assert diff == resources.compute_diff.return_value.pretty.return_value
         else:
-            with pytest.raises(resources.NonExistingRessourceError):
+            with pytest.raises(resources.NonExistingResourceError):
                 resource.get_diff_with_remote_resource()
 
     def test_create_or_update(self, mocker, resource):

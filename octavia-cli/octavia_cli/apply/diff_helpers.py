@@ -5,6 +5,7 @@
 import hashlib
 from typing import Any
 
+import click
 from deepdiff import DeepDiff
 
 SECRET_MASK = "**********"
@@ -37,7 +38,7 @@ def exclude_secrets_from_diff(obj: Any, path: str) -> bool:
         path (str): unused.
 
     Returns:
-        bool: Wetheir to ignore the object from the diff.
+        bool: Whether to ignore the object from the diff.
     """
     if isinstance(obj, str):
         return True if SECRET_MASK in obj else False
@@ -56,3 +57,24 @@ def compute_diff(a: Any, b: Any) -> DeepDiff:
         DeepDiff: the computed diff object.
     """
     return DeepDiff(a, b, view="tree", exclude_obj_callback=exclude_secrets_from_diff)
+
+
+def display_diff_line(diff_line: str) -> None:
+    """Prettify a diff line and print it to standard output.
+
+    Args:
+        diff_line (str): The diff line to display.
+    """
+    if "changed from" in diff_line:
+        color = "yellow"
+        prefix = "E"
+    elif "added" in diff_line:
+        color = "green"
+        prefix = "+"
+    elif "removed" in diff_line:
+        color = "red"
+        prefix = "-"
+    else:
+        prefix = ""
+        color = None
+    click.echo(click.style(f"\t{prefix} - {diff_line}", fg=color))

@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import mock_open, patch
+
 import pytest
 from octavia_cli.generate import renderer
 
@@ -197,6 +199,7 @@ class TestConnectionSpecificationRenderer:
         assert output_path == "./source/my_resource_name/configuration.yaml"
 
     def test_write_yaml(self, mocker):
+
         mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_get_output_path")
         mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
@@ -204,7 +207,8 @@ class TestConnectionSpecificationRenderer:
         )
 
         spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        output_path = spec_renderer.write_yaml(".")
+        with patch("builtins.open", mock_open()) as mock_file:
+            output_path = spec_renderer.write_yaml(".")
         assert output_path == spec_renderer._get_output_path.return_value
         spec_renderer.TEMPLATE.render.assert_called_with(
             {
@@ -213,3 +217,4 @@ class TestConnectionSpecificationRenderer:
                 "configuration_fields": spec_renderer._parse_connection_specification.return_value,
             }
         )
+        mock_file.assert_called_with(output_path, "w")

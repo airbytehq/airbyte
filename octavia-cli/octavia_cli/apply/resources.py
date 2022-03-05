@@ -26,11 +26,11 @@ from click import ClickException
 from .diff_helpers import compute_checksum, compute_diff
 
 
-class DuplicateRessourceError(ClickException):
+class DuplicateResourceError(ClickException):
     pass
 
 
-class NonExistingRessourceError(ClickException):
+class NonExistingResourceError(ClickException):
     pass
 
 
@@ -244,14 +244,14 @@ class BaseResource(abc.ABC):
         """Find the remote resource on the Airbyte instance associated with the current resource.
 
         Raises:
-            DuplicateRessourceError: raised if the search results return multiple resources.
+            DuplicateResourceError: raised if the search results return multiple resources.
 
         Returns:
             Optional[Union[SourceRead, DestinationRead]]: The remote resource found.
         """
         search_results = self._search().get(f"{self.resource_type}s", [])
         if len(search_results) > 1:
-            raise DuplicateRessourceError("Two or more ressources exist with the same name.")
+            raise DuplicateResourceError("Two or more ressources exist with the same name.")
         if len(search_results) == 1:
             return search_results[0]
         else:
@@ -261,13 +261,13 @@ class BaseResource(abc.ABC):
         """Compute the diff between current resource and the remote resource.
 
         Raises:
-            NonExistingRessourceError: Raised if the remote resource does not exist.
+            NonExistingResourceError: Raised if the remote resource does not exist.
 
         Returns:
             str: The prettyfied diff.
         """
         if not self.was_created:
-            raise NonExistingRessourceError("Cannot compute diff with a non existing remote resource.")
+            raise NonExistingResourceError("Cannot compute diff with a non existing remote resource.")
         current_config = self.configuration
         remote_config = self.remote_resource.connection_configuration
         diff = compute_diff(remote_config, current_config)

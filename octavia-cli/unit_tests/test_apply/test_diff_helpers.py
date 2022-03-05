@@ -8,10 +8,6 @@ import pytest
 from octavia_cli.apply import diff_helpers
 
 
-def test_secret_mask():
-    assert diff_helpers.SECRET_MASK == "**********"
-
-
 def test_compute_checksum(mocker):
     with patch("builtins.open", mock_open(read_data=b"data")) as mock_file:
         digest = diff_helpers.compute_checksum("test_file_path")
@@ -36,3 +32,19 @@ def test_compute_diff(mocker):
     diff = diff_helpers.compute_diff("foo", "bar")
     assert diff == diff_helpers.DeepDiff.return_value
     diff_helpers.DeepDiff.assert_called_with("foo", "bar", view="tree", exclude_obj_callback=diff_helpers.exclude_secrets_from_diff)
+
+
+@pytest.mark.parametrize(
+    "diff_line,expected_message,expected_color",
+    [
+        ("resource changed from", "E - resource changed from", "yellow"),
+        ("resource added", "+ - resource added", "green"),
+        ("resource removed", "- - resource removed", "red"),
+        ("whatever", " - whatever", None),
+    ],
+)
+def test_display_diff_line(mocker, diff_line, expected_message, expected_color):
+    mocker.patch.object(diff_helpers, "click")
+    diff_helpers.display_diff_line(diff_line)
+    diff_helpers.click.style.assert_called_with(f"\t{expected_message}", fg=expected_color)
+    diff_helpers.click.echo.assert_called_with(diff_helpers.click.style.return_value)

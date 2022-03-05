@@ -50,9 +50,9 @@ We welcome community contributions!
 1. Install Python 3.8.12. We suggest doing it through `pyenv`
 2. Create a virtualenv: `python -m venv .venv`
 3. Activate the virtualenv: `source .venv/bin/activate`
-4. Install dev dependencies: `pip install -e .\[dev\]`
+4. Install dev dependencies: `pip install -e .\[tests\]`
 5. Install `pre-commit` hooks: `pre-commit install`
-6. Run the test suite: `pytest --cov=octavia_cli unit_tests`
+6. Run the unittest suite: `pytest --cov=octavia_cli`
 7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
 # Contributing

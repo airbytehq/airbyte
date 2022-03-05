@@ -138,21 +138,6 @@ def test_should_update_resource(patch_click, mocker, diff, local_file_changed, f
 
 
 @pytest.mark.parametrize(
-    "diff_line,expected_message,expected_color",
-    [
-        ("resource changed from", "E - resource changed from", "yellow"),
-        ("resource added", "+ - resource added", "green"),
-        ("resource removed", "- - resource removed", "red"),
-        ("whatever", " - whatever", None),
-    ],
-)
-def test_display_diff_line(patch_click, diff_line, expected_message, expected_color):
-    commands.display_diff_line(diff_line)
-    commands.click.style.assert_called_with(f"\t{expected_message}", fg=expected_color)
-    commands.click.echo.assert_called_with(commands.click.style.return_value)
-
-
-@pytest.mark.parametrize(
     "diff,expected_number_calls_to_display_diff_line",
     [("", 0), ("First diff line", 1), ("First diff line\nSecond diff line", 2), ("First diff line\nSecond diff line\nThird diff line", 3)],
 )
