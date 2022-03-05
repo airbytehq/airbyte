@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -16,6 +18,8 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.Sch
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
+import io.airbyte.workers.temporal.scheduling.activities.DisableActivity;
+import io.airbyte.workers.temporal.scheduling.activities.DisableActivity.DisableActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
@@ -42,6 +46,7 @@ import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -68,8 +73,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final ConnectionDeletionActivity connectionDeletionActivity =
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final DisableActivity disableActivity =
+      Workflow.newActivityStub(DisableActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
+
+  final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   private UUID connectionId;
 
@@ -82,7 +91,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
         cancellableSyncWorkflow.run();
       } catch (final CanceledFailure cf) {
-        // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
+        // When a scope is cancelled temporal will throw a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
@@ -122,8 +131,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // resetConnection flag to the next run so that that run can execute the actual reset
       workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
+<<<<<<< HEAD
       workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
 
+=======
+>>>>>>> 11a029158 (Add Disable Failing Connections feature)
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
@@ -223,7 +235,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
-
+      if (featureFlags.disablesFailingConnections()) {
+        final DisableActivityInput disableActivityInput = new DisableActivityInput(connectionId, Instant.now());
+        runMandatoryActivity(disableActivity::disableConnection, disableActivityInput);
+      }
       resetNewConnectionInput(connectionUpdaterInput);
       if (workflowState.isResetConnection()) {
         connectionUpdaterInput.setFromJobResetFailure(true);
@@ -467,7 +482,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
       taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
     }
-
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())

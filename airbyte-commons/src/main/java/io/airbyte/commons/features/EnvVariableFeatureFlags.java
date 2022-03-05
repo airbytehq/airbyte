@@ -16,4 +16,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return Boolean.parseBoolean(System.getenv("NEW_SCHEDULER"));
   }
 
+  @Override
+  public boolean disablesFailingConnections() {
+    log.info("Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("DISABLE_FAILING_CONNECTIONS")));
+
+    return Boolean.parseBoolean(System.getenv("DISABLE_FAILING_CONNECTIONS"));
+  }
+
 }

@@ -54,6 +54,7 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.DisableActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
@@ -177,7 +178,8 @@ public class WorkerApp {
             configRepository,
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
-        new ConnectionDeletionActivityImpl(connectionHelper));
+        new ConnectionDeletionActivityImpl(connectionHelper),
+        new DisableActivityImpl(configRepository, jobPersistence));
   }
 
   private void registerSync(final WorkerFactory factory) {
