@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { useLocation } from "react-use";
@@ -25,6 +25,7 @@ import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Workspace } from "core/domain/workspace/Workspace";
+import { storeUtmFromQuery } from "utils/utmStorage";
 
 export enum RoutePaths {
   AuthFlow = "/auth_flow",
@@ -153,6 +154,15 @@ const RoutingWithWorkspace: React.FC = () => {
 };
 
 export const Routing: React.FC = () => {
+  const { search } = useLocation();
+
+  useEffect(() => {
+    storeUtmFromQuery(search);
+    // We deliberately only want to store away the query parameters on page load,
+    // so we're not using `search` as a dependency here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>
