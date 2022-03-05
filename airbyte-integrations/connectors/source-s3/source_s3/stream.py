@@ -28,19 +28,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :yield: key (name) of each object
         """
         provider = self._provider
-
-        client_config = None
-        if S3File.use_aws_account(provider):
-            session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
-            )
-        elif S3File.use_aws_default_credential_provider_chain(provider):
-            session = boto3session.Session()
-            client_config = Config()
-        else:
-            session = boto3session.Session()
-            client_config = Config(signature_version=UNSIGNED)
-        client = make_s3_client(provider, config=client_config, session=session)
+        client = make_s3_client(provider)
 
         ctoken = None
         while True:
