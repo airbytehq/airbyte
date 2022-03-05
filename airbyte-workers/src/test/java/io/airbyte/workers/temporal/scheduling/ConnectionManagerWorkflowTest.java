@@ -15,14 +15,14 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.Get
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
-import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.TestStateListener;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
@@ -109,7 +109,7 @@ public class ConnectionManagerWorkflowTest {
         .thenReturn(new AttemptNumberCreationOutput(
             1));
 
-    Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
+    Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
         .thenReturn(
             new GeneratedJobInput(
                 new JobRunConfig(),
@@ -514,7 +514,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
     @RepeatedTest(10)
@@ -593,7 +593,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RESET && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any(JobCancelledInput.class));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobCancelledWithAttemptNumber(Mockito.any(JobCancelledInputWithAttemptNumber.class));
 
     }
 
@@ -682,7 +682,7 @@ public class ConnectionManagerWorkflowTest {
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.UPDATED && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any(JobSuccessInput.class));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).jobSuccessWithAttemptNumber(Mockito.any(JobSuccessInputWithAttemptNumber.class));
     }
 
   }
@@ -733,8 +733,8 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
     }
 
     @RepeatedTest(10)
@@ -760,7 +760,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
     }
 
     @RepeatedTest(10)
@@ -786,7 +786,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DBT)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DBT)));
     }
 
     @RepeatedTest(10)
@@ -812,7 +812,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.PERSISTENCE)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.PERSISTENCE)));
     }
 
     @RepeatedTest(10)
@@ -838,7 +838,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.REPLICATION)));
+      Mockito.verify(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.REPLICATION)));
     }
 
   }
@@ -878,7 +878,7 @@ public class ConnectionManagerWorkflowTest {
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
           Arguments.of(new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
               .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any()))),
-          Arguments.of(new Thread(() -> Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInput(Mockito.any(SyncInput.class)))
+          Arguments.of(new Thread(() -> Mockito.when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))));
     }
 
@@ -960,16 +960,16 @@ public class ConnectionManagerWorkflowTest {
       return Stream.of(
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> System.out.println("do Nothing")),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).jobSuccess(Mockito.any(JobSuccessInput.class)))),
+                  .when(mJobCreationAndStatusUpdateActivity).jobSuccessWithAttemptNumber(Mockito.any(JobSuccessInputWithAttemptNumber.class)))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.cancelJob()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).jobCancelled(Mockito.any(JobCancelledInput.class)))),
+                  .when(mJobCreationAndStatusUpdateActivity).jobCancelledWithAttemptNumber(Mockito.any(JobCancelledInputWithAttemptNumber.class)))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.deleteConnection()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
                   .when(mConnectionDeletionActivity).deleteConnection(Mockito.any()))),
           Arguments.of((Consumer<ConnectionManagerWorkflow>) ((ConnectionManagerWorkflow workflow) -> workflow.simulateFailure()),
               new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-                  .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any(AttemptFailureInput.class)))));
+                  .when(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.any(AttemptNumberFailureInput.class)))));
     }
 
     @ParameterizedTest
@@ -1014,7 +1014,7 @@ public class ConnectionManagerWorkflowTest {
 
   }
 
-  private class HasFailureFromOrigin implements ArgumentMatcher<AttemptFailureInput> {
+  private class HasFailureFromOrigin implements ArgumentMatcher<AttemptNumberFailureInput> {
 
     private final FailureOrigin expectedFailureOrigin;
 
@@ -1023,26 +1023,26 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Override
-    public boolean matches(final AttemptFailureInput arg) {
+    public boolean matches(final AttemptNumberFailureInput arg) {
       return arg.getAttemptFailureSummary().getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(expectedFailureOrigin));
     }
 
   }
 
-  private class HasCancellationFailure implements ArgumentMatcher<JobCancelledInput> {
+  private class HasCancellationFailure implements ArgumentMatcher<JobCancelledInputWithAttemptNumber> {
 
     private final long expectedJobId;
-    private final int expectedAttemptId;
+    private final int expectedAttemptNumber;
 
-    public HasCancellationFailure(final long jobId, final int attemptId) {
+    public HasCancellationFailure(final long jobId, final int attemptNumber) {
       this.expectedJobId = jobId;
-      this.expectedAttemptId = attemptId;
+      this.expectedAttemptNumber = attemptNumber;
     }
 
     @Override
-    public boolean matches(final JobCancelledInput arg) {
+    public boolean matches(final JobCancelledInputWithAttemptNumber arg) {
       return arg.getAttemptFailureSummary().getFailures().stream().anyMatch(f -> f.getFailureType().equals(FailureType.MANUAL_CANCELLATION))
-          && arg.getJobId() == expectedJobId && arg.getAttemptId() == expectedAttemptId;
+          && arg.getJobId() == expectedJobId && arg.getAttemptNumber() == expectedAttemptNumber;
     }
 
   }
