@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import mock_open, patch
+
 import pytest
 from octavia_cli.generate import renderer
 
@@ -182,10 +184,22 @@ class TestConnectionSpecificationRenderer:
         renderer.parse_fields.assert_called_with(["free"], {"free": "beer"})
 
     def test__get_output_path(self, mocker):
+        mocker.patch.object(renderer, "os")
+        renderer.os.path.exists.return_value = False
         spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        assert spec_renderer._get_output_path(".") == "./sources/my_resource_name.yaml"
+        renderer.os.path.join.side_effect = ["./source/my_resource_name", "./source/my_resource_name/configuration.yaml"]
+        output_path = spec_renderer._get_output_path(".")
+        renderer.os.makedirs.assert_called_once()
+        renderer.os.path.join.assert_has_calls(
+            [
+                mocker.call(".", "sources", "my_resource_name"),
+                mocker.call("./source/my_resource_name", "configuration.yaml"),
+            ]
+        )
+        assert output_path == "./source/my_resource_name/configuration.yaml"
 
     def test_write_yaml(self, mocker):
+
         mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_get_output_path")
         mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
@@ -193,7 +207,8 @@ class TestConnectionSpecificationRenderer:
         )
 
         spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        output_path = spec_renderer.write_yaml(".")
+        with patch("builtins.open", mock_open()) as mock_file:
+            output_path = spec_renderer.write_yaml(".")
         assert output_path == spec_renderer._get_output_path.return_value
         spec_renderer.TEMPLATE.render.assert_called_with(
             {
@@ -202,3 +217,4 @@ class TestConnectionSpecificationRenderer:
                 "configuration_fields": spec_renderer._parse_connection_specification.return_value,
             }
         )
+        mock_file.assert_called_with(output_path, "w")
