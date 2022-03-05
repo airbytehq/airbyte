@@ -112,7 +112,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
 
-    final StandardWorkspace workspace = MockData.standardWorkspace();
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
