@@ -4,7 +4,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
+import airbyte_cdk.sources.utils.casing as casing
 from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING
@@ -90,9 +91,15 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
-
+    
+    @property
+    def comparison_value(self) -> Union[int, str]:
+        # certain streams are using `id` field as `cursor_field`, which requires to use `int` type,
+        # but many other use `str` values for this, we determine what to use based on `cursor_field` value
+        return 0 if self.cursor_field == "id" else ""
+    
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, self.comparison_value), current_stream_state.get(self.cursor_field, self.comparison_value))}
 
     @stream_state_cache.cache_stream_state
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -104,7 +111,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                 params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
 
-    # Parse the stream_slice with respect to stream_state for Incremental refresh
+    # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
@@ -160,6 +167,32 @@ class ChildSubstream(IncrementalShopifyStream):
     nested_record: str = "id"
     nested_record_field_name: str = None
     nested_substream = None
+        
+    @property
+    def parent_stream(self) -> object:
+        """
+        Returns the instance of parent stream, if the child stream has a `parent_stream_class` dependency.
+        """
+        if self.parent_stream_class:
+            return self.parent_stream_class(self.config)
+       
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """UPDATING THE STATE OBJECT:
+            Stream: Transactions
+            Parent Stream: Orders
+            Returns:
+                {
+                "transactions": {
+                    "created_at": "2022-03-03T03:47:45-08:00",
+                    "orders": {
+                        "updated_at": "2022-03-03T03:47:46-08:00"
+                    }
+                }
+        """
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        # populate updated_state with parent_stream_state
+        updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
+        return updated_state
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
@@ -174,9 +207,13 @@ class ChildSubstream(IncrementalShopifyStream):
 
         Output: [ {slice_key: 123}, {slice_key: 456}, ..., {slice_key: 999} ]
         """
-        parent_stream = self.parent_stream_class(self.config)
-        parent_stream_state = stream_state_cache.cached_state.get(parent_stream.name)
-        for record in parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+        
+        parent_stream_state = stream_state.get(self.parent_stream.name, {})
+        for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+            # updating the `stream_state` with the state of it's parent stream
+            # to have the child stream sync independently from the parent stream
+            parent_state = self.parent_stream.get_updated_state(stream_state, record)
+            stream_state_cache.cached_state[self.parent_stream.name] = parent_state
             # to limit the number of API Calls and reduce the time of data fetch,
             # we can pull the ready data for child_substream, if nested data is present,
             # and corresponds to the data of child_substream we need.
@@ -185,7 +222,7 @@ class ChildSubstream(IncrementalShopifyStream):
                     yield {self.slice_key: record[self.nested_record]}
             else:
                 yield {self.slice_key: record[self.nested_record]}
-
+                
     def read_records(
         self,
         stream_state: Mapping[str, Any] = None,
@@ -268,9 +305,6 @@ class Collects(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
-
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -305,9 +339,6 @@ class OrderRisks(ChildSubstream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
 
 class Transactions(ChildSubstream):
@@ -414,9 +445,6 @@ class FulfillmentOrders(ChildSubstream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice[self.slice_key]
         return f"orders/{order_id}/{self.data_field}.json"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
 
 class Fulfillments(ChildSubstream):
