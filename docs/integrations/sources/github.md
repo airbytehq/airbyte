@@ -95,6 +95,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.21  | 2022-03-05 | [     ](https://github.com/airbytehq/airbyte/pull/     ) | Fix, no error if "Projects" feature is disabled                                                            |
 | 0.2.20  | 2022-02-16 | [10384](https://github.com/airbytehq/airbyte/pull/10384) | Add new stream `Deployments`, `ProjectColumns`, `PullRequestCommits`                                       |
 | 0.2.19  | 2022-02-07 | [10211](https://github.com/airbytehq/airbyte/pull/10211) | Add human-readable error in case of incorrect organization or repo name                                    |
 | 0.2.18  | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193) | Add handling secondary rate limits                                                                         |

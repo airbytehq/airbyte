@@ -124,7 +124,7 @@ class GithubStream(HttpStream, ABC):
                 # `Repositories` stream is not available for repositories not in an organization.
                 # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/<org_name>/repos?per_page=100" error.
                 error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
-            elif e.response.status_code == requests.codes.GONE and "/projects?" in error_msg:
+            elif e.response.status_code == requests.codes.GONE and error_msg == "Projects are disabled for this repository":
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
                 error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
