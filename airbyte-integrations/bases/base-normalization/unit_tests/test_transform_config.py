@@ -316,6 +316,23 @@ class TestTransformConfig:
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
+    def test_transform_clickhouse(self):
+        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+
+        actual = TransformConfig().transform_clickhouse(input)
+        expected = {
+            "type": "clickhouse",
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": True,
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {
