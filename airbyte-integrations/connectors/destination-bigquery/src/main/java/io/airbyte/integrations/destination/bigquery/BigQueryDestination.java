@@ -19,10 +19,14 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.integrations.base.wrapper.WrappedDestination;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.denormalize.DefaultBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.denormalize.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -37,6 +41,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -48,9 +53,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
 
   private final BigQuerySQLNameTransformer namingResolver;
+  private final boolean denormalize;
 
-  public BigQueryDestination() {
+  public BigQueryDestination(boolean denormalize) {
+    this.denormalize = denormalize;
     namingResolver = new BigQuerySQLNameTransformer();
+  }
+
+  public static Destination wrappedDestination(boolean denormalize) {
+    return new WrappedDestination(new BigQueryDestination(denormalize));
   }
 
   @Override
@@ -183,17 +194,28 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * @return use default AirbyteSchema or build using JsonSchema
    */
   protected boolean isDefaultAirbyteTmpTableSchema() {
-    return true;
+    return !denormalize;
   }
 
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
-    return Map.of(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
-        UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
-        UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
+    if (denormalize) {
+    return Map.of(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()),
+        UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(jsonSchema, getNamingResolver()));
+    } else {
+      return Map.of(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
+              UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, getNamingResolver()),
+              UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, getNamingResolver()));
+    }
   }
 
   protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
+    if (denormalize) {
+    // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
+    // table
+    return getNamingResolver().getIdentifier(streamName);
+    } else {
+      return namingResolver.getRawTableName(streamName);
+    }
   }
 
   protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
@@ -202,7 +224,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new BigQueryDestination();
+    final Destination destination = new BigQueryDestination(false);
     new IntegrationRunner(destination).run(args);
   }
 

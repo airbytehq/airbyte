@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.denormalize.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -172,7 +172,7 @@ class BigQueryDenormalizedDestinationTest {
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
-    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(message);
@@ -194,7 +194,7 @@ class BigQueryDenormalizedDestinationTest {
             new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithNestedDatetimeInsideNullObject()))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
-    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS7);
@@ -214,7 +214,7 @@ class BigQueryDenormalizedDestinationTest {
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithFormats()))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
-    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS3);
@@ -247,7 +247,7 @@ class BigQueryDenormalizedDestinationTest {
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithDateTime()))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
-    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS4);
@@ -271,7 +271,7 @@ class BigQueryDenormalizedDestinationTest {
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithReferenceDefinition()))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
-    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS5);

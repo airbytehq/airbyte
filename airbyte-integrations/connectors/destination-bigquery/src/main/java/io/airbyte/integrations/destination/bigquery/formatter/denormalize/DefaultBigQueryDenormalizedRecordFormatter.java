@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.formatter;
+package io.airbyte.integrations.destination.bigquery.formatter.denormalize;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -21,9 +21,13 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
-import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
+import io.airbyte.integrations.destination.bigquery.denormalize.JsonSchemaFormat;
+import io.airbyte.integrations.destination.bigquery.denormalize.JsonSchemaType;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -32,8 +36,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryRecordFormatter {
 
@@ -199,7 +201,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
     }
     LOGGER.info("Airbyte Schema is transformed from {} to {}.", jsonSchema, fieldList);
-    return com.google.cloud.bigquery.Schema.of(fieldList);
+    return Schema.of(fieldList);
   }
 
   private List<Field> getSchemaFields(final StandardNameTransformer namingResolver, final JsonNode jsonSchema) {
