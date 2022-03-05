@@ -44,8 +44,8 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +70,7 @@ public class WebBackendConnectionsHandler {
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -274,10 +274,10 @@ public class WebBackendConnectionsHandler {
       if (needReset) {
 
         // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+        eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
 
         // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }

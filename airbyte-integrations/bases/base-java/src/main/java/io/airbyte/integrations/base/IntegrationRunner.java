@@ -9,6 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions.Procedure;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -18,13 +20,21 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import io.sentry.SpanStatus;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ThreadUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +46,11 @@ import org.slf4j.LoggerFactory;
 public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
+
+  public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
+  public static final int EXIT_THREAD_DELAY_MINUTES = 70;
+
+  public static final int FORCED_EXIT_CODE = 2;
 
   private final IntegrationCliParser cliParser;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -74,7 +89,7 @@ public class IntegrationRunner {
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
-    this.validator = jsonSchemaValidator;
+    validator = jsonSchemaValidator;
   }
 
   public void run(final String[] args) throws Exception {
@@ -145,7 +160,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-          AirbyteSentry.executeWithTracing("WriteDestination", () -> consumeWriteStream(consumer));
+          AirbyteSentry.executeWithTracing("WriteDestination", () -> runConsumer(consumer));
         }
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -169,6 +184,88 @@ public class IntegrationRunner {
         LOGGER.error("Received invalid message: " + inputString);
       }
     }
+  }
+
+  private static void runConsumer(final AirbyteMessageConsumer consumer) throws Exception {
+    watchForOrphanThreads(
+        () -> consumeWriteStream(consumer),
+        () -> System.exit(FORCED_EXIT_CODE),
+        true,
+        INTERRUPT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES,
+        EXIT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES);
+  }
+
+  /**
+   * This method calls a runMethod and make sure that it won't produce orphan non-daemon active
+   * threads once it is done. Active non-daemon threads blocks JVM from exiting when the main thread
+   * is done, whereas daemon ones don't.
+   *
+   * If any active non-daemon threads would be left as orphans, this method will schedule some
+   * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
+   * preferred to have a proper closing sequence from children threads instead of interrupting or
+   * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
+   * and sentry for maintainers to fix the code behavior instead.
+   */
+  @VisibleForTesting
+  static void watchForOrphanThreads(final Procedure runMethod,
+                                    final Runnable exitHook,
+                                    final boolean sentryEnabled,
+                                    final int interruptTimeDelay,
+                                    final TimeUnit interruptTimeUnit,
+                                    final int exitTimeDelay,
+                                    final TimeUnit exitTimeUnit)
+      throws Exception {
+    final Thread currentThread = Thread.currentThread();
+    try {
+      runMethod.call();
+    } finally {
+      final List<Thread> runningThreads = ThreadUtils.getAllThreads()
+          .stream()
+          // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
+          .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
+          .collect(Collectors.toList());
+      if (!runningThreads.isEmpty()) {
+        final StringBuilder sentryMessageBuilder = new StringBuilder();
+        LOGGER.warn("""
+                    The main thread is exiting while children non-daemon threads from a connector are still active.
+                    Ideally, this situation should not happen...
+                    Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+                    The main thread is: {}""", dumpThread(currentThread));
+        sentryMessageBuilder.append("The main thread is exiting while children non-daemon threads are still active.\nMain Thread:")
+            .append(dumpThread(currentThread));
+        final ScheduledExecutorService scheduledExecutorService = Executors
+            .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
+                // this thread executor will create daemon threads, so it does not block exiting if all other active
+                // threads are already stopped.
+                .daemon(true).build());
+        for (final Thread runningThread : runningThreads) {
+          final String str = "Active non-daemon thread: " + dumpThread(runningThread);
+          LOGGER.warn(str);
+          sentryMessageBuilder.append(str);
+          // even though the main thread is already shutting down, we still leave some chances to the children
+          // threads to close properly on their own.
+          // So, we schedule an interrupt hook after a fixed time delay instead...
+          scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
+        }
+        if (!sentryEnabled) {
+          Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
+        }
+        scheduledExecutorService.schedule(() -> {
+          if (ThreadUtils.getAllThreads().stream()
+              .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
+            LOGGER.error("Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n");
+            exitHook.run();
+          }
+        }, exitTimeDelay, exitTimeUnit);
+      }
+    }
+  }
+
+  private static String dumpThread(final Thread thread) {
+    return String.format("%s (%s)\n Thread stacktrace: %s", thread.getName(), thread.getState(),
+        Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
   private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
