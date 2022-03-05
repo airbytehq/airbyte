@@ -299,12 +299,107 @@ class TestDestination:
             )
 
 
+class TestConnection:
+    @pytest.mark.parametrize(
+        "state",
+        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
+    )
+    def test_init(self, mocker, mock_api_client, state):
+        connection_configuration = {
+            "resource_name": "my_connection",
+            "namespace_definition": "customformat",
+            "namespace_format": "foo",
+            "prefix": "foo",
+            "source_id": "foo",
+            "destination_id": "foo",
+            "operation_ids": ["foo"],
+            "sync_catalog": {
+                "streams": [
+                    {
+                        "stream": {
+                            "name": "name_example",
+                            "json_schema": {},
+                            "supported_sync_modes": ["incremental"],
+                            "source_defined_cursor": True,
+                            "default_cursor_field": ["default_cursor_field"],
+                            "source_defined_primary_key": [["string_example"]],
+                            "namespace": "namespace_example",
+                        },
+                        "config": {
+                            "sync_mode": "incremental",
+                            "cursor_field": ["cursor_field_example"],
+                            "destination_sync_mode": "append_dedup",
+                            "primary_key": [["string_example"]],
+                            "alias_name": "alias_name_example",
+                            "selected": True,
+                        },
+                    }
+                ]
+            },
+            "schedule": {"units": 1, "time_units": "days"},
+            "status": "active",
+            "resource_requirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
+        }
+        assert resources.Connection.__base__ == resources.BaseResource
+        mocker.patch.object(resources.Connection, "resource_id", "foo")
+        connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        mocker.patch.object(connection, "state", state)
+        assert connection.api == resources.connection_api.ConnectionApi
+        assert connection.create_function_name == "create_connection"
+        assert connection.resource_id_field == "connection_id"
+        assert connection.search_function_name == "search_connections"
+        assert connection.update_function_name == "update_connection"
+        assert connection.resource_type == "connection"
+        assert connection.apply_priority == 1
+
+        assert connection.create_payload == resources.ConnectionCreate(
+            connection.source_id,
+            connection.destination_id,
+            connection.status,
+            name=connection.resource_name,
+            namespace_definition=connection.namespace_definition,
+            namespace_format=connection.namespace_format,
+            prefix=connection.prefix,
+            operations_ids=connection.operation_ids,
+            sync_catalog=connection.sync_catalog,
+            schedule=connection.schedule,
+            resource_requirements=connection.resource_requirements,
+            _check_type=False,
+        )
+        assert connection.update_payload == resources.ConnectionUpdate(
+            connection.resource_id,
+            connection.sync_catalog,
+            connection.status,
+            namespace_definition=connection.namespace_definition,
+            namespace_format=connection.namespace_format,
+            prefix=connection.prefix,
+            source_id=connection.source_id,
+            destination_id=connection.destination_id,
+            operations_ids=connection.operation_ids,
+            schedule=connection.schedule,
+            resource_requirements=connection.resource_requirements,
+            _check_type=False,
+        )
+        if state is None:
+            assert connection.search_payload == resources.ConnectionSearch(
+                source_id=connection.source_id,
+                destination_id=connection.destination_id,
+                name=connection.resource_name,
+                status=connection.status,
+            )
+        else:
+            assert connection.search_payload == resources.ConnectionSearch(
+                connection_id=connection.state.resource_id, source_id=connection.source_id, destination_id=connection.destination_id
+            )
+
+
 @pytest.mark.parametrize(
     "local_configuration,resource_to_mock,expected_error",
     [
         ({"definition_type": "source"}, "Source", None),
         ({"definition_type": "destination"}, "Destination", None),
-        ({"definition_type": "connection"}, None, NotImplementedError),
+        ({"definition_type": "connection"}, "Connection", None),
+        ({"definition_type": "not_existing"}, None, NotImplementedError),
     ],
 )
 def test_factory(mocker, mock_api_client, local_configuration, resource_to_mock, expected_error):
