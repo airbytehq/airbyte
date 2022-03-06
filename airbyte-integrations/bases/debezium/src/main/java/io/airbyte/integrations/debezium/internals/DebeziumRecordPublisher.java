@@ -133,7 +133,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("max.queue.size", "8192");
 
     if (schemaHistoryManager.isPresent()) {
-      // https://debezium.io/documentation/reference/1.4/operations/debezium-server.html#debezium-source-database-history-file-filename
+      // https://debezium.io/documentation/reference/1.8/operations/debezium-server.html#debezium-source-database-history-file-filename
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
       // changes. If we don't do this, we can't fetch records for the table
@@ -164,7 +164,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
     // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
     // explicitly in its Kafka messages for more details see:
-    // https://debezium.io/documentation/reference/1.4/connectors/postgresql.html#postgresql-decimal-types
+    // https://debezium.io/documentation/reference/1.8/connectors/postgresql.html#postgresql-decimal-types
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
 

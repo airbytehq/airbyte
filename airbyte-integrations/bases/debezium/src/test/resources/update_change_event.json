@@ -6,7 +6,7 @@
     "power": 10000.2
   },
   "source": {
-    "version": "1.4.2.Final",
+    "version": "1.8.1.Final",
     "connector": "postgresql",
     "name": "orders",
     "ts_ms": 1616775646881,

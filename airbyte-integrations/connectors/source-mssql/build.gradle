@@ -20,7 +20,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:1.8.1.Final'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))

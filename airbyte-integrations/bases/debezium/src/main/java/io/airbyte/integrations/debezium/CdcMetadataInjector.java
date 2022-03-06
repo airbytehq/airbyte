@@ -16,7 +16,7 @@ public interface CdcMetadataInjector {
 
   /**
    * A debezium record contains multiple pieces. Ref :
-   * https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-create-events
+   * https://debezium.io/documentation/reference/1.8/connectors/mysql.html#mysql-create-events
    *
    * @param event is the actual record which contains data and would be written to the destination
    * @param source contains the metadata about the record and we need to extract that metadata and add
@@ -29,7 +29,7 @@ public interface CdcMetadataInjector {
    *
    * @param source part of debezium record and contains the metadata about the record. We need to
    *        extract namespace out of this metadata and return Ref :
-   *        https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-create-events
+   *        https://debezium.io/documentation/reference/1.8/connectors/mysql.html#mysql-create-events
    */
   String namespace(JsonNode source);
 
