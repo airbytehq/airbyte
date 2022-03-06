@@ -53,24 +53,7 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 
 
 @responses.activate
-def test_stream_projects_disabled():
-    kwargs = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
-    stream = Projects(**kwargs)
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/test_repo/projects",
-        status=requests.codes.GONE,
-        json={"message": "Projects are disabled for this repository", "documentation_url": "https://docs.github.com/v3/projects"},
-    )
-
-    assert read_full_refresh(stream) == []
-    assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
-
-
-@responses.activate
-def test_stream_teams_private_repository():
+def test_stream_teams_404():
     kwargs = {"organizations": ["org_name"]}
     stream = Teams(**kwargs)
 
@@ -87,7 +70,7 @@ def test_stream_teams_private_repository():
 
 
 @responses.activate
-def test_stream_repository_not_in_organization():
+def test_stream_repositories_404():
     kwargs = {"organizations": ["org_name"]}
     stream = Repositories(**kwargs)
 
@@ -101,3 +84,20 @@ def test_stream_repository_not_in_organization():
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100"
+
+
+@responses.activate
+def test_stream_projects_disabled():
+    kwargs = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
+    stream = Projects(**kwargs)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/test_repo/projects",
+        status=requests.codes.GONE,
+        json={"message": "Projects are disabled for this repository", "documentation_url": "https://docs.github.com/v3/projects"},
+    )
+
+    assert read_full_refresh(stream) == []
+    assert len(responses.calls) == 1
+    assert responses.calls[0].request.url == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
