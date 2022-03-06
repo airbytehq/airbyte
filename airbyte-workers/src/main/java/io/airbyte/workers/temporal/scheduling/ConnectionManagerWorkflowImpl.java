@@ -207,7 +207,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
-    final int attemptNumber = connectionUpdaterInput.getAttemptzNumber();
+    final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
 
     if (maxAttempt > attemptNumber) {
       if (workflowState.isResetConnection()) {
