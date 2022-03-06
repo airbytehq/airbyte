@@ -66,5 +66,5 @@ class TestS3Utils:
             ),
         ],
     )
-    def test_use_aws_account(self, provider: Mapping[str, str], expected_authentication_method: AuthenticationMethod) -> None:
+    def test_get_authentication_method(self, provider: Mapping[str, str], expected_authentication_method: AuthenticationMethod) -> None:
         assert get_authentication_method(provider) is expected_authentication_method
