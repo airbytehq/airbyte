@@ -90,7 +90,7 @@ class TestFieldToRender:
     def test__get_secret_comment(self):
         field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.airbyte_secret = True
-        assert field_to_render._get_secret_comment() == "SECRET"
+        assert field_to_render._get_secret_comment() == "SECRET (please store in environment variables)"
         field_to_render.airbyte_secret = False
         assert field_to_render._get_secret_comment() is None
 

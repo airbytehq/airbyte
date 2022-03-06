@@ -180,9 +180,9 @@ spec:
                         default: 3
                         minimum: -5
                         maximum: 22
-                      include_checksum:
-                        title: "Include checksum"
-                        description: "If true, include a checksum with each data block."
+                      include_hash:
+                        title: "Include hash"
+                        description: "If true, include a hash with each data block."
                         type: "boolean"
                         default: false
                   - title: "snappy"

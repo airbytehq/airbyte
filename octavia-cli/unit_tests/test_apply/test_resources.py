@@ -6,31 +6,31 @@ from unittest.mock import mock_open, patch
 
 import pytest
 from airbyte_api_client import ApiException
-from octavia_cli.apply import resources
+from octavia_cli.apply import resources, yaml_loaders
 
 
 class TestResourceState:
     def test_init(self, mocker):
         mocker.patch.object(resources, "os")
-        state = resources.ResourceState("config_path", "resource_id", 123, "config_checksum")
+        state = resources.ResourceState("config_path", "resource_id", 123, "config_hash")
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 123
-        assert state.configuration_checksum == "config_checksum"
+        assert state.configuration_hash == "config_hash"
         assert state.path == resources.os.path.join.return_value
         resources.os.path.dirname.assert_called_with("config_path")
         resources.os.path.join.assert_called_with(resources.os.path.dirname.return_value, "state.yaml")
 
     @pytest.fixture
     def state(self):
-        return resources.ResourceState("config_path", "resource_id", 123, "config_checksum")
+        return resources.ResourceState("config_path", "resource_id", 123, "config_hash")
 
     def test_as_dict(self, state):
         assert state.as_dict() == {
             "configuration_path": state.configuration_path,
             "resource_id": state.resource_id,
             "generation_timestamp": state.generation_timestamp,
-            "configuration_checksum": state.configuration_checksum,
+            "configuration_hash": state.configuration_hash,
         }
 
     def test_save(self, mocker, state):
@@ -45,15 +45,15 @@ class TestResourceState:
 
     def test_create(self, mocker):
         mocker.patch.object(resources.time, "time", mocker.Mock(return_value=0))
-        mocker.patch.object(resources, "compute_checksum", mocker.Mock(return_value="my_checksum"))
+        mocker.patch.object(resources, "hash_config", mocker.Mock(return_value="my_hash"))
         mocker.patch.object(resources.ResourceState, "_save")
-        state = resources.ResourceState.create("config_path", "resource_id")
+        state = resources.ResourceState.create("config_path", {"my": "config"}, "resource_id")
         assert isinstance(state, resources.ResourceState)
         resources.ResourceState._save.assert_called_once()
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 0
-        assert state.configuration_checksum == "my_checksum"
+        assert state.configuration_hash == "my_hash"
 
     def test_from_file(self, mocker):
         mocker.patch.object(resources, "yaml")
@@ -61,7 +61,7 @@ class TestResourceState:
             "configuration_path": "config_path",
             "resource_id": "resource_id",
             "generation_timestamp": 0,
-            "configuration_checksum": "my_checksum",
+            "configuration_hash": "my_hash",
         }
         with patch("builtins.open", mock_open(read_data="data")) as mock_file:
             state = resources.ResourceState.from_file("state.yaml")
@@ -70,7 +70,7 @@ class TestResourceState:
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
         assert state.generation_timestamp == 0
-        assert state.configuration_checksum == "my_checksum"
+        assert state.configuration_hash == "my_hash"
 
 
 @pytest.fixture
@@ -93,7 +93,7 @@ class TestBaseResource:
     def test_init_no_remote_resource(self, mocker, patch_base_class, mock_api_client, local_configuration):
         mocker.patch.object(resources.BaseResource, "_get_state_from_file", mocker.Mock(return_value=None))
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value=False))
-        mocker.patch.object(resources, "compute_checksum")
+        mocker.patch.object(resources, "hash_config")
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert resource.workspace_id == "workspace_id"
         assert resource.local_configuration == local_configuration
@@ -108,11 +108,11 @@ class TestBaseResource:
 
     def test_init_with_remote_resource_not_changed(self, mocker, patch_base_class, mock_api_client, local_configuration):
         mocker.patch.object(
-            resources.BaseResource, "_get_state_from_file", mocker.Mock(return_value=mocker.Mock(configuration_checksum="my_checksum"))
+            resources.BaseResource, "_get_state_from_file", mocker.Mock(return_value=mocker.Mock(configuration_hash="my_hash"))
         )
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value={"resource_id": "my_resource_id"}))
 
-        mocker.patch.object(resources, "compute_checksum", mocker.Mock(return_value="my_checksum"))
+        mocker.patch.object(resources, "hash_config", mocker.Mock(return_value="my_hash"))
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert resource.was_created is True
         assert resource.local_file_changed is False
@@ -122,10 +122,10 @@ class TestBaseResource:
         mocker.patch.object(
             resources.BaseResource,
             "_get_state_from_file",
-            mocker.Mock(return_value=mocker.Mock(configuration_checksum="my_state_checksum")),
+            mocker.Mock(return_value=mocker.Mock(configuration_hash="my_state_hash")),
         )
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value={"resource_id": "my_resource_id"}))
-        mocker.patch.object(resources, "compute_checksum", mocker.Mock(return_value="my_new_checksum"))
+        mocker.patch.object(resources, "hash_config", mocker.Mock(return_value="my_new_hash"))
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert resource.was_created is True
         assert resource.local_file_changed is True
@@ -208,7 +208,7 @@ class TestBaseResource:
         result, state = resource._create_or_update(operation_fn, payload)
         assert result == expected_results
         assert state == resources.ResourceState.create.return_value
-        resources.ResourceState.create.assert_called_with(resource.configuration_path, "resource_id")
+        resources.ResourceState.create.assert_called_with(resource.configuration_path, resource.local_configuration, "resource_id")
 
     @pytest.mark.parametrize(
         "response_status,expected_error",
@@ -315,6 +315,7 @@ def test_factory(mocker, mock_api_client, local_configuration, resource_to_mock,
     with patch("builtins.open", mock_open(read_data="data")) as mock_file:
         if not expected_error:
             resource = resources.factory(mock_api_client, "workspace_id", "my_config.yaml")
+            resources.yaml.load.assert_called_with(mock_file.return_value, yaml_loaders.EnvVarLoader)
             resource == getattr(resources, resource_to_mock).return_value
             mock_file.assert_called_with("my_config.yaml", "r")
         else:

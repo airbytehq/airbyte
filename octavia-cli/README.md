@@ -21,13 +21,22 @@ SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
 2. Run the CLI from docker:
 ```bash
 docker run airbyte/octavia-cli:dev 
-````
+```
 3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
-````bash
+```bash
 echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
 source ~/.zshrc
 octavia
-````
+```
+
+# Secret management
+Sources and destinations configurations have credential fields that you **do not want to store as plain text and version on Git**.
+`octavia` offers secret management through environment variables expansion:
+```yaml
+configuration:
+  password: ${MY_PASSWORD}
+```
+If you have set a  `MY_PASSWORD` environment variable, `octavia apply` will load its value into the `password` field. 
 
 # Current development status
 Octavia is currently under development. 
@@ -38,6 +47,7 @@ We welcome community contributions!
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-03-06 | Implement secret management through environment variable expansion |
 | 2022-03-02 | Implement `octavia apply` (sources and destination only)|
 | 2022-02-06 | Implement `octavia generate` (sources and destination only)|
 | 2022-01-25 | Implement `octavia init` + some context checks|
