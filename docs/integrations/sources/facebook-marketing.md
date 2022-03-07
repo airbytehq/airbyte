@@ -104,7 +104,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.38  | 2022-03-07 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add error code 2 (temporary oauth error) to backoff triggers |
+| 0.2.38  | 2022-03-07 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | Add error code 2 (temporary oauth error) to backoff triggers |
 | 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
 | 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
 | 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add error code 104 to backoff triggers |
