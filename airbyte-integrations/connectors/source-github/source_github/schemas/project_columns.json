@@ -21,10 +21,12 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "repository": {
       "type": ["null", "string"]
