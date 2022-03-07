@@ -7,8 +7,10 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
@@ -170,9 +172,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       final int attemptId = input.getAttemptId();
       final long jobId = input.getJobId();
+      final AttemptFailureSummary failureSummary = input.getAttemptFailureSummary();
 
       jobPersistence.failAttempt(jobId, attemptId);
-      jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
+      jobPersistence.writeAttemptFailureSummary(jobId, attemptId, failureSummary);
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
@@ -180,6 +183,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       }
 
       emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
+      for (final FailureReason reason : failureSummary.getFailures()) {
+        DogStatsDMetricSingleton.count(MetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1, MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+      }
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
