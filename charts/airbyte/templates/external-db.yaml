@@ -1,4 +1,4 @@
-{{- if .Values.externalDatabase.enabled }}
+{{- if not .Values.postgresql.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
