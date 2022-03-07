@@ -242,7 +242,8 @@ public class MigrationAcceptanceTest {
           final String tag = destinationDefinitionRead.getDockerImageTag();
           final AirbyteVersion currentVersion = new AirbyteVersion(tag);
           final AirbyteVersion previousVersion = new AirbyteVersion("0.2.0");
-          final AirbyteVersion finalVersion = (currentVersion.checkOnlyPatchVersionIsUpdatedComparedTo(previousVersion) ? currentVersion : previousVersion);
+          final AirbyteVersion finalVersion =
+              (currentVersion.checkOnlyPatchVersionIsUpdatedComparedTo(previousVersion) ? currentVersion : previousVersion);
           assertEquals(finalVersion.toString(), currentVersion.toString());
           assertTrue(destinationDefinitionRead.getName().contains("Local CSV"));
           foundLocalCSVDestinationDefinition = true;
