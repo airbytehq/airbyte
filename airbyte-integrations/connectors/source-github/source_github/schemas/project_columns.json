@@ -30,7 +30,7 @@
       "type": ["null", "string"]
     },
     "project_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     }
   }
 }
