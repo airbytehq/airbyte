@@ -36,21 +36,25 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
   @Context
   private HttpServletRequest servletRequest;
 
+  private ThreadLocal<String> requestBodyThreadLocal;
+
   private final Map<String, String> mdc;
 
   public RequestLogger(final Map<String, String> mdc) {
     this.mdc = mdc;
+    this.requestBodyThreadLocal = new ThreadLocal<>();
   }
 
   @VisibleForTesting
   RequestLogger(final Map<String, String> mdc, final HttpServletRequest servletRequest) {
     this.mdc = mdc;
+    this.requestBodyThreadLocal = new ThreadLocal<>();
     this.servletRequest = servletRequest;
   }
 
   @VisibleForTesting
   String getRequestBody() {
-    return MDC.get(MDC_RESPONSE_BODY_KEY);
+    return requestBodyThreadLocal.get();
   }
 
   @Override
@@ -65,7 +69,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
-      MDC.put(MDC_RESPONSE_BODY_KEY, IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
+      requestBodyThreadLocal.set(IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
     }
   }
 
@@ -75,7 +79,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     final String method = servletRequest.getMethod();
     final String url = servletRequest.getRequestURI();
 
-    final String requestBody = MDC.get(MDC_RESPONSE_BODY_KEY);
+    final String requestBody = requestBodyThreadLocal.get();
 
     final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
         servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
