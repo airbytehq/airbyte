@@ -44,9 +44,11 @@ const TransferFormCard: React.FC<TransferFormProps> = ({ connection }) => {
         schedule: values.schedule,
         connectionId: connection.connectionId,
         namespaceDefinition: connection.namespaceDefinition,
+        namespaceFormat: connection.namespaceFormat,
         status: connection.status,
         prefix: connection.prefix,
         syncCatalog: connection.syncCatalog,
+        operations: connection.operations,
       });
     }
 

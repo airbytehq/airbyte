@@ -1,20 +1,24 @@
-name: {{ resource_name }}
+# Connection Configuration
+resource_name: {{ resource_name }}
+definition_type: connection
 source_id: {{ source_id }}
 destination_id: {{ destination_id }}
-namespace_definition: source
-namespace_format: ${SOURCE_NAMESPACE}
-prefix: ""
+
+namespace_definition: source                  # Default: source Allowed: source┃destination┃customformat
+namespace_format: ${SOURCE_NAMESPACE}         # Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+prefix: ""                                    # Prefix that will be prepended to the name of each stream when it is written to the destination.
 operation_ids:
 - 6c9e2330-4af3-47a9-b252-12fcfefcab55
-resource_requirements:
-  cpu_limit: ""
+resource_requirements:                        # optional resource requirements to run workers (blank for unbounded allocations)
+  cpu_limit: ""                               
   cpu_request: ""
   memory_limit: ""
   memory_request: ""
 schedule:
-  time_unit: 24
-  units: hours
+  time_unit: 24                               # Integer
+  units: hours                                # Allowed: minutes┃hours┃days┃weeks┃months
 status: active
+
 sync_catalog:
   streams:
   {%- for stream in streams %}
@@ -39,4 +43,3 @@ sync_catalog:
       selected: {{ stream.config.selected }}
       sync_mode: {{ stream.config.syncMode }}
   {% endfor %}
-

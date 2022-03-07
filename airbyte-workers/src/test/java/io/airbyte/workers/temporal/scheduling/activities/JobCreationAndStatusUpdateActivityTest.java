@@ -117,6 +117,8 @@ public class JobCreationAndStatusUpdateActivityTest {
     @Test
     @DisplayName("Test attempt creation")
     public void createAttempt() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+
       final Job mJob = Mockito.mock(Job.class);
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
@@ -211,6 +213,8 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setAttemptFailure() throws IOException {
+      Mockito.when(mConfigRepository.getDatabase()).thenReturn(Mockito.mock(ExceptionWrappingDatabase.class));
+
       jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, standardSyncOutput, failureSummary));
 
       Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);

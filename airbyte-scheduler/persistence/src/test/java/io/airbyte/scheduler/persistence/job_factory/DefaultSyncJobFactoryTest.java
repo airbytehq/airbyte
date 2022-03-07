@@ -4,7 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_factory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,7 +62,7 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations))
+    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null))
         .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
@@ -72,12 +72,12 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
+    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class));
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations);
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null);
   }
 
 }

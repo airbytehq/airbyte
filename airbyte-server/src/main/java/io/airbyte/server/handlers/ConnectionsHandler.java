@@ -33,6 +33,7 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
@@ -42,7 +43,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -61,7 +61,7 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
   private final FeatureFlags featureFlags;
   private final WorkerConfigs workerConfigs;
 
@@ -70,14 +70,14 @@ public class ConnectionsHandler {
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                     final EventRunner eventRunner,
                      final FeatureFlags featureFlags,
                      final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
-    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.eventRunner = eventRunner;
     this.featureFlags = featureFlags;
     this.workerConfigs = workerConfigs;
   }
@@ -85,14 +85,14 @@ public class ConnectionsHandler {
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                            final EventRunner eventRunner,
                             final FeatureFlags featureFlags,
                             final WorkerConfigs workerConfigs) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         workerConfigs);
 
@@ -123,8 +123,6 @@ public class ConnectionsHandler {
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
-    } else {
-      standardSync.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
@@ -152,7 +150,7 @@ public class ConnectionsHandler {
     if (featureFlags.usesNewScheduler()) {
       try {
         LOGGER.info("Starting a connection using the new scheduler");
-        temporalWorkerRunFactory.createNewSchedulerWorkflow(connectionId);
+        eventRunner.createNewSchedulerWorkflow(connectionId);
       } catch (final Exception e) {
         LOGGER.error("Start of the temporal connection manager workflow failed", e);
         configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
@@ -214,6 +212,11 @@ public class ConnectionsHandler {
         new HashSet<>(connectionUpdate.getOperationIds()));
 
     configRepository.writeStandardSync(newConnection);
+
+    if (featureFlags.usesNewScheduler()) {
+      eventRunner.update(connectionUpdate.getConnectionId());
+    }
+
     return buildConnectionRead(connectionUpdate.getConnectionId());
   }
 
@@ -320,7 +323,7 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     if (featureFlags.usesNewScheduler()) {
       // todo (cgardens) - need an interface over this.
-      temporalWorkerRunFactory.deleteConnection(connectionId);
+      eventRunner.deleteConnection(connectionId);
     } else {
       final ConnectionRead connectionRead = getConnection(connectionId);
       deleteConnection(connectionRead);
