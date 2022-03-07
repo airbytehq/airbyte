@@ -153,6 +153,28 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
+  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // read destination configuration from db
+    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationIdRequestBody.getDestinationId());
+    final ConnectorSpecification spec = getSpec(destinationToClone.getDestinationDefinitionId());
+
+    // persist
+    final UUID destinationId = uuidGenerator.get();
+    final String copyText = " (Copy)";
+    final String destinationName = destinationToClone.getName() + copyText;
+    persistDestinationConnection(
+        destinationName,
+        destinationToClone.getDestinationDefinitionId(),
+        destinationToClone.getWorkspaceId(),
+        destinationId,
+        destinationToClone.getConnectionConfiguration(),
+        false);
+
+    // read configuration from db
+    return buildDestinationRead(destinationId, spec);
+  }
+
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
@@ -244,6 +266,16 @@ public class DestinationHandler {
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
     dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
+    return toDestinationRead(dci, standardDestinationDefinition);
+  }
+
+  private DestinationRead buildDestinationReadWithSecrets(final UUID destinationId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    // remove secrets from config before returning the read
+    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnectionWithSecrets(destinationId));
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return toDestinationRead(dci, standardDestinationDefinition);

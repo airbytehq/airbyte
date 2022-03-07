@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -53,6 +54,7 @@ public class CopyConsumerFactory {
         outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
         recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+        removeStagingFilePrinter(pairToCopier),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
@@ -98,6 +100,16 @@ public class CopyConsumerFactory {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }
       }
+    };
+  }
+
+  private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+      String currentFileName = pairToCopier.get(pair).getCurrentFile();
+      if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
+        pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
+      }
+      return currentFileName;
     };
   }
 

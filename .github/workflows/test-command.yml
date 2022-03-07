@@ -68,10 +68,6 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Install Unzip for Databricks
-        if: github.event.inputs.connector == 'connectors/destination-databricks'
-        run: |
-          apt-get update && apt-get install -y unzip
       - name: Install Java
         uses: actions/setup-java@v1
         with:

@@ -36,6 +36,6 @@ COPY source_quickbooks_singer ./source_quickbooks_singer
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.4
+LABEL io.airbyte.version=0.1.5
 LABEL io.airbyte.name=airbyte/source-quickbooks-singer
 

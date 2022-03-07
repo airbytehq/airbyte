@@ -135,6 +135,11 @@ class JsonsTest {
   }
 
   @Test
+  void testArrayNode() {
+    assertEquals(Jsons.deserialize("[]"), Jsons.arrayNode());
+  }
+
+  @Test
   void testToObject() {
     final ToClass expected = new ToClass("abc", 999, 888L);
     assertEquals(

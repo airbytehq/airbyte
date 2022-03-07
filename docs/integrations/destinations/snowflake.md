@@ -27,9 +27,14 @@ Note that Airbyte will create **permanent** tables. If you prefer to create tran
 
 ## Getting started
 
+### Requirements
+
+1. Active Snowflake warehouse
+
 We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so it is possible to track costs specifically related to Airbyte \(including the cost of running this warehouse\) and control permissions at a granular level. Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.
 
 We provide the following script to create these resources. Before running, you must change the password to something secure. You may change the names of the other resources if you desire.
+Login into your Snowflake warehouse, copy and paste the following script in a new [worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html). Select the `All Queries` checkbox and then press the `Run` button.
 
 ```text
 -- set variables (these need to be uppercase)
@@ -106,13 +111,16 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **Host**
-* **Role**
-* **Warehouse**
-* **Database**
-* **Schema**
-* **Username**
-* **Password**
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in: 
+   * Example - us-west-1: `xy12345.snowflakecomputing.com`
+   * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
+* **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
+* **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
+* **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
+* **[Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. Schema name would be transformed to allowed by Snowflake if it not follow [Snowflake Naming Conventions](https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions).
+* **Username** : The username you created to allow Airbyte to access the database. Example - `AIRBYTE_USER`
+* **Password** : The password associated with the username.
+* **[JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html)** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). 
 
 ## Notes about Snowflake Naming Conventions
 
@@ -146,17 +154,17 @@ When an identifier is double-quoted, it is stored and resolved exactly as entere
 
 Therefore, Airbyte Snowflake destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
-## Cloud Storage Staging
+## Loading Method
 
-By default, Airbyte uses batches of `INSERT` commands to add data to a temporary table before copying it over to the final table in Snowflake. This is too slow for larger/multi-GB replications. For those larger replications we recommend configuring using cloud storage to allow batch writes and loading.
+By default, Airbyte uses [INTERNAL STAGING](https://docs.airbyte.com/integrations/destinations/snowflake#internal-staging)  
 
 ### Internal Staging
 
-Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging
+Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging. This is also the recommended way of using the connector. It doesn't require any external resources and is quick to setup and use. 
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
 
-### AWS S3
+### AWS S3 Staging
 
 For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
 
@@ -179,7 +187,7 @@ Optional parameters:
     * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
 
-### Google Cloud Storage \(GCS\)
+### Google Cloud Storage \(GCS\) Staging
 
 First you will need to create a GCS bucket.
 
@@ -214,9 +222,24 @@ The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an ema
 
 Finally, you need to add read/write permissions to your bucket with that email.
 
+## Changelog
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
+| 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |
+| 0.4.14  | 2022-02-17 | [\#10394](https://github.com/airbytehq/airbyte/pull/10394) | Reduce memory footprint. |
+| 0.4.13  | 2022-02-16 | [\#10212](https://github.com/airbytehq/airbyte/pull/10212) | Execute COPY command in parallel for S3 and GCS staging |
+| 0.4.12  | 2022-02-15 | [\#10342](https://github.com/airbytehq/airbyte/pull/10342) | Use connection pool, and fix connection leak. |
+| 0.4.11  | 2022-02-14 | [\#9920](https://github.com/airbytehq/airbyte/pull/9920) | Updated the size of staging files for S3 staging. Also, added closure of S3 writers to staging files when data has been written to an staging file. |
+| 0.4.10  | 2022-02-14 | [\#10297](https://github.com/airbytehq/airbyte/pull/10297) | Halve the record buffer size to reduce memory consumption. |
+| 0.4.9   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `ExitOnOutOfMemoryError` JVM flag. |
+| 0.4.8   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
+| 0.4.7   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
+| 0.4.6   | 2022-01-28 | [#9623](https://github.com/airbytehq/airbyte/pull/9623) | Add jdbc_url_params support for optional JDBC parameters |
+| 0.4.5   | 2021-12-29 | [#9184](https://github.com/airbytehq/airbyte/pull/9184) | Update connector fields title/description |
+| 0.4.4   | 2022-01-24 | [#9743](https://github.com/airbytehq/airbyte/pull/9743) | Fixed bug with dashes in schema name |
 | 0.4.3   | 2022-01-20 | [#9531](https://github.com/airbytehq/airbyte/pull/9531) | Start using new S3StreamCopier and expose the purgeStagingData option |
 | 0.4.2   | 2022-01-10 | [#9141](https://github.com/airbytehq/airbyte/pull/9141) | Fixed duplicate rows on retries |
 | 0.4.1   | 2021-01-06 | [#9311](https://github.com/airbytehq/airbyte/pull/9311) | Update сreating schema during check |
@@ -235,4 +258,3 @@ Finally, you need to add read/write permissions to your bucket with that email.
 | 0.3.12  | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                                        |
 | 0.3.11  | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer                                                                           |
 | 0.3.10  | 2021-07-12 | [#4713](https://github.com/airbytehq/airbyte/pull/4713)| Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake                                |
-
