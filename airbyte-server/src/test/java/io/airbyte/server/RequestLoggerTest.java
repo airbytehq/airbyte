@@ -136,8 +136,8 @@ public class RequestLoggerTest {
    * request body, and the actual request body that would be logged. The main thread then waits for all threads to finish, and then loops over each
    * runnable to see if the expected request body matched the actual request body.
    * <p>
-   * This test fails when using the instance variable approach for recording request bodies, and passes when using MDC to store the request body
-   * between the request filter and the response filter.
+   * This test fails when using the instance variable approach for recording request bodies, and passes when using a ThreadLocal to store the request
+   * body between the request filter and the response filter.
    */
   @Test
   public void testRequestBodyConsistency() {
