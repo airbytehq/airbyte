@@ -20,8 +20,11 @@
     "additionalProperties": true,
     "properties": {
       "host": {
-        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
-        "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
+        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). The account identifier differs depending on your cloud region, be sure to verify with Snowflake's documentation.",
+        "examples": [
+          "accountname.us-east-2.aws.snowflakecomputing.com",
+          "accountname.snowflakecomputing.com"
+        ],
         "type": "string",
         "title": "Host",
         "order": 0

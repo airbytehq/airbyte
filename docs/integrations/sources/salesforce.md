@@ -25,6 +25,7 @@ The connector uses as much rate limit as it can every day, then ends the sync ea
 Note that, picking up from where it ends will work only for incremental sync.
 
 ## Getting Started (Airbyte Cloud)
+
 #### Sandbox accounts
 
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
@@ -33,13 +34,39 @@ If this is Greek to you, then you are likely not using a sandbox account.
 
 ### Requirements
 
-* Salesforce Account
+* Salesforce Account with Enterprise access or API quota purchased
 * Dedicated Salesforce user (optional)
-
-**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
 
 ### Setup guide
 
+#### Creating a dedicated read only Salesforce user
+While you can setup the Salesforce connector using any user which has read permissions to your account, we recommend creating a dedicated, read-only user for use with Airbyte. This allows you to granularly control the data Airbyte can read. 
+
+To create a dedicated read only Salesforce user: 
+1. Login to Salesforce with an admin account
+2. On the top right side of the screen, click the "setup" gear icon then click "Setup"
+3. Under the "Administration" section on the left side of the screen, click "Users" > "Profiles"
+4. Click the "new profile" button
+5. Select "Read only" as the value of the "Existing Profile" field, and `Airbyte Read Only User` (or whatever name you prefer) as the profile name
+6. click "Save". This should take you to the profiles page. 
+7. Click "edit"
+8. Scroll down to the "Standard Object Permissions" and "Custom Object Permissions" and enable the "read" checkbox for objects which you would to be able to replicate via Airbyte
+9. Scroll to the top and click "Save"
+10. Under the "Administration" section on the left side of the screen, click "Users" > "Users". 
+11. Click "New User"
+12. Fill out the required fields
+
+    a. In the "License" field, select `Salesforce`
+    
+    b. In the "Profile" field, select `Airbyte Read Only User`
+    
+    c. In the "Email" field, make sure to use an email address which you can access (this will be required later to verify the account)
+13. Click "save"
+14. Copy the "Username" field and keep it handy -- you will use it when setting up Airbyte later
+15. Login to the email you set in step 12c above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password handy. 
+16. With the username and password, you should be ready to setup the Salesforce connector.  
+    
+#### Configuring the connector in the Airbyte UI
 1. Toggle whether your Salesforce account is a Sandbox account or a live account.  
 2. Click `Authenticate your Salesforce account` to sign in with Salesforce and authorize your account.
 3. Fill in the rest of the details.
@@ -47,11 +74,9 @@ If this is Greek to you, then you are likely not using a sandbox account.
 
 ## Getting started (Airbyte OSS) 
 ### Requirements
-* Salesforce Account
-* Salesforce OAuth credentials
-* Dedicated Salesforce user (optional)
-
-**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
+* Salesforce Account with Enterprise access or API quota purchased
+* Dedicated read only Salesforce user (optional)
+* Salesforce OAuth credentials 
 
 ### Setup guide
 
@@ -59,22 +84,32 @@ If this is Greek to you, then you are likely not using a sandbox account.
 If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
 
 If this is Greek to you, then you are likely not using a sandbox account.
+
+### Setup guide
+
+#### Read only user
+See the [section above](#creating-a-dedicated-read-only-salesforce-user) for creating a read only user. This step is optional.  
+
+#### Salesforce Oauth Credentials
 We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
 
 Suggested edits:
 
 1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`. 
 2. When running a `curl` command, always run it with the `-L` option to follow any redirects.
+3. If you created a read only user, use those credentials when logging in to generate oauth tokens
 
 ## Streams
 
-**Note**: The connector supports reading both standard streams and Custom Objects from Salesforce.
+**Note**: The connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. 
+
+See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm). 
 
 We fetch and handle all the possible & available streams dynamically based on:
 - User Role & Permissions to read & fetch objects and their data
 - Whether or not the stream has the queryable property set to true. Queryable streams are available to be fetched via the API. If you cannot see your object available via Airbyte, please ensure it is API-accessible to the user you used for authenticating into Airbyte  
 
-**Note**: Using the BULK API is not possible to receive data from the following streams:
+**Note**: Using the BULK API is not possible to receive data from the following streams due to limitations from the Salesforce API. The connector will sync them via the REST API which will occasionally cost more of your API quota:
 
 * AcceptedEventRelation
 * AssetTokenEvent
@@ -100,6 +135,7 @@ We fetch and handle all the possible & available streams dynamically based on:
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
 |:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751) | Fix broken link anchor in connector configuration |
 | 1.0.1 | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
 | 1.0.0 | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
 | 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |
