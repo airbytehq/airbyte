@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.scheduling.activities.DisableActivityImpl.MAX_DAYS_OF_STRAIGHT_FAILURE;
-import static io.airbyte.workers.temporal.scheduling.activities.DisableActivityImpl.MAX_FAILURE_JOBS_IN_A_ROW;
+import static io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl.MAX_DAYS_OF_STRAIGHT_FAILURE;
+import static io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl.MAX_FAILURE_JOBS_IN_A_ROW;
 
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardSync;
@@ -16,7 +16,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.scheduling.activities.DisableActivity.DisableActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -36,7 +36,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class DisableActivityTest {
+class AutoDisableConnectionActivityTest {
 
   @Mock
   private ConfigRepository mConfigRepository;
@@ -51,12 +51,12 @@ class DisableActivityTest {
   private Job mJobSuccess;
 
   @InjectMocks
-  private DisableActivityImpl disableActivity;
+  private AutoDisableConnectionActivityImpl disableActivity;
 
   private final static UUID connectionId = UUID.randomUUID();
   private final static StandardSync standardSync = new StandardSync();
   private static final Instant currInstant = Instant.now();
-  private static final DisableActivityInput input = new DisableActivityInput(connectionId, currInstant);
+  private static final AutoDisableConnectionActivityInput input = new AutoDisableConnectionActivityInput(connectionId, currInstant);
 
   @BeforeEach
   void setUp() {
@@ -79,7 +79,7 @@ class DisableActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSync);
 
-      disableActivity.disableConnection(input);
+      disableActivity.autoDisableFailingConnection(input);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
     }
 
@@ -95,7 +95,7 @@ class DisableActivityTest {
       Mockito.when(mJobFailure.getStatus()).thenReturn(JobStatus.FAILED);
       Mockito.when(mJobSuccess.getStatus()).thenReturn(JobStatus.SUCCEEDED);
 
-      disableActivity.disableConnection(input);
+      disableActivity.autoDisableFailingConnection(input);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
     }
 
@@ -105,7 +105,7 @@ class DisableActivityTest {
       Mockito.when(mJobPersistence.listJobs(ConfigType.SYNC, currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS)))
           .thenReturn(Collections.emptyList());
 
-      disableActivity.disableConnection(input);
+      disableActivity.autoDisableFailingConnection(input);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
     }
 
@@ -118,7 +118,7 @@ class DisableActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSync);
 
-      disableActivity.disableConnection(input);
+      disableActivity.autoDisableFailingConnection(input);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
     }
 

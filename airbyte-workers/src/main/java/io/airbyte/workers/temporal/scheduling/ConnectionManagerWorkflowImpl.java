@@ -13,13 +13,13 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
-import io.airbyte.workers.temporal.scheduling.activities.DisableActivity;
-import io.airbyte.workers.temporal.scheduling.activities.DisableActivity.DisableActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
@@ -73,8 +73,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final ConnectionDeletionActivity connectionDeletionActivity =
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
-  private final DisableActivity disableActivity =
-      Workflow.newActivityStub(DisableActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final AutoDisableConnectionActivity autoDisableConnectionActivity =
+      Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -230,8 +230,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
       if (featureFlags.disablesFailingConnections()) {
-        final DisableActivityInput disableActivityInput = new DisableActivityInput(connectionId, Instant.now());
-        runMandatoryActivity(disableActivity::disableConnection, disableActivityInput);
+        final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
+            new AutoDisableConnectionActivityInput(connectionId, Instant.now());
+        runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
       }
       resetNewConnectionInput(connectionUpdaterInput);
     }

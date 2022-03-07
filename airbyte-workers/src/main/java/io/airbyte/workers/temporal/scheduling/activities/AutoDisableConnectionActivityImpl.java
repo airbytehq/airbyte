@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @Slf4j
-public class DisableActivityImpl implements DisableActivity {
+public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
   @VisibleForTesting
   public static final int MAX_FAILURE_JOBS_IN_A_ROW = 100;
@@ -30,14 +30,9 @@ public class DisableActivityImpl implements DisableActivity {
   private final ConfigRepository configRepository;
   private JobPersistence jobPersistence;
 
-  // if no successful sync jobs in the last MAX_FAILURE_JOBS_IN_A_ROW job attempts or the last
-  // MAX_DAYS_OF_STRAIGHT_FAILURE days (minimum 1 job attempt): disable connection to prevent wasting
-  // resources
-
   @Override
-  public void disableConnection(final DisableActivityInput input) {
+  public void autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     try {
-      // lists job in descending order by created_at
       final List<Job> jobs = jobPersistence.listJobs(ConfigType.SYNC,
           input.getCurrTimestamp().minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS));
       if (jobs.size() == 0)
