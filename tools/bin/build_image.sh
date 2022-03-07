@@ -44,7 +44,7 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
 else
   JDK_VERSION="${JDK_VERSION:-17.0.1}"
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
-    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" DOCKER_BUILD_PLATFORM. "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" . "${args[@]}"
   else
     docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
