@@ -128,37 +128,15 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             yield from records_slice
 
 
-class Customers(IncrementalShopifyStream):
-    data_field = "customers"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
-
-
-class Orders(IncrementalShopifyStream):
-    data_field = "orders"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            params["status"] = "any"
-        return params
-
-
-class ChildSubstream(IncrementalShopifyStream):
+class ShopifySubstream(IncrementalShopifyStream):
     """
-    ChildSubstream - provides slicing functionality for streams using parts of data from parent stream.
+    ShopifySubstream - provides slicing functionality for streams using parts of data from parent stream.
     For example:
        - `Refunds Orders` is the entity of `Orders`,
        - `OrdersRisks` is the entity of `Orders`,
        - `DiscountCodes` is the entity of `PriceRules`, etc.
 
-    ::  @ parent_stream_class - defines the parent stream object to read from
+    ::  @ shopify_stream - defines the parent stream object to read from
     ::  @ slice_key - defines the name of the property in stream slices dict.
     ::  @ nested_record - the name of the field inside of parent stream record. Default is `id`.
     ::  @ nested_record_field_name - the name of the field inside of nested_record.
@@ -166,19 +144,18 @@ class ChildSubstream(IncrementalShopifyStream):
           API Calls, if present, see `OrderRefunds` stream for more.
     """
 
-    parent_stream_class: object = None
+    shopify_stream_class: object = None
     slice_key: str = None
     nested_record: str = "id"
     nested_record_field_name: str = None
     nested_substream = None
 
     @property
-    def parent_stream(self) -> object:
+    def shopify_stream(self) -> object:
         """
-        Returns the instance of parent stream, if the child stream has a `parent_stream_class` dependency.
+        Returns the instance of parent stream, if the shopify_substream has a `shopify_stream_class` dependency.
         """
-        if self.parent_stream_class:
-            return self.parent_stream_class(self.config)
+        return self.shopify_stream_class(self.config) if self.shopify_stream_class else None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """UPDATING THE STATE OBJECT:
@@ -186,16 +163,19 @@ class ChildSubstream(IncrementalShopifyStream):
         Parent Stream: Orders
         Returns:
             {
-            "transactions": {
-                "created_at": "2022-03-03T03:47:45-08:00",
-                "orders": {
-                    "updated_at": "2022-03-03T03:47:46-08:00"
-                }
+                {...},
+                "transactions": {
+                    "created_at": "2022-03-03T03:47:45-08:00",
+                    "orders": {
+                        "updated_at": "2022-03-03T03:47:46-08:00"
+                    }
+                },
+                {...},
             }
         """
         updated_state = super().get_updated_state(current_stream_state, latest_record)
-        # populate updated_state with parent_stream_state
-        updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
+        # add parent_stream_state to `updated_state`
+        updated_state[self.shopify_stream.name] = stream_state_cache.cached_state.get(self.shopify_stream.name)
         return updated_state
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -209,15 +189,22 @@ class ChildSubstream(IncrementalShopifyStream):
         Reading the parent stream for slices with structure:
         EXAMPLE: for given nested_record as `id` of Orders,
 
-        Output: [ {slice_key: 123}, {slice_key: 456}, ..., {slice_key: 999} ]
+        Outputs: 
+            [ 
+                {slice_key: 123},
+                {slice_key: 456},
+                {...},
+                {slice_key: 999
+            ]
         """
 
-        parent_stream_state = stream_state.get(self.parent_stream.name, {})
-        for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+        # reading parent nested stream_state from child stream state
+        shopify_stream_state = stream_state.get(self.shopify_stream.name) if stream_state else {}
+        # reading the parent stream
+        for record in self.shopify_stream.read_records(stream_state=shopify_stream_state, **kwargs):
             # updating the `stream_state` with the state of it's parent stream
             # to have the child stream sync independently from the parent stream
-            parent_state = self.parent_stream.get_updated_state(stream_state, record)
-            stream_state_cache.cached_state[self.parent_stream.name] = parent_state
+            stream_state_cache.cached_state[self.shopify_stream.name] = self.shopify_stream.get_updated_state({}, record)
             # to limit the number of API Calls and reduce the time of data fetch,
             # we can pull the ready data for child_substream, if nested data is present,
             # and corresponds to the data of child_substream we need.
@@ -244,6 +231,28 @@ class ChildSubstream(IncrementalShopifyStream):
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
+
+
+class Customers(IncrementalShopifyStream):
+    data_field = "customers"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class Orders(IncrementalShopifyStream):
+    data_field = "orders"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        if not next_page_token:
+            params["status"] = "any"
+        return params
 
 
 class DraftOrders(IncrementalShopifyStream):
@@ -319,8 +328,8 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrderRefunds(ChildSubstream):
-    parent_stream_class: object = Orders
+class OrderRefunds(ShopifySubstream):
+    shopify_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "refunds"
@@ -333,8 +342,8 @@ class OrderRefunds(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrderRisks(ChildSubstream):
-    parent_stream_class: object = Orders
+class OrderRisks(ShopifySubstream):
+    shopify_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "risks"
@@ -345,8 +354,8 @@ class OrderRisks(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class Transactions(ChildSubstream):
-    parent_stream_class: object = Orders
+class Transactions(ShopifySubstream):
+    shopify_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "transactions"
@@ -380,8 +389,8 @@ class PriceRules(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class DiscountCodes(ChildSubstream):
-    parent_stream_class: object = PriceRules
+class DiscountCodes(ShopifySubstream):
+    shopify_stream_class: object = PriceRules
     slice_key = "price_rule_id"
 
     data_field = "discount_codes"
@@ -405,8 +414,8 @@ class Locations(ShopifyStream):
         return f"{self.data_field}.json"
 
 
-class InventoryLevels(ChildSubstream):
-    parent_stream_class: object = Locations
+class InventoryLevels(ShopifySubstream):
+    shopify_stream_class: object = Locations
     slice_key = "location_id"
 
     data_field = "inventory_levels"
@@ -426,8 +435,8 @@ class InventoryLevels(ChildSubstream):
         yield from map(generate_key, records_stream)
 
 
-class InventoryItems(ChildSubstream):
-    parent_stream_class: object = Products
+class InventoryItems(ShopifySubstream):
+    shopify_stream_class: object = Products
     slice_key = "id"
     nested_record = "variants"
     nested_record_field_name = "inventory_item_id"
@@ -438,8 +447,8 @@ class InventoryItems(ChildSubstream):
         return f"inventory_items.json?ids={ids}"
 
 
-class FulfillmentOrders(ChildSubstream):
-    parent_stream_class: object = Orders
+class FulfillmentOrders(ShopifySubstream):
+    shopify_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "fulfillment_orders"
@@ -451,8 +460,8 @@ class FulfillmentOrders(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class Fulfillments(ChildSubstream):
-    parent_stream_class: object = Orders
+class Fulfillments(ShopifySubstream):
+    shopify_stream_class: object = Orders
     slice_key = "order_id"
 
     data_field = "fulfillments"
