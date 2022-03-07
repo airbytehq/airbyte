@@ -376,4 +376,53 @@ public class JsonSecretsProcessorTest {
     assertEquals(expected, copied);
   }
 
+  @Test
+  public void doesNotCopySecrets_inNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final JsonNode source = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+            "a_secret": "hunter2"
+          }
+        }
+        """);
+    final JsonNode dest = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+          }
+        }
+        """);
+    final JsonNode schema = objectMapper.readTree(
+        """
+        {
+          "type": "object",
+          "properties": {
+            "top_level": {
+              "type": "object",
+              "properties": {
+                "a_secret": {
+                  "type": "string",
+                  "airbyte_secret": true
+                }
+              }
+            }
+          }
+        }
+        """);
+
+    final JsonNode copied = processor.copySecrets(source, dest, schema);
+
+    final JsonNode expected = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+          }
+        }
+        """);
+    assertEquals(expected, copied);
+  }
+
 }

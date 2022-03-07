@@ -174,11 +174,13 @@ public class JsonSecretsProcessor {
       // i.e: if the value of the secret isn't set to the mask
       if (isSecret(fieldSchema) && dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
         dstCopy.set(key, src.get(key));
-      } else {
+      } else if (dstCopy.has(key)) {
+        // If the destination has this key, then we should consider copying it
+
         // Check if this schema is a combination node; if it is, find a matching sub-schema and copy based
         // on that sub-schema
         final var combinationKey = findJsonCombinationNode(fieldSchema);
-        if (combinationKey.isPresent() && dstCopy.has(key)) {
+        if (combinationKey.isPresent()) {
           var combinationCopy = dstCopy.get(key);
           final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
           for (int i = 0; i < arrayNode.size(); i++) {
@@ -195,7 +197,8 @@ public class JsonSecretsProcessor {
           }
           dstCopy.set(key, combinationCopy);
         } else {
-          final JsonNode copiedField = copySecrets(src.get(key), dst.get(key), fieldSchema);
+          // Otherwise, this is just a plain old json object; recurse into it.
+          final JsonNode copiedField = copySecrets(src.get(key), dstCopy.get(key), fieldSchema);
           dstCopy.set(key, copiedField);
         }
       }
