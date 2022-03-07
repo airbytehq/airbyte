@@ -33,7 +33,7 @@ sync_catalog:
       - - {{ stream.stream.primaryKey }} 
       supported_sync_modes:
       - {{ stream.stream.supportedSyncModes }}
-    config:
+     config:
       alias_name: {{ stream.config.aliasName }}
       cursor_field:
       - {{ stream.config.cursorField }}

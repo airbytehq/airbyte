@@ -3,11 +3,12 @@
 #
 
 import filecmp
+import json
 import os
 
 import pytest
 import yaml
-from octavia_cli.generate.renderer import ConnectionSpecificationRenderer
+from octavia_cli.generate.renderer import ConnectionRenderer, ConnectionSpecificationRenderer
 
 pytestmark = pytest.mark.integration
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
@@ -82,4 +83,15 @@ def test_expected_output(resource_name, spec_type, input_spec_path, expected_yam
     )
     output_path = renderer.write_yaml(octavia_project_directory)
     expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
+    assert filecmp.cmp(output_path, expect_output_path)
+
+
+def test_connection_expected_output(mocker):
+    with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/input_discover.json"), "r") as f:
+        streams = json.load(f).get("streams")
+    print(streams)
+    renderer = ConnectionRenderer("mock_connection", "mock_source", "mock_destination", streams)
+
+    output_path = renderer.write_yaml("connection/output.yaml")
+    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/expected.yaml")
     assert filecmp.cmp(output_path, expect_output_path)

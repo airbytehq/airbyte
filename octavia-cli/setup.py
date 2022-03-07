@@ -46,6 +46,7 @@ setup(
         f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
         "jinja2~=3.0.3",
         "deepdiff~=5.7.0",
+        "PyYAML",
     ],
     python_requires=">=3.8.12",
     extras_require={

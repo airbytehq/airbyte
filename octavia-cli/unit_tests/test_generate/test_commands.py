@@ -21,14 +21,6 @@ def test_generate_initialized(mocker):
     mock_renderer.write_yaml.assert_called_with(project_path=".")
 
 
-def test_generate_not_initialized():
-    runner = CliRunner()
-    context_object = {"PROJECT_IS_INITIALIZED": False}
-    result = runner.invoke(commands.generate, ["source", "uuid", "my_source"], obj=context_object)
-    assert result.exit_code == 1
-    assert result.output == "Error: Your octavia project is not initialized, please run 'octavia init' before running this command.\n"
-
-
 def test_invalid_definition_type():
     runner = CliRunner()
     result = runner.invoke(commands.generate, ["random_definition", "uuid", "my_source"])

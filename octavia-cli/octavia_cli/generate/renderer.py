@@ -7,7 +7,7 @@ from typing import Any, Callable, List
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from .definitions import BaseDefinition
+from .definitions import BaseDefinition, ConnectionDefinition
 
 JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
@@ -127,7 +127,15 @@ def get_object_fields(field_metadata: dict) -> List["FieldToRender"]:
     return []
 
 
-class ConnectionSpecificationRenderer:
+class BaseRenderer:
+    def _get_output_path(self, project_path: str) -> str:
+        directory = os.path.join(project_path, f"{self.definition.type}s", self.resource_name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        return os.path.join(directory, "configuration.yaml")
+
+
+class ConnectionSpecificationRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
 
     def __init__(self, resource_name: str, definition: BaseDefinition) -> None:
@@ -145,12 +153,6 @@ class ConnectionSpecificationRenderer:
             required_fields = schema.get("required", [])
             return [parse_fields(required_fields, schema["properties"])]
 
-    def _get_output_path(self, project_path: str) -> str:
-        directory = os.path.join(project_path, f"{self.definition.type}s", self.resource_name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        return os.path.join(directory, "configuration.yaml")
-
     def write_yaml(self, project_path: str) -> str:
         output_path = self._get_output_path(project_path)
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
@@ -163,17 +165,15 @@ class ConnectionSpecificationRenderer:
         return output_path
 
 
-class ConnectionRenderer:
+class ConnectionRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
 
     def __init__(self, resource_name: str, source_id: str, destination_id: str, streams: dict) -> None:
+        self.definition = ConnectionDefinition
         self.resource_name = resource_name
         self.source_id = source_id
         self.destination_id = destination_id
         self.streams = streams
-
-    def _get_output_path(self, project_path: str) -> str:
-        return os.path.join(project_path, "connections", f"{self.resource_name}.yaml")
 
     def write_yaml(self, project_path: str) -> str:
         output_path = self._get_output_path(project_path)
