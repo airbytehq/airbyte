@@ -155,107 +155,117 @@ public class MetrisQueriesTest {
       assertEquals(0, res.size());
     }
 
-    @Nested
-    class oldestPendingJob {
+  }
 
-      @Test
-      @DisplayName("should return only the pending job's age in seconds")
-      void shouldReturnOnlyPendingSeconds() throws SQLException {
-        final var expAgeSecs = 1000;
-        final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
-        // oldest pending job
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.pending, oldestCreateAt)
-                .execute());
-        // second oldest pending job
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.pending, OffsetDateTime.now())
-                .execute());
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
+  @Nested
+  class numJobs {
 
-        final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
-        assertEquals(1000, res);
-      }
-
-      @Test
-      @DisplayName("should not error out or return any result if not applicable")
-      void shouldReturnNothingIfNotApplicable() throws SQLException {
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.running).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
-
-        final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
-        assertEquals(0L, res);
-      }
-
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
     }
 
-    @Nested
-    class numJobs {
+    @Test
+    void runningJobsShouldReturnCorrectCount() throws SQLException {
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
 
-      @Test
-      void runningJobsShouldReturnCorrectCount() throws SQLException {
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
+      final var res = configDb.query(MetricQueries::numberOfRunningJobs);
+      assertEquals(2, res);
+    }
 
-        final var res = configDb.query(MetricQueries::numberOfRunningJobs);
-        assertEquals(2, res);
-      }
+    @Test
+    void runningJobsShouldReturnZero() throws SQLException {
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
 
-      @Test
-      void runningJobsShouldReturnZero() throws SQLException {
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+      final var res = configDb.query(MetricQueries::numberOfRunningJobs);
+      assertEquals(0, res);
+    }
 
-        final var res = configDb.query(MetricQueries::numberOfRunningJobs);
-        assertEquals(0, res);
-      }
+    @Test
+    void pendingJobsShouldReturnCorrectCount() throws SQLException {
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
 
-      @Test
-      void pendingJobsShouldReturnCorrectCount() throws SQLException {
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute());
+      final var res = configDb.query(MetricQueries::numberOfPendingJobs);
+      assertEquals(2, res);
+    }
 
-        final var res = configDb.query(MetricQueries::numberOfPendingJobs);
-        assertEquals(2, res);
-      }
+    @Test
+    void pendingJobsShouldReturnZero() throws SQLException {
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
 
-      @Test
-      void pendingJobsShouldReturnZero() throws SQLException {
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute());
+      final var res = configDb.query(MetricQueries::numberOfPendingJobs);
+      assertEquals(0, res);
+    }
 
-        final var res = configDb.query(MetricQueries::numberOfPendingJobs);
-        assertEquals(0, res);
-      }
+  }
 
+  @Nested
+  class oldestPendingJob {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+    }
+
+    @Test
+    @DisplayName("should return only the pending job's age in seconds")
+    void shouldReturnOnlyPendingSeconds() throws SQLException {
+      final var expAgeSecs = 1000;
+      final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+      // oldest pending job
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.pending, oldestCreateAt)
+              .execute());
+      // second oldest pending job
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.pending, OffsetDateTime.now())
+              .execute());
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
+
+      final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
+      assertEquals(1000, res);
+    }
+
+    @Test
+    @DisplayName("should not error out or return any result if not applicable")
+    void shouldReturnNothingIfNotApplicable() throws SQLException {
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
+
+      final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
+      assertEquals(0L, res);
     }
 
   }
