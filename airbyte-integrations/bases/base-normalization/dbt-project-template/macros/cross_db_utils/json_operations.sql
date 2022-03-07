@@ -135,9 +135,9 @@
 
 {% macro clickhouse__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     {%- if from_table|string() == '' %}
-        JSONExtractRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+        JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
     {% else %}
-        JSONExtractRaw({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }})
+        JSONExtractRaw(assumeNotNull({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
     {% endif -%}
 {%- endmacro %}
 
@@ -180,7 +180,7 @@
 {%- endmacro %}
 
 {% macro clickhouse__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    JSONExtractRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+    JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -222,5 +222,5 @@
 {%- endmacro %}
 
 {% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    JSONExtractArrayRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+    JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}

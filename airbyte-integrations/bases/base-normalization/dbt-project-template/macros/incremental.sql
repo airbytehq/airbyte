@@ -14,7 +14,7 @@ and coalesce(
     cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}),
     {# -- if {{ col_emitted_at }} is NULL in either table, the previous comparison would evaluate to NULL, #}
     {# -- so we coalesce and make sure the row is always returned for incremental processing instead #}
-    true)
+    1)
 {% endif %}
 {%- endmacro -%}
 
