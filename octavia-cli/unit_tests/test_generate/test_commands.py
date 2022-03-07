@@ -15,7 +15,7 @@ def test_generate_initialized(mocker):
     context_object = {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mocker.Mock()}
     result = runner.invoke(commands.generate, ["source", "uuid", "my_source"], obj=context_object)
     assert result.exit_code == 0
-    assert result.output == "✅ - Created the specification template for my_source in expected_output_path.\n"
+    assert result.output == "✅ - Created the source template for my_source in expected_output_path.\n"
     commands.definitions.factory.assert_called_with("source", context_object["API_CLIENT"], "uuid")
     commands.ConnectorSpecificationRenderer.assert_called_with("my_source", commands.definitions.factory.return_value)
     mock_renderer.write_yaml.assert_called_with(project_path=".")

@@ -140,13 +140,6 @@ class BaseRenderer(abc.ABC):
     ) -> Template:  # pragma: no cover
         pass
 
-    @property
-    @abc.abstractmethod
-    def definition(
-        self,
-    ) -> BaseDefinition:  # pragma: no cover
-        pass
-
     def __init__(self, resource_name: str) -> None:
         self.resource_name = resource_name
 
