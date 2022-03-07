@@ -6,7 +6,7 @@ import click
 import octavia_cli.generate.definitions as definitions
 from octavia_cli.apply import resources
 
-from .renderer import ConnectionRenderer, ConnectionSpecificationRenderer
+from .renderer import ConnectionRenderer, ConnectorSpecificationRenderer
 
 
 @click.group("generate", help="Generate a YAML template for a source, destination or a connection.")
@@ -21,7 +21,7 @@ def generate(ctx: click.Context):  # pragma: no cover
 @click.pass_context
 def source(ctx: click.Context, definition_id: str, resource_name: str):
     definition = definitions.factory("source", ctx.obj["API_CLIENT"], definition_id)
-    renderer = ConnectionSpecificationRenderer(resource_name, definition)
+    renderer = ConnectorSpecificationRenderer(resource_name, definition)
     output_path = renderer.write_yaml(project_path=".")
     message = f"✅ - Created the source template for {resource_name} in {output_path}."
     click.echo(click.style(message, fg="green"))
@@ -33,7 +33,7 @@ def source(ctx: click.Context, definition_id: str, resource_name: str):
 @click.pass_context
 def destination(ctx: click.Context, definition_id: str, resource_name: str):
     definition = definitions.factory("destination", ctx.obj["API_CLIENT"], definition_id)
-    renderer = ConnectionSpecificationRenderer(resource_name, definition)
+    renderer = ConnectorSpecificationRenderer(resource_name, definition)
     output_path = renderer.write_yaml(project_path=".")
     message = f"✅ - Created the destination template for {resource_name} in {output_path}."
     click.echo(click.style(message, fg="green"))

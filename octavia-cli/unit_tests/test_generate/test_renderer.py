@@ -154,11 +154,11 @@ def test_get_object_fields(mocker):
     assert renderer.get_object_fields(field_metadata) == []
 
 
-class TestConnectionSpecificationRenderer:
+class TestConnectorSpecificationRenderer:
     def test_init(self, mocker):
-        assert renderer.ConnectionSpecificationRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("source_or_destination.yaml.j2")
+        assert renderer.ConnectorSpecificationRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("source_or_destination.yaml.j2")
         definition = mocker.Mock()
-        spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", definition)
+        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", definition)
         assert spec_renderer.resource_name == "my_resource_name"
         assert spec_renderer.definition == definition
 
@@ -166,7 +166,7 @@ class TestConnectionSpecificationRenderer:
         mocker.patch.object(renderer, "parse_fields")
         schema = {"required": ["foo"], "properties": {"foo": "bar"}}
         definition = mocker.Mock()
-        spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", definition)
+        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", definition)
         parsed_schema = spec_renderer._parse_connection_specification(schema)
         assert renderer.parse_fields.call_count == 1
         assert parsed_schema[0], renderer.parse_fields.return_value
@@ -175,7 +175,7 @@ class TestConnectionSpecificationRenderer:
     def test__parse_connection_specification_one_of(self, mocker):
         mocker.patch.object(renderer, "parse_fields")
         schema = {"oneOf": [{"required": ["foo"], "properties": {"foo": "bar"}}, {"required": ["free"], "properties": {"free": "beer"}}]}
-        spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock())
+        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock())
         parsed_schema = spec_renderer._parse_connection_specification(schema)
         assert renderer.parse_fields.call_count == 2
         assert parsed_schema[0], renderer.parse_fields.return_value
@@ -186,7 +186,7 @@ class TestConnectionSpecificationRenderer:
     def test__get_output_path(self, mocker):
         mocker.patch.object(renderer, "os")
         renderer.os.path.exists.return_value = False
-        spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
+        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
         renderer.os.path.join.side_effect = ["./source/my_resource_name", "./source/my_resource_name/configuration.yaml"]
         output_path = spec_renderer._get_output_path(".")
         renderer.os.makedirs.assert_called_once()
@@ -200,13 +200,13 @@ class TestConnectionSpecificationRenderer:
 
     def test_write_yaml(self, mocker):
 
-        mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_get_output_path")
-        mocker.patch.object(renderer.ConnectionSpecificationRenderer, "_parse_connection_specification")
+        mocker.patch.object(renderer.ConnectorSpecificationRenderer, "_get_output_path")
+        mocker.patch.object(renderer.ConnectorSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
-            renderer.ConnectionSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
+            renderer.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
         )
 
-        spec_renderer = renderer.ConnectionSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
+        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
         with patch("builtins.open", mock_open()) as mock_file:
             output_path = spec_renderer.write_yaml(".")
         assert output_path == spec_renderer._get_output_path.return_value

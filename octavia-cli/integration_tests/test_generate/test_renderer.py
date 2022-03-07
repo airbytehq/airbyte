@@ -8,7 +8,7 @@ import os
 
 import pytest
 import yaml
-from octavia_cli.generate.renderer import ConnectionRenderer, ConnectionSpecificationRenderer
+from octavia_cli.generate.renderer import ConnectionRenderer, ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
@@ -27,7 +27,7 @@ def get_all_specs_params():
 
 @pytest.mark.parametrize("spec_type, spec", get_all_specs_params())
 def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
-    renderer = ConnectionSpecificationRenderer(
+    renderer = ConnectorSpecificationRenderer(
         resource_name=f"resource-{spec['dockerImage']}",
         definition=mocker.Mock(
             type=spec_type,
@@ -70,7 +70,7 @@ EXPECTED_RENDERED_YAML_PATH = f"{os.path.dirname(__file__)}/expected_rendered_ya
 def test_expected_output(resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker):
     with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, input_spec_path), "r") as f:
         input_spec = yaml.load(f, yaml.FullLoader)
-    renderer = ConnectionSpecificationRenderer(
+    renderer = ConnectorSpecificationRenderer(
         resource_name=resource_name,
         definition=mocker.Mock(
             type=spec_type,
