@@ -865,6 +865,7 @@ postgresql:
 ## @param externalDatabase.port Database port number
 ##
 externalDatabase:
+  enabled: false
   host: localhost
   user: airbyte
   password: ""
