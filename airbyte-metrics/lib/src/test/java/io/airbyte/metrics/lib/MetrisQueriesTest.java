@@ -4,9 +4,15 @@
 
 package io.airbyte.metrics.lib;
 
+import static io.airbyte.db.instance.configs.jooq.Keys.ACTOR_CATALOG_FETCH_EVENT__ACTOR_CATALOG_FETCH_EVENT_ACTOR_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.Keys.ACTOR__ACTOR_WORKSPACE_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.Keys.CONNECTION__CONNECTION_DESTINATION_ID_FKEY;
+import static io.airbyte.db.instance.configs.jooq.Keys.CONNECTION__CONNECTION_SOURCE_ID_FKEY;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static io.airbyte.db.instance.jobs.jooq.Tables.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -38,12 +44,11 @@ public class MetrisQueriesTest {
   private static final UUID SRC_DEF_ID = UUID.randomUUID();
   private static final UUID DST_DEF_ID = UUID.randomUUID();
 
-  private static PostgreSQLContainer<?> container;
   private static Database configDb;
 
   @BeforeAll
   static void setUpAll() throws IOException, SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
+    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withUsername(USER)
         .withPassword(PASS);
     container.start();
@@ -60,12 +65,23 @@ public class MetrisQueriesTest {
         .values(DST_DEF_ID, "dstDef", "repository", "tag", JSONB.valueOf("{}"), ActorType.destination, ReleaseStage.generally_available)
         .values(UUID.randomUUID(), "dstDef", "repository", "tag", JSONB.valueOf("{}"), ActorType.destination, ReleaseStage.alpha).execute());
 
-    // drop the constraint to simplify following test set up
-    configDb.transaction(ctx -> ctx.alterTable(ACTOR).dropForeignKey("actor_workspace_id_fkey").execute());
+    // drop constraints to simplify test set up
+    configDb.transaction(ctx -> ctx.alterTable(ACTOR).dropForeignKey(ACTOR__ACTOR_WORKSPACE_ID_FKEY.constraint()).execute());
+    configDb.transaction(ctx -> ctx.alterTable(CONNECTION).dropForeignKey(CONNECTION__CONNECTION_DESTINATION_ID_FKEY.constraint()).execute());
+    configDb.transaction(ctx -> ctx.alterTable(CONNECTION).dropForeignKey(CONNECTION__CONNECTION_SOURCE_ID_FKEY.constraint()).execute());
+    configDb.transaction(ctx -> ctx.alterTable(ACTOR_CATALOG_FETCH_EVENT)
+        .dropForeignKey(ACTOR_CATALOG_FETCH_EVENT__ACTOR_CATALOG_FETCH_EVENT_ACTOR_ID_FKEY.constraint()).execute());
+    configDb.transaction(ctx -> ctx.alterTable(WORKSPACE).alter(WORKSPACE.SLUG).dropNotNull().execute());
+    configDb.transaction(ctx -> ctx.alterTable(WORKSPACE).alter(WORKSPACE.INITIAL_SETUP_COMPLETE).dropNotNull().execute());
   }
 
   @Nested
   class srcIdAndDestIdToReleaseStages {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(ACTOR).execute());
+    }
 
     @Test
     @DisplayName("should return the right release stages")
@@ -139,11 +155,6 @@ public class MetrisQueriesTest {
     @Nested
     class oldestPendingJob {
 
-      @AfterEach
-      void tearDown() throws SQLException {
-        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
-      }
-
       @Test
       @DisplayName("should return only the pending job's age in seconds")
       void shouldReturnOnlyPendingSeconds() throws SQLException {
@@ -185,11 +196,6 @@ public class MetrisQueriesTest {
 
     @Nested
     class numJobs {
-
-      @AfterEach
-      void tearDown() throws SQLException {
-        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
-      }
 
       @Test
       void runningJobsShouldReturnCorrectCount() throws SQLException {
@@ -252,11 +258,6 @@ public class MetrisQueriesTest {
     @Nested
     class oldestRunningJob {
 
-      @AfterEach
-      void tearDown() throws SQLException {
-        configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
-      }
-
       @Test
       @DisplayName("should return only the running job's age in seconds")
       void shouldReturnOnlyRunningSeconds() throws SQLException {
@@ -294,6 +295,39 @@ public class MetrisQueriesTest {
         assertEquals(0L, res);
       }
 
+    }
+
+  }
+
+  @Nested
+  class numActiveConnPerWorkspace {
+
+    @Test
+    void shouldReturnNumConnSimple() throws SQLException {
+      configDb.transaction(
+          ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME).values(UUID.randomUUID(), "test-0")
+              .execute());
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
+              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
+              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+              .execute());
+
+      configDb.transaction(ctx -> {
+        MetricQueries.numberOfActiveConnPerWorkspace(ctx);
+        return 1;
+      });
+    }
+
+    @Test
+    void shouldReturnNothingIfNotApplicable() throws SQLException {
+      configDb.transaction(ctx -> {
+        MetricQueries.numberOfActiveConnPerWorkspace(ctx);
+        return 1;
+      });
     }
 
   }

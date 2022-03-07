@@ -16,7 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 
 /**
- * Keep track of all metric queries.
+ * This class centralises metrics queries. These queries power metrics that require some sort of
+ * data access or calculation.
+ * <p>
+ * Simple metrics that require no calculation need not be tracked here.
  */
 @Slf4j
 public class MetricQueries {
@@ -95,6 +98,21 @@ public class MetricQueries {
 
     // as double can have rounding errors, round down to remove noise.
     return duration.get(0).longValue();
+  }
+
+  public static void numberOfActiveConnPerWorkspace(DSLContext ctx) {
+    var countField = "num_conn";
+    final var query = String.format("""
+                                    SELECT workspace_id, count(c.id) as %s
+                                        FROM actor
+                                            INNER JOIN workspace ws ON actor.workspace_id = ws.id
+                                            INNER JOIN connection c ON actor.id = c.source_id
+                                        WHERE ws.tombstone = false
+                                          AND actor.tombstone = false AND actor.actor_type = 'source'
+                                            AND c.status = 'active'
+                                        GROUP BY workspace_id;""", countField);
+    final var res = ctx.fetch(query).getValues(countField, long.class);
+    System.out.println(res);
   }
 
 }
