@@ -48,6 +48,11 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     this.servletRequest = servletRequest;
   }
 
+  @VisibleForTesting
+  String getRequestBody() {
+    return MDC.get(MDC_RESPONSE_BODY_KEY);
+  }
+
   @Override
   public void filter(final ContainerRequestContext requestContext) throws IOException {
     MDC.setContextMap(mdc);

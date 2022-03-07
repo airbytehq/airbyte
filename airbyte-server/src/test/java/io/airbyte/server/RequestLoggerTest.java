@@ -12,13 +12,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
+import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -43,19 +48,8 @@ public class RequestLoggerTest {
   @Mock
   private HttpServletRequest mServletRequest;
 
-  @Mock
-  private ContainerRequestContext mRequestContext;
-
-  @Mock
-  private ContainerResponseContext mResponseContext;
-
-  private RequestLogger requestLogger;
-
   @BeforeEach
-  public void init() throws Exception {
-    Mockito.when(mRequestContext.getMethod())
-        .thenReturn(METHOD);
-
+  public void init() {
     Mockito.when(mServletRequest.getMethod())
         .thenReturn(METHOD);
     Mockito.when(mServletRequest.getRemoteAddr())
@@ -100,14 +94,18 @@ public class RequestLoggerTest {
 
     // We have to instanciate the logger here, because the MDC config has been changed to log in a
     // temporary file.
-    requestLogger = new RequestLogger(MDC.getCopyOfContextMap(), mServletRequest);
+    final RequestLogger requestLogger = new RequestLogger(MDC.getCopyOfContextMap(), mServletRequest);
+
+    final ContainerRequestContext mRequestContext = Mockito.mock(ContainerRequestContext.class);
+    final ContainerResponseContext mResponseContext = Mockito.mock(ContainerResponseContext.class);
+
+    Mockito.when(mRequestContext.getMethod())
+        .thenReturn(METHOD);
 
     Mockito.when(mRequestContext.getEntityStream())
         .thenReturn(new ByteArrayInputStream(inputByteBuffer.getBytes()));
-
     Mockito.when(mResponseContext.getStatus())
         .thenReturn(status);
-
     Mockito.when(mServletRequest.getHeader("Content-Type"))
         .thenReturn(contentType);
 
@@ -126,4 +124,92 @@ public class RequestLoggerTest {
     Assertions.assertThat(matchingLines).hasSize(1);
   }
 
+  /**
+   * This is a complex test that was written to prove that our requestLogger had a concurrency bug that caused incorrect request bodies to be logged.
+   * The RequestLogger originally used an instance variable that held the requestBody, which was written to by the request filter, and read by the
+   * response filter to generate a response log line that contained the original request body. If multiple requests were being processed at the same
+   * time, it was possible for the request filter of one request to overwrite the requestBody instance variable before the response log line was
+   * generated.
+   * <p>
+   * To cover this race condition, this test creates a single RequestLogger instance that is referenced from 100 threads. Each thread has a unique
+   * expected request body, and calls the request/response filter methods to retrieve it from a mocked context. Each thread stores its expected
+   * request body, and the actual request body that would be logged. The main thread then waits for all threads to finish, and then loops over each
+   * runnable to see if the expected request body matched the actual request body.
+   * <p>
+   * This test fails when using the instance variable approach for recording request bodies, and passes when using MDC to store the request body
+   * between the request filter and the response filter.
+   */
+  @Test
+  public void testRequestBodyConsistency() {
+    final RequestLogger requestLogger = new RequestLogger(MDC.getCopyOfContextMap(), mServletRequest);
+
+    final List<RequestResponseRunnable> testCases = new ArrayList<>();
+    final List<Thread> threads = new ArrayList<>();
+
+    for (int i = 1; i < 100; i++) {
+      testCases.add(createRunnableTestCase(requestLogger, "thread" + i));
+    }
+
+    testCases.forEach(testCase -> {
+      final Thread thread = new Thread(testCase);
+      threads.add(thread);
+      thread.start();
+    });
+
+    threads.forEach(thread -> {
+      try {
+        thread.join();
+      } catch (final InterruptedException e) {
+        e.printStackTrace();
+      }
+    });
+
+    testCases.forEach(testCase -> Assertions.assertThat(testCase.hadExpectedRequestBody()).isTrue());
+  }
+
+  private RequestResponseRunnable createRunnableTestCase(final RequestLogger requestLogger, final String threadIdentifier) {
+    final String expectedRequestBody = String.format("{\"thread\":\"%s\"}", threadIdentifier);
+
+    // create thread-specific mocks
+    final ContainerRequestContext mRequestContext = Mockito.mock(ContainerRequestContext.class);
+    final ContainerResponseContext mResponseContext = Mockito.mock(ContainerResponseContext.class);
+
+    Mockito.when(mRequestContext.getMethod())
+        .thenReturn(METHOD);
+    Mockito.when(mRequestContext.getEntityStream())
+        .thenReturn(new ByteArrayInputStream(expectedRequestBody.getBytes()));
+
+    return new RequestResponseRunnable(requestLogger, expectedRequestBody, mRequestContext, mResponseContext);
+  }
+
+  @RequiredArgsConstructor
+  public class RequestResponseRunnable implements Runnable {
+
+    private final RequestLogger requestLogger;
+    private final String expectedRequestBody;
+    private final ContainerRequestContext mRequestContext;
+    private final ContainerResponseContext mResponseContext;
+
+    String actualRequestBody;
+
+    public void run() {
+      try {
+        requestLogger.filter(mRequestContext);
+        Thread.sleep(new Random().nextInt(1000)); // random sleep to make race more likely
+        requestLogger.filter(mRequestContext, mResponseContext);
+      } catch (final IOException | InterruptedException e) {
+        e.printStackTrace();
+      }
+      actualRequestBody = requestLogger.getRequestBody();
+    }
+
+    public Boolean hadExpectedRequestBody() {
+      final Boolean result = expectedRequestBody.equals(actualRequestBody);
+      if (!result) {
+        System.out.println("unexpected result! expected " + expectedRequestBody + " but actual was " + actualRequestBody);
+      }
+      return result;
+    }
+  }
 }
+
