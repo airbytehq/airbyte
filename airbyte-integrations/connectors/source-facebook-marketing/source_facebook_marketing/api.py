@@ -9,6 +9,7 @@ from time import sleep
 
 import backoff
 import pendulum
+from typing import Tuple
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
@@ -30,10 +31,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    call_rate_threshold = 95  # maximum percentage of call limit utilization
-    min_call_rate_threslold = 90 # minimum percentage of call limit utilization
-    pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
-    pause_interval_minimum_at_max_usage = pendulum.duration(minutes=5)
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=5))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=1))
 
     @dataclass
     class Throttle:
@@ -89,16 +88,19 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         return usage, pause_interval
 
-    @staticmethod
-    def sleep_time_handler(usage, pause_interval: pendulum.duration):
+    def compute_pause_interval(self, usage, pause_interval):
+        """ The sleep time will be calculated based on usage consumed.
+        """
+        max_pause_interval = self.MIN_PAUSE_INTERVAL
+        if usage >= self.MAX_RATE:
+            max_pause_interval = self.MAX_PAUSE_INTERVAL
 
-        logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
-        sleep(pause_interval.total_seconds())
+        return max(max_pause_interval, pause_interval)
 
     def handle_call_rate_limit(self, response, params):
         if "batch" in params:
             max_usage = 0
-            max_pause_interval = self.pause_interval_minimum
+            max_pause_interval = self.MIN_PAUSE_INTERVAL
 
             for record in response.json():
                 # there are two types of failures:
@@ -112,22 +114,19 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 max_usage = max(max_usage, usage)
                 max_pause_interval = max(max_pause_interval, pause_interval)
 
-            if max_usage >= self.call_rate_threshold:
-                max_pause_interval = max(max_pause_interval, self.pause_interval_minimum_at_max_usage)
-                self.sleep_time_handler(usage=max_usage, pause_interval=max_pause_interval)
-            elif self.min_call_rate_threslold <= max_usage < self.call_rate_threshold:
-                max_pause_interval = max(max_pause_interval, self.pause_interval_minimum)
-                self.sleep_time_handler(usage=max_usage, pause_interval=max_pause_interval)
+            if max_usage >= self.MIN_RATE:
+                sleep_time = self.compute_pause_interval(usage=max_usage, pause_interval=max_pause_interval)
+                logger.warning(f"Utilization is too high ({max_usage})%, pausing for {sleep_time}")
+                sleep(sleep_time).total_seconds()
+
 
         else:
             headers = response.headers()
             usage, pause_interval = self._parse_call_rate_header(headers)
-            if usage >= self.call_rate_threshold or pause_interval:
-                pause_interval = max(pause_interval, self.pause_interval_minimum_at_max_usage)
-                self.sleep_time_handler(usage=usage, pause_interval=pause_interval)
-            elif self.min_call_rate_threslold <= usage < self.call_rate_threshold:
-                pause_interval = max(pause_interval, self.pause_interval_minimum)
-                self.sleep_time_handler(usage=usage, pause_interval=pause_interval)
+            if usage >= self.MIN_RATE or pause_interval:
+                sleep_time = self.compute_pause_interval(usage=usage, pause_interval=pause_interval)
+                logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
+                sleep(sleep_time).total_seconds()
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
         """
