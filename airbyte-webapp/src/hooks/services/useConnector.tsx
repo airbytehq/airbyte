@@ -1,10 +1,11 @@
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
 import { useMemo } from "react";
 
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { Connector } from "core/domain/connector";
-import { useWorkspace } from "hooks/services/useWorkspace";
+import { useSourceDefinitionList } from "./useSourceDefinition";
+import { useDestinationDefinitionList } from "./useDestinationDefinition";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -17,24 +18,12 @@ type ConnectorService = {
 };
 
 const useConnector = (): ConnectorService => {
-  const { workspace } = useWorkspace();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
   );
-
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
   );

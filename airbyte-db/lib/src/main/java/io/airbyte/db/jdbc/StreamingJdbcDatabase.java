@@ -4,14 +4,13 @@
 
 package io.airbyte.db.jdbc;
 
-import io.airbyte.commons.functional.CheckedConsumer;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -20,50 +19,15 @@ import javax.sql.DataSource;
  * allows the developer to specify the correct configuration in order for a
  * {@link PreparedStatement} to execute as in a streaming / chunked manner.
  */
-public class StreamingJdbcDatabase extends JdbcDatabase {
+public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
 
-  private final DataSource dataSource;
-  private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
   public StreamingJdbcDatabase(final DataSource dataSource,
-                               final JdbcDatabase database,
+                               final JdbcCompatibleSourceOperations<?> sourceOperations,
                                final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
-    this(dataSource, database, jdbcStreamingQueryConfiguration, database.sourceOperations);
-  }
-
-  public StreamingJdbcDatabase(final DataSource dataSource,
-                               final JdbcDatabase database,
-                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-                               final JdbcSourceOperations sourceOperations) {
-    super(sourceOperations);
-    this.dataSource = dataSource;
-    this.database = database;
+    super(dataSource, sourceOperations);
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
-  }
-
-  @Override
-  public DatabaseMetaData getMetaData() throws SQLException {
-    return database.getMetaData();
-  }
-
-  @Override
-  public void execute(final CheckedConsumer<Connection, SQLException> query) throws SQLException {
-    database.execute(query);
-  }
-
-  @Override
-  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
-      throws SQLException {
-    return database.bufferedResultSetQuery(query, recordTransform);
-  }
-
-  @Override
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
-      throws SQLException {
-    return database.resultSetQuery(query, recordTransform);
   }
 
   /**
@@ -83,6 +47,7 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @Override
+  @MustBeClosed
   public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
@@ -91,7 +56,7 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return sourceOperations.toStream(ps.executeQuery(), recordTransform)
+      return toStream(ps.executeQuery(), recordTransform)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);
@@ -103,11 +68,6 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public void close() throws Exception {
-    database.close();
   }
 
 }

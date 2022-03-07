@@ -22,6 +22,7 @@ class DestinationType(Enum):
     mysql = "mysql"
     oracle = "oracle"
     mssql = "mssql"
+    clickhouse = "clickhouse"
 
 
 class TransformConfig:
@@ -66,6 +67,7 @@ class TransformConfig:
             DestinationType.mysql.value: self.transform_mysql,
             DestinationType.oracle.value: self.transform_oracle,
             DestinationType.mssql.value: self.transform_mssql,
+            DestinationType.clickhouse.value: self.transform_clickhouse,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -131,8 +133,8 @@ class TransformConfig:
             "project": config["project_id"],
             "dataset": config["dataset_id"],
             "priority": config.get("transformation_priority", "interactive"),
-            "threads": 32,
-            "retries": 1,
+            "threads": 8,
+            "retries": 3,
         }
         if "credentials_json" in config:
             dbt_config["method"] = "service-account-json"
@@ -159,7 +161,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 32,
+            "threads": 8,
         }
 
         # if unset, we assume true.
@@ -180,7 +182,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 32,
+            "threads": 4,
         }
         return dbt_config
 
@@ -200,9 +202,13 @@ class TransformConfig:
             "database": config["database"].upper(),
             "warehouse": config["warehouse"].upper(),
             "schema": config["schema"].upper(),
-            "threads": 32,
+            "threads": 5,
             "client_session_keep_alive": False,
             "query_tag": "normalization",
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
         }
         return dbt_config
 
@@ -257,10 +263,28 @@ class TransformConfig:
             "database": config["database"],
             "user": config["username"],
             "password": config["password"],
-            "threads": 32,
+            "threads": 8,
             # "authentication": "sql",
             # "trusted_connection": True,
         }
+        return dbt_config
+
+    @staticmethod
+    def transform_clickhouse(config: Dict[str, Any]):
+        print("transform_clickhouse")
+        # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
+        dbt_config = {
+            "type": "clickhouse",
+            "host": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "user": config["username"],
+            "secure": config["ssl"],
+        }
+        if "password" in config:
+            dbt_config["password"] = config["password"]
+        if "tcp-port" in config:
+            dbt_config["port"] = config["tcp-port"]
         return dbt_config
 
     @staticmethod

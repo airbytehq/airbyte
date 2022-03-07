@@ -14,18 +14,16 @@ import ConnectionResource, {
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { Source } from "core/resources/Source";
-import { Routes } from "pages/routes";
-import { Destination } from "core/resources/Destination";
+import { RoutePaths } from "pages/routes";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useRouter from "hooks/useRouter";
 import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
+import { Destination, Source, SourceDefinition } from "core/domain/connector";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -72,6 +70,7 @@ function useConnectionService(): ConnectionService {
     "DefaultRequestMiddlewares"
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
     config,
   ]);
@@ -108,7 +107,7 @@ const useConnection = (): {
 } => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
@@ -198,7 +197,7 @@ const useConnection = (): {
 
     await updateConnectionsStore({ workspaceId: workspace.workspaceId });
 
-    push(Routes.Connections);
+    push(RoutePaths.Connections);
   };
 
   const updateConnection = async ({
@@ -248,6 +247,10 @@ const useConnection = (): {
   );
 
   const syncConnection = async (connection: Connection) => {
+    const frequency = FrequencyConfig.find((item) =>
+      equal(item.config, connection.schedule)
+    );
+
     analyticsService.track("Source - Action", {
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
@@ -255,7 +258,7 @@ const useConnection = (): {
       connector_destination: connection.destination?.name,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: connection.schedule,
+      frequency: frequency?.text,
     });
     await syncConnectionResource({
       connectionId: connection.connectionId,

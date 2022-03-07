@@ -2,13 +2,18 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import concurrent.futures
 from typing import Any, List, Mapping, Optional, Tuple
 
-import requests
+import requests  # type: ignore[import]
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from requests import adapters as request_adapters
+from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
+from .utils import filter_streams_by_criteria
 
 STRING_TYPES = [
     "byte",
@@ -168,7 +173,9 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
+    logger = AirbyteLogger()
     version = "v52.0"
+    parallel_tasks_size = 100
 
     def __init__(
         self,
@@ -178,28 +185,29 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
-        api_type: str = None,
-    ):
-        self.api_type = api_type.upper() if api_type else None
+        **kwargs: Any,
+    ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
-        self.instance_url = None
+        self.instance_url = ""
         self.session = requests.Session()
-        self.is_sandbox = is_sandbox is True or (isinstance(is_sandbox, str) and is_sandbox.lower() == "true")
+        # Change the connection pool size. Default value is not enough for parallel tasks
+        adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
+        self.session.mount("https://", adapter)
+
+        self.is_sandbox = is_sandbox in [True, "true"]
+        if self.is_sandbox:
+            self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
 
-    def _get_standard_headers(self):
+    def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
 
     def get_streams_black_list(self) -> List[str]:
-        black_list = QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
-        if self.api_type == "REST":
-            return black_list
-        else:
-            return black_list + UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+        return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
 
     def filter_streams(self, stream_name: str) -> bool:
         # REST and BULK API do not support all entities that end with `ChangeEvent`.
@@ -207,31 +215,51 @@ class Salesforce:
             return False
         return True
 
-    def get_validated_streams(self, catalog: ConfiguredAirbyteCatalog = None):
-        salesforce_objects = self.describe()["sobjects"]
-        validated_streams = []
+    def get_validated_streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> Mapping[str, Any]:
+        """Selects all validated streams with additional filtering:
+        1) skip all sobjects with negative value of the flag "queryable"
+        2) user can set search criterias of necessary streams
+        3) selection by catalog settings
+        """
+        stream_objects = {}
+        for stream_object in self.describe()["sobjects"]:
+            if stream_object["queryable"]:
+                stream_objects[stream_object.pop("name")] = stream_object
+            else:
+                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+
         if catalog:
-            streams_for_read = [configured_stream.stream.name for configured_stream in catalog.streams]
+            return {
+                configured_stream.stream.name: stream_objects[configured_stream.stream.name]
+                for configured_stream in catalog.streams
+                if configured_stream.stream.name in stream_objects
+            }
 
-        for stream_object in salesforce_objects:
-            stream_name = stream_object["name"]
-            if catalog and stream_name not in streams_for_read:
-                continue
-            if self.filter_streams(stream_name):
-                validated_streams.append(stream_name)
+        stream_names = list(stream_objects.keys())
+        if config.get("streams_criteria"):
+            filtered_stream_list = []
+            for stream_criteria in config["streams_criteria"]:
+                filtered_stream_list += filter_streams_by_criteria(
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                )
+            stream_names = list(set(filtered_stream_list))
 
-        return validated_streams
+        validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
+        return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
-    @default_backoff_handler(max_tries=5, factor=15)
+    @default_backoff_handler(max_tries=5, factor=5)
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:
-        if http_method == "GET":
-            resp = self.session.get(url, headers=headers, stream=stream, params=params)
-        elif http_method == "POST":
-            resp = self.session.post(url, headers=headers, data=body)
-        resp.raise_for_status()
-
+        try:
+            if http_method == "GET":
+                resp = self.session.get(url, headers=headers, stream=stream, params=params)
+            elif http_method == "POST":
+                resp = self.session.post(url, headers=headers, data=body)
+            resp.raise_for_status()
+        except HTTPError as err:
+            self.logger.warn(f"http error body: {err.response.text}")
+            raise
         return resp
 
     def login(self):
@@ -249,22 +277,48 @@ class Salesforce:
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
 
-    def describe(self, sobject: str = None) -> Mapping[str, Any]:
+    def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
         headers = self._get_standard_headers()
+
         endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
 
         url = f"{self.instance_url}/services/data/{self.version}/{endpoint}"
         resp = self._make_request("GET", url, headers=headers)
+        if resp.status_code == 404 and sobject:
+            self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
+        resp_json: Mapping[str, Any] = resp.json()
+        return resp_json
 
-        return resp.json()
-
-    def generate_schema(self, stream_name: str) -> Mapping[str, Any]:
+    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
-        response = self.describe(stream_name)
         for field in response["fields"]:
-            schema["properties"][field["name"]] = self.field_to_property_schema(field)
+            schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
         return schema
+
+    def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
+            try:
+                result = self.generate_schema(stream_name=name, stream_options=stream_options)
+            except RequestException as e:
+                return name, None, str(e)
+            return name, result, None
+
+        stream_names = list(stream_objects.keys())
+        # try to split all requests by chunks
+        stream_schemas = {}
+        for i in range(0, len(stream_names), self.parallel_tasks_size):
+            chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
+                for stream_name, schema, err in executor.map(
+                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
+                ):
+                    if err:
+                        self.logger.error(f"Loading error of the {stream_name} schema: {err}")
+                        continue
+                    stream_schemas[stream_name] = schema
+        return stream_schemas
 
     @staticmethod
     def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
@@ -291,13 +345,16 @@ class Salesforce:
         if sf_type in STRING_TYPES:
             property_schema["type"] = ["string", "null"]
         elif sf_type in DATE_TYPES:
-            property_schema = {"type": ["string", "null"], "format": "date-time" if sf_type == "datetime" else "date"}
+            property_schema = {
+                "type": ["string", "null"],
+                "format": "date-time" if sf_type == "datetime" else "date",  # type: ignore[dict-item]
+            }
         elif sf_type in NUMBER_TYPES:
             property_schema["type"] = ["number", "null"]
         elif sf_type == "address":
             property_schema = {
                 "type": ["object", "null"],
-                "properties": {
+                "properties": {  # type: ignore[dict-item]
                     "street": {"type": ["null", "string"]},
                     "state": {"type": ["null", "string"]},
                     "postalCode": {"type": ["null", "string"]},
@@ -309,17 +366,24 @@ class Salesforce:
                 },
             }
         elif sf_type == "base64":
-            property_schema = {"type": ["string", "null"], "format": "base64"}
+            property_schema = {"type": ["string", "null"], "format": "base64"}  # type: ignore[dict-item]
         elif sf_type == "int":
             property_schema["type"] = ["integer", "null"]
         elif sf_type == "boolean":
             property_schema["type"] = ["boolean", "null"]
         elif sf_type in LOOSE_TYPES:
-            property_schema["type"] = ["array", "boolean", "integer", "number", "object", "string", "null"]
+            """
+            LOOSE_TYPES can return data of completely different types (more than 99% of them are `strings`),
+            and in order to avoid conflicts in schemas and destinations, we cast this data to the `string` type.
+            """
+            property_schema["type"] = ["string", "null"]
         elif sf_type == "location":
             property_schema = {
                 "type": ["object", "null"],
-                "properties": {"longitude": {"type": ["null", "number"]}, "latitude": {"type": ["null", "number"]}},
+                "properties": {  # type: ignore[dict-item]
+                    "longitude": {"type": ["null", "number"]},
+                    "latitude": {"type": ["null", "number"]},
+                },
             }
         else:
             raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))

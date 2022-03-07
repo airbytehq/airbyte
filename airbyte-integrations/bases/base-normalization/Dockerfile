@@ -1,8 +1,9 @@
-FROM fishtownanalytics/dbt:0.21.0
+FROM fishtownanalytics/dbt:0.21.1
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install SSH Tunneling dependencies
 RUN apt-get update && apt-get install -y jq sshpass
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 COPY build/sshtunneling.sh .
@@ -27,5 +28,5 @@ WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.56
+LABEL io.airbyte.version=0.1.69
 LABEL io.airbyte.name=airbyte/normalization

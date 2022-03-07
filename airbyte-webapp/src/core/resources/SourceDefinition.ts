@@ -1,17 +1,9 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
 import BaseResource from "./BaseResource";
 import { getService } from "core/servicesProvider";
-import { SourceDefinitionService } from "../domain/connector/SourceDefinitionService";
-
-export interface SourceDefinition {
-  sourceDefinitionId: string;
-  name: string;
-  dockerRepository: string;
-  dockerImageTag: string;
-  latestDockerImageTag: string;
-  documentationUrl: string;
-  icon: string;
-}
+import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
+import { SourceDefinition } from "core/domain/connector";
 
 export default class SourceDefinitionResource
   extends BaseResource

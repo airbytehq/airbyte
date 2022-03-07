@@ -1,0 +1,6 @@
+{
+  "email": "integration-test@airbyte.io",
+  "access_token": "some_token",
+  "subdomain": "domain",
+  "start_date": "2021-04-01T00:00:00Z"
+}

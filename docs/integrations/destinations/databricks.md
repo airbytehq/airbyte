@@ -6,7 +6,7 @@ This destination syncs data to Databricks cluster. Each stream is written to its
 
 This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba. Before using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
-Due to legal reasons, this is currently a private connector that is only available in Airbyte Cloud. We are working on publicizing it. Please follow [this issue](https://github.com/airbytehq/airbyte/issues/6043) for progress.
+Due to legal reasons, this is currently a private connector that is only available on Airbyte Cloud. We are working on publicizing it. Please follow [this issue](https://github.com/airbytehq/airbyte/issues/6043) for progress. In the interim, you can build the connector locally, publish it to your own image registry, and use it privately. See the [developer doc](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-databricks/README.md) for details. Please do not publish this connector publicly.
 
 ## Sync Mode
 
@@ -89,7 +89,7 @@ Each table will have the following columns:
 | `_airbyte_emitted_at` | timestamp | Data emission timestamp. |
 | Data fields from the source stream | various | All fields in the staging Parquet files will be expanded in the table. |
 
-Learn how source data is converted to Parquet and the current limitations [here](https://docs.airbyte.io/integrations/destinations/s3#data-schema).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
@@ -103,6 +103,8 @@ Learn how source data is converted to Parquet and the current limitations [here]
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.3 | 2022-01-06 | [\#7622](https://github.com/airbytehq/airbyte/pull/7622) [\#9153](https://github.com/airbytehq/airbyte/issues/9153) | Upgrade Spark JDBC driver to `2.6.21` to patch Log4j vulnerability; update connector fields title/description. |
+| 0.1.2 | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
 | 0.1.1 | 2021-10-05 | [\#6792](https://github.com/airbytehq/airbyte/pull/6792) | Require users to accept Databricks JDBC Driver [Terms & Conditions](https://databricks.com/jdbc-odbc-driver-license). |
 | 0.1.0 | 2021-09-14 | [\#5998](https://github.com/airbytehq/airbyte/pull/5998) | Initial private release. |
-

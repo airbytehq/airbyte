@@ -47,6 +47,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
     public ThrottledConsumer(final long millisPerRecord, final Consumer<AirbyteMessage> outputRecordCollector) {
       this.millisPerRecord = millisPerRecord;
       this.outputRecordCollector = outputRecordCollector;
+      LOGGER.info("Will sleep {} millis before processing every record", millisPerRecord);
     }
 
     @Override
@@ -54,12 +55,10 @@ public class ThrottledDestination extends BaseConnector implements Destination {
 
     @Override
     public void accept(final AirbyteMessage message) throws Exception {
-      LOGGER.info("received record: {}", message);
       sleep(millisPerRecord);
-      LOGGER.info("completed sleep");
 
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }

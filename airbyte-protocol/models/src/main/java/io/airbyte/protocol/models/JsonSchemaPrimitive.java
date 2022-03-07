@@ -5,10 +5,12 @@
 package io.airbyte.protocol.models;
 
 public enum JsonSchemaPrimitive {
+
   STRING,
   NUMBER,
   OBJECT,
   ARRAY,
   BOOLEAN,
   NULL;
+
 }

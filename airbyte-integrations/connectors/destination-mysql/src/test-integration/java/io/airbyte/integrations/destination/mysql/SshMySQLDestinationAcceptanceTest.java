@@ -13,6 +13,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -30,9 +30,9 @@ import org.jooq.JSONFormat;
  */
 public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
-
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final List<String> HOST_KEY = List.of(MySQLDestination.HOST_KEY);
+  private final List<String> PORT_KEY = List.of(MySQLDestination.PORT_KEY);
   private String schemaName;
 
   public abstract Path getConfigFilePath();
@@ -123,15 +123,15 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
         getConfig(),
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
                     .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName.toLowerCase(),
                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
                     .map(Jsons::deserialize)
                     .collect(Collectors.toList())));
   }
@@ -142,8 +142,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     final var config = getConfig();
     SshTunnel.sshWrap(
         config,
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
         });
@@ -153,8 +153,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        MySQLDestination.HOST_KEY,
-        MySQLDestination.PORT_KEY,
+        HOST_KEY,
+        PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });

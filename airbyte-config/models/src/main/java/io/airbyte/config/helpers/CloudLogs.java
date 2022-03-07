@@ -4,6 +4,9 @@
 
 package io.airbyte.config.helpers;
 
+import io.airbyte.config.storage.DefaultGcsClientFactory;
+import io.airbyte.config.storage.DefaultS3ClientFactory;
+import io.airbyte.config.storage.MinioS3ClientFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -35,48 +38,20 @@ public interface CloudLogs {
 
   void deleteLogs(LogConfigs configs, String logPath);
 
-  /**
-   * @return true if no cloud logging configuration is set;
-   */
-  static boolean hasEmptyConfigs(final LogConfigs configs) {
-    return !hasMinioConfiguration(configs) && !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
-  }
-
   static CloudLogs createCloudLogClient(final LogConfigs configs) {
-    // check if the configs exists, and pick a client.
-    if (hasMinioConfiguration(configs)) {
-      LOGGER.info("Creating Minio Log Client");
-      return new S3Logs();
-    }
-
-    if (hasS3Configuration(configs)) {
-      LOGGER.info("Creating AWS Log Client");
-      return new S3Logs();
-    }
-
-    if (hasGcpConfiguration(configs)) {
-      LOGGER.info("Creating GCS Log Client");
-      return new GcsLogs();
+    switch (configs.getStorageConfigs().getType()) {
+      case S3 -> {
+        return new S3Logs(new DefaultS3ClientFactory(configs.getStorageConfigs().getS3Config()));
+      }
+      case MINIO -> {
+        return new S3Logs(new MinioS3ClientFactory(configs.getStorageConfigs().getMinioConfig()));
+      }
+      case GCS -> {
+        return new GcsLogs(new DefaultGcsClientFactory(configs.getStorageConfigs().getGcsConfig()));
+      }
     }
 
     throw new RuntimeException("Error no cloud credentials configured..");
-  }
-
-  private static boolean hasMinioConfiguration(final LogConfigs configs) {
-    return !configs.getS3LogBucket().isBlank() && !configs.getAwsAccessKey().isBlank()
-        && !configs.getAwsSecretAccessKey().isBlank() && !configs.getS3MinioEndpoint().isBlank();
-  }
-
-  private static boolean hasS3Configuration(final LogConfigs configs) {
-    return !configs.getAwsAccessKey().isBlank() &&
-        !configs.getAwsSecretAccessKey().isBlank() &&
-        !configs.getS3LogBucketRegion().isBlank() &&
-        !configs.getS3LogBucket().isBlank();
-  }
-
-  private static boolean hasGcpConfiguration(final LogConfigs configs) {
-    return !configs.getGcpStorageBucket().isBlank() &&
-        !configs.getGoogleApplicationCredentials().isBlank();
   }
 
 }

@@ -8,11 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Host Endpoint of the Clickhouse Cluster",
+        "description": "The host endpoint of the Clickhouse cluster.",
+        "title": "Host",
         "type": "string"
       },
       "port": {
-        "description": "Port of the database.",
+        "description": "The port of the database.",
+        "title": "Port",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -20,16 +22,19 @@
         "examples": ["8123"]
       },
       "database": {
-        "description": "Name of the database.",
+        "description": "The name of the database.",
+        "title": "Database",
         "type": "string",
         "examples": ["default"]
       },
       "username": {
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
+        "title": "Username",
         "type": "string"
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
+        "title": "Password",
         "type": "string",
         "airbyte_secret": true
       },

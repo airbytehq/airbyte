@@ -1,0 +1,332 @@
+{
+  "streams": [
+    {
+      "name": "clients",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["number"]
+          },
+          "contactName": {
+            "type": ["null", "string"]
+          },
+          "contactEmail": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "archived": {
+            "type": ["null", "boolean"]
+          },
+          "dateArchived": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "projects",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "archived": {
+            "type": ["null", "boolean"]
+          },
+          "dateArchived": {
+            "type": ["null", "string"]
+          },
+          "dateCreated": {
+            "type": ["null", "string"]
+          },
+          "clientName": {
+            "type": ["null", "string"]
+          },
+          "budgetAlertPercent": {
+            "type": ["null", "number"]
+          },
+          "budgetType": {
+            "type": ["null", "number"]
+          },
+          "totalTimeLogged": {
+            "type": ["null", "number"]
+          },
+          "budgetValue": {
+            "type": ["null", "number"]
+          },
+          "totalAmount": {
+            "type": ["null", "number"]
+          },
+          "totalExpense": {
+            "type": ["null", "number"]
+          },
+          "totalCost": {
+            "type": ["null", "number"]
+          },
+          "billableTimeLogged": {
+            "type": ["null", "number"]
+          },
+          "totalBillableAmount": {
+            "type": ["null", "number"]
+          },
+          "billable": {
+            "type": ["null", "boolean"]
+          },
+          "roundType": {
+            "type": ["null", "number"]
+          },
+          "roundInterval": {
+            "type": ["null", "number"]
+          },
+          "budgetSpentPercentage": {
+            "type": ["null", "number"]
+          },
+          "budgetTarget": {
+            "type": ["null", "number"]
+          },
+          "budgetPeriodType": {
+            "type": ["null", "number"]
+          },
+          "budgetSpent": {
+            "type": ["null", "number"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "tags",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "hexColor": {
+            "type": ["null", "string"]
+          },
+          "archived": {
+            "type": ["null", "boolean"]
+          },
+          "dateArchived": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "time_logs",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "logId": {
+            "type": ["number"]
+          },
+          "userId": {
+            "type": ["null", "number"]
+          },
+          "date": {
+            "type": ["null", "string"]
+          },
+          "userName": {
+            "type": ["null", "string"]
+          },
+          "clientId": {
+            "type": ["null", "number"]
+          },
+          "clientName": {
+            "type": ["null", "string"]
+          },
+          "projectId": {
+            "type": ["null", "number"]
+          },
+          "projectName": {
+            "type": ["null", "string"]
+          },
+          "projectInvoiceMethod": {
+            "type": ["null", "number"]
+          },
+          "taskId": {
+            "type": ["null", "number"]
+          },
+          "taskName": {
+            "type": ["null", "string"]
+          },
+          "tags": {
+            "type": ["null", "string"]
+          },
+          "rate": {
+            "type": ["null", "number"]
+          },
+          "billable": {
+            "type": ["null", "boolean"]
+          },
+          "locked": {
+            "type": ["null", "boolean"]
+          },
+          "billableAmount": {
+            "type": ["null", "number"]
+          },
+          "amount": {
+            "type": ["null", "number"]
+          },
+          "laborCost": {
+            "type": ["null", "number"]
+          },
+          "laborRate": {
+            "type": ["null", "number"]
+          },
+          "laborDuration": {
+            "type": ["null", "number"]
+          },
+          "logduration": {
+            "type": ["null", "number"]
+          },
+          "expense": {
+            "type": ["null", "number"]
+          },
+          "cost": {
+            "type": ["null", "number"]
+          },
+          "note": {
+            "type": ["null", "string"]
+          },
+          "status": {
+            "type": ["null", "number"]
+          },
+          "invoiceId": {
+            "type": ["null", "number"]
+          },
+          "invoiced": {
+            "type": ["null", "boolean"]
+          },
+          "billableHours": {
+            "type": ["null", "number"]
+          },
+          "laborHours": {
+            "type": ["null", "number"]
+          },
+          "customField1": {
+            "type": ["null", "number"]
+          },
+          "customField2": {
+            "type": ["null", "string"]
+          },
+          "customField3": {
+            "type": ["null", "string"]
+          },
+          "monthOfYear": {
+            "type": ["null", "string"]
+          },
+          "weekOfYear": {
+            "type": ["null", "string"]
+          },
+          "times": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "number"]
+              },
+              "duration": {
+                "type": ["null", "number"]
+              },
+              "startTime": {
+                "type": ["null", "string"]
+              },
+              "endTime": {
+                "type": ["null", "string"]
+              },
+              "running": {
+                "type": ["null", "boolean"]
+              },
+              "deleted": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "tagsData": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "attachments": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "roundtype": {
+            "type": ["null", "number"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["logId"]]
+    },
+    {
+      "name": "users",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "archived": {
+            "type": ["null", "boolean"]
+          },
+          "dateArchived": {
+            "type": ["null", "string"]
+          },
+          "active": {
+            "type": ["null", "boolean"]
+          },
+          "accountOwner": {
+            "type": ["null", "boolean"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          },
+          "rate": {
+            "type": ["null", "number"]
+          },
+          "billableRate": {
+            "type": ["null", "number"]
+          },
+          "admin": {
+            "type": ["null", "boolean"]
+          },
+          "isProjectManager": {
+            "type": ["null", "boolean"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]]
+    }
+  ]
+}

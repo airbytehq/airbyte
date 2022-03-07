@@ -61,6 +61,7 @@ GitLab source is working with GitLab API v4. It can also work with self-hosted G
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-12-21 | [8991](https://github.com/airbytehq/airbyte/pull/8991) | Update connector fields title/description |
 | 0.1.2 | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108) | Allow all domains to be used as `api_url` |
 | 0.1.1 | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932) | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
 | 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |

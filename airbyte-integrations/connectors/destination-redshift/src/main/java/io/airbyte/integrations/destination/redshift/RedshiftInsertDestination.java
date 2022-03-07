@@ -11,8 +11,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,10 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+
+  public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
   public RedshiftInsertDestination() {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
@@ -37,21 +40,19 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
     return getJdbcDatabase(config);
   }
 
-  private static void addSsl(final List<String> additionalProperties) {
-    additionalProperties.add("ssl=true");
-    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return SSL_JDBC_PARAMETERS;
   }
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
-    final List<String> additionalProperties = new ArrayList<>();
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    addSsl(additionalProperties);
     return Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
-        String.join(";", additionalProperties));
+        SSL_JDBC_PARAMETERS);
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {

@@ -107,9 +107,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
                     "type": "string"
                   },
                   "age": {
-                    "type": {
-                      "number"
-                    }
+                    "type": "number"
                   }
                 }
               }
@@ -150,8 +148,8 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
                       "type": "object",
                       "required": ["name", "productId"],
                       "properties": {
-                        "name": "string",
-                        "productId": "number"
+                        "name": { "type": "string" },
+                        "productId": { "type": "number" }
                       }
                     }
                   }

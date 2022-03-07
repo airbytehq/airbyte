@@ -6,12 +6,12 @@ import json
 import os
 import sys
 
-from airbyte_protocol import ConnectorSpecification
-from base_python.logger import AirbyteLogger
-
 # some integration tests doesn't setup dependences from
 # requirements.txt file and Python can return a exception.
 # Thus we should to import this parent module manually
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification
+
 try:
     import source_file.source
 except ModuleNotFoundError:

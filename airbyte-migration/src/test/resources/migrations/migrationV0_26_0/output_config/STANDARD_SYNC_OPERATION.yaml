@@ -1,7 +1,0 @@
----
-- operationId: "8f75e15a-a427-4f12-94ff-b3130df50f92"
-  name: "default-normalization"
-  operatorType: "normalization"
-  operatorNormalization:
-    option: "basic"
-  tombstone: false

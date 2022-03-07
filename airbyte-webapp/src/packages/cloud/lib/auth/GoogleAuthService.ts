@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   confirmPasswordReset,
+  updateProfile,
   applyActionCode,
   sendEmailVerification,
   EmailAuthProvider,
@@ -87,6 +88,13 @@ export class GoogleAuthService implements AuthService {
         throw err;
       }
     );
+  }
+
+  async updateProfile(displayName: string): Promise<void> {
+    if (this.auth.currentUser === null) {
+      throw new Error("Not able to update profile for not loggedIn user!");
+    }
+    return updateProfile(this.auth.currentUser, { displayName });
   }
 
   async reauthenticate(

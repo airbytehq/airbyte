@@ -62,10 +62,10 @@ def test__streams_from_ssh_providers(provider_config, provider_name, file_path, 
     streams = list(client.streams)
     assert len(streams) == 1
     assert streams[0].json_schema["properties"] == {
-        "header1": {"type": "string"},
-        "header2": {"type": "number"},
-        "header3": {"type": "number"},
-        "header4": {"type": "boolean"},
+        "header1": {"type": ["string", "null"]},
+        "header2": {"type": ["number", "null"]},
+        "header3": {"type": ["number", "null"]},
+        "header4": {"type": ["boolean", "null"]},
     }
 
 

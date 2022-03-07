@@ -23,24 +23,25 @@ public class AvroRecordFactory {
   private static final ObjectWriter WRITER = MAPPER.writer();
 
   private final Schema schema;
-  private final JsonFieldNameUpdater nameUpdater;
-  private final JsonAvroConverter converter = new JsonAvroConverter();
+  private final JsonAvroConverter converter;
 
-  public AvroRecordFactory(final Schema schema, final JsonFieldNameUpdater nameUpdater) {
+  public AvroRecordFactory(final Schema schema, final JsonAvroConverter converter) {
     this.schema = schema;
-    this.nameUpdater = nameUpdater;
+    this.converter = converter;
   }
 
   public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
-    JsonNode inputData = recordMessage.getData();
-    inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
-
     final ObjectNode jsonRecord = MAPPER.createObjectNode();
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    jsonRecord.setAll((ObjectNode) inputData);
+    jsonRecord.setAll((ObjectNode) recordMessage.getData());
 
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
+  }
+
+  public GenericData.Record getAvroRecord(JsonNode formattedData) throws JsonProcessingException {
+    var bytes = WRITER.writeValueAsBytes(formattedData);
+    return converter.convertToGenericDataRecord(bytes, schema);
   }
 
 }

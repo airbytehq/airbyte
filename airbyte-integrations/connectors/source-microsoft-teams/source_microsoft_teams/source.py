@@ -7,8 +7,9 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
-from base_python import AirbyteLogger, BaseSource
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.sources.deprecated.base_source import BaseSource
 
 from .client import Client
 

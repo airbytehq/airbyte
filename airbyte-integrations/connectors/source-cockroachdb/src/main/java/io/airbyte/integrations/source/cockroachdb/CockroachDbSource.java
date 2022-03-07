@@ -6,29 +6,45 @@ package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachDbSource extends AbstractJdbcSource {
+public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, null, new CockroachJdbcSourceOperations());
+  }
+
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
   }
 
   @Override
@@ -41,7 +57,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -51,6 +67,8 @@ public class CockroachDbSource extends AbstractJdbcSource {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
+
+    LOGGER.warn(jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -78,6 +96,54 @@ public class CockroachDbSource extends AbstractJdbcSource {
     }
 
     return super.read(config, catalog, state);
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return database
+        .query(getPrivileges(database), sourceOperations::rowToJson)
+        .map(this::getPrivilegeDto)
+        .collect(Collectors.toSet());
+  }
+
+  @Override
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
+    return false;
+  }
+
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(config);
+
+    final JdbcDatabase database = Databases.createJdbcDatabase(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        driverClass,
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        sourceOperations);
+
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+
+    return new CockroachJdbcDatabase(database, sourceOperations);
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(final JdbcDatabase database) {
+    return connection -> {
+      final PreparedStatement ps = connection.prepareStatement(
+          "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+              + "FROM   information_schema.table_privileges\n"
+              + "WHERE  (grantee  = ? AND privilege_type in ('SELECT', 'ALL')) OR (table_schema = 'public')");
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      return ps;
+    };
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+        .schemaName(jsonNode.get("table_schema").asText())
+        .tableName(jsonNode.get("table_name").asText())
+        .build();
   }
 
   public static void main(final String[] args) throws Exception {

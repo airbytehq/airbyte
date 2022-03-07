@@ -16,6 +16,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,13 +32,13 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   protected static final int SERVER_LISTENING_PORT = 8000;
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new GithubOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
+    return new GithubOAuthFlow(configRepository, httpClient);
   }
 
   @Override
@@ -45,6 +46,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     return SERVER_LISTENING_PORT;
   }
 
+  @Override
   @BeforeEach
   public void setup() throws IOException {
     super.setup();
@@ -65,7 +67,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

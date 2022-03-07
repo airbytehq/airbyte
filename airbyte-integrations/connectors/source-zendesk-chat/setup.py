@@ -6,13 +6,12 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
+    "airbyte-cdk~=0.1",
     "pendulum==1.2.0",
     "requests==2.25.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2", "source-acceptance-test"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock"]
 
 setup(
     name="source_zendesk_chat",

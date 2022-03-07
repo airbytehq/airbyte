@@ -164,22 +164,6 @@ class Events(IncrementalPosthogStream):
         return params
 
 
-class EventsSessions(PosthogStream):
-    """
-    Docs: https://posthog.com/docs/api/events
-    """
-
-    primary_key = "global_session_id"
-    data_field = "result"
-
-    def path(self, **kwargs) -> str:
-        return "event/sessions"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        resp_json = response.json()
-        return resp_json.get("pagination")
-
-
 class FeatureFlags(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/feature-flags
@@ -189,40 +173,6 @@ class FeatureFlags(PosthogStream):
         return "feature_flag"
 
 
-class Insights(PosthogStream):
-    """
-    Docs: https://posthog.com/docs/api/insights
-    Endpoint does not support incremental read because id, created_at and last_refresh are ordered in any particular way
-    """
-
-    def path(self, **kwargs) -> str:
-        return "insight"
-
-
-class InsightsPath(PosthogStream):
-    """
-    Docs: https://posthog.com/docs/api/insights
-    """
-
-    primary_key = None
-    data_field = "result"
-
-    def path(self, **kwargs) -> str:
-        return "insight/path"
-
-
-class InsightsSessions(PosthogStream):
-    """
-    Docs: https://posthog.com/docs/api/insights
-    """
-
-    primary_key = None
-    data_field = "result"
-
-    def path(self, **kwargs) -> str:
-        return "insight/session"
-
-
 class Persons(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/people
@@ -230,18 +180,6 @@ class Persons(PosthogStream):
 
     def path(self, **kwargs) -> str:
         return "person"
-
-
-class Trends(PosthogStream):
-    """
-    Docs: https://posthog.com/docs/api/insights
-    """
-
-    primary_key = None
-    data_field = "result"
-
-    def path(self, **kwargs) -> str:
-        return "insight/trend"
 
 
 class PingMe(PosthogStream):

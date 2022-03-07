@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.util.LinkedList;
@@ -19,11 +20,8 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
-
-  private final JsonAvroConverter converter = new JsonAvroConverter();
 
   protected GcsAvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
@@ -56,7 +54,7 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
         final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
           final GenericData.Record record = dataFileReader.next();
-          final byte[] jsonBytes = converter.convertToJson(record);
+          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

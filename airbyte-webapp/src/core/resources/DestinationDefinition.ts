@@ -4,16 +4,7 @@ import { getService } from "core/servicesProvider";
 
 import BaseResource from "./BaseResource";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
-
-export interface DestinationDefinition {
-  destinationDefinitionId: string;
-  name: string;
-  dockerRepository: string;
-  dockerImageTag: string;
-  latestDockerImageTag: string;
-  documentationUrl: string;
-  icon: string;
-}
+import { DestinationDefinition } from "core/domain/connector";
 
 export default class DestinationDefinitionResource
   extends BaseResource

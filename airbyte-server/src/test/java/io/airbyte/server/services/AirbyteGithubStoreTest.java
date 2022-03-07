@@ -33,6 +33,56 @@ public class AirbyteGithubStoreTest {
   }
 
   @Nested
+  @DisplayName("when the additional definitions file is unusable, badly formatted, or cannot be retrieved due to errors")
+  class FileUnusable {
+
+    @Test
+    void testGetLatestSourcesWithNonJson() throws InterruptedException {
+      final var nonjsonBody = "irrelevant text";
+      final var nonjsonResponse = new MockResponse().setResponseCode(200)
+          .addHeader("Content-Type", "text/plain; charset=utf-8")
+          .addHeader("Cache-Control", "no-cache")
+          .setBody(nonjsonBody);
+      webServer.enqueue(nonjsonResponse);
+      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+    }
+
+    @Test
+    void testGetLatestSourcesWithWrongSchemaJson() throws InterruptedException {
+      final var jsonBody = "{ json: 'validButWrongFormat' }";
+      final var jsonResponse = new MockResponse().setResponseCode(200)
+          .addHeader("Content-Type", "application/json; charset=utf-8")
+          .addHeader("Cache-Control", "no-cache")
+          .setBody(jsonBody);
+      webServer.enqueue(jsonResponse);
+      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+    }
+
+    @Test
+    void testGetLatestDestinationsWithNonJson() throws InterruptedException {
+      final var nonjsonBody = "irrelevant text";
+      final var nonjsonResponse = new MockResponse().setResponseCode(200)
+          .addHeader("Content-Type", "text/plain; charset=utf-8")
+          .addHeader("Cache-Control", "no-cache")
+          .setBody(nonjsonBody);
+      webServer.enqueue(nonjsonResponse);
+      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+    }
+
+    @Test
+    void testGetLatestDestinationsWithWrongSchemaJson() throws InterruptedException {
+      final var jsonBody = "{ json: 'validButWrongFormat' }";
+      final var jsonResponse = new MockResponse().setResponseCode(200)
+          .addHeader("Content-Type", "application/json; charset=utf-8")
+          .addHeader("Cache-Control", "no-cache")
+          .setBody(jsonBody);
+      webServer.enqueue(jsonResponse);
+      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+    }
+
+  }
+
+  @Nested
   @DisplayName("when there is no internet")
   class NoInternet {
 

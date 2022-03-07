@@ -14,7 +14,7 @@ TAG=$(openssl rand -hex 12)
 echo "Tag" $TAG
 
 docker login -u airbytebot -p $DOCKER_PASSWORD
-VERSION=$TAG ./gradlew composeBuild
+VERSION=$TAG ./gradlew build
 VERSION=$TAG docker-compose -f docker-compose.build.yaml push
 
 # For running on Mac

@@ -1,58 +1,33 @@
 import React, { Suspense } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
-import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
+import { Route, Routes } from "react-router-dom";
 
-import { Routes } from "../routes";
-import LoadingPage from "components/LoadingPage";
+import { LoadingPage } from "components";
+
+import { RoutePaths } from "../routes";
 import ConnectionItemPage from "./pages/ConnectionItemPage";
 import CreationFormPage from "./pages/CreationFormPage";
-import useRouter from "hooks/useRouter";
 import AllConnectionsPage from "./pages/AllConnectionsPage";
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
-const ConnectionPage: React.FC = () => {
-  const { location } = useRouter();
-
-  return (
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route
-          path={[
-            `${Routes.Connections}${Routes.ConnectionNew}`,
-            `${Routes.Source}${Routes.ConnectionNew}`,
-            `${Routes.Destination}${Routes.ConnectionNew}`,
-          ]}
-        >
-          <CreationFormPage
-            type={
-              location.pathname ===
-              `${Routes.Connections}${Routes.ConnectionNew}`
-                ? "connection"
-                : location.pathname ===
-                  `${Routes.Source}${Routes.ConnectionNew}`
-                ? "destination"
-                : "source"
-            }
-          />
-        </Route>
-        <Route path={`${Routes.Connections}/:id${Routes.Settings}`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <ConnectionItemPage currentStep="settings" />
-          </ErrorBoundary>
-        </Route>
-        <Route path={`${Routes.Connections}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <ConnectionItemPage currentStep="status" />
-          </ErrorBoundary>
-        </Route>
-        <Route path={Routes.Connections}>
-          <AllConnectionsPage />
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
-  );
-};
+const ConnectionPage: React.FC = () => (
+  <Suspense fallback={<LoadingPage />}>
+    <Routes>
+      <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+      <Route
+        path=":connectionId/*"
+        element={
+          <ResourceNotFoundErrorBoundary
+            errorComponent={<StartOverErrorView />}
+          >
+            <ConnectionItemPage />
+          </ResourceNotFoundErrorBoundary>
+        }
+      />
+      <Route index element={<AllConnectionsPage />} />
+    </Routes>
+  </Suspense>
+);
 
 export default ConnectionPage;

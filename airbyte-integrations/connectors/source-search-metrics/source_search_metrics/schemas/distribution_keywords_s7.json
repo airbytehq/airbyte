@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "desktop": {
+      "type": ["null", "string"]
+    },
+    "mobile": {
+      "type": ["null", "string"]
+    },
+    "smartphone": {
+      "type": ["null", "string"]
+    },
+    "tablet": {
+      "type": ["null", "string"]
+    },
+    "keyword": {
+      "type": ["null", "string"]
+    }
+  }
+}

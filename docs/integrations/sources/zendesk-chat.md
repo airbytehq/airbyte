@@ -52,6 +52,16 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 * Zendesk Chat Access Token
 
+### Connect using `OAuth 2.0` option:
+1. Select `OAuth2.0` in `Authorization Method`
+2. Click on `authenticate your Zendesk Chat account`
+2. Proceed the authentication using your credentials for your Zendesk account.
+
+### Connect using `Access Token` option:
+1. Generate a Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
+2. Use the generated `access_token` in Airbyte connection.
+
+
 ### Setup guide
 
 Generate a Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
@@ -62,6 +72,10 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2021-12-15 | [7313](https://github.com/airbytehq/airbyte/pull/7313) | Added support of `OAuth 2.0` authentication. [8819](https://github.com/airbytehq/airbyte/pull/8819) Fixed the issue with `created_at` can now be `null` for `bans` stream |
+| 0.1.5 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.4 | 2021-11-22 | [8166](https://github.com/airbytehq/airbyte/pull/8166) | Make `Chats` stream incremental + add tests for all streams |
+| 0.1.3 | 2021-10-21 | [7210](https://github.com/airbytehq/airbyte/pull/7210) | Chats stream is only getting data from first page |
 | 0.1.2 | 2021-08-17 | [5476](https://github.com/airbytehq/airbyte/pull/5476) | Correct field unread to boolean type |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.1.0 | 2021-05-03 | [3088](https://github.com/airbytehq/airbyte/pull/3088) | Initial release |

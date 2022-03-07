@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "FulfillInvShippingAndHandling": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvTax": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvDiscountCode": {
+      "type": "string"
+    },
+    "FulfillInvDiscountAmount": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvGiftMessage": {
+      "type": "string"
+    }
+  }
+}

@@ -174,3 +174,17 @@ noscript {
     font-weight: normal;
     font-style: normal;
 }
+
+/* Roboto Medium */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    src: url("/fonts/roboto/Roboto-Medium.eot"); /* IE9 Compat Modes */
+    src: local("Roboto"),
+    url("/fonts/roboto/Roboto-Medium.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    url("/fonts/roboto/Roboto-Medium.woff2") format("woff2"), /* Super Modern Browsers */
+    url("/fonts/roboto/Roboto-Medium.woff") format("woff"), /* Modern Browsers */
+    url("/fonts/roboto/Roboto-Medium.ttf") format("truetype"), /* Safari, Android, iOS */
+    url("/fonts/roboto/Roboto-Medium.svg#RobotoMedium") format("svg"); /* Legacy iOS */
+}

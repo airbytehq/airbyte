@@ -22,15 +22,20 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -42,6 +47,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -76,8 +83,7 @@ class DefaultReplicationWorkerTest {
   private StandardSyncInput syncInput;
   private WorkerSourceConfig sourceConfig;
   private WorkerDestinationConfig destinationConfig;
-  private AirbyteMessageTracker sourceMessageTracker;
-  private AirbyteMessageTracker destinationMessageTracker;
+  private AirbyteMessageTracker messageTracker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -95,12 +101,12 @@ class DefaultReplicationWorkerTest {
     source = mock(AirbyteSource.class);
     mapper = mock(NamespacingMapper.class);
     destination = mock(AirbyteDestination.class);
-    sourceMessageTracker = mock(AirbyteMessageTracker.class);
-    destinationMessageTracker = mock(AirbyteMessageTracker.class);
+    messageTracker = mock(AirbyteMessageTracker.class);
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(destination.attemptRead()).thenReturn(Optional.of(STATE_MESSAGE));
     when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
@@ -119,8 +125,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -133,11 +138,8 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
-  void testLoggingInThreads() throws IOException, WorkerException {
-    // set up the mdc so that actually log to a file, so that we can verify that file logging captures
-    // threads.
-    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.setJobMdc(jobRoot);
+  void testSourceNonZeroExitValue() throws Exception {
+    when(source.getExitValue()).thenReturn(1);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -145,8 +147,144 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
+  }
+
+  @Test
+  void testReplicationRunnableSourceFailure() throws Exception {
+    final String SOURCE_ERROR_MESSAGE = "the source had a failure";
+
+    when(source.attemptRead()).thenThrow(new RuntimeException(SOURCE_ERROR_MESSAGE));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) && f.getStacktrace().contains(SOURCE_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableDestinationFailure() throws Exception {
+    final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
+
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).accept(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableWorkerFailure() throws Exception {
+    final String WORKER_ERROR_MESSAGE = "the worker had a failure";
+
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromSource(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testDestinationNonZeroExitValue() throws Exception {
+    when(destination.getExitValue()).thenReturn(1);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION)));
+  }
+
+  @Test
+  void testDestinationRunnableDestinationFailure() throws Exception {
+    final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
+
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).notifyEndOfStream();
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testDestinationRunnableWorkerFailure() throws Exception {
+    final String WORKER_ERROR_MESSAGE = "the worker had a failure";
+
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromDestination(Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testLoggingInThreads() throws IOException, WorkerException {
+    // set up the mdc so that actually log to a file, so that we can verify that file logging captures
+    // threads.
+    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, jobRoot);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
 
     worker.run(syncInput, jobRoot);
 
@@ -177,7 +315,7 @@ class DefaultReplicationWorkerTest {
   void testCancellation() throws InterruptedException {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     when(source.isFinished()).thenReturn(false);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -185,8 +323,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -199,7 +336,7 @@ class DefaultReplicationWorkerTest {
     workerThread.start();
 
     // verify the worker is actually running before we kill it.
-    while (Mockito.mockingDetails(sourceMessageTracker).getInvocations().size() < 5) {
+    while (Mockito.mockingDetails(messageTracker).getInvocations().size() < 5) {
       LOGGER.info("waiting for worker to start running");
       sleep(100);
     }
@@ -213,9 +350,12 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesOutputOnSuccess() throws WorkerException {
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
-    when(sourceMessageTracker.getRecordCount()).thenReturn(12L);
-    when(sourceMessageTracker.getBytesCount()).thenReturn(100L);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+    when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
+    when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
+    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap("stream1", 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap("stream1", 12L));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -223,15 +363,27 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
         .withReplicationAttemptSummary(new ReplicationAttemptSummary()
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
-            .withStatus(ReplicationStatus.COMPLETED))
+            .withStatus(ReplicationStatus.COMPLETED)
+            .withTotalStats(new SyncStats()
+                .withRecordsEmitted(12L)
+                .withBytesEmitted(100L)
+                .withStateMessagesEmitted(3L)
+                .withRecordsCommitted(12L)) // since success, should use emitted count
+            .withStreamStats(Collections.singletonList(
+                new StreamSyncStats()
+                    .withStreamName("stream1")
+                    .withStats(new SyncStats()
+                        .withBytesEmitted(100L)
+                        .withRecordsEmitted(12L)
+                        .withRecordsCommitted(12L) // since success, should use emitted count
+                        .withStateMessagesEmitted(null)))))
         .withOutputCatalog(syncInput.getCatalog())
         .withState(new State().withState(expectedState));
 
@@ -255,7 +407,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testPopulatesStateOnFailureIfAvailable() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(source).close();
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
+    when(messageTracker.getDestinationOutputState()).thenReturn(Optional.of(new State().withState(STATE_MESSAGE.getState().getData())));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -263,8 +415,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -281,13 +432,51 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
     assertNotNull(actual);
     assertEquals(syncInput.getState().getState(), actual.getState().getState());
+  }
+
+  @Test
+  void testPopulatesStatsOnFailureIfAvailable() throws Exception {
+    doThrow(new IllegalStateException("induced exception")).when(source).close();
+    when(messageTracker.getTotalRecordsEmitted()).thenReturn(12L);
+    when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
+    when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
+    when(messageTracker.getTotalStateMessagesEmitted()).thenReturn(3L);
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap("stream1", 100L));
+    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap("stream1", 12L));
+    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap("stream1", 6L)));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
+    final SyncStats expectedTotalStats = new SyncStats()
+        .withRecordsEmitted(12L)
+        .withBytesEmitted(100L)
+        .withStateMessagesEmitted(3L)
+        .withRecordsCommitted(6L);
+    final List<StreamSyncStats> expectedStreamStats = Collections.singletonList(
+        new StreamSyncStats()
+            .withStreamName("stream1")
+            .withStats(new SyncStats()
+                .withBytesEmitted(100L)
+                .withRecordsEmitted(12L)
+                .withRecordsCommitted(6L)
+                .withStateMessagesEmitted(null)));
+
+    assertNotNull(actual);
+    assertEquals(expectedTotalStats, actual.getReplicationAttemptSummary().getTotalStats());
+    assertEquals(expectedStreamStats, actual.getReplicationAttemptSummary().getStreamStats());
   }
 
   @Test
@@ -303,8 +492,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -314,7 +502,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testDoesNotPopulateOnIrrecoverableFailure() {
-    doThrow(new IllegalStateException("induced exception")).when(sourceMessageTracker).getRecordCount();
+    doThrow(new IllegalStateException("induced exception")).when(messageTracker).getTotalRecordsEmitted();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -322,8 +510,7 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
+        messageTracker);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

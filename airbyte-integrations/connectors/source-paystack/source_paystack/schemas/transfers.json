@@ -1,0 +1,101 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "integration": {
+      "type": ["null", "integer"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "recipient": {
+      "type": ["null", "object"],
+      "properties": {
+        "domain": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "details": {
+          "type": ["null", "object"],
+          "properties": {
+            "account_number": {
+              "type": ["null", "string"]
+            },
+            "account_name": {
+              "type": ["null", "string"]
+            },
+            "bank_code": {
+              "type": ["null", "string"]
+            },
+            "bank_name": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "metadata": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "recipient_code": {
+          "type": ["null", "string"]
+        },
+        "active": {
+          "type": ["null", "boolean"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "integration": {
+          "type": ["null", "integer"]
+        },
+        "createdAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "transfer_code": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

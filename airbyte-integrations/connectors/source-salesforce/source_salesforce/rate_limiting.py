@@ -8,7 +8,7 @@ import sys
 import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests import codes, exceptions
+from requests import codes, exceptions  # type: ignore[import]
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
@@ -34,10 +34,10 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
         if exc.response is not None and exc.response.status_code == codes.forbidden:
             error_data = exc.response.json()[0]
             if error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                give_up = False
+                give_up = True
 
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
         return give_up
 
     return backoff.on_exception(

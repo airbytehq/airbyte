@@ -11,7 +11,7 @@ Make sure to read [our docs for developing locally](developing-locally.md) first
 If you're developing locally using Minikube/Docker Desktop/Kind, you can iterate with the following series of commands:
 
 ```bash
-./gradlew composeBuild # build dev images
+./gradlew build # build dev images
 kubectl delete -k kube/overlays/dev # optional (allows you to recreate resources from scratch)
 kubectl apply -k kube/overlays/dev # applies manifests
 kubectl port-forward svc/airbyte-webapp-svc 8000:80 # port forward the api/ui

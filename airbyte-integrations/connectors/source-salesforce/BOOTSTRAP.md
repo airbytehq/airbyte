@@ -10,6 +10,19 @@ There are two types of objects:
 To query an object, one must use [SOQL](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm), Salesforce’s proprietary SQL language. 
 An example might be `SELECT * FROM <sobject.name> WHERE SystemModstamp > 2122-01-18T21:18:20.000Z`.
 
+Because the `Salesforce` connector pulls all objects from `Salesforce` dynamically, then all streams are dynamically generated accordingly. 
+And at the stage of creating a schema for each stream, we understand whether the stream is dynamic or not (if the stream has one of the 
+following fields: `SystemModstamp`, `LastModifiedDate`, `CreatedDate`, `LoginTime`, then it is dynamic). 
+Based on this data, for streams that have information about record updates - we filter by `updated at`, and for streams that have information 
+only about the date of creation of the record (as in the case of streams that have only the `CreatedDate` field) - we filter by `created at`.
+And we assign the Cursor as follows:
+```
+@property
+def cursor_field(self) -> str:
+    return self.replication_key
+```
+`replication_key` is one of the following values: `SystemModstamp`, `LastModifiedDate`, `CreatedDate`, `LoginTime`.
+
 In addition there are two types of APIs exposed by Salesforce:
   * **[REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm)**: completely synchronous
   * **[BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/queries.htm)**: has larger rate limit allowance (150k objects per day on the standard plan) but is asynchronous and therefore follows a request-poll-wait pattern.

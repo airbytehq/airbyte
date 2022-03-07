@@ -1,5 +1,11 @@
-{{ config(schema="_AIRBYTE_TEST_NORMALIZATION", tags=["top-level-intermediate"]) }}
+{{ config(
+    cluster_by = ["_AIRBYTE_EMITTED_AT"],
+    unique_key = '_AIRBYTE_AB_ID',
+    schema = "_AIRBYTE_TEST_NORMALIZATION",
+    tags = [ "top-level-intermediate" ]
+) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('DEDUP_EXCHANGE_RATE_AB1') }}
 select
     cast(ID as {{ dbt_utils.type_bigint() }}) as ID,
     cast(CURRENCY as {{ dbt_utils.type_string() }}) as CURRENCY,
@@ -17,7 +23,11 @@ select
     cast(HKD_SPECIAL___CHARACTERS as {{ dbt_utils.type_string() }}) as HKD_SPECIAL___CHARACTERS,
     cast(NZD as {{ dbt_utils.type_float() }}) as NZD,
     cast(USD as {{ dbt_utils.type_float() }}) as USD,
-    _AIRBYTE_EMITTED_AT
+    _AIRBYTE_AB_ID,
+    _AIRBYTE_EMITTED_AT,
+    {{ current_timestamp() }} as _AIRBYTE_NORMALIZED_AT
 from {{ ref('DEDUP_EXCHANGE_RATE_AB1') }}
 -- DEDUP_EXCHANGE_RATE
+where 1 = 1
+{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
 

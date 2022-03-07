@@ -76,6 +76,7 @@ Start date used for generating reports starting from the specified start date. S
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.3` | 2021-12-28 | [\#8388](https://github.com/airbytehq/airbyte/pull/8388) | `Add retry if recoverable error  occured for reporting stream processing` |
 | `0.1.2` | 2021-10-01 | [\#6367](https://github.com/airbytehq/airbyte/pull/6461) | `Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback` |
 | `0.1.1` | 2021-09-22 | [\#6367](https://github.com/airbytehq/airbyte/pull/6367) | `Add seller and vendor filters to profiles stream` |
 | `0.1.0` | 2021-08-13 | [\#5023](https://github.com/airbytehq/airbyte/pull/5023) | `Initial version` |

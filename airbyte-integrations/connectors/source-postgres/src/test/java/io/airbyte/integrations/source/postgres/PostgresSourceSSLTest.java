@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,19 +24,15 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,31 +53,31 @@ class PostgresSourceSSLTest {
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaPrimitive.STRING),
-          Field.of("last_name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("first_name", JsonSchemaType.STRING),
+          Field.of("last_name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -134,6 +133,7 @@ class PostgresSourceSSLTest {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
+        .put("schemas", List.of("public"))
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("ssl", true)
@@ -147,14 +147,6 @@ class PostgresSourceSSLTest {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
-  }
-
-  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
-    for (final AirbyteMessage actualMessage : messages) {
-      if (actualMessage.getRecord() != null) {
-        actualMessage.getRecord().setEmittedAt(null);
-      }
-    }
   }
 
   @Test
@@ -190,27 +182,6 @@ class PostgresSourceSSLTest {
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertTrue(PostgresSource.isCdc(config));
-  }
-
-  private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(SCHEMA_NAME));
-  }
-
-  private static Map<Object, Object> map(final Object... entries) {
-    if (entries.length % 2 != 0) {
-      throw new IllegalArgumentException("Entries must have even length");
-    }
-
-    return new HashMap<>() {
-
-      {
-        for (int i = 0; i < entries.length; i++) {
-          put(entries[i++], entries[i]);
-        }
-      }
-
-    };
   }
 
 }

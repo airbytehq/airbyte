@@ -23,7 +23,7 @@
       "accounts": {
         "title": "Accounts",
         "type": "object",
-        "description": "Account selection strategy.",
+        "description": "Account selection.",
         "oneOf": [
           {
             "title": "All accounts assigned to your user",
@@ -41,7 +41,7 @@
           {
             "title": "Subset of your accounts",
             "additionalProperties": false,
-            "description": "Fetch data for subset of account ids.",
+            "description": "Fetch data for subset of account IDs.",
             "required": ["ids", "selection_strategy"],
             "properties": {
               "selection_strategy": {
@@ -51,6 +51,7 @@
               },
               "ids": {
                 "type": "array",
+                "title": "IDs",
                 "description": "List of accounts from which data will be fetched.",
                 "items": {
                   "type": "string"
@@ -64,37 +65,44 @@
       },
       "client_id": {
         "type": "string",
-        "description": "ID of your Microsoft Advertising client application.",
+        "title": "Client ID",
+        "description": "The Client ID of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
-        "description": "Secret of your Microsoft Advertising client application.",
+        "title": "Client Secret",
+        "description": "The Client Secret of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
       "customer_id": {
         "type": "string",
-        "description": "User's customer ID."
+        "title": "Customer ID",
+        "description": "User's Customer ID. Go to your Accounts and Billing page. Your Customer ID will be listed on the Accounts tab under the heading Customer."
       },
       "developer_token": {
         "type": "string",
+        "title": "Developer Token",
         "description": "Developer token associated with user.",
         "airbyte_secret": true
       },
       "refresh_token": {
         "type": "string",
-        "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
+        "title": "Refresh Token",
+        "description": "Refresh Token to renew the expired Access Token.",
         "airbyte_secret": true
       },
       "user_id": {
         "type": "string",
-        "description": "Unique user identifier."
+        "title": "Account ID",
+        "description": "Bing Ads Account ID. You can find Account ID by going to your profile and selecting Accounts and Billing."
       },
       "reports_start_date": {
         "type": "string",
+        "title": "Reports Start Date",
         "format": "date",
         "default": "2020-01-01",
-        "description": "From which date perform initial sync for report related streams. In YYYY-MM-DD format"
+        "description": "UTC date in YYYY-MM-DD format. Any reports before this date will not be replicated."
       },
       "hourly_reports": {
         "title": "Hourly reports",

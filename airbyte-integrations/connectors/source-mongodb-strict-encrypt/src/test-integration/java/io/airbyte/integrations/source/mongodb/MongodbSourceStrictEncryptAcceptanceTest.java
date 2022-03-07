@@ -22,13 +22,14 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.bson.BsonArray;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -77,7 +78,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
         .put("auth_source", "admin")
         .build());
 
-    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
+    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&directConnection=false&ssl=true",
         config.get("user").asText(),
         config.get("password").asText(),
         config.get("instance_type").get("host").asText(),
@@ -87,9 +88,12 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var doc1 = new Document("id", "0001").append("name", "Test");
-    final var doc2 = new Document("id", "0002").append("name", "Mongo");
-    final var doc3 = new Document("id", "0003").append("name", "Source");
+    final var doc1 = new Document("id", "0001").append("name", "Test")
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100);
+    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
@@ -115,9 +119,14 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("_id", JsonSchemaType.STRING),
+                Field.of("id", JsonSchemaType.STRING),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("test", JsonSchemaType.STRING),
+                Field.of("test_array", JsonSchemaType.ARRAY),
+                Field.of("empty_test", JsonSchemaType.STRING),
+                Field.of("double_test", JsonSchemaType.NUMBER),
+                Field.of("int_test", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
@@ -125,11 +134,6 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
   }
 
   @Test

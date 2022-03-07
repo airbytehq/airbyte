@@ -2,16 +2,16 @@
 
 ## Features
 
-| Feature | Supported | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Replicate Incremental Deletes | Yes |  |
-| CDC | Yes |  |
-| SSL Support | Yes |  |
-| SSH Tunnel Connection | Yes |  |
-| Namespaces | Yes | Enabled by default |
-| Arrays | Yes | Byte arrays are not supported yet |
+| Feature                       | Supported | Notes                             |
+|:------------------------------|:----------|:----------------------------------|
+| Full Refresh Sync             | Yes       |                                   |
+| Incremental - Append Sync     | Yes       |                                   |
+| Replicate Incremental Deletes | Yes       |                                   |
+| CDC                           | Yes       |                                   |
+| SSL Support                   | Yes       |                                   |
+| SSH Tunnel Connection         | Yes       |                                   |
+| Namespaces                    | Yes       | Enabled by default                |
+| Arrays                        | Yes       | Byte arrays are not supported yet |
 
 The MySQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
@@ -137,73 +137,85 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| MySQL Type | Resulting Type | Notes |
-| :--- | :--- | :--- |
-| `array` | array |  |
-| `bigint` | number |  |
-| `binary` | string |  |
-| `blob` | string |  |
-| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
-| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
-| `decimal` | number |  |
-| `decimal(19, 2)` | number |  |
-| `double` | number |  |
-| `enum` | string |  |
-| `float` | number |  |
-| `int` | number |  |
-| `int unsigned` | number |  |
-| `int zerofill` | number |  |
-| `json` | text |  |
-| `mediumint` | number |  |
-| `mediumint zerofill` | number |  |
-| `mediumint` | number |  |
-| `numeric` | number |  |
-| `point` | object |  |
-| `smallint` | number |  |
-| `smallint zerofill` | number |  |
-| `string` | string |  |
-| `tinyint` | number |  |
-| `text` | string |  |
-| `time` | string | MySql JDBC driver has limitation. Value should be in range between 00:00:00 and 23:59:59. |
-| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
-| `tinytext` | string |  |
-| `varbinary(256)` | string |  |
-| `varchar` | string |  |
-| `varchar(256) character set cp1251` | string |  |
-| `varchar(256) character set utf16` | string |  |
+| MySQL Type                                | Resulting Type         | Notes                                                                                                          |
+|:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
+| `bit(1)`                                  | boolean                |                                                                                                                |
+| `bit(>1)`                                 | base64 binary string   |                                                                                                                |
+| `boolean`                                 | boolean                |                                                                                                                |
+| `tinyint(1)`                              | boolean                |                                                                                                                |
+| `tinyint`                                 | number                 |                                                                                                                |
+| `smallint`                                | number                 |                                                                                                                |
+| `mediumint`                               | number                 |                                                                                                                |
+| `int`                                     | number                 |                                                                                                                |
+| `bigint`                                  | number                 |                                                                                                                |
+| `float`                                   | number                 |                                                                                                                |
+| `double`                                  | number                 |                                                                                                                |
+| `decimal`                                 | number                 |                                                                                                                |
+| `binary`                                  | string                 |                                                                                                                |
+| `blob`                                    | string                 |                                                                                                                |
+| `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
+| `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
+| `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
+| `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
+| `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
+| `char`, `varchar` with binary charset     | base64 binary string   |                                                                                                                |
+| `tinyblob`                                | base64 binary string   |                                                                                                                |
+| `blob`                                    | base64 binary string   |                                                                                                                |
+| `mediumblob`                              | base64 binary string   |                                                                                                                |
+| `longblob`                                | base64 binary string   |                                                                                                                |
+| `binary`                                  | base64 binary string   |                                                                                                                |
+| `varbinary`                               | base64 binary string   |                                                                                                                |
+| `tinytext`                                | string                 |                                                                                                                |
+| `text`                                    | string                 |                                                                                                                |
+| `mediumtext`                              | string                 |                                                                                                                |
+| `longtext`                                | string                 |                                                                                                                |
+| `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                                                                      |
+| `enum`                                    | string                 |                                                                                                                |
+| `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                       |
+| `geometry`                                | base64 binary string   |                                                                                                                |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.4.8 | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093) | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text |
-| 0.4.7 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
-| 0.4.6 | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510) | Support SSL connection |
-| 0.4.5 | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146) | Added option to connect to DB via SSH |
-| 0.4.1 | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
-| 0.3.7 | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE\_ENTRYPOINT for Kubernetes support |
-| 0.3.6 | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
-| 0.3.5 | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint\(1\) and boolean types |
-| 0.3.4 | 2021-06-04 | [3846](https://github.com/airbytehq/airbyte/pull/3846) | Fix max integer value failure |
-| 0.3.3 | 2021-06-02 | [3789](https://github.com/airbytehq/airbyte/pull/3789) | MySQL CDC poll wait 5 minutes when not received a single record |
-| 0.3.2 | 2021-06-01 | [3757](https://github.com/airbytehq/airbyte/pull/3757) | MySQL CDC poll 5s to 5 min |
-| 0.3.1 | 2021-06-01 | [3505](https://github.com/airbytehq/airbyte/pull/3505) | Implemented MySQL CDC |
-| 0.3.0 | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |
-| 0.2.5 | 2021-04-15 | [2899](https://github.com/airbytehq/airbyte/pull/2899) | Fix bug in tests |
-| 0.2.4 | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |
-| 0.2.3 | 2021-03-26 | [2611](https://github.com/airbytehq/airbyte/pull/2611) | Add an optional `jdbc_url_params` in parameters |
-| 0.2.2 | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |
-| 0.2.1 | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |
-| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
-| 0.1.10 | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators |
-| 0.1.9 | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |
-| 0.1.8 | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |
-| 0.1.7 | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |
-| 0.1.6 | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySQL to use new JdbcSource |
-| 0.1.5 | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267) | Support incremental sync |
-| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
-
+| Version | Date         | Pull Request                                               | Subject                                                                                                          |
+|:--------|:-------------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.5.6   | 2022-02-21   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats           |
+| 0.5.5   | 2022-02-18   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Updated timestamp transformation with microseconds                                                               |
+| 0.5.4   | 2022-02-11   | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |
+| 0.5.2   | 2021-12-14   | [6425](https://github.com/airbytehq/airbyte/issues/6425)   | MySQL CDC sync fails because starting binlog position not found in DB                                            |
+| 0.5.1   | 2021-12-13   | [8582](https://github.com/airbytehq/airbyte/pull/8582)     | Update connector fields title/description                                                                        |
+| 0.5.0   | 2021-12-11   | [7970](https://github.com/airbytehq/airbyte/pull/7970)     | Support all MySQL types                                                                                          |
+| 0.4.13  | 2021-12-03   | [8335](https://github.com/airbytehq/airbyte/pull/8335)     | Source-MySql: do not check cdc required param binlog_row_image for standard replication                          |
+| 0.4.12  | 2021-12-01   | [8371](https://github.com/airbytehq/airbyte/pull/8371)     | Fixed incorrect handling "\n" in ssh key                                                                         |
+| 0.4.11  | 2021-11-19   | [8047](https://github.com/airbytehq/airbyte/pull/8047)     | Source MySQL: transform binary data base64 format                                                                |
+| 0.4.10  | 2021-11-15   | [7820](https://github.com/airbytehq/airbyte/pull/7820)     | Added basic performance test                                                                                     |
+| 0.4.9   | 2021-11-02   | [7559](https://github.com/airbytehq/airbyte/pull/7559)     | Correctly process large unsigned short integer values which may fall outside java's `Short` data type capability |
+| 0.4.8   | 2021-09-16   | [6093](https://github.com/airbytehq/airbyte/pull/6093)     | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text            |
+| 0.4.7   | 2021-09-30   | [6585](https://github.com/airbytehq/airbyte/pull/6585)     | Improved SSH Tunnel key generation steps                                                                         |
+| 0.4.6   | 2021-09-29   | [6510](https://github.com/airbytehq/airbyte/pull/6510)     | Support SSL connection                                                                                           |
+| 0.4.5   | 2021-09-17   | [6146](https://github.com/airbytehq/airbyte/pull/6146)     | Added option to connect to DB via SSH                                                                            |
+| 0.4.1   | 2021-07-23   | [4956](https://github.com/airbytehq/airbyte/pull/4956)     | Fix log link                                                                                                     |
+| 0.3.7   | 2021-06-09   | [3179](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                                                                   |
+| 0.3.6   | 2021-06-09   | [3966](https://github.com/airbytehq/airbyte/pull/3966)     | Fix excessive logging for CDC method                                                                             |
+| 0.3.5   | 2021-06-07   | [3890](https://github.com/airbytehq/airbyte/pull/3890)     | Fix CDC handle tinyint\(1\) and boolean types                                                                    |
+| 0.3.4   | 2021-06-04   | [3846](https://github.com/airbytehq/airbyte/pull/3846)     | Fix max integer value failure                                                                                    |
+| 0.3.3   | 2021-06-02   | [3789](https://github.com/airbytehq/airbyte/pull/3789)     | MySQL CDC poll wait 5 minutes when not received a single record                                                  |
+| 0.3.2   | 2021-06-01   | [3757](https://github.com/airbytehq/airbyte/pull/3757)     | MySQL CDC poll 5s to 5 min                                                                                       |
+| 0.3.1   | 2021-06-01   | [3505](https://github.com/airbytehq/airbyte/pull/3505)     | Implemented MySQL CDC                                                                                            |
+| 0.3.0   | 2021-04-21   | [2990](https://github.com/airbytehq/airbyte/pull/2990)     | Support namespaces                                                                                               |
+| 0.2.5   | 2021-04-15   | [2899](https://github.com/airbytehq/airbyte/pull/2899)     | Fix bug in tests                                                                                                 |
+| 0.2.4   | 2021-03-28   | [2600](https://github.com/airbytehq/airbyte/pull/2600)     | Add NCHAR and NVCHAR support to DB and cursor type casting                                                       |
+| 0.2.3   | 2021-03-26   | [2611](https://github.com/airbytehq/airbyte/pull/2611)     | Add an optional `jdbc_url_params` in parameters                                                                  |
+| 0.2.2   | 2021-03-26   | [2460](https://github.com/airbytehq/airbyte/pull/2460)     | Destination supports destination sync mode                                                                       |
+| 0.2.1   | 2021-03-18   | [2488](https://github.com/airbytehq/airbyte/pull/2488)     | Sources support primary keys                                                                                     |
+| 0.2.0   | 2021-03-09   | [2238](https://github.com/airbytehq/airbyte/pull/2238)     | Protocol allows future/unknown properties                                                                        |
+| 0.1.10  | 2021-02-02   | [1887](https://github.com/airbytehq/airbyte/pull/1887)     | Migrate AbstractJdbcSource to use iterators                                                                      |
+| 0.1.9   | 2021-01-25   | [1746](https://github.com/airbytehq/airbyte/pull/1746)     | Fix NPE in State Decorator                                                                                       |
+| 0.1.8   | 2021-01-19   | [1724](https://github.com/airbytehq/airbyte/pull/1724)     | Fix JdbcSource handling of tables with same names in different schemas                                           |
+| 0.1.7   | 2021-01-14   | [1655](https://github.com/airbytehq/airbyte/pull/1655)     | Fix JdbcSource OOM                                                                                               |
+| 0.1.6   | 2021-01-08   | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                 |
+| 0.1.5   | 2020-12-11   | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                         |
+| 0.1.4   | 2020-11-30   | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                          |

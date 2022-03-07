@@ -15,7 +15,7 @@ const configContext = React.createContext<ConfigContext | null>(null);
 export function useConfig<T extends Config>(): T {
   const configService = useContext(configContext);
 
-  if (!configService) {
+  if (configService === null) {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
@@ -37,14 +37,17 @@ const ConfigServiceInner: React.FC<{
     () => (value ? { config: value } : null),
     [value]
   );
+
+  if (loading) {
+    return <LoadingPage />;
+  }
+
   return (
-    <configContext.Provider value={config}>
-      {loading && providers ? <LoadingPage /> : children}
-    </configContext.Provider>
+    <configContext.Provider value={config}>{children}</configContext.Provider>
   );
 };
 
 export const ConfigServiceProvider: React.FC<{
   defaultConfig: Config;
-  providers: ValueProvider<Config>;
+  providers?: ValueProvider<Config>;
 }> = React.memo(ConfigServiceInner);

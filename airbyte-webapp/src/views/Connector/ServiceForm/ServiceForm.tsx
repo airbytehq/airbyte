@@ -1,29 +1,32 @@
-import React, { useCallback, useMemo } from "react";
-import { Formik } from "formik";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
 import {
   useBuildForm,
   useBuildInitialSchema,
-  useBuildUiWidgets,
+  useBuildUiWidgetsContext,
   useConstructValidationSchema,
   usePatchFormik,
 } from "./useBuildForm";
 import { ServiceFormValues } from "./types";
-import { ServiceFormContextProvider } from "./serviceFormContext";
+import {
+  ServiceFormContextProvider,
+  useServiceForm,
+} from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import {
-  Connector,
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
+import { isDefined } from "utils/common";
 
-type ServiceFormProps = {
+export type ServiceFormProps = {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnector?: ConnectorDefinitionSpecification;
@@ -43,6 +46,40 @@ type ServiceFormProps = {
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
+  return null;
+};
+
+/***
+ * This function sets all initial const values in the form to current values
+ * @param schema
+ * @constructor
+ */
+const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
+  schema,
+}) => {
+  const { widgetsInfo } = useServiceForm();
+  const { values, setValues } = useFormikContext();
+
+  useEffect(() => {
+    // set all const fields to form field values, so we could send form
+    const constPatchedValues = Object.entries(widgetsInfo)
+      .filter(([_, v]) => isDefined(v.const))
+      .reduce((acc, [k, v]) => setIn(acc, k, v.const), values);
+
+    // set default fields as current values, so values could be populated correctly
+    // fix for https://github.com/airbytehq/airbyte/issues/6791
+    const defaultPatchedValues = Object.entries(widgetsInfo)
+      .filter(
+        ([k, v]) =>
+          isDefined(v.default) && !isDefined(getIn(constPatchedValues, k))
+      )
+      .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
+
+    setValues(defaultPatchedValues);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schema]);
+
   return null;
 };
 
@@ -76,6 +113,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [isLoading, specifications]
   );
 
+  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
+
   const uiOverrides = useMemo(
     () => ({
       name: {
@@ -100,36 +139,40 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     }),
     [
       formType,
-      toggleOpenRequestModal,
-      props.allowChangeConnector,
-      props.availableServices,
-      props.selectedConnector,
-      props.isEditMode,
+      selectedConnector?.documentationUrl,
       props.onServiceSelect,
+      props.availableServices,
+      props.allowChangeConnector,
+      props.isEditMode,
+      toggleOpenRequestModal,
     ]
   );
 
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
-
-  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
+  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(
     formFields,
     initialValues,
     uiOverrides
   );
 
   const validationSchema = useConstructValidationSchema(
-    uiWidgetsInfo,
-    jsonSchema
+    jsonSchema,
+    uiWidgetsInfo
+  );
+
+  const getValues = useCallback(
+    (values: ServiceFormValues) =>
+      validationSchema.cast(values, {
+        stripUnknown: true,
+      }),
+    [validationSchema]
   );
 
   const onFormSubmit = useCallback(
     async (values) => {
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
       return onSubmit(valuesToSend);
     },
-    [onSubmit, validationSchema]
+    [getValues, onSubmit]
   );
 
   const onRetestForm = useCallback(
@@ -137,55 +180,52 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       if (!onRetest) {
         return null;
       }
-      const valuesToSend = validationSchema.cast(values, {
-        stripUnknown: true,
-      });
+      const valuesToSend = getValues(values);
+
       return onRetest(valuesToSend);
     },
-    [onRetest, validationSchema]
+    [onRetest, getValues]
   );
 
   return (
-    <>
-      <Formik
-        validateOnBlur={true}
-        validateOnChange={true}
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={onFormSubmit}
-      >
-        {({ values, setSubmitting }) => (
-          <ServiceFormContextProvider
-            widgetsInfo={uiWidgetsInfo}
-            setUiWidgetsInfo={setUiWidgetsInfo}
-            formType={formType}
-            selectedService={props.availableServices.find(
-              (s) => Connector.id(s) === values.serviceType
-            )}
-            selectedConnector={props.selectedConnector}
-            isEditMode={props.isEditMode}
-            isLoadingSchema={props.isLoading}
-          >
-            <FormikPatch />
-            <FormRoot
-              {...props}
-              onRetest={async () => {
-                setSubmitting(true);
-                await onRetestForm(values);
-                setSubmitting(false);
-              }}
-              formFields={formFields}
+    <Formik
+      validateOnBlur={true}
+      validateOnChange={true}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onFormSubmit}
+    >
+      {({ values, setSubmitting }) => (
+        <ServiceFormContextProvider
+          widgetsInfo={uiWidgetsInfo}
+          getValues={getValues}
+          setUiWidgetsInfo={setUiWidgetsInfo}
+          formType={formType}
+          selectedConnector={selectedConnector}
+          availableServices={props.availableServices}
+          isEditMode={props.isEditMode}
+          isLoadingSchema={props.isLoading}
+        >
+          <FormikPatch />
+          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
+          <FormRoot
+            {...props}
+            onRetest={async () => {
+              setSubmitting(true);
+              await onRetestForm(values);
+              setSubmitting(false);
+            }}
+            formFields={formFields}
+          />
+          {isOpenRequestModal && (
+            <RequestConnectorModal
+              connectorType={formType}
+              onClose={toggleOpenRequestModal}
             />
-            {isOpenRequestModal && (
-              <RequestConnectorModal
-                connectorType={formType}
-                onClose={toggleOpenRequestModal}
-              />
-            )}
-          </ServiceFormContextProvider>
-        )}
-      </Formik>
-    </>
+          )}
+        </ServiceFormContextProvider>
+      )}
+    </Formik>
   );
 };
 export default ServiceForm;
