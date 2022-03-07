@@ -20,6 +20,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import java.io.IOException;
@@ -113,7 +114,7 @@ public class MetrisQueriesTest {
 
     @AfterEach
     void tearDown() throws SQLException {
-      configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
+      configDb.transaction(ctx -> ctx.truncate(ACTOR).execute());
     }
 
     @Test
@@ -302,32 +303,47 @@ public class MetrisQueriesTest {
   @Nested
   class numActiveConnPerWorkspace {
 
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(CONNECTION).cascade().execute());
+      configDb.transaction(ctx -> ctx.truncate(ACTOR).cascade().execute());
+      configDb.transaction(ctx -> ctx.truncate(WORKSPACE).cascade().execute());
+    }
+
     @Test
     void shouldReturnNumConnSimple() throws SQLException {
+      var workspaceId = UUID.randomUUID();
       configDb.transaction(
-          ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME).values(UUID.randomUUID(), "test-0")
+          ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", false)
               .execute());
 
       final var srcId = UUID.randomUUID();
       final var dstId = UUID.randomUUID();
       configDb.transaction(
-          ctx -> ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-              .values(srcId, UUID.randomUUID(), SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source)
-              .values(dstId, UUID.randomUUID(), DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination)
+          ctx -> ctx
+              .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+                  ACTOR.TOMBSTONE)
+              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
               .execute());
 
-      configDb.transaction(ctx -> {
-        MetricQueries.numberOfActiveConnPerWorkspace(ctx);
-        return 1;
-      });
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .execute());
+
+      final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      assertEquals(1, res.size());
+      assertEquals(2, res.get(0));
     }
 
     @Test
     void shouldReturnNothingIfNotApplicable() throws SQLException {
-      configDb.transaction(ctx -> {
-        MetricQueries.numberOfActiveConnPerWorkspace(ctx);
-        return 1;
-      });
+      final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      assertEquals(0, res.size());
     }
 
   }

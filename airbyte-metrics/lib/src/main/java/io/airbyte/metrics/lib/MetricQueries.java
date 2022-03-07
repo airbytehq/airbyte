@@ -100,7 +100,7 @@ public class MetricQueries {
     return duration.get(0).longValue();
   }
 
-  public static void numberOfActiveConnPerWorkspace(DSLContext ctx) {
+  public static List<Long> numberOfActiveConnPerWorkspace(DSLContext ctx) {
     var countField = "num_conn";
     final var query = String.format("""
                                     SELECT workspace_id, count(c.id) as %s
@@ -111,8 +111,7 @@ public class MetricQueries {
                                           AND actor.tombstone = false AND actor.actor_type = 'source'
                                             AND c.status = 'active'
                                         GROUP BY workspace_id;""", countField);
-    final var res = ctx.fetch(query).getValues(countField, long.class);
-    System.out.println(res);
+    return ctx.fetch(query).getValues(countField, long.class);
   }
 
 }
