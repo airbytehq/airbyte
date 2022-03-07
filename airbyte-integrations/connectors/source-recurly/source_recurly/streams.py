@@ -250,6 +250,7 @@ class CreditPayments(BaseStream):
 
 class ExportDates(BaseStream):
     cursor_field = []  # Disable `incremental` sync for `export_dates` Recurly API call
+    primary_key = None  # There are no primary keys for automated exports
 
     def read_records(
         self,
@@ -262,7 +263,7 @@ class ExportDates(BaseStream):
         Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
         resources and hence treated differently
         """
-        yield {"dates": self._client.get_export_dates().dates}
+        yield {"dates": self._client.get_export_dates().dates or [""]}
 
 
 class Invoices(BaseStream):
