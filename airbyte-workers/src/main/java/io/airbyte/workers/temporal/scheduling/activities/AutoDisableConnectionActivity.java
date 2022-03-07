@@ -13,12 +13,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @ActivityInterface
-public interface DisableActivity {
+public interface AutoDisableConnectionActivity {
 
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class DisableActivityInput {
+  class AutoDisableConnectionActivityInput {
 
     private UUID connectionId;
 
@@ -27,9 +27,11 @@ public interface DisableActivity {
   }
 
   /**
-   * Delete a connection
+   * Disable a connection if no successful sync jobs in the last MAX_FAILURE_JOBS_IN_A_ROW job
+   * attempts or the last MAX_DAYS_OF_STRAIGHT_FAILURE days (minimum 1 job attempt): disable
+   * connection to prevent wasting resources
    */
   @ActivityMethod
-  void disableConnection(DisableActivityInput input);
+  void autoDisableFailingConnection(AutoDisableConnectionActivityInput input);
 
 }
