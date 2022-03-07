@@ -82,6 +82,7 @@ public class MetrisQueriesTest {
     @AfterEach
     void tearDown() throws SQLException {
       configDb.transaction(ctx -> ctx.truncate(ACTOR).execute());
+      configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
     }
 
     @Test
@@ -115,6 +116,7 @@ public class MetrisQueriesTest {
     @AfterEach
     void tearDown() throws SQLException {
       configDb.transaction(ctx -> ctx.truncate(ACTOR).execute());
+      configDb.transaction(ctx -> ctx.truncate(JOBS).execute());
     }
 
     @Test
@@ -256,46 +258,51 @@ public class MetrisQueriesTest {
 
     }
 
-    @Nested
-    class oldestRunningJob {
+  }
 
-      @Test
-      @DisplayName("should return only the running job's age in seconds")
-      void shouldReturnOnlyRunningSeconds() throws SQLException {
-        final var expAgeSecs = 10000;
-        final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
-        // oldest pending job
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.running, oldestCreateAt)
-                .execute());
-        // second oldest pending job
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.running, OffsetDateTime.now())
-                .execute());
-        // non-pending jobs
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
+  @Nested
+  class oldestRunningJob {
 
-        final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
-        assertEquals(10000, res);
-      }
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+    }
 
-      @Test
-      @DisplayName("should not error out or return any result if not applicable")
-      void shouldReturnNothingIfNotApplicable() throws SQLException {
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.pending).execute());
-        configDb.transaction(
-            ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
+    @Test
+    @DisplayName("should return only the running job's age in seconds")
+    void shouldReturnOnlyRunningSeconds() throws SQLException {
+      final var expAgeSecs = 10000;
+      final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+      // oldest pending job
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.running, oldestCreateAt)
+              .execute());
+      // second oldest pending job
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.running, OffsetDateTime.now())
+              .execute());
+      // non-pending jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
-        final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
-        assertEquals(0L, res);
-      }
+      final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
+      assertEquals(10000, res);
+    }
 
+    @Test
+    @DisplayName("should not error out or return any result if not applicable")
+    void shouldReturnNothingIfNotApplicable() throws SQLException {
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.pending).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute());
+
+      final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
+      assertEquals(0L, res);
     }
 
   }
@@ -311,7 +318,8 @@ public class MetrisQueriesTest {
     }
 
     @Test
-    void shouldReturnNumConnSimple() throws SQLException {
+    @DisplayName("should return only connections per workspace")
+    void shouldReturnNumConnectionsBasic() throws SQLException {
       var workspaceId = UUID.randomUUID();
       configDb.transaction(
           ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", false)
@@ -341,6 +349,69 @@ public class MetrisQueriesTest {
     }
 
     @Test
+    @DisplayName("should ignore deleted connections")
+    void shouldIgnoreNonRunningConnections() throws SQLException {
+      var workspaceId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", false)
+              .execute());
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+                  ACTOR.TOMBSTONE)
+              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.deprecated)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.inactive)
+              .execute());
+
+      final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      assertEquals(1, res.size());
+      assertEquals(2, res.get(0));
+    }
+
+    @Test
+    @DisplayName("should ignore deleted connections")
+    void shouldIgnoreDeletedWorkspaces() throws SQLException {
+      var workspaceId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE).values(workspaceId, "test-0", true)
+              .execute());
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+                  ACTOR.TOMBSTONE)
+              .values(srcId, workspaceId, SRC_DEF_ID, "src", JSONB.valueOf("{}"), ActorType.source, false)
+              .values(dstId, workspaceId, DST_DEF_ID, "dst", JSONB.valueOf("{}"), ActorType.destination, false)
+              .execute());
+
+      configDb.transaction(
+          ctx -> ctx
+              .insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+                  CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+              .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, "conn", JSONB.valueOf("{}"), true, StatusType.active)
+              .execute());
+
+      final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    @DisplayName("should not error out or return any result if not applicable")
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
       assertEquals(0, res.size());
