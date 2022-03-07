@@ -36,13 +36,14 @@ public class S3Destination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Destination.class);
   private final S3DestinationConfigFactory configFactory;
 
-  public S3Destination () {
+  public S3Destination() {
     this.configFactory = new S3DestinationConfigFactory();
   }
 
-  public S3Destination (final S3DestinationConfigFactory configFactory) {
+  public S3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
   }
+
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new S3Destination()).run(args);
   }
