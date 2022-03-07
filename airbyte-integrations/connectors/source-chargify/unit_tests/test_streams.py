@@ -2,82 +2,142 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_chargify.source import ChargifyStream
+import requests
+from source_chargify.source import ChargifyStream, Customers, Subscriptions
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
+@pytest.fixture()
+def ChargifyStreamInstance(mocker) -> ChargifyStream:
+
     mocker.patch.object(ChargifyStream, "path", "v0/example_endpoint")
     mocker.patch.object(ChargifyStream, "primary_key", "test_primary_key")
     mocker.patch.object(ChargifyStream, "__abstractmethods__", set())
 
-
-def test_request_params(patch_base_class):
-    stream = ChargifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
+    return ChargifyStream(
+        authenticator=MagicMock(),
+        subdomain="test",
+        per_page=200,
+        page=1
+    )
 
 
-def test_next_page_token(patch_base_class):
-    stream = ChargifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+@pytest.fixture()
+def CustomerStreamInstance(mocker) -> Customers:
+
+    mocker.patch.object(Customers, "path", "v0/example_endpoint")
+    mocker.patch.object(Customers, "primary_key", "test_primary_key")
+    mocker.patch.object(Customers, "__abstractmethods__", set())
+
+    return Customers(
+        authenticator=MagicMock(),
+        subdomain="test",
+        per_page=200,
+        page=1
+    )
+
+@pytest.fixture()
+def SubscriptionsStreamInstance(mocker) -> Subscriptions:
+
+    mocker.patch.object(Subscriptions, "path", "v0/example_endpoint")
+    mocker.patch.object(Subscriptions, "primary_key", "test_primary_key")
+    mocker.patch.object(Subscriptions, "__abstractmethods__", set())
+
+    return Subscriptions(
+        authenticator=MagicMock(),
+        subdomain="test",
+        per_page=200,
+        page=1
+    )
+
+@pytest.mark.parametrize("subdomain, page, per_page", [('test', 1, 200),('test1',2,200),('test2', 3,200)])
+def test_stream_config(subdomain, page, per_page, mocker):
+
+    mocker.patch.object(ChargifyStream, "path", "v0/example_endpoint")
+    mocker.patch.object(ChargifyStream, "primary_key", "test_primary_key")
+    mocker.patch.object(ChargifyStream, "__abstractmethods__", set())
+    
+    stream: ChargifyStream = ChargifyStream(
+        subdomain=subdomain,
+        per_page=per_page,
+        page=page
+    )
+    assert stream._subdomain == subdomain
+    assert stream._page == page
+    assert stream._per_page == per_page
+    assert stream.url_base == f'https://{subdomain}.chargify.com'
+    assert stream.is_first_requests == True
+
+    customers_stream: Customers = Customers(subdomain=subdomain, page=page, per_page=per_page)
+    assert customers_stream.path() == f'customers.json'
+    assert customers_stream.primary_key == 'id'
+    assert stream.url_base == f'https://{subdomain}.chargify.com'
+    assert stream.is_first_requests == True
+
+    subscriptions_stream: Subscriptions = Subscriptions(subdomain=subdomain, page=page, per_page=per_page)
+    assert subscriptions_stream.path() == f'subscriptions.json'
+    assert subscriptions_stream.primary_key == 'id'
+    assert stream.url_base == f'https://{subdomain}.chargify.com'
+    assert stream.is_first_requests == True
+
+def test_next_page_token(ChargifyStreamInstance: ChargifyStream):
+    response = requests.Response()
+    response.url = 'https://test.chargify.com/subscriptions.json?page=1&per_page=200'
+    response.json = MagicMock()
+    response.json.return_value = [{'id': 1}, {'id': 2}]
+
+    token_params = ChargifyStreamInstance.next_page_token(response=response)
+
+    assert token_params == {'page': 2, 'per_page': '200'}
+
+    response = requests.Response()
+    response.url = 'https://test.chargify.com/subscriptions.json?page=1&per_page=200'
+    response.json = MagicMock()
+    response.json.return_value = {}
+
+    token_params = ChargifyStreamInstance.next_page_token(response=response)
+
+    assert token_params == None
 
 
-def test_parse_response(patch_base_class):
-    stream = ChargifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+def test_requests_params(ChargifyStreamInstance: ChargifyStream):
 
+    params = ChargifyStreamInstance.request_params(stream_state={},next_page_token=None)
 
-def test_request_headers(patch_base_class):
-    stream = ChargifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+    assert params == {'page': 1, 'per_page': 200}
 
+    setattr(ChargifyStreamInstance.__class__, 'is_first_requests', False)
+    
+    params = ChargifyStreamInstance.request_params(stream_state={}, next_page_token=None)
 
-def test_http_method(patch_base_class):
-    stream = ChargifyStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+    assert params == None
 
+    params = ChargifyStreamInstance.request_params(stream_state={}, next_page_token={'page': 2, 'per_page': 200})
 
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = ChargifyStream()
-    assert stream.should_retry(response_mock) == should_retry
+    assert params == {'page': 2, 'per_page': 200}
 
+def test_parse_subscriptions_response(SubscriptionsStreamInstance: Subscriptions):
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = ChargifyStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    response = MagicMock()
+    response.json.return_value = [{"subscription": {"id": 0,"state": "string","balance_in_cents": 0}}, {"subscription": {"id":2,"state": "string","balance_in_cents": 1000}},{"subscription": {"id":3,"state": "string","balance_in_cents": 100}}]
+
+    response = list(SubscriptionsStreamInstance.parse_response(response=response))
+
+    assert len(response) == 3
+    assert response[0] == {"id": 0,"state": "string","balance_in_cents": 0}
+    assert response[1] == {"id":2,"state": "string","balance_in_cents": 1000}
+    assert response[2] == {"id":3,"state": "string","balance_in_cents": 100}
+
+def test_parse_customers_response(CustomerStreamInstance: Customers):
+
+    response = MagicMock()
+    response.json.return_value = [{"customer": {"id": 0,"state": "string","balance_in_cents": 0}}, {"customer": {"id":2,"state": "string","balance_in_cents": 1000}},{"customer": {"id":3,"state": "string","balance_in_cents": 100}}]
+
+    response = list(CustomerStreamInstance.parse_response(response=response))
+
+    assert len(response) == 3
+    assert response[0] == {"id": 0,"state": "string","balance_in_cents": 0}
+    assert response[1] == {"id":2,"state": "string","balance_in_cents": 1000}
+    assert response[2] == {"id":3,"state": "string","balance_in_cents": 100}

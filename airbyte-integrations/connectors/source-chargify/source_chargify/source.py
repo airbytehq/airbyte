@@ -17,6 +17,7 @@ from airbyte_cdk.models import SyncMode
 
 
 
+
 # Basic full refresh stream
 class ChargifyStream(HttpStream, ABC):
 
@@ -56,12 +57,9 @@ class ChargifyStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        if next_page_token is None and self.is_first_requests:
+        if next_page_token is None and self.is_first_requests is True:
             self.is_first_requests == False
             return {"page": self._page, "per_page": self._per_page}
-
-        if next_page_token is not None and self.is_first_requests is False:
-            return None
 
         return next_page_token
 

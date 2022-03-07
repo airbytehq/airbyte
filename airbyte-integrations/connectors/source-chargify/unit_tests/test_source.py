@@ -7,15 +7,15 @@ from unittest.mock import MagicMock
 from source_chargify.source import SourceChargify
 
 
-def test_check_connection(mocker):
-    source = SourceChargify()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
-
-
 def test_streams(mocker):
     source = SourceChargify()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     expected_streams_number = 2
     assert len(streams) == expected_streams_number
+
+def test_streams_config(mocker):
+    source = SourceChargify()
+    config_mock = {"subdomain": "tst", "page": 1, "per_page": 200}
+    streams_config = source.convert_config2stream_args(config_mock)
+    assert streams_config == {"subdomain":"tst", "page": 1, "per_page": 200}
