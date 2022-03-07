@@ -120,10 +120,11 @@ class TestBackoff:
             stream = Campaigns(api=api, start_date=datetime.now(), end_date=datetime.now(), include_deleted=False)
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
-    def test_connection_reset_error(self, requests_mock, api, account_id):
+    @pytest.mark.parametrize("code", [104, 2], ids=["connection_reset", 'temporary_oauth'])
+    def test_retry_error(self, code, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
 
-        responses = [{"json": {"error": {"code": 104}}}]
+        responses = [{"json": {"error": {"code": code}}}]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/insights", responses)
 
