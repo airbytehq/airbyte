@@ -17,6 +17,7 @@ from airbyte_api_client.model.destination_read_list import DestinationReadList
 from airbyte_api_client.model.destination_search import DestinationSearch
 from airbyte_api_client.model.destination_update import DestinationUpdate
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
 from airbyte_api_client.model.source_read_list import SourceReadList
 from airbyte_api_client.model.source_search import SourceSearch
@@ -354,6 +355,19 @@ class Source(BaseResource):
             connection_configuration=self.configuration,
             name=self.resource_name,
         )
+
+    # @property
+    # def resource_id_request_body(self):
+    #     return
+
+    @property
+    def catalog(self):
+        if self.was_created:
+            return self.api_instance.discover_schema_for_source(
+                SourceIdRequestBody(source_id=self.resource_id), _check_return_type=False
+            ).catalog
+        else:
+            raise NonExistingResourceError("This source does not exists, its catalog cannot be loaded")
 
 
 class Destination(BaseResource):

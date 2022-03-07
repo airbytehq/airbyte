@@ -5,6 +5,7 @@
 import os
 from typing import Any, Callable, List
 
+import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from .definitions import BaseDefinition, ConnectionDefinition
@@ -127,7 +128,9 @@ def get_object_fields(field_metadata: dict) -> List["FieldToRender"]:
     return []
 
 
+# TODO alafanechere make this an abstract class
 class BaseRenderer:
+    # TODO alafanechere add write_yaml as abstract method
     def _get_output_path(self, project_path: str) -> str:
         directory = os.path.join(project_path, f"{self.definition.type}s", self.resource_name)
         if not os.path.exists(directory):
@@ -167,25 +170,23 @@ class ConnectionSpecificationRenderer(BaseRenderer):
 
 class ConnectionRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
+    definition = ConnectionDefinition
 
-    def __init__(self, resource_name: str, source_id: str, destination_id: str, streams: dict) -> None:
-        self.definition = ConnectionDefinition
-        self.resource_name = resource_name
-        self.source_id = source_id
-        self.destination_id = destination_id
-        self.streams = streams
+    def __init__(self, connection_name: str, source, destination) -> None:
+        self.resource_name = connection_name
+        self.source = source
+        self.destination = destination
 
     def write_yaml(self, project_path: str) -> str:
         output_path = self._get_output_path(project_path)
         rendered = self.TEMPLATE.render(
             {
-                "resource_name": self.resource_name,
-                "source_id": self.source_id,
-                "destination_id": self.destination_id,
-                "streams": self.streams,
+                "connection_name": self.resource_name,
+                "source_id": self.source.resource_id,
+                "destination_id": self.destination.resource_id,
+                "catalog": yaml.dump(self.source.catalog),
             }
         )
-
         with open(output_path, "w") as f:
             f.write(rendered)
         return output_path
