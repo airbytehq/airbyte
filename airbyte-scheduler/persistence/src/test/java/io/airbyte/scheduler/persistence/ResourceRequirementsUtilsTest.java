@@ -4,7 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobTypeResourceLimit;
