@@ -4,7 +4,7 @@
 
 import click
 import octavia_cli.generate.definitions as definitions
-from octavia_cli.check_context import ProjectNotInitializedError
+from octavia_cli.check_context import requires_init
 
 from .renderer import ConnectionSpecificationRenderer
 
@@ -14,12 +14,8 @@ from .renderer import ConnectionSpecificationRenderer
 @click.argument("definition_id", type=click.STRING)
 @click.argument("resource_name", type=click.STRING)
 @click.pass_context
+@requires_init
 def generate(ctx: click.Context, definition_type: str, definition_id: str, resource_name: str):
-    if not ctx.obj["PROJECT_IS_INITIALIZED"]:
-        raise ProjectNotInitializedError(
-            "Your octavia project is not initialized, please run 'octavia init' before running 'octavia generate'."
-        )
-
     definition = definitions.factory(definition_type, ctx.obj["API_CLIENT"], definition_id)
     renderer = ConnectionSpecificationRenderer(resource_name, definition)
     output_path = renderer.write_yaml(project_path=".")
