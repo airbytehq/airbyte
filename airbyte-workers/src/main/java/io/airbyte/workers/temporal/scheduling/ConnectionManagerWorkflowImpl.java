@@ -20,8 +20,6 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.Sch
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity.ConnectionDeletionInput;
-import io.airbyte.workers.temporal.scheduling.activities.DisableActivity;
-import io.airbyte.workers.temporal.scheduling.activities.DisableActivity.DisableActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
