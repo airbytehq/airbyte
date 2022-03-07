@@ -72,5 +72,4 @@ def test_incremental_sync(stream, cur_stream_state, state_object, expected_outpu
     # create the fixure for *args based on input
     args = [stream]
     actual = stream_state_cache.stream_state_to_tmp(*args, state_object=state_object, stream_state=cur_stream_state)
-    print(actual)
     assert actual == expected_output
