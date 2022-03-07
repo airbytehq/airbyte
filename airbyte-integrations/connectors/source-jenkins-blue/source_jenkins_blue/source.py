@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import copy
 import dataclasses
 import fnmatch
 import logging
@@ -103,7 +104,7 @@ class StreamProtocol(Protocol):
 
 class JenkinsStream(HttpStream, ABC):
     url_base = "https://example.com/jenkins/"
-    page_size = 100
+    page_size = 500
 
     def __init__(self, url_base: str, authenticator: AuthBase) -> None:
         url_base = url_base.rstrip("/")
@@ -197,7 +198,7 @@ class ParentStreamMixin(IncrementalMixin):
     def state(self, value: MutableMapping[str, Any]) -> None:
         # Save off the initial state as soon as it is set.
         if self._initial_state is None:
-            self._initial_state = value
+            self._initial_state = copy.deepcopy(value)
         self._state = value
 
     def read_records_from_initial_state(self, sync_mode: SyncMode):
@@ -318,6 +319,9 @@ class Runs(ParentStreamMixin, CachingSubStream):
     cursor_field = "startTime"
 
     sync_mode = SyncMode.full_refresh
+
+    # Runs are often pruned by Jenkins, resulting in 404 errors.
+    raise_on_http_errors = False
 
     def __init__(self, parent: Pipelines, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
@@ -473,6 +477,8 @@ class Steps(IncrementalMixin, CachingSubStream):
 
 # Source
 class SourceJenkinsBlue(AbstractSource):
+    stream_order = ["organizations", "pipelines", "runs", "nodes", "steps"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._streams: List[Stream] = []
@@ -517,6 +523,15 @@ class SourceJenkinsBlue(AbstractSource):
         self._streams = self._build_streams(config, catalog)
 
         yield from super().read(logger, config, catalog, state)
+
+    def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
+        catalog = super().read_catalog(catalog_path=catalog_path)
+
+        # Process the streams in our desired order.
+        ordered_streams = sorted(catalog.streams, key=lambda s: self.stream_order.index(s.stream.name))
+        catalog.streams = ordered_streams
+
+        return catalog
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # During discover, we don't get a catalog.
@@ -574,6 +589,7 @@ class SourceJenkinsBlue(AbstractSource):
                 **common_args,
             )
         ]
-        # Server always sorts by name.
-        streams = sorted(streams, key=lambda s: s.name)
+
+        # Emit the streams in our desired order, even though the server ignores that.
+        streams = sorted(streams, key=lambda s: self.stream_order.index(s.name))
         return streams
