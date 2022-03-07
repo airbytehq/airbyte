@@ -195,7 +195,7 @@ class BigQueryDestinationTest {
 
   @Test
   void testSpec() throws Exception {
-    final ConnectorSpecification actual = new BigQueryDestination().spec();
+    final ConnectorSpecification actual = new BigQueryDestination(false).spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -206,7 +206,7 @@ class BigQueryDestinationTest {
   @MethodSource("datasetIdResetterProvider")
   void testCheckSuccess(DatasetIdResetter resetDatasetId) {
     resetDatasetId.accept(config);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus actual = new BigQueryDestination(false).check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
@@ -216,7 +216,7 @@ class BigQueryDestinationTest {
   void testCheckFailure(DatasetIdResetter resetDatasetId) {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus actual = new BigQueryDestination(false).check(config);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
     assertTrue(actualMessage.contains("Access Denied:"));
@@ -228,7 +228,7 @@ class BigQueryDestinationTest {
   @MethodSource("datasetIdResetterProvider")
   void testWriteSuccess(DatasetIdResetter resetDatasetId) throws Exception {
     resetDatasetId.accept(config);
-    final BigQueryDestination destination = new BigQueryDestination();
+    final BigQueryDestination destination = new BigQueryDestination(false);
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);
@@ -263,7 +263,7 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination(false).getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
@@ -325,7 +325,7 @@ class BigQueryDestinationTest {
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
     assertFalse(isTablePartitioned(bigquery, dataset, raw_table_name));
-    final BigQueryDestination destination = new BigQueryDestination();
+    final BigQueryDestination destination = new BigQueryDestination(false);
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);

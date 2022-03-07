@@ -235,7 +235,7 @@ class BigQueryGcsDestinationTest {
 
   @Test
   void testSpec() throws Exception {
-    final ConnectorSpecification actual = new BigQueryDestination().spec();
+    final ConnectorSpecification actual = new BigQueryDestination(false).spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -244,7 +244,7 @@ class BigQueryGcsDestinationTest {
 
   @Test
   void testCheckSuccess() {
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus actual = new BigQueryDestination(false).check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
@@ -252,7 +252,7 @@ class BigQueryGcsDestinationTest {
   @Test
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final AirbyteConnectionStatus actual = new BigQueryDestination(false).check(config);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
     assertTrue(actualMessage.contains("Access Denied:"));
@@ -262,7 +262,7 @@ class BigQueryGcsDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final BigQueryDestination destination = new BigQueryDestination();
+    final BigQueryDestination destination = new BigQueryDestination(false);
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);
@@ -295,7 +295,7 @@ class BigQueryGcsDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination(false).getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
