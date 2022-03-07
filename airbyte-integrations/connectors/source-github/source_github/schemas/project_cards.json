@@ -8,17 +8,76 @@
     "project_url": {
       "type": ["null", "string"]
     },
-    "cards_url": {
-      "type": ["null", "string"]
-    },
     "id": {
       "type": ["null", "integer"]
     },
     "node_id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "note": {
       "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "creator": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "gravatar_id": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "followers_url": {
+          "type": ["null", "string"]
+        },
+        "following_url": {
+          "type": ["null", "string"]
+        },
+        "gists_url": {
+          "type": ["null", "string"]
+        },
+        "starred_url": {
+          "type": ["null", "string"]
+        },
+        "subscriptions_url": {
+          "type": ["null", "string"]
+        },
+        "organizations_url": {
+          "type": ["null", "string"]
+        },
+        "repos_url": {
+          "type": ["null", "string"]
+        },
+        "events_url": {
+          "type": ["null", "string"]
+        },
+        "received_events_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "site_admin": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "created_at": {
       "type": ["null", "string"]
@@ -26,11 +85,17 @@
     "updated_at": {
       "type": ["null", "string"]
     },
+    "column_url": {
+      "type": ["null", "string"]
+    },
     "repository": {
       "type": ["null", "string"]
     },
     "project_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
+    },
+    "column_id": {
+      "type": ["null", "integer"]
     }
   }
 }

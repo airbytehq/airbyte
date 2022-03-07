@@ -886,7 +886,7 @@ class ProjectColumns(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"], "project_id": str(record["id"])}
+                yield {"repository": record["repository"], "project_id": record["id"]}
 
     def read_records(
         self,
@@ -905,7 +905,7 @@ class ProjectColumns(GithubStream):
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             repository = stream_slice["repository"]
-            project_id = stream_slice["project_id"]
+            project_id = str(stream_slice["project_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
@@ -913,7 +913,7 @@ class ProjectColumns(GithubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
-        project_id = latest_record["project_id"]
+        project_id = str(latest_record["project_id"])
         updated_state = latest_record[self.cursor_field]
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
         if stream_state_value:
@@ -953,7 +953,7 @@ class ProjectCards(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": str(record["id"])}
+                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
 
     def read_records(
         self,
@@ -972,8 +972,8 @@ class ProjectCards(GithubStream):
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             repository = stream_slice["repository"]
-            project_id = stream_slice["project_id"]
-            column_id = stream_slice["column_id"]
+            project_id = str(stream_slice["project_id"])
+            column_id = str(stream_slice["column_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
@@ -981,8 +981,8 @@ class ProjectCards(GithubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
-        project_id = latest_record["project_id"]
-        column_id = latest_record["column_id"]
+        project_id = str(latest_record["project_id"])
+        column_id = str(latest_record["column_id"])
         updated_state = latest_record[self.cursor_field]
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
         if stream_state_value:
