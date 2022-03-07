@@ -1,0 +1,155 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "orders",
+        "json_schema": {
+          "type": "object",
+          "title": "Order",
+          "required": [
+            "account_number",
+            "order_number",
+            "item_number",
+            "serial_number",
+            "updated_at"
+          ],
+          "properties": {
+            "account": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "addresses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "city": {
+              "type": "string",
+              "title": "City",
+              "maxLength": 255
+            },
+            "email": {
+              "type": "string",
+              "title": "Email",
+              "maxLength": 255
+            },
+            "company": {
+              "type": "string",
+              "title": "Company",
+              "maxLength": 255
+            },
+            "country": {
+              "type": "string",
+              "title": "Country",
+              "maxLength": 255
+            },
+            "quantity": {
+              "type": "integer",
+              "title": "Quantity",
+              "default": 0
+            },
+            "attention": {
+              "type": "string",
+              "title": "Attention",
+              "maxLength": 1024
+            },
+            "carton_id": {
+              "type": "string",
+              "title": "Carton Id",
+              "maxLength": 255
+            },
+            "ship_date": {
+              "type": "string",
+              "title": "Ship Date",
+              "format": "date"
+            },
+            "order_type": {
+              "type": "string",
+              "title": "Order Type",
+              "maxLength": 255
+            },
+            "updated_at": {
+              "type": "string",
+              "title": "Updated At",
+              "format": "date-time"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description",
+              "maxLength": 2048
+            },
+            "item_number": {
+              "type": "string",
+              "title": "Item Number",
+              "maxLength": 255
+            },
+            "postal_code": {
+              "type": "string",
+              "title": "Postal Code",
+              "maxLength": 255
+            },
+            "order_number": {
+              "type": "string",
+              "title": "Order Number",
+              "maxLength": 255
+            },
+            "serial_number": {
+              "type": "string",
+              "title": "Serial Number",
+              "maxLength": 255
+            },
+            "account_number": {
+              "type": "string",
+              "title": "Account Number",
+              "maxLength": 255
+            },
+            "state_province": {
+              "type": "string",
+              "title": "State Province",
+              "maxLength": 255
+            },
+            "customer_number": {
+              "type": "string",
+              "title": "Customer Number",
+              "maxLength": 255
+            },
+            "tracking_number": {
+              "type": "string",
+              "title": "Tracking Number",
+              "maxLength": 255
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [
+          ["account_number"],
+          ["order_number"],
+          ["item_number"],
+          ["serial_number"]
+        ],
+        "namespace": "dcl_local_ab"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [
+        ["account_number"],
+        ["order_number"],
+        ["item_number"],
+        ["serial_number"]
+      ]
+    }
+  ]
+}
