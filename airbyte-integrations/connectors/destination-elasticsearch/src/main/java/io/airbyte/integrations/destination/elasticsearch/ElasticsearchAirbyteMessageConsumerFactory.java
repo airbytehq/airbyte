@@ -12,8 +12,10 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.DefaultRecordBufferingStrategy;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +32,7 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  private static AtomicLong recordsWritten = new AtomicLong(0);
+  private static final AtomicLong recordsWritten = new AtomicLong(0);
 
   /**
    * Holds a mapping of temp to target indices. After closing a sync job, the target index is removed
@@ -46,11 +48,10 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(connection, writeConfigs),
-        recordWriterFunction(connection, writeConfigs),
+        new DefaultRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
         onCloseFunction(connection),
         catalog,
-        isValidFunction(connection),
-        MAX_BATCH_SIZE_BYTES);
+        isValidFunction(connection));
   }
 
   // is there any json node that wont fit in the index?
@@ -68,9 +69,9 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     };
   }
 
-  private static RecordWriter recordWriterFunction(
-                                                   ElasticsearchConnection connection,
-                                                   List<ElasticsearchWriteConfig> writeConfigs) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
+                                                                         ElasticsearchConnection connection,
+                                                                         List<ElasticsearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());

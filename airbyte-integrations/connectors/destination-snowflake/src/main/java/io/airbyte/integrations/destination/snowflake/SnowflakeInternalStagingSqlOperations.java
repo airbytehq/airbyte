@@ -7,15 +7,10 @@ package io.airbyte.integrations.destination.snowflake;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.staging.StagingOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.io.File;
-import java.nio.file.Files;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import org.apache.commons.lang3.NotImplementedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,37 +44,26 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public void uploadRecordsToStage(final JdbcDatabase database, final File dataFile, final String schemaName, final String path) throws Exception {
-    throw new NotImplementedException("placeholder function is not implemented yet");
-  }
-
-  @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String stage) {
-    LOGGER.info("Writing {} records to {}", records.size(), stage);
-
-    if (records.isEmpty()) {
-      return;
-    }
+  public String uploadRecordsToStage(final JdbcDatabase database,
+                                     final RecordBufferImplementation recordsData,
+                                     final String schema,
+                                     final String stage) {
     try {
-      loadDataIntoStage(database, stage, records);
+      loadDataIntoStage(database, stage, recordsData);
+      return recordsData.getFilename();
     } catch (final Exception e) {
       LOGGER.error("Failed to upload records into stage {}", stage, e);
       throw new RuntimeException(e);
     }
   }
 
-  private void loadDataIntoStage(final JdbcDatabase database, final String stage, final List<AirbyteRecordMessage> partition) throws Exception {
-    final File tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".csv").toFile();
-    writeBatchToFile(tempFile, partition);
-    database.execute(String.format("PUT file://%s @%s PARALLEL = %d", tempFile.getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
-    Files.delete(tempFile.toPath());
+  private void loadDataIntoStage(final JdbcDatabase database, final String stage, final RecordBufferImplementation recordsData) throws Exception {
+    database.execute(
+        String.format("PUT file://%s @%s PARALLEL = %d", recordsData.getFile().getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
   }
 
   @Override
-  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws SQLException {
+  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
         () -> database.execute(String.format(query, stageName)),
@@ -87,24 +71,28 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String stageName, final String dstTableName, final String schemaName)
-      throws SQLException {
+  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
+                                        final String path,
+                                        final List<String> stagedFiles,
+                                        final String dstTableName,
+                                        final String schemaName)
+      throws Exception {
     final String query = "COPY INTO %s.%s FROM @%s file_format = " +
         "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> database.execute(String.format(query, schemaName, dstTableName, stageName)),
-        Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
+        () -> database.execute(String.format(query, schemaName, dstTableName, path)),
+        Map.of("schema", schemaName, "stage", path, "table", dstTableName));
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws SQLException {
+  public void dropStageIfExists(final JdbcDatabase database, final String path) throws Exception {
     AirbyteSentry.executeWithTracing("DropStageIfExists",
-        () -> database.execute(String.format("DROP STAGE IF EXISTS %s;", stageName)),
-        Map.of("stage", stageName));
+        () -> database.execute(String.format("DROP STAGE IF EXISTS %s;", path)),
+        Map.of("stage", path));
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String path) throws SQLException {
+  public void cleanUpStage(final JdbcDatabase database, final String path, final List<String> stagedFiles) throws Exception {
     AirbyteSentry.executeWithTracing("CleanStage",
         () -> database.execute(String.format("REMOVE @%s;", path)),
         Map.of("path", path));

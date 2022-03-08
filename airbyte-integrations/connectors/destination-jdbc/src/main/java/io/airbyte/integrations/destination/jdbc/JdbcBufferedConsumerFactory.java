@@ -14,10 +14,12 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.DefaultRecordBufferingStrategy;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -56,11 +58,10 @@ public class JdbcBufferedConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
-        recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
+        new DefaultRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        sqlOperations::isValidData,
-        DEFAULT_MAX_BATCH_SIZE_BYTES);
+        sqlOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -132,10 +133,10 @@ public class JdbcBufferedConsumerFactory {
     };
   }
 
-  private static RecordWriter recordWriterFunction(final JdbcDatabase database,
-                                                   final SqlOperations sqlOperations,
-                                                   final List<WriteConfig> writeConfigs,
-                                                   final ConfiguredAirbyteCatalog catalog) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
+                                                                         final SqlOperations sqlOperations,
+                                                                         final List<WriteConfig> writeConfigs,
+                                                                         final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 

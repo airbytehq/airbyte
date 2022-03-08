@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.staging.CompressedCsvFileBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -96,6 +97,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         getDatabase(config),
         new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
         getNamingResolver(),
+        CompressedCsvFileBuffer.defaultSettings(),
         config,
         catalog);
   }

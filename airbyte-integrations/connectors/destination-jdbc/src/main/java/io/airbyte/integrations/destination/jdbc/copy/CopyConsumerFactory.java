@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
+import io.airbyte.integrations.destination.buffered_stream_consumer.DefaultRecordBufferingStrategy;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -53,12 +54,13 @@ public class CopyConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
-        recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
-        removeStagingFilePrinter(pairToCopier),
+        new DefaultRecordBufferingStrategy(
+            recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+            removeStagingFilePrinter(pairToCopier),
+            DEFAULT_MAX_BATCH_SIZE_BYTES),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
-        sqlOperations::isValidData,
-        DEFAULT_MAX_BATCH_SIZE_BYTES);
+        sqlOperations::isValidData);
   }
 
   private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
@@ -85,9 +87,9 @@ public class CopyConsumerFactory {
     return pairToIgnoredRecordCount::clear;
   }
 
-  private static RecordWriter recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-                                                   final SqlOperations sqlOperations,
-                                                   final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
+                                                                         final SqlOperations sqlOperations,
+                                                                         final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {

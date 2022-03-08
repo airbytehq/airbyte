@@ -64,7 +64,7 @@ public class BufferedStreamConsumerTest {
 
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
-  private RecordWriter recordWriter;
+  private RecordWriter<AirbyteRecordMessage> recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
@@ -80,11 +80,10 @@ public class BufferedStreamConsumerTest {
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new DefaultRecordBufferingStrategy(recordWriter, 1_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        1_000);
+        isValidRecord);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -163,11 +162,10 @@ public class BufferedStreamConsumerTest {
     final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new DefaultRecordBufferingStrategy(recordWriter, 10_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        10_000);
+        isValidRecord);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);

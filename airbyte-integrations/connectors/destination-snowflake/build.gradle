@@ -10,6 +10,7 @@ application {
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
             '-XX:MaxRAMPercentage=75.0',
+//            '-Xmx2000m',
 //            '-XX:NativeMemoryTracking=detail',
 //            "-Djava.rmi.server.hostname=localhost",
 //            '-Dcom.sun.management.jmxremote=true',
