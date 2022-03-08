@@ -95,6 +95,8 @@ class TestBaseResource:
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value=False))
         mocker.patch.object(resources, "compute_checksum")
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert resource.CHECK_RETURN_TYPE is True
+        assert resource.APPLY_PRIORITY == 0
         assert resource.workspace_id == "workspace_id"
         assert resource.local_configuration == local_configuration
         assert resource.configuration_path == "bar.yaml"
@@ -116,7 +118,7 @@ class TestBaseResource:
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert resource.was_created is True
         assert resource.local_file_changed is False
-        assert resource.resource_id == "my_resource_id"
+        assert resource.resource_id == resource.state.resource_id
 
     def test_init_with_remote_resource_changed(self, mocker, patch_base_class, mock_api_client, local_configuration):
         mocker.patch.object(
@@ -129,7 +131,7 @@ class TestBaseResource:
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         assert resource.was_created is True
         assert resource.local_file_changed is True
-        assert resource.resource_id == "my_resource_id"
+        assert resource.resource_id == resource.state.resource_id
 
     @pytest.fixture
     def resource(self, patch_base_class, mock_api_client, local_configuration):
@@ -143,7 +145,9 @@ class TestBaseResource:
     def test_search(self, resource):
         search_results = resource._search()
         assert search_results == resource._search_fn.return_value
-        resource._search_fn.assert_called_with(resource.api_instance, resource.search_payload)
+        resource._search_fn.assert_called_with(
+            resource.api_instance, resource.search_payload, _check_return_type=resource.CHECK_RETURN_TYPE
+        )
 
     @pytest.mark.parametrize(
         "search_results,expected_error,expected_output",
@@ -187,14 +191,14 @@ class TestBaseResource:
         "was_created",
         [True, False],
     )
-    def test_get_diff_with_remote_resource(self, mocker, resource, was_created):
-
-        mock_remote_resource = mocker.Mock(return_value=None if not was_created else mocker.Mock())
-        mocker.patch.object(resource, "_get_remote_resource", mock_remote_resource)
+    def test_get_diff_with_remote_resource(self, patch_base_class, mocker, mock_api_client, local_configuration, was_created):
+        mocker.patch.object(resources.BaseResource, "_get_comparable_configuration")
+        mocker.patch.object(resources.BaseResource, "was_created", was_created)
+        resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         mocker.patch.object(resources, "compute_diff")
         if was_created:
             diff = resource.get_diff_with_remote_resource()
-            resources.compute_diff.assert_called_with(resource.remote_resource.connection_configuration, resource.configuration)
+            resources.compute_diff.assert_called_with(resource._get_comparable_configuration.return_value, resource.configuration)
             assert diff == resources.compute_diff.return_value.pretty.return_value
         else:
             with pytest.raises(resources.NonExistingResourceError):
@@ -230,6 +234,20 @@ class TestBaseResource:
         assert resource.update() == resource._create_or_update.return_value
         resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload)
 
+    @pytest.mark.parametrize(
+        "was_created",
+        [True, False],
+    )
+    def test_get_comparable_configuration(self, patch_base_class, mocker, mock_api_client, local_configuration, was_created):
+        mocker.patch.object(resources.BaseResource, "was_created", was_created)
+        mocker.patch.object(resources.BaseResource, "remote_resource")
+        resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        if not was_created:
+            with pytest.raises(resources.NonExistingResourceError):
+                resource._get_comparable_configuration()
+        else:
+            assert resource._get_comparable_configuration() == resource.remote_resource
+
 
 class TestSource:
     @pytest.mark.parametrize(
@@ -247,7 +265,7 @@ class TestSource:
         assert source.search_function_name == "search_sources"
         assert source.update_function_name == "update_source"
         assert source.resource_type == "source"
-        assert source.apply_priority == 0
+        assert source.APPLY_PRIORITY == 0
         assert source.create_payload == resources.SourceCreate(
             source.definition_id, source.configuration, source.workspace_id, source.resource_name
         )
@@ -262,6 +280,15 @@ class TestSource:
             assert source.search_payload == resources.SourceSearch(
                 source_definition_id=source.definition_id, workspace_id=source.workspace_id, source_id=source.state.resource_id
             )
+
+    def test_get_comparable_configuration(self, mocker, mock_api_client, local_configuration):
+        mock_base_comparable_configuration = mocker.Mock()
+        mocker.patch.object(resources.BaseResource, "_get_comparable_configuration", mock_base_comparable_configuration)
+        mocker.patch.object(resources.Source, "was_created", True)
+        mocker.patch.object(resources.Source, "remote_resource")
+
+        resource = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert resource._get_comparable_configuration() == mock_base_comparable_configuration.return_value.connection_configuration
 
 
 class TestDestination:
@@ -280,7 +307,7 @@ class TestDestination:
         assert destination.search_function_name == "search_destinations"
         assert destination.update_function_name == "update_destination"
         assert destination.resource_type == "destination"
-        assert destination.apply_priority == 0
+        assert destination.APPLY_PRIORITY == 0
         assert destination.create_payload == resources.DestinationCreate(
             destination.workspace_id, destination.resource_name, destination.definition_id, destination.configuration
         )
@@ -298,6 +325,15 @@ class TestDestination:
                 destination_id=destination.state.resource_id,
             )
 
+    def test_get_comparable_configuration(self, mocker, mock_api_client, local_configuration):
+        mock_base_comparable_configuration = mocker.Mock()
+        mocker.patch.object(resources.BaseResource, "_get_comparable_configuration", mock_base_comparable_configuration)
+        mocker.patch.object(resources.Destination, "was_created", True)
+        mocker.patch.object(resources.Destination, "remote_resource")
+
+        resource = resources.Destination(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert resource._get_comparable_configuration() == mock_base_comparable_configuration.return_value.connection_configuration
+
 
 class TestConnection:
     @pytest.mark.parametrize(
@@ -306,39 +342,43 @@ class TestConnection:
     )
     def test_init(self, mocker, mock_api_client, state):
         connection_configuration = {
+            "definition_type": "connection",
             "resource_name": "my_connection",
-            "namespace_definition": "customformat",
-            "namespace_format": "foo",
-            "prefix": "foo",
-            "source_id": "foo",
-            "destination_id": "foo",
-            "operation_ids": ["foo"],
-            "sync_catalog": {
-                "streams": [
-                    {
-                        "stream": {
-                            "name": "name_example",
-                            "json_schema": {},
-                            "supported_sync_modes": ["incremental"],
-                            "source_defined_cursor": True,
-                            "default_cursor_field": ["default_cursor_field"],
-                            "source_defined_primary_key": [["string_example"]],
-                            "namespace": "namespace_example",
-                        },
-                        "config": {
-                            "sync_mode": "incremental",
-                            "cursor_field": ["cursor_field_example"],
-                            "destination_sync_mode": "append_dedup",
-                            "primary_key": [["string_example"]],
-                            "alias_name": "alias_name_example",
-                            "selected": True,
-                        },
-                    }
-                ]
+            "source_id": "my_source",
+            "destination_id": "my_destination",
+            "configuration": {
+                "sourceId": "my_source",
+                "destinationId": "my_destination",
+                "namespaceDefinition": "customformat",
+                "namespaceFormat": "foo",
+                "prefix": "foo",
+                "syncCatalog": {
+                    "streams": [
+                        {
+                            "stream": {
+                                "name": "name_example",
+                                "jsonSchema": {},
+                                "supportedSyncModes": ["incremental"],
+                                "sourceDefinedCursor": True,
+                                "defaultCursorField": ["default_cursor_field"],
+                                "sourceDefinedPrimary_key": [["string_example"]],
+                                "namespace": "namespace_example",
+                            },
+                            "config": {
+                                "syncMode": "incremental",
+                                "cursorField": ["cursor_field_example"],
+                                "destinationSyncMode": "append_dedup",
+                                "primaryKey": [["string_example"]],
+                                "aliasName": "alias_name_example",
+                                "selected": True,
+                            },
+                        }
+                    ]
+                },
+                "schedule": {"units": 1, "time_units": "days"},
+                "status": "active",
+                "resourceRequirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
             },
-            "schedule": {"units": 1, "time_units": "days"},
-            "status": "active",
-            "resource_requirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
         }
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
@@ -350,34 +390,20 @@ class TestConnection:
         assert connection.search_function_name == "search_connections"
         assert connection.update_function_name == "update_connection"
         assert connection.resource_type == "connection"
-        assert connection.apply_priority == 1
+        assert connection.APPLY_PRIORITY == 1
 
         assert connection.create_payload == resources.ConnectionCreate(
-            connection.source_id,
-            connection.destination_id,
-            connection.status,
-            name=connection.resource_name,
-            namespace_definition=connection.namespace_definition,
-            namespace_format=connection.namespace_format,
-            prefix=connection.prefix,
-            operations_ids=connection.operation_ids,
-            sync_catalog=connection.sync_catalog,
-            schedule=connection.schedule,
-            resource_requirements=connection.resource_requirements,
-            _check_type=False,
+            **connection.configuration, _check_type=False, _spec_property_naming=True
         )
         assert connection.update_payload == resources.ConnectionUpdate(
-            connection.resource_id,
-            connection.sync_catalog,
-            connection.status,
-            namespace_definition=connection.namespace_definition,
-            namespace_format=connection.namespace_format,
-            prefix=connection.prefix,
-            source_id=connection.source_id,
-            destination_id=connection.destination_id,
-            operations_ids=connection.operation_ids,
-            schedule=connection.schedule,
-            resource_requirements=connection.resource_requirements,
+            connection_id=connection.resource_id,
+            sync_catalog=connection.configuration["syncCatalog"],
+            status=connection.configuration["status"],
+            namespace_definition=connection.configuration["namespaceDefinition"],
+            namespace_format=connection.configuration["namespaceFormat"],
+            prefix=connection.configuration["prefix"],
+            schedule=connection.configuration["schedule"],
+            resource_requirements=connection.configuration["resourceRequirements"],
             _check_type=False,
         )
         if state is None:
@@ -385,12 +411,25 @@ class TestConnection:
                 source_id=connection.source_id,
                 destination_id=connection.destination_id,
                 name=connection.resource_name,
-                status=connection.status,
+                status=resources.ConnectionStatus(
+                    connection_configuration["configuration"]["status"],
+                ),
             )
         else:
             assert connection.search_payload == resources.ConnectionSearch(
                 connection_id=connection.state.resource_id, source_id=connection.source_id, destination_id=connection.destination_id
             )
+
+    def test_get_comparable_configuration(self, mocker, mock_api_client, local_configuration):
+        mock_base_comparable_configuration = mocker.Mock(
+            return_value={"foo": "bar", "connectionId": "should be popped", "operationIds": "should be popped"}
+        )
+        mocker.patch.object(resources.BaseResource, "_get_comparable_configuration", mock_base_comparable_configuration)
+        mocker.patch.object(resources.Connection, "was_created", True)
+        mocker.patch.object(resources.Connection, "remote_resource")
+
+        resource = resources.Connection(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert resource._get_comparable_configuration() == {"foo": "bar"}
 
 
 @pytest.mark.parametrize(

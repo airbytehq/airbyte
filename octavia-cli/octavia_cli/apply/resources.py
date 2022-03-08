@@ -3,6 +3,7 @@
 #
 
 import abc
+import copy
 import os
 import time
 from pathlib import Path
@@ -111,12 +112,8 @@ class ResourceState:
 
 
 class BaseResource(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def apply_priority(
-        self,
-    ):  # pragma: no cover
-        pass
+    CHECK_RETURN_TYPE = True
+    APPLY_PRIORITY = 0
 
     @property
     @abc.abstractmethod
@@ -208,6 +205,14 @@ class BaseResource(abc.ABC):
     def remote_resource(self):
         return self._get_remote_resource()
 
+    def _get_comparable_configuration(
+        self,
+    ):  # pragma: no cover
+        if not self.was_created:
+            raise NonExistingResourceError("Can't find a comparable configuration as the remote resource does not exists.")
+        else:
+            return copy.deepcopy(self.remote_resource)
+
     @property
     def was_created(self):
         return True if self.remote_resource else False
@@ -234,7 +239,7 @@ class BaseResource(abc.ABC):
         Returns:
             Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
         """
-        return self._search_fn(self.api_instance, self.search_payload)
+        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=self.CHECK_RETURN_TYPE)
 
     def _get_state_from_file(self) -> Optional[ResourceState]:
         """Retrieve a state object from a local YAML file if it exists.
@@ -275,7 +280,7 @@ class BaseResource(abc.ABC):
         if not self.was_created:
             raise NonExistingResourceError("Cannot compute diff with a non existing remote resource.")
         current_config = self.configuration
-        remote_config = self.remote_resource.connection_configuration
+        remote_config = self._get_comparable_configuration()
         diff = compute_diff(remote_config, current_config)
         return diff.pretty()
 
@@ -298,7 +303,7 @@ class BaseResource(abc.ABC):
             Union[SourceRead, DestinationRead, ConnectionRead]: The created or updated resource.
         """
         try:
-            result = operation_fn(self.api_instance, payload)
+            result = operation_fn(self.api_instance, payload, _check_return_type=self.CHECK_RETURN_TYPE)
             return result, ResourceState.create(self.configuration_path, result[self.resource_id_field])
         except airbyte_api_client.ApiException as api_error:
             if api_error.status == 422:
@@ -331,12 +336,11 @@ class BaseResource(abc.ABC):
         Returns:
             str: Remote resource's UUID
         """
-        return self.remote_resource.get(self.resource_id_field) if self.was_created else None
+        return self.state.resource_id if self.state is not None else None
 
 
 class Source(BaseResource):
 
-    apply_priority = 0
     api = source_api.SourceApi
     create_function_name = "create_source"
     resource_id_field = "source_id"
@@ -363,10 +367,18 @@ class Source(BaseResource):
             name=self.resource_name,
         )
 
+    def _get_comparable_configuration(self):
+        """Get the object to which local configuration will be compared to.
+
+        Returns:
+            dict: Remote source configuration.
+        """
+        comparable_configuration = super()._get_comparable_configuration()
+        return comparable_configuration.connection_configuration
+
 
 class Destination(BaseResource):
 
-    apply_priority = 0
     api = destination_api.DestinationApi
     create_function_name = "create_destination"
     resource_id_field = "destination_id"
@@ -409,10 +421,19 @@ class Destination(BaseResource):
             name=self.resource_name,
         )
 
+    def _get_comparable_configuration(self):
+        """Get the object to which local configuration will be compared to.
+
+        Returns:
+            dict: Remote destination configuration.
+        """
+        comparable_configuration = super()._get_comparable_configuration()
+        return comparable_configuration.connection_configuration
+
 
 class Connection(BaseResource):
-
-    apply_priority = 1
+    CHECK_RETURN_TYPE = False
+    APPLY_PRIORITY = 1
     api = connection_api.ConnectionApi
     create_function_name = "create_connection"
     resource_id_field = "connection_id"
@@ -427,11 +448,12 @@ class Connection(BaseResource):
     @property
     def create_payload(self) -> ConnectionCreate:
         """Defines the payload to create the remote connection.
+        Disable snake case parameter usage with _spec_property_naming=True
 
         Returns:
             ConnectionCreate: The ConnectionCreate model instance
         """
-        return ConnectionCreate(**self.configuration, _check_type=False)
+        return ConnectionCreate(**self.configuration, _check_type=False, _spec_property_naming=True)
 
     @property
     def search_payload(self) -> ConnectionSearch:
@@ -446,14 +468,6 @@ class Connection(BaseResource):
         else:
             return ConnectionSearch(connection_id=self.state.resource_id, source_id=self.source_id, destination_id=self.destination_id)
 
-    def _search(self) -> Union[SourceReadList, DestinationReadList, ConnectionReadList]:
-        """Run search of a resources on the remote Airbyte instance.
-
-        Returns:
-            Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
-        """
-        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
-
     @property
     def update_payload(self) -> ConnectionUpdate:
         """Defines the payload to update a remote connection.
@@ -462,19 +476,27 @@ class Connection(BaseResource):
             ConnectionUpdate: The DestinationUpdate model instance.
         """
         return ConnectionUpdate(
-            self.resource_id,
-            self.sync_catalog,
-            self.status,
-            namespace_definition=self.namespace_definition,
-            namespace_format=self.namespace_format,
-            prefix=self.prefix,
-            source_id=self.source_id,
-            destination_id=self.destination_id,
-            operations_ids=self.operation_ids,
-            schedule=self.schedule,
-            resource_requirements=self.resource_requirements,
+            connection_id=self.resource_id,
+            sync_catalog=self.configuration["syncCatalog"],
+            status=self.configuration["status"],
+            namespace_definition=self.configuration["namespaceDefinition"],
+            namespace_format=self.configuration["namespaceFormat"],
+            prefix=self.configuration["prefix"],
+            schedule=self.configuration["schedule"],
+            resource_requirements=self.configuration["resourceRequirements"],
             _check_type=False,
         )
+
+    def _get_comparable_configuration(self):
+        """Get the object to which local configuration will be compared to.
+
+        Returns:
+            dict: Remote connection configuration.
+        """
+        comparable_configuration = super()._get_comparable_configuration()
+        comparable_configuration.pop("connectionId")
+        comparable_configuration.pop("operationIds")
+        return comparable_configuration
 
 
 def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str) -> Union[Source, Destination, Connection]:
