@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.jdbc.copy;
+package io.airbyte.integrations.destination.staging;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingOperations;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;

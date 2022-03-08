@@ -2,9 +2,10 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.jdbc;
+package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import java.io.File;
 
 public interface StagingOperations extends SqlOperations {

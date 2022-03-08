@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.integrations.destination.jdbc.StagingOperations;
+import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.nio.file.Files;

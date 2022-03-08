@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.jdbc.copy.StagingConsumerFactory;
+import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
