@@ -454,6 +454,17 @@ public class MetrisQueriesTest {
     }
 
     @Test
+    @DisplayName("should ignore jobs older than 1 hour")
+    void shouldIgnoreJobsOlderThan1Hour() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.UPDATED_AT).values(1L, "", JobStatus.succeeded, updateAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(0, res.size());
+    }
+
+    @Test
     @DisplayName("should return correct duration for terminal jobs")
     void shouldReturnTerminalJobs() throws SQLException {
       final var updateAt = OffsetDateTime.now();

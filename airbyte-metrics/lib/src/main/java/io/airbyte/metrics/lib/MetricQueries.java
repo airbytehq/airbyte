@@ -124,7 +124,7 @@ public class MetricQueries {
         String.format("""
                       SELECT %s, extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
                       WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
-                        AND jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled';""", statusField, timeField);
+                        AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');""", statusField, timeField);
     final var statuses = ctx.fetch(query).getValues(statusField, JobStatus.class);
     final var times = ctx.fetch(query).getValues(timeField, double.class);
 
