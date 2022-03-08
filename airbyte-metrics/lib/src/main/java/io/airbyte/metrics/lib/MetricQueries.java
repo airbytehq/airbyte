@@ -101,7 +101,7 @@ public class MetricQueries {
   }
 
   public static List<Long> numberOfActiveConnPerWorkspace(DSLContext ctx) {
-    var countField = "num_conn";
+    final var countField = "num_conn";
     final var query = String.format("""
                                     SELECT workspace_id, count(c.id) as %s
                                         FROM actor
@@ -112,6 +112,15 @@ public class MetricQueries {
                                             AND c.status = 'active'
                                         GROUP BY workspace_id;""", countField);
     return ctx.fetch(query).getValues(countField, long.class);
+  }
+
+  public static List<Long> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
+    final var timeField = "sec";
+    final var query = String.format("""
+                                    SELECT extract(epoch from age(updated_at, created_at)) as %s FROM jobs
+                                    WHERE updated_at IS NOT NULL
+                                      and updated_at >= NOW() - INTERVAL '1 HOUR';""", timeField);
+    return ctx.fetch(query).getValues(timeField, long.class);
   }
 
 }
