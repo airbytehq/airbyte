@@ -11,6 +11,7 @@ from typing import Any, Callable, Optional, Union
 import airbyte_api_client
 import yaml
 from airbyte_api_client.api import destination_api, source_api
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.destination_create import DestinationCreate
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_read_list import DestinationReadList
@@ -356,18 +357,29 @@ class Source(BaseResource):
             name=self.resource_name,
         )
 
-    # @property
-    # def resource_id_request_body(self):
-    #     return
+    @property
+    def resource_id_request_body(self) -> SourceIdRequestBody:
+        """Creates SourceIdRequestBody from resource id.
+
+        Raises:
+            NonExistingResourceError: raised if the resource id is None.
+
+        Returns:
+            SourceIdRequestBody: The SourceIdRequestBody model instance.
+        """
+        if self.resource_id is None:
+            raise NonExistingResourceError("The resource id could not be retrieved, the remote resource is not existing.")
+        return SourceIdRequestBody(source_id=self.resource_id)
 
     @property
-    def catalog(self):
-        if self.was_created:
-            return self.api_instance.discover_schema_for_source(
-                SourceIdRequestBody(source_id=self.resource_id), _check_return_type=False
-            ).catalog
-        else:
-            raise NonExistingResourceError("This source does not exists, its catalog cannot be loaded")
+    def catalog(self) -> AirbyteCatalog:
+        """Retrieve the source Airbyte catalog
+
+        Returns:
+            AirbyteCatalog: The catalog issued by schema discovery.
+        """
+        schema = self.api_instance.discover_schema_for_source(self.resource_id_request_body, _check_return_type=False)
+        return schema.catalog
 
 
 class Destination(BaseResource):
