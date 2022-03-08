@@ -27,11 +27,11 @@ public class WriteConfig {
   private final List<String> stagedFiles;
 
   public WriteConfig(final String streamName,
-      final String namespace,
-      final String outputSchemaName,
-      final String tmpTableName,
-      final String outputTableName,
-      final DestinationSyncMode syncMode) {
+                     final String namespace,
+                     final String outputSchemaName,
+                     final String tmpTableName,
+                     final String outputTableName,
+                     final DestinationSyncMode syncMode) {
     this(streamName, namespace, outputSchemaName, tmpTableName, outputTableName, syncMode, DateTime.now(DateTimeZone.UTC));
   }
 

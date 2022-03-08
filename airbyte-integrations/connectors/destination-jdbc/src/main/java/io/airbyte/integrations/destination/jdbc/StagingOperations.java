@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -29,4 +33,5 @@ public interface StagingOperations extends SqlOperations {
    * Delete the stage area and all staged files that was in it
    */
   void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception;
+
 }

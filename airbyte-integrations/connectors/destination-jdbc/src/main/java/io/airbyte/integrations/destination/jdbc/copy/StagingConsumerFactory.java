@@ -45,11 +45,11 @@ public class StagingConsumerFactory {
   private final String RANDOM_CONNECTION_ID = UUID.randomUUID().toString();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-      final JdbcDatabase database,
-      final StagingOperations sqlOperations,
-      final NamingConventionTransformer namingResolver,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog) {
+                                       final JdbcDatabase database,
+                                       final StagingOperations sqlOperations,
+                                       final NamingConventionTransformer namingResolver,
+                                       final JsonNode config,
+                                       final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(
@@ -63,15 +63,15 @@ public class StagingConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog) {
+                                                      final JsonNode config,
+                                                      final ConfiguredAirbyteCatalog catalog) {
 
     return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(Collectors.toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-      final NamingConventionTransformer namingResolver,
-      final JsonNode config) {
+                                                                              final NamingConventionTransformer namingResolver,
+                                                                              final JsonNode config) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
@@ -91,17 +91,17 @@ public class StagingConsumerFactory {
   }
 
   private static String getOutputSchema(final AirbyteStream stream,
-      final String defaultDestSchema,
-      final NamingConventionTransformer namingResolver) {
+                                        final String defaultDestSchema,
+                                        final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
         ? namingResolver.getIdentifier(stream.getNamespace())
         : namingResolver.getIdentifier(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
-      final StagingOperations stagingSqlOperations,
-      final List<WriteConfig> writeConfigs,
-      final NamingConventionTransformer namingResolver) {
+                                                 final StagingOperations stagingSqlOperations,
+                                                 final List<WriteConfig> writeConfigs,
+                                                 final NamingConventionTransformer namingResolver) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
 
@@ -134,10 +134,10 @@ public class StagingConsumerFactory {
   }
 
   private RecordWriter recordWriterFunction(final JdbcDatabase database,
-      final SqlOperations stagingSqlOperations,
-      final List<WriteConfig> writeConfigs,
-      final ConfiguredAirbyteCatalog catalog,
-      final NamingConventionTransformer namingResolver) {
+                                            final SqlOperations stagingSqlOperations,
+                                            final List<WriteConfig> writeConfigs,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final NamingConventionTransformer namingResolver) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(
@@ -159,9 +159,9 @@ public class StagingConsumerFactory {
   }
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
-      final StagingOperations sqlOperations,
-      final List<WriteConfig> writeConfigs,
-      final NamingConventionTransformer namingResolver) {
+                                          final StagingOperations sqlOperations,
+                                          final List<WriteConfig> writeConfigs,
+                                          final NamingConventionTransformer namingResolver) {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
@@ -214,4 +214,5 @@ public class StagingConsumerFactory {
       LOGGER.info("Cleaning tmp tables and stages in destination completed.");
     };
   }
+
 }
