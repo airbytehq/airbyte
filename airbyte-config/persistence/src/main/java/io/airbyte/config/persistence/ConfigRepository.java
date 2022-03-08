@@ -8,6 +8,8 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -490,6 +492,26 @@ public class ConfigRepository {
 
   public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+  }
+
+  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      final UUID connectionId = record.get(CONNECTION.ID);
+      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
+          .from(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .fetch());
+
+      final List<UUID> connectionOperationIds =
+          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
+      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    }
+    return standardSyncs;
   }
 
   public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
