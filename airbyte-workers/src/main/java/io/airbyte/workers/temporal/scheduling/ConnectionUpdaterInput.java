@@ -39,6 +39,5 @@ public class ConnectionUpdaterInput {
   private WorkflowState workflowState;
   private boolean resetConnection;
   private boolean fromJobResetFailure = false;
-  private boolean kaput;
 
 }
