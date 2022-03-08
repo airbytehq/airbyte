@@ -94,9 +94,9 @@ public class ConnectionManagerWorkflowTest {
 
   public static Stream<Arguments> getMaxAttemptForResetRetry() {
     return Stream.of(
-        Arguments.of(3), // "The max attempt is 3, it will test that after a failed attempt the next attempt will also be a
+        Arguments.of(3), // "The max attempt is 3, it will test that after a failed reset attempt the next attempt will also be a
         // reset")
-        Arguments.of(1) // "The max attempt is 3, it will test that after a failed job the next attempt will also be a job")
+        Arguments.of(1) // "The max attempt is 3, it will test that after a failed reset job the next attempt will also be a job")
     );
   }
 

@@ -16,9 +16,9 @@ DESTINATION_SPECS = "../airbyte-config/init/src/main/resources/seed/destination_
 
 def get_all_specs_params():
     with open(SOURCE_SPECS, "r") as f:
-        source_specs = yaml.load(f, yaml.FullLoader)
+        source_specs = yaml.safe_load(f)
     with open(DESTINATION_SPECS, "r") as f:
-        destination_specs = yaml.load(f, yaml.FullLoader)
+        destination_specs = yaml.safe_load(f)
     return [pytest.param("source", spec, id=spec["dockerImage"]) for spec in source_specs] + [
         pytest.param("destination", spec, id=spec["dockerImage"]) for spec in destination_specs
     ]
@@ -39,7 +39,7 @@ def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
     )
     output_path = renderer.write_yaml(octavia_project_directory)
     with open(output_path, "r") as f:
-        parsed_yaml = yaml.load(f, yaml.FullLoader)
+        parsed_yaml = yaml.safe_load(f)
         assert all(
             [
                 expected_field in parsed_yaml
@@ -68,7 +68,7 @@ EXPECTED_RENDERED_YAML_PATH = f"{os.path.dirname(__file__)}/expected_rendered_ya
 )
 def test_expected_output(resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker):
     with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, input_spec_path), "r") as f:
-        input_spec = yaml.load(f, yaml.FullLoader)
+        input_spec = yaml.safe_load(f)
     renderer = ConnectionSpecificationRenderer(
         resource_name=resource_name,
         definition=mocker.Mock(
