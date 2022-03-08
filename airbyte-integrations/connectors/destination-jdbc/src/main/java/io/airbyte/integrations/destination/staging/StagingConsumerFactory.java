@@ -41,7 +41,7 @@ public class StagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
-  private static final long MAX_BATCH_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
+  private static final long MAX_BATCH_SIZE_BYTES = 256 * 1024 * 1024; // 256mb
   private final DateTime CURRENT_SYNC_PATH = DateTime.now(DateTimeZone.UTC);
   private final String RANDOM_CONNECTION_ID = UUID.randomUUID().toString();
 

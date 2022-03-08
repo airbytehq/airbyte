@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,7 +179,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void flushQueueToDestination() throws Exception {
-    LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
+    LOGGER.info("Flushing buffer: {}", FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
 
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
