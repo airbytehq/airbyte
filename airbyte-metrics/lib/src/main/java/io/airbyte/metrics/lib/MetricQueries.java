@@ -10,9 +10,12 @@ import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.DSLContext;
 
 /**
@@ -114,14 +117,24 @@ public class MetricQueries {
     return ctx.fetch(query).getValues(countField, long.class);
   }
 
-  public static List<Long> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
+  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
+    final var statusField = "status";
     final var timeField = "sec";
-    final var query = String.format("""
-                                    SELECT extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
-                                    WHERE updated_at IS NOT NULL
-                                      AND updated_at >= NOW() - INTERVAL '1 HOUR'
-                                      AND jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled';""", timeField);
-    return ctx.fetch(query).getValues(timeField, long.class);
+    final var query =
+        String.format("""
+                      SELECT %s, extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
+                      WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
+                        AND jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled';""", statusField, timeField);
+    final var statuses = ctx.fetch(query).getValues(statusField, JobStatus.class);
+    final var times = ctx.fetch(query).getValues(timeField, double.class);
+
+    final var pairedRes = new ArrayList<Pair<JobStatus, Double>>();
+    for (int i = 0; i < statuses.size(); i++) {
+      final var pair = new ImmutablePair<>(statuses.get(i), times.get(i));
+      pairedRes.add(pair);
+    }
+
+    return pairedRes;
   }
 
 }

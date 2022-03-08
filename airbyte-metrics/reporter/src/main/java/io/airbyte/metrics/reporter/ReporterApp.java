@@ -8,16 +8,19 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.metrics.lib.MetricQueries;
+import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.MetricsRegistry;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Slf4j
 public class ReporterApp {
@@ -73,6 +76,17 @@ public class ReporterApp {
         final var age = configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
         for (long count : age) {
           DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+        }
+      } catch (final SQLException e) {
+        e.printStackTrace();
+      }
+    }, 0, 15, TimeUnit.SECONDS);
+    pollers.scheduleAtFixedRate(() -> {
+      try {
+        final var times = configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+        for (Pair<JobStatus, Double> pair : times) {
+          DogStatsDMetricSingleton.recordTimeGlobal(
+              MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
         }
       } catch (final SQLException e) {
         e.printStackTrace();

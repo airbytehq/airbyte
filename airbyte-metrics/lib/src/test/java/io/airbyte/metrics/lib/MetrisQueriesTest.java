@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static io.airbyte.db.instance.jobs.jooq.Tables.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -29,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jooq.JSONB;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -470,9 +472,12 @@ public class MetrisQueriesTest {
 
       final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
       assertEquals(3, res.size());
-      for (long time : res) {
-        assertEquals(expAgeSecs, time);
-      }
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.cancelled, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
     }
 
     @Test
