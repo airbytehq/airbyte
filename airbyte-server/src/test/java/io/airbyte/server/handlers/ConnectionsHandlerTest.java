@@ -386,10 +386,8 @@ class ConnectionsHandlerTest {
 
     @Test
     void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-      when(configRepository.listStandardSyncs())
+      when(configRepository.listWorkspaceStandardSyncs(source.getWorkspaceId()))
           .thenReturn(Lists.newArrayList(standardSync, standardSyncDeleted));
-      when(configRepository.getSourceConnection(source.getSourceId()))
-          .thenReturn(source);
       when(configRepository.getStandardSync(standardSync.getConnectionId()))
           .thenReturn(standardSync);
 
