@@ -145,11 +145,11 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
               companyName: encodedData.companyName,
               news: encodedData.news,
             });
-            analytics.track("User created", {
+            analytics.track("Airbyte.UI.User.Created", {
               user_id: user.userId,
               name: user.name,
               email: user.email,
-              utm_params: getUtmFromStorage(),
+              ...getUtmFromStorage(),
             });
           }
         }
