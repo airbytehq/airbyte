@@ -1,5 +1,6 @@
 # Configuration for connection my_new_connection
 definition_type: connection
+resource_name: my_new_connection
 
 # EDIT THE CONFIGURATION BELOW!
 configuration:
