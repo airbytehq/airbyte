@@ -422,7 +422,7 @@ class Connection(BaseResource):
 
     @property
     def status(self) -> ConnectionStatus:
-        return ConnectionStatus(self.local_configuration["status"])
+        return ConnectionStatus(self.local_configuration["configuration"]["status"])
 
     @property
     def create_payload(self) -> ConnectionCreate:
@@ -431,20 +431,7 @@ class Connection(BaseResource):
         Returns:
             ConnectionCreate: The ConnectionCreate model instance
         """
-        return ConnectionCreate(
-            self.source_id,
-            self.destination_id,
-            self.status,
-            name=self.resource_name,
-            namespace_definition=self.namespace_definition,
-            namespace_format=self.namespace_format,
-            prefix=self.prefix,
-            operations_ids=self.operation_ids,
-            sync_catalog=self.sync_catalog,
-            schedule=self.schedule,
-            resource_requirements=self.resource_requirements,
-            _check_type=False,
-        )
+        return ConnectionCreate(**self.configuration, _check_type=False)
 
     @property
     def search_payload(self) -> ConnectionSearch:
@@ -458,6 +445,14 @@ class Connection(BaseResource):
             )
         else:
             return ConnectionSearch(connection_id=self.state.resource_id, source_id=self.source_id, destination_id=self.destination_id)
+
+    def _search(self) -> Union[SourceReadList, DestinationReadList, ConnectionReadList]:
+        """Run search of a resources on the remote Airbyte instance.
+
+        Returns:
+            Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
+        """
+        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
 
     @property
     def update_payload(self) -> ConnectionUpdate:
