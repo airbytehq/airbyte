@@ -24,12 +24,12 @@ import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.api.Nested;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -131,6 +131,7 @@ public class RequestLoggerTest {
 
       Assertions.assertThat(matchingLines).hasSize(1);
     }
+
   }
 
   @Nested
@@ -138,18 +139,22 @@ public class RequestLoggerTest {
   public class RequestLoggerCorrectRequestBody {
 
     /**
-     * This is a complex test that was written to prove that our requestLogger had a concurrency bug that caused incorrect request bodies to be logged.
-     * The RequestLogger originally used an instance variable that held the requestBody, which was written to by the request filter, and read by the
-     * response filter to generate a response log line that contained the original request body. If multiple requests were being processed at the same
-     * time, it was possible for the request filter of one request to overwrite the requestBody instance variable before the response log line was
-     * generated. The fixed implementation sets the requestBody as a custom property on the ContainerRequestFilter in the first filter method, and
-     * reads the custom requestBody property from the ContainerRequestFilter in the second filter method.
+     * This is a complex test that was written to prove that our requestLogger had a concurrency bug
+     * that caused incorrect request bodies to be logged. The RequestLogger originally used an instance
+     * variable that held the requestBody, which was written to by the request filter, and read by the
+     * response filter to generate a response log line that contained the original request body. If
+     * multiple requests were being processed at the same time, it was possible for the request filter
+     * of one request to overwrite the requestBody instance variable before the response log line was
+     * generated. The fixed implementation sets the requestBody as a custom property on the
+     * ContainerRequestFilter in the first filter method, and reads the custom requestBody property from
+     * the ContainerRequestFilter in the second filter method.
      * <p>
-     * To cover this race condition, this test creates a single RequestLogger instance that is referenced from 100 threads. Each thread logs a unique
-     * request body. The main thread waits for all threads to finish, and then assures that every unique request body is included in the logs.
+     * To cover this race condition, this test creates a single RequestLogger instance that is
+     * referenced from 100 threads. Each thread logs a unique request body. The main thread waits for
+     * all threads to finish, and then assures that every unique request body is included in the logs.
      * <p>
-     * This test fails when using the instance variable approach for recording request bodies, because some request bodies are overwritten before they
-     * can be logged.
+     * This test fails when using the instance variable approach for recording request bodies, because
+     * some request bodies are overwritten before they can be logged.
      */
     @Test
     public void testRequestBodyConsistency() {
@@ -217,13 +222,14 @@ public class RequestLoggerTest {
       public Boolean requestBodyWasLogged() {
         return IOs.readFile(logPath).lines().anyMatch(line -> line.contains(expectedRequestBody));
       }
+
     }
 
   }
 
   private void stubRequestContext(final ContainerRequestContext mockContainerRequestContext, final String requestBody) {
     Mockito.when(mockContainerRequestContext.getMethod())
-            .thenReturn(METHOD);
+        .thenReturn(METHOD);
 
     Mockito.when(mockContainerRequestContext.getEntityStream())
         .thenReturn(new ByteArrayInputStream(requestBody.getBytes()));
@@ -232,4 +238,3 @@ public class RequestLoggerTest {
   }
 
 }
-
