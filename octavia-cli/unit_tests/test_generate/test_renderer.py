@@ -154,6 +154,35 @@ def test_get_object_fields(mocker):
     assert renderer.get_object_fields(field_metadata) == []
 
 
+class TestBaseRenderer:
+    @pytest.fixture
+    def patch_base_class(self, mocker):
+        # Mock abstract methods to enable instantiating abstract class
+        mocker.patch.object(renderer.BaseRenderer, "__abstractmethods__", set())
+
+    def test_init(self, patch_base_class):
+        base = renderer.BaseRenderer("resource_name")
+        assert base.resource_name == "resource_name"
+
+    def test_get_output_path(self, patch_base_class, mocker):
+        mocker.patch.object(renderer, "os")
+        renderer.os.path.exists.return_value = False
+        spec_renderer = renderer.BaseRenderer("my_resource_name")
+        renderer.os.path.join.side_effect = [
+            "./my_definition_types/my_resource_name",
+            "./my_definition_types/my_resource_name/configuration.yaml",
+        ]
+        output_path = spec_renderer._get_output_path(".", "my_definition_type")
+        renderer.os.makedirs.assert_called_once()
+        renderer.os.path.join.assert_has_calls(
+            [
+                mocker.call(".", "my_definition_types", "my_resource_name"),
+                mocker.call("./my_definition_types/my_resource_name", "configuration.yaml"),
+            ]
+        )
+        assert output_path == "./my_definition_types/my_resource_name/configuration.yaml"
+
+
 class TestConnectorSpecificationRenderer:
     def test_init(self, mocker):
         assert renderer.ConnectorSpecificationRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("source_or_destination.yaml.j2")
@@ -183,21 +212,6 @@ class TestConnectorSpecificationRenderer:
         assert len(parsed_schema) == len(schema["oneOf"])
         renderer.parse_fields.assert_called_with(["free"], {"free": "beer"})
 
-    def test__get_output_path(self, mocker):
-        mocker.patch.object(renderer, "os")
-        renderer.os.path.exists.return_value = False
-        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
-        renderer.os.path.join.side_effect = ["./source/my_resource_name", "./source/my_resource_name/configuration.yaml"]
-        output_path = spec_renderer._get_output_path(".")
-        renderer.os.makedirs.assert_called_once()
-        renderer.os.path.join.assert_has_calls(
-            [
-                mocker.call(".", "sources", "my_resource_name"),
-                mocker.call("./source/my_resource_name", "configuration.yaml"),
-            ]
-        )
-        assert output_path == "./source/my_resource_name/configuration.yaml"
-
     def test_write_yaml(self, mocker):
 
         mocker.patch.object(renderer.ConnectorSpecificationRenderer, "_get_output_path")
@@ -218,3 +232,54 @@ class TestConnectorSpecificationRenderer:
             }
         )
         mock_file.assert_called_with(output_path, "w")
+
+
+class TestConnectionRenderer:
+    @pytest.fixture
+    def mock_source(self, mocker):
+        return mocker.Mock()
+
+    @pytest.fixture
+    def mock_destination(self, mocker):
+        return mocker.Mock()
+
+    def test_init(self, mock_source, mock_destination):
+        assert renderer.ConnectionRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("connection.yaml.j2")
+        connection_renderer = renderer.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        assert connection_renderer.resource_name == "my_resource_name"
+        assert connection_renderer.source == mock_source
+        assert connection_renderer.destination == mock_destination
+
+    def test_remove_json_schema_from_streams(self):
+        catalog = {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
+        new_catalog = renderer.ConnectionRenderer.remove_json_schema_from_streams(catalog)
+        assert new_catalog == {"streams": [{"stream": {"other_key": "other_value"}}]}
+        assert catalog == {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
+
+    def test_catalog_to_yaml(self, mocker):
+        catalog = {"camelCase": "camelCase", "snake_case": "camelCase"}
+        mocker.patch.object(renderer.ConnectionRenderer, "remove_json_schema_from_streams", mocker.Mock(return_value=catalog))
+        yaml_catalog = renderer.ConnectionRenderer.catalog_to_yaml(catalog)
+        assert yaml_catalog == "camel_case: camelCase\nsnake_case: camelCase\n"
+        renderer.ConnectionRenderer.remove_json_schema_from_streams.assert_called_with(catalog)
+
+    def test_write_yaml(self, mocker, mock_source, mock_destination):
+        mocker.patch.object(renderer.ConnectionRenderer, "_get_output_path")
+        mocker.patch.object(renderer.ConnectionRenderer, "catalog_to_yaml")
+        mocker.patch.object(renderer.ConnectionRenderer, "TEMPLATE")
+
+        connection_renderer = renderer.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        with patch("builtins.open", mock_open()) as mock_file:
+            output_path = connection_renderer.write_yaml(".")
+        connection_renderer._get_output_path.assert_called_with(".", renderer.ConnectionDefinition.type)
+        connection_renderer.catalog_to_yaml.assert_called_with(mock_source.catalog)
+        mock_file.assert_called_with(output_path, "w")
+        mock_file.return_value.write.assert_called_with(connection_renderer.TEMPLATE.render.return_value)
+        connection_renderer.TEMPLATE.render.assert_called_with(
+            {
+                "connection_name": connection_renderer.resource_name,
+                "source_id": mock_source.resource_id,
+                "destination_id": mock_destination.resource_id,
+                "catalog": connection_renderer.catalog_to_yaml.return_value,
+            }
+        )

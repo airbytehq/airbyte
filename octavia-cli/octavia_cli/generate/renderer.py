@@ -3,8 +3,8 @@
 #
 
 import abc
+import copy
 import os
-import re
 from typing import Any, Callable, List
 
 import humps
@@ -143,22 +143,23 @@ class BaseRenderer(abc.ABC):
     def __init__(self, resource_name: str) -> None:
         self.resource_name = resource_name
 
-    def _get_output_path(self, project_path: str) -> str:
+    def _get_output_path(self, project_path: str, definition_type: str) -> str:
         """Get rendered file output path
 
         Args:
             project_path (str): Current project path.
+            definition_type (str): Current definition_type.
 
         Returns:
             str: Full path to the output path.
         """
-        directory = os.path.join(project_path, f"{self.definition.type}s", self.resource_name)
+        directory = os.path.join(project_path, f"{definition_type}s", self.resource_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
         return os.path.join(directory, "configuration.yaml")
 
     @abc.abstractmethod
-    def write_yaml(self, project_path: str) -> str:
+    def write_yaml(self, project_path: str) -> str:  # pragma: no cover
         raise NotImplementedError()
 
 
@@ -200,7 +201,7 @@ class ConnectorSpecificationRenderer(BaseRenderer):
         Returns:
             str: Path to the rendered specification.
         """
-        output_path = self._get_output_path(project_path)
+        output_path = self._get_output_path(project_path, self.definition.type)
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
         rendered = self.TEMPLATE.render(
             {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
@@ -213,8 +214,6 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
 class ConnectionRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
-    CAMEL_CASE_PATTERN = re.compile(r"(?<!^)(?=[A-Z])")
-    definition = ConnectionDefinition
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor
@@ -228,7 +227,8 @@ class ConnectionRenderer(BaseRenderer):
         self.source = source
         self.destination = destination
 
-    def remove_json_schema_from_streams(self, catalog: dict) -> dict:
+    @staticmethod
+    def remove_json_schema_from_streams(catalog: dict) -> dict:
         """Stream's json schema are not editable by users, remove them from the catalog for readability.
 
         Args:
@@ -237,11 +237,13 @@ class ConnectionRenderer(BaseRenderer):
         Returns:
             dict: The catalog without the jsonSchema field on stream
         """
-        for stream_config in catalog.get("streams", []):
+        new_catalog = copy.deepcopy(catalog)
+        for stream_config in new_catalog.get("streams", []):
             stream_config["stream"].pop("jsonSchema")  # We remove the jsonSchema because user can't edit this field.
-        return catalog
+        return new_catalog
 
-    def catalog_to_yaml(self, catalog: dict) -> str:
+    @staticmethod
+    def catalog_to_yaml(catalog: dict) -> str:
         """Convert the source catalog to a YAML string.
         Convert camel case to snake case.
 
@@ -251,12 +253,12 @@ class ConnectionRenderer(BaseRenderer):
         Returns:
             str: Catalog rendered as yaml.
         """
-        catalog = self.remove_json_schema_from_streams(catalog)
+        catalog = ConnectionRenderer.remove_json_schema_from_streams(catalog)
         catalog = humps.decamelize(catalog)
         return yaml.dump(catalog)
 
     def write_yaml(self, project_path: str) -> str:
-        output_path = self._get_output_path(project_path)
+        output_path = self._get_output_path(project_path, ConnectionDefinition.type)
         yaml_catalog = self.catalog_to_yaml(self.source.catalog)
 
         rendered = self.TEMPLATE.render(
