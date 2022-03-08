@@ -234,7 +234,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   public void removeFileAndDropTmpTable() throws Exception {
     LOGGER.info("Begin cleaning azure blob staging files.");
     for (AppendBlobClient appendBlobClient : blobClients.values()) {
-        appendBlobClient.delete();
+      appendBlobClient.delete();
     }
     LOGGER.info("Azure Blob staging files cleaned.");
 
