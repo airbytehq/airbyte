@@ -74,6 +74,10 @@ public enum MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_running_jobs",
       "number of running jobs"),
+  NUM_ACTIVE_CONN_PER_WORKSPACE(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_active_conn_per_workspace",
+      "number of active connections per workspace"),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
