@@ -24,9 +24,9 @@ This script:
 1. Pulls the [octavia-cli image](https://hub.docker.com/r/airbyte/octavia-cli/tags) from our Docker registry.
 2. Creates an `octavia` alias in your profile.
 
-## 2.b If you want to directly run the CLI without alias:
+## 2.b If you want to directly run the CLI without alias in your current directory:
 ```bash
-docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
+docker run --rm -v ${PWD}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
 ````
 
 # Current development status
