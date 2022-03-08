@@ -361,11 +361,10 @@ class Runs(ParentStreamMixin, CachingSubStream):
                 continue
 
             # Use the "latestRun" information to skip pipelines that haven't been run.
-            run_start_date = normalize_date_string(
-                stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field, self._start_date)
-            )
+            start_date_str = stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field) or self._start_date
+            run_start_date = normalize_date_string(start_date_str)
             latest_run = stream_slice["parent"]["latestRun"] or {}
-            latest_start_date = normalize_date_string(latest_run.get(self.cursor_field, self._start_date))
+            latest_start_date = normalize_date_string(latest_run.get(self.cursor_field) or self._start_date)
             if latest_start_date > run_start_date:
                 yield stream_slice
 
@@ -376,12 +375,12 @@ class Runs(ParentStreamMixin, CachingSubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field, self._start_date))
+        start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field) or self._start_date)
 
         max_state = start_date
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             # Runs can be queued but not started yet. For now, we ignore runs that haven't started.
-            run_start_time = normalize_date_string(record.get(self.cursor_field, self._start_date))
+            run_start_time = normalize_date_string(record.get(self.cursor_field) or self._start_date)
             if run_start_time > start_date:
                 record = cast(Dict[str, Any], record)
                 record["pipelineFullName"] = stream_slice["parent"]["fullName"]
