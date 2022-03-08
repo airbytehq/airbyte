@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling;
 
 import io.temporal.testing.WorkflowReplayer;
@@ -16,4 +20,5 @@ public class WorkflowReplayingTest {
 
     WorkflowReplayer.replayWorkflowExecution(historyFile, ConnectionManagerWorkflowImpl.class);
   }
+
 }
