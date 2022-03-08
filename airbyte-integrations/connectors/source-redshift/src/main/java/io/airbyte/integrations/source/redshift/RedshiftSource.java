@@ -62,7 +62,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     addSsl(additionalProperties);
 
-    builder.put("connection_properties", String.join(";", additionalProperties));
+    builder.put("connection_properties", String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());
@@ -74,15 +74,15 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (String schema : schemas) {
+      for (final String schema : schemas) {
         LOGGER.debug("Discovering schema: {}", schema);
         internals.addAll(super.discoverInternal(database, schema));
       }
-      for (TableInfo<CommonField<JDBCType>> info : internals) {
+      for (final TableInfo<CommonField<JDBCType>> info : internals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return internals;

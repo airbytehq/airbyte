@@ -26,7 +26,7 @@ def test_generate_not_initialized():
     context_object = {"PROJECT_IS_INITIALIZED": False}
     result = runner.invoke(commands.generate, ["source", "uuid", "my_source"], obj=context_object)
     assert result.exit_code == 1
-    assert result.output == "Error: Your octavia project is not initialized, please run 'octavia init' before running 'octavia generate'.\n"
+    assert result.output == "Error: Your octavia project is not initialized, please run 'octavia init' before running this command.\n"
 
 
 def test_invalid_definition_type():
