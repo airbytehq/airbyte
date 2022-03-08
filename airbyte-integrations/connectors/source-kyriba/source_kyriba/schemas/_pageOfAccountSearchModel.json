@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "$ref": "_definitions.json#/definitions/_metadata"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/AccountSearchModel"
+      }
+    }
+  },
+  "title": "_pageOfAccountSearchModel",
+  "$schema": "http://json-schema.org/schema#"
+}

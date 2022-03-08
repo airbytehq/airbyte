@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "current": {
+      "type": "string",
+      "example": "https://host/gateway/api/resources?page.limit=10&page.offset=10",
+      "description": "Current page."
+    },
+    "next": {
+      "type": "string",
+      "example": "https://host/gateway/api/resources?page.limit=10&page.offset=20",
+      "description": "Next page."
+    },
+    "prev": {
+      "type": "string",
+      "example": "https://host/gateway/api/resources?page.limit=10&page.offset=0",
+      "description": "Previous page."
+    }
+  },
+  "title": "_links",
+  "$schema": "http://json-schema.org/schema#"
+}
