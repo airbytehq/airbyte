@@ -24,8 +24,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -103,7 +105,7 @@ public class StagingConsumerFactory {
                                                  final NamingConventionTransformer namingResolver) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
-
+      final Set<String> schemaSet = new HashSet<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
@@ -115,7 +117,10 @@ public class StagingConsumerFactory {
 
         AirbyteSentry.executeWithTracing("PrepareStreamStage",
             () -> {
-              stagingSqlOperations.createSchemaIfNotExists(database, schema);
+              if (!schemaSet.contains(schema)) {
+                stagingSqlOperations.createSchemaIfNotExists(database, schema);
+                schemaSet.add(schema);
+              }
               stagingSqlOperations.createTableIfNotExists(database, schema, tmpTable);
               stagingSqlOperations.createStageIfNotExists(database, stage);
             },

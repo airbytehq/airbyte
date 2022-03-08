@@ -42,7 +42,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   private static Map<DestinationType, Destination> getTypeToDestination() {
-    final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
+    final SnowflakeS3StagingDestination copyS3Destination = new SnowflakeS3StagingDestination();
     final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
 
