@@ -71,18 +71,18 @@ public class MetricQueries {
     final var readableTimeField = "run_duration";
     final var durationSecField = "run_duration_secs";
     final var query = String.format("""
-                                    with
-                                    oldest_job as (
+                                    WITH
+                                    oldest_job AS (
                                     SELECT id,
                                            age(current_timestamp, created_at) AS %s
                                     FROM jobs
                                     WHERE status = '%s'
                                     ORDER BY run_duration DESC
                                     LIMIT 1)
-                                    select id,
+                                    SELECT id,
                                            run_duration,
                                            extract(epoch from run_duration) as %s
-                                    from oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
+                                    FROM oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
     final var res = ctx.fetch(query);
     // unfortunately there are no good Jooq methods for retrieving a single record of a single column
     // forcing the List cast.
