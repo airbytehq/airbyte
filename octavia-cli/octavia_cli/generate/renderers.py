@@ -3,7 +3,6 @@
 #
 
 import abc
-import copy
 import os
 from typing import Any, Callable, List
 
@@ -227,21 +226,6 @@ class ConnectionRenderer(BaseRenderer):
         super().__init__(connection_name)
         self.source = source
         self.destination = destination
-
-    @staticmethod
-    def remove_json_schema_from_streams(catalog: dict) -> dict:
-        """Stream's json schema are not editable by users, remove them from the catalog for readability.
-
-        Args:
-            catalog (dict): Source's catalog.
-
-        Returns:
-            dict: The catalog without the jsonSchema field on stream
-        """
-        new_catalog = copy.deepcopy(catalog)
-        for stream_config in new_catalog.get("streams", []):
-            stream_config["stream"].pop("jsonSchema")  # We remove the jsonSchema because user can't edit this field.
-        return new_catalog
 
     @staticmethod
     def catalog_to_yaml(catalog: dict) -> str:

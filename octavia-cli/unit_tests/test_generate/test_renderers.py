@@ -250,18 +250,10 @@ class TestConnectionRenderer:
         assert connection_renderer.source == mock_source
         assert connection_renderer.destination == mock_destination
 
-    def test_remove_json_schema_from_streams(self):
-        catalog = {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
-        new_catalog = renderers.ConnectionRenderer.remove_json_schema_from_streams(catalog)
-        assert new_catalog == {"streams": [{"stream": {"other_key": "other_value"}}]}
-        assert catalog == {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
-
     def test_catalog_to_yaml(self, mocker):
         catalog = {"camelCase": "camelCase", "snake_case": "camelCase", "myArray": ["a", "b"]}
-        mocker.patch.object(renderers.ConnectionRenderer, "remove_json_schema_from_streams", mocker.Mock(return_value=catalog))
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
-        assert yaml_catalog == "camel_case: camelCase\nmy_array:\n  - a\n  - b\nsnake_case: camelCase\n"
-        renderers.ConnectionRenderer.remove_json_schema_from_streams.assert_called_with(catalog)
+        assert yaml_catalog == "camelCase: camelCase\nmyArray:\n  - a\n  - b\nsnake_case: camelCase\n"
 
     def test_write_yaml(self, mocker, mock_source, mock_destination):
         mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")
