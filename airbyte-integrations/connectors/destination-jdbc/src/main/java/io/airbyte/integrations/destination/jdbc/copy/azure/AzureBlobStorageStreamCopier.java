@@ -170,7 +170,6 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
 
   private String prepareAzureStagingFile() {
     return String.join("/", stagingFolder, schemaName, filenameGenerator.getStagingFilename());
-
   }
 
   @Override
