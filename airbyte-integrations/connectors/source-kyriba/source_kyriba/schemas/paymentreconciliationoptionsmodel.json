@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "separateReportingAccount"
+  ],
+  "properties": {
+    "bankReportingPolicy": {
+      "type": "string",
+      "example": "CURRENT_ACCOUNT",
+      "description": "Real Bank account used for Checks. Default = CURRENT_ACCOUNT",
+      "enum": [
+        "CURRENT_ACCOUNT",
+        "SEPARATE_ACCOUNT"
+      ]
+    },
+    "separateReportingAccount": {
+      "description": "Separate bank account. Required if bankReportingPolicy = SEPARATE_ACCOUNT",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    }
+  },
+  "title": "PaymentReconciliationOptionsModel",
+  "description": "Payment Reconciliation Options.",
+  "$schema": "http://json-schema.org/schema#"
+}

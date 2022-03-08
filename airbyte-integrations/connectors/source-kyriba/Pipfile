@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+source-acceptance-test = {editable = true, file = "file:///Users/willwatkinson/src/github.com/airbytehq/airbyte/airbyte-integrations/bases/source-acceptance-test"}
+source-kyriba = {editable = true, file = "file:///Users/willwatkinson/src/github.com/airbytehq/airbyte/airbyte-integrations/connectors/source-kyriba"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

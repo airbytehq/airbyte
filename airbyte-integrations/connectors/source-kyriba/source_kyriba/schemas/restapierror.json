@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "required": [
+    "code",
+    "message"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "example": "Invalid",
+      "description": "One of a server-defined set of error codes."
+    },
+    "details": {
+      "type": "array",
+      "example": [
+        {
+          "code": "Invalid",
+          "message": "must not be blank",
+          "target": "target"
+        }
+      ],
+      "description": "An array of details about specific errors that led to this reported error.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/RestApiError"
+      }
+    },
+    "innererror": {
+      "description": "An object containing more specific information than the current object about the error.",
+      "$ref": "_definitions.json#/definitions/InnerError"
+    },
+    "message": {
+      "type": "string",
+      "example": "The request failed because it contained invalid values",
+      "description": "A human-readable representation of the error."
+    },
+    "target": {
+      "type": "string",
+      "example": "target",
+      "description": "The target of the error."
+    }
+  },
+  "title": "RestApiError",
+  "description": "REST API Error.",
+  "$schema": "http://json-schema.org/schema#"
+}

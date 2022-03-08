@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "required": [
+    "establishment"
+  ],
+  "properties": {
+    "establishment": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    }
+  },
+  "title": "EstablishmentModel",
+  "description": "Establishment.",
+  "$schema": "http://json-schema.org/schema#"
+}

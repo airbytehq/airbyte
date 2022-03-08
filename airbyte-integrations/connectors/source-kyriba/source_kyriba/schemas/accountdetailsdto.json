@@ -1,0 +1,1449 @@
+{
+  "type": "object",
+  "required": [
+    "address",
+    "bankAccountID",
+    "branch",
+    "calendar",
+    "code",
+    "company",
+    "currency",
+    "paymentReconciliationOptions",
+    "timeZone",
+    "uuid"
+  ],
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid",
+      "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "description": "UUID of the account."
+    },
+    "code": {
+      "type": "string",
+      "example": "ACCOUNT001",
+      "description": "Code that represents the account.",
+      "minLength": 1,
+      "maxLength": 12
+    },
+    "description": {
+      "type": "string",
+      "example": "Account description",
+      "description": "Name of the account.",
+      "minLength": 0,
+      "maxLength": 150
+    },
+    "description2": {
+      "type": "string",
+      "example": "Account description2",
+      "description": "Other name of the account.",
+      "minLength": 0,
+      "maxLength": 150
+    },
+    "accountType": {
+      "type": "string",
+      "example": "OTHER_ACCOUNT",
+      "description": "Type of the account. Default = BANK_ACCOUNT",
+      "enum": [
+        "BANK_ACCOUNT",
+        "INTERCOMPANY_ACCOUNT",
+        "OTHER_ACCOUNT",
+        "SHARED_ACCOUNT"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "example": "CREATION_TO_VALIDATE",
+      "description": "Status of the account. Default = STANDARD. Display only.",
+      "enum": [
+        "STANDARD",
+        "CREATION_TO_VALIDATE",
+        "CREATION_VALIDATED",
+        "AVAILABLE_FOR_BANK_INTEGRATION",
+        "CLOSURE_REQUESTED",
+        "CLOSURE_VALIDATE",
+        "BANK_CONTRACT_TO_INACTIVATE",
+        "CLOSED"
+      ]
+    },
+    "closedAccount": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account is opened (false) or closed (true)."
+    },
+    "closingDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account is closed. Default: system date."
+    },
+    "hidden": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if the data shall be hidden in all lists."
+    },
+    "openingDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date when the account was opened. Default: system date."
+    },
+    "nonResident": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if the account is a non resident account (true) or a resident account (false)."
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "company": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "branch": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "defaultGroup": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "bankStatementLayout": {
+      "type": "string",
+      "example": "FINSTA",
+      "description": "Bank statement layout of the account.",
+      "enum": [
+        "AFB_120",
+        "MT940_STANDARD",
+        "MT940_GERMANY",
+        "CBI_120",
+        "BAI",
+        "AEB_43",
+        "FINSTA"
+      ]
+    },
+    "bankAccountID": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "banStructure": {
+          "type": "string",
+          "example": "BBAN_STRUCTURE",
+          "description": "Type of the BAN. Default = LBAN_1_STRUCTURE",
+          "enum": [
+            "BBAN_STRUCTURE",
+            "IBAN_STRUCTURE",
+            "LBAN_0_STRUCTURE",
+            "LBAN_1_STRUCTURE",
+            "LBAN_2_STRUCTURE",
+            "LBAN_3_STRUCTURE",
+            "LBAN_4_STRUCTURE",
+            "LBAN_5_STRUCTURE",
+            "LBAN_6_STRUCTURE",
+            "LBAN_7_STRUCTURE",
+            "LBAN_8_STRUCTURE",
+            "LBAN_9_STRUCTURE"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "example": "BF1030134020015400945000643",
+          "description": "Account Id value. Account Id length depends on country. IBAN value should include country code and control key."
+        },
+        "accountNature": {
+          "type": "string",
+          "example": "CURRENT_ACCOUNT",
+          "description": "Account nature. Default = CURRENT_ACCOUNT",
+          "enum": [
+            "CURRENT_ACCOUNT",
+            "SAVINGS_ACCOUNT",
+            "INVESTMENT_ACCOUNT",
+            "CUSTODY_ACCOUNT",
+            "OTHER"
+          ]
+        },
+        "statementIdentifier": {
+          "type": "string",
+          "example": "Statement identifier",
+          "description": "Statement identifier.",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "feeStatementIdentifier": {
+          "type": "string",
+          "example": "Fee statement identifier",
+          "description": "Fee statement identifier.",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "description": {
+          "type": "string",
+          "example": "Account Id description",
+          "description": "Account Id description.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "reportingFilterType": {
+          "type": "string",
+          "example": "KEY_1",
+          "description": "Reporting filter type. Default = KEY_1",
+          "enum": [
+            "KEY_1",
+            "KEY_2",
+            "KEY_3",
+            "KEY_4",
+            "KEY_5"
+          ]
+        },
+        "establishment": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        }
+      },
+      "title": "AccountIdModel",
+      "description": "Account Id."
+    },
+    "bankAccountIDs": {
+      "type": "array",
+      "description": "Additional BANs for the same account.",
+      "items": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "banStructure": {
+            "type": "string",
+            "example": "BBAN_STRUCTURE",
+            "description": "Type of the BAN. Default = LBAN_1_STRUCTURE",
+            "enum": [
+              "BBAN_STRUCTURE",
+              "IBAN_STRUCTURE",
+              "LBAN_0_STRUCTURE",
+              "LBAN_1_STRUCTURE",
+              "LBAN_2_STRUCTURE",
+              "LBAN_3_STRUCTURE",
+              "LBAN_4_STRUCTURE",
+              "LBAN_5_STRUCTURE",
+              "LBAN_6_STRUCTURE",
+              "LBAN_7_STRUCTURE",
+              "LBAN_8_STRUCTURE",
+              "LBAN_9_STRUCTURE"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "example": "BF1030134020015400945000643",
+            "description": "Account Id value. Account Id length depends on country. IBAN value should include country code and control key."
+          },
+          "accountNature": {
+            "type": "string",
+            "example": "CURRENT_ACCOUNT",
+            "description": "Account nature. Default = CURRENT_ACCOUNT",
+            "enum": [
+              "CURRENT_ACCOUNT",
+              "SAVINGS_ACCOUNT",
+              "INVESTMENT_ACCOUNT",
+              "CUSTODY_ACCOUNT",
+              "OTHER"
+            ]
+          },
+          "statementIdentifier": {
+            "type": "string",
+            "example": "Statement identifier",
+            "description": "Statement identifier.",
+            "minLength": 0,
+            "maxLength": 50
+          },
+          "feeStatementIdentifier": {
+            "type": "string",
+            "example": "Fee statement identifier",
+            "description": "Fee statement identifier.",
+            "minLength": 0,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "example": "Account Id description",
+            "description": "Account Id description.",
+            "minLength": 0,
+            "maxLength": 35
+          },
+          "reportingFilterType": {
+            "type": "string",
+            "example": "KEY_1",
+            "description": "Reporting filter type. Default = KEY_1",
+            "enum": [
+              "KEY_1",
+              "KEY_2",
+              "KEY_3",
+              "KEY_4",
+              "KEY_5"
+            ]
+          },
+          "establishment": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "CODE_ID",
+                "description": "Code identifier."
+              },
+              "uuid": {
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426655440001",
+                "description": "UUID identifier. Has priority over the code"
+              }
+            },
+            "title": "ReferenceModel",
+            "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+          }
+        },
+        "title": "AccountIdModel",
+        "description": "Account Id."
+      }
+    },
+    "address": {
+      "type": "object",
+      "required": [
+        "country"
+      ],
+      "properties": {
+        "city": {
+          "type": "string",
+          "example": "San Diego",
+          "description": "City.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "homepage": {
+          "type": "string",
+          "example": "www.mycompany.com",
+          "description": "Web site.",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "state": {
+          "type": "string",
+          "example": "CA",
+          "description": "State.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "street1": {
+          "type": "string",
+          "example": "4435 Eastgate Mall",
+          "description": "Street 1.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "street2": {
+          "type": "string",
+          "example": "Suite 200",
+          "description": "Street 2.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "zipCode": {
+          "type": "string",
+          "example": 92121,
+          "description": "ZIP code. Note: the max field length depends on the Country setup. The default value is 10c but a smaller value may be defined in your Country setup.",
+          "minLength": 0,
+          "maxLength": 10
+        }
+      },
+      "title": "AddressModel."
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Swiss Bankers Association",
+          "description": "Contact name",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "department": {
+          "type": "string",
+          "example": "Cash",
+          "description": "Contact department.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "phoneNumber": {
+          "type": "string",
+          "example": "+41 (0) 61 295 93 93",
+          "description": "Contact phone.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "faxNumber": {
+          "type": "string",
+          "example": "+41 (0) 56 496 93 88",
+          "description": "Contact fax.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "email": {
+          "type": "string",
+          "example": "office@sba.ch",
+          "description": "Contact e-mail.",
+          "minLength": 0,
+          "maxLength": 70
+        }
+      },
+      "title": "ContactModel",
+      "description": "Full contact."
+    },
+    "calendar": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "zbaGenerator": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account can generate ZBA interco cash flows (true) or no (false)."
+    },
+    "zbaIdentifier": {
+      "type": "string",
+      "example": "ZBA_IDENTIFIER",
+      "description": "Code that used by the bank to identify this account in bank statements.",
+      "minLength": 0,
+      "maxLength": 16
+    },
+    "generateZBAFlow": {
+      "type": "string",
+      "example": "ONLY_WHEN_ZBA_GENERATOR",
+      "description": "Defines how many flows shall be generated for each ZBA actual.",
+      "enum": [
+        "ONLY_WHEN_ZBA_GENERATOR",
+        "ALSO_WHEN_COUNTERPARTY"
+      ]
+    },
+    "settlementAccount": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "counterpartySettlementAccount": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "chartOfAccounts": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "glAccount": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "internalAccountCode": {
+      "type": "string",
+      "example": "GLACCOUNT",
+      "description": "Code that represents the current account in the internal chart of GL accounts.",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "includeInGLReconciliation": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if the current account should be considered in module GR (true) or no (false)."
+    },
+    "considerBankStatementsFrom": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which bank statements should be considered in the GL reconciliation process."
+    },
+    "initialAccountingBalance": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "value": {
+          "type": "number",
+          "example": 1.123456,
+          "description": "Amount value.",
+          "minimum": 0,
+          "exclusiveMinimum": false
+        }
+      },
+      "title": "AmountModel."
+    },
+    "initialAccountingBalanceDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date of the Initial accounting balance."
+    },
+    "userZone": {
+      "type": "object",
+      "properties": {
+        "userZone1": {
+          "type": "string",
+          "description": "Free field whose type (Alphanumeric, Numeric, Date, List) is defined in the application setup. The imported value must be consistent with the field type. And the total length across all user zone values must be of 250 characters max.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "userZone2": {
+          "type": "string",
+          "description": "Free field. Same behavior as field User zone 1.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "userZone3": {
+          "type": "string",
+          "description": "Free field. Same behavior as field User zone 1.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "userZone4": {
+          "type": "string",
+          "description": "Free field. Same behavior as field User zone 1.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "userZone5": {
+          "type": "string",
+          "description": "Free field. Same behavior as field User zone 1.",
+          "minLength": 0,
+          "maxLength": 100
+        }
+      },
+      "title": "UserZones"
+    },
+    "considerOneDayFloatTransactions": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if \u201cone day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
+    },
+    "considerTwoDayFloatTransactions": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if \u201ctwo day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
+    },
+    "considerThreeDayFloatTransactions": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if \u201cthree day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
+    },
+    "considerInvestmentPositionTransactions": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if \u201cinvestment position\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
+    },
+    "integrateEndOfDayStatements": {
+      "type": "boolean",
+      "example": true,
+      "description": "Flag to show if End-of-day bank statements should be integrated (true) or no (false)."
+    },
+    "integrateIntradayStatements": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if Intraday bank statements should be integrated (true) or no (false)."
+    },
+    "timeZone": {
+      "type": "string",
+      "example": "GMT",
+      "description": "Account's time zone.",
+      "minLength": 1,
+      "maxLength": 2147483647
+    },
+    "cutOffTime": {
+      "type": "string",
+      "example": "20:00:00",
+      "description": "Time until which the intraday bank statements should be considered."
+    },
+    "accountCategory1": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory2": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory3": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory4": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory5": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory6": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory7": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory8": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory9": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "accountCategory10": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "memo": {
+      "type": "string",
+      "description": "Account's memo",
+      "minLength": 0,
+      "maxLength": 1000
+    },
+    "interestBearing": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if the account is interest bearing (true) or no (false)."
+    },
+    "centrallyManaged": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if the account is managed by Central Treasury (true) or no (false)."
+    },
+    "ownerName": {
+      "type": "string",
+      "description": "Name of the account owner",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "reconcilerName": {
+      "type": "string",
+      "description": "Name of the user in charge of the account reconciliation",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "freeText1": {
+      "type": "string",
+      "description": "Free zone 1",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "freeText2": {
+      "type": "string",
+      "description": "Free zone 2",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "freeText3": {
+      "type": "string",
+      "description": "Free zone 3",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "freeAmount1": {
+      "type": "number",
+      "example": 1.123,
+      "description": "Free amount 1."
+    },
+    "freeAmount2": {
+      "type": "number",
+      "example": 1.123,
+      "description": "Free amount 2."
+    },
+    "freeAmount3": {
+      "type": "number",
+      "example": 1.123,
+      "description": "Free amount 3."
+    },
+    "signatoryUsers": {
+      "type": "array",
+      "description": "List of users who have authority over the account.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "CODE_ID",
+            "description": "Code identifier."
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426655440001",
+            "description": "UUID identifier. Has priority over the code"
+          }
+        },
+        "title": "ReferenceModel",
+        "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+      }
+    },
+    "includeInElectronicBank": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account was included in electronic banking contract (true) or note (false). Display only"
+    },
+    "includeInElectronicBankDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account was included in electronic banking contract. Display only"
+    },
+    "excludeFromElectronicBank": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account was excluded from electronic banking contract (true) or note (false). Display only"
+    },
+    "excludeFromElectronicBankDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account was excluded from electronic banking contract. Display only"
+    },
+    "confirmAccountList": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account was confirmed (true) or note (false). Display only"
+    },
+    "confirmAccountListDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account was confirmed. Display only"
+    },
+    "confirmAccountBalances": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account balances were confirmed (true) or note (false). Display only"
+    },
+    "confirmAccountBalancesDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account balances were confirmed. Display only"
+    },
+    "confirmAccountSignatories": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account signatories were confirmed (true) or note (false). Display only"
+    },
+    "confirmAccountSignatoriesDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account signatories were confirmed. Display only"
+    },
+    "accountOpeningRequested": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account opening was requested (true) or note (false). Display only"
+    },
+    "accountOpeningRequestDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account opening was requested. Display only"
+    },
+    "accountClosureRequested": {
+      "type": "boolean",
+      "example": false,
+      "description": "Flag to show if account closure was requested (true) or note (false). Display only"
+    },
+    "accountClosureRequestDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date as of which the account closure was requested. Display only"
+    },
+    "establishments": {
+      "type": "array",
+      "description": "List of the multiple establishments to which the current account belongs.",
+      "items": {
+        "type": "object",
+        "required": [
+          "establishment"
+        ],
+        "properties": {
+          "establishment": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "CODE_ID",
+                "description": "Code identifier."
+              },
+              "uuid": {
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426655440001",
+                "description": "UUID identifier. Has priority over the code"
+              }
+            },
+            "title": "ReferenceModel",
+            "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+          },
+          "account": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "CODE_ID",
+                "description": "Code identifier."
+              },
+              "uuid": {
+                "type": "string",
+                "format": "uuid",
+                "example": "123e4567-e89b-12d3-a456-426655440001",
+                "description": "UUID identifier. Has priority over the code"
+              }
+            },
+            "title": "ReferenceModel",
+            "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+          }
+        },
+        "title": "EstablishmentModel",
+        "description": "Establishment."
+      }
+    },
+    "domesticTransfer": {
+      "type": "string",
+      "description": "Issuer number to be used for Domestic transfer",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "internationalTransfer": {
+      "type": "string",
+      "description": "Issuer number to be used for International transfer",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "maturityTransfer": {
+      "type": "string",
+      "description": "Issuer number to be used for Maturity transfer",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "domesticDirectDebit": {
+      "type": "string",
+      "description": "Issuer number to be used for Domestic direct debit",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "internationalDirectDebit": {
+      "type": "string",
+      "description": "Issuer number to be used for International direct debit",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "payablesDrafts": {
+      "type": "string",
+      "description": "Issuer number to be used for Payables drafts",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "receivablesDrafts": {
+      "type": "string",
+      "description": "Issuer number to be used for Receivables drafts",
+      "minLength": 0,
+      "maxLength": 10
+    },
+    "accountAvailableForPayments": {
+      "type": "boolean",
+      "example": true,
+      "description": "Flag to show if account is available for payments (true) or no (false)."
+    },
+    "paymentReconciliationOptions": {
+      "type": "object",
+      "required": [
+        "separateReportingAccount"
+      ],
+      "properties": {
+        "bankReportingPolicy": {
+          "type": "string",
+          "example": "CURRENT_ACCOUNT",
+          "description": "Real Bank account used for Checks. Default = CURRENT_ACCOUNT",
+          "enum": [
+            "CURRENT_ACCOUNT",
+            "SEPARATE_ACCOUNT"
+          ]
+        },
+        "separateReportingAccount": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        }
+      },
+      "title": "PaymentReconciliationOptionsModel",
+      "description": "Payment Reconciliation Options."
+    },
+    "accountPaymentInstructions": {
+      "type": "object",
+      "properties": {
+        "mainCorrespondentBankBranch": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "mainOneTimeCorrespondent": {
+          "type": "object",
+          "properties": {
+            "oneTime": {
+              "type": "boolean",
+              "example": false,
+              "description": "Flag to show if the account has One-time correspondent (true) or no (false)."
+            },
+            "correspondentDescription": {
+              "type": "string",
+              "example": "One-time correspondent description",
+              "description": "One-time correspondent description.",
+              "minLength": 0,
+              "maxLength": 35
+            },
+            "correspondentBIC": {
+              "type": "string",
+              "example": "BATMFRXX",
+              "description": "BIC value of the One-time correspondent.",
+              "minLength": 0,
+              "maxLength": 11
+            },
+            "country": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "CODE_ID",
+                  "description": "Code identifier."
+                },
+                "uuid": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "123e4567-e89b-12d3-a456-426655440001",
+                  "description": "UUID identifier. Has priority over the code"
+                }
+              },
+              "title": "ReferenceModel",
+              "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+            },
+            "correspondentOtherIdentifier": {
+              "type": "object",
+              "required": [
+                "otherIdentifierType"
+              ],
+              "properties": {
+                "otherIdentifierType": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 1,
+                  "description": "Id assigned by another institution."
+                },
+                "otherIdentifierValue": {
+                  "type": "string",
+                  "example": "20-1234567",
+                  "description": "Value of the identifier that corresponds to the selected otherIdentifierType.",
+                  "minLength": 0,
+                  "maxLength": 35
+                }
+              },
+              "title": "OtherIdentifierCommonModel"
+            },
+            "account": {
+              "type": "string",
+              "example": "Account",
+              "description": "Account of the One-time correspondent.",
+              "minLength": 0,
+              "maxLength": 50
+            }
+          },
+          "title": "AccountCorrespondent",
+          "description": "Account correspondent."
+        },
+        "additionalCorrespondentBankBranch": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "additionalOneTimeCorrespondent": {
+          "type": "object",
+          "properties": {
+            "oneTime": {
+              "type": "boolean",
+              "example": false,
+              "description": "Flag to show if the account has One-time correspondent (true) or no (false)."
+            },
+            "correspondentDescription": {
+              "type": "string",
+              "example": "One-time correspondent description",
+              "description": "One-time correspondent description.",
+              "minLength": 0,
+              "maxLength": 35
+            },
+            "correspondentBIC": {
+              "type": "string",
+              "example": "BATMFRXX",
+              "description": "BIC value of the One-time correspondent.",
+              "minLength": 0,
+              "maxLength": 11
+            },
+            "country": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "CODE_ID",
+                  "description": "Code identifier."
+                },
+                "uuid": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "123e4567-e89b-12d3-a456-426655440001",
+                  "description": "UUID identifier. Has priority over the code"
+                }
+              },
+              "title": "ReferenceModel",
+              "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+            },
+            "correspondentOtherIdentifier": {
+              "type": "object",
+              "required": [
+                "otherIdentifierType"
+              ],
+              "properties": {
+                "otherIdentifierType": {
+                  "type": "integer",
+                  "format": "int64",
+                  "example": 1,
+                  "description": "Id assigned by another institution."
+                },
+                "otherIdentifierValue": {
+                  "type": "string",
+                  "example": "20-1234567",
+                  "description": "Value of the identifier that corresponds to the selected otherIdentifierType.",
+                  "minLength": 0,
+                  "maxLength": 35
+                }
+              },
+              "title": "OtherIdentifierCommonModel"
+            },
+            "account": {
+              "type": "string",
+              "example": "Account",
+              "description": "Account of the One-time correspondent.",
+              "minLength": 0,
+              "maxLength": 50
+            }
+          },
+          "title": "AccountCorrespondent",
+          "description": "Account correspondent."
+        },
+        "defaultReason1": {
+          "type": "string",
+          "description": "Default Payment Reason instructions 1.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "defaultReason2": {
+          "type": "string",
+          "description": "Default Payment Reason instructions 2.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "defaultReason3": {
+          "type": "string",
+          "description": "Default Payment Reason instructions 3.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "defaultReason4": {
+          "type": "string",
+          "description": "Default Payment Reason instructions 4.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "ffc1": {
+          "type": "string",
+          "description": "For further credit instructions 1.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "ffc2": {
+          "type": "string",
+          "description": "For further credit instructions 2.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "ffc3": {
+          "type": "string",
+          "description": "For further credit instructions 3.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "ffc4": {
+          "type": "string",
+          "description": "For further credit instructions 4.",
+          "minLength": 0,
+          "maxLength": 35
+        }
+      },
+      "title": "AccountPaymentInstructions",
+      "description": "Account payment instructions."
+    }
+  },
+  "title": "AccountDetailsDto",
+  "$schema": "http://json-schema.org/schema#"
+}

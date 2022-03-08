@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "Swiss Bankers Association",
+      "description": "Contact name",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "department": {
+      "type": "string",
+      "example": "Cash",
+      "description": "Contact department.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "phoneNumber": {
+      "type": "string",
+      "example": "+41 (0) 61 295 93 93",
+      "description": "Contact phone.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "faxNumber": {
+      "type": "string",
+      "example": "+41 (0) 56 496 93 88",
+      "description": "Contact fax.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "email": {
+      "type": "string",
+      "example": "office@sba.ch",
+      "description": "Contact e-mail.",
+      "minLength": 0,
+      "maxLength": 70
+    }
+  },
+  "title": "ContactModel",
+  "description": "Full contact.",
+  "$schema": "http://json-schema.org/schema#"
+}

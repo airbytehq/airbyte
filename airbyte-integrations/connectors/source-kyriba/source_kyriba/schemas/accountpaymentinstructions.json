@@ -1,0 +1,238 @@
+{
+  "type": "object",
+  "properties": {
+    "mainCorrespondentBankBranch": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "mainOneTimeCorrespondent": {
+      "type": "object",
+      "properties": {
+        "oneTime": {
+          "type": "boolean",
+          "example": false,
+          "description": "Flag to show if the account has One-time correspondent (true) or no (false)."
+        },
+        "correspondentDescription": {
+          "type": "string",
+          "example": "One-time correspondent description",
+          "description": "One-time correspondent description.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "correspondentBIC": {
+          "type": "string",
+          "example": "BATMFRXX",
+          "description": "BIC value of the One-time correspondent.",
+          "minLength": 0,
+          "maxLength": 11
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "correspondentOtherIdentifier": {
+          "type": "object",
+          "required": [
+            "otherIdentifierType"
+          ],
+          "properties": {
+            "otherIdentifierType": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1,
+              "description": "Id assigned by another institution."
+            },
+            "otherIdentifierValue": {
+              "type": "string",
+              "example": "20-1234567",
+              "description": "Value of the identifier that corresponds to the selected otherIdentifierType.",
+              "minLength": 0,
+              "maxLength": 35
+            }
+          },
+          "title": "OtherIdentifierCommonModel"
+        },
+        "account": {
+          "type": "string",
+          "example": "Account",
+          "description": "Account of the One-time correspondent.",
+          "minLength": 0,
+          "maxLength": 50
+        }
+      },
+      "title": "AccountCorrespondent",
+      "description": "Account correspondent."
+    },
+    "additionalCorrespondentBankBranch": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    },
+    "additionalOneTimeCorrespondent": {
+      "type": "object",
+      "properties": {
+        "oneTime": {
+          "type": "boolean",
+          "example": false,
+          "description": "Flag to show if the account has One-time correspondent (true) or no (false)."
+        },
+        "correspondentDescription": {
+          "type": "string",
+          "example": "One-time correspondent description",
+          "description": "One-time correspondent description.",
+          "minLength": 0,
+          "maxLength": 35
+        },
+        "correspondentBIC": {
+          "type": "string",
+          "example": "BATMFRXX",
+          "description": "BIC value of the One-time correspondent.",
+          "minLength": 0,
+          "maxLength": 11
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "CODE_ID",
+              "description": "Code identifier."
+            },
+            "uuid": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426655440001",
+              "description": "UUID identifier. Has priority over the code"
+            }
+          },
+          "title": "ReferenceModel",
+          "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+        },
+        "correspondentOtherIdentifier": {
+          "type": "object",
+          "required": [
+            "otherIdentifierType"
+          ],
+          "properties": {
+            "otherIdentifierType": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1,
+              "description": "Id assigned by another institution."
+            },
+            "otherIdentifierValue": {
+              "type": "string",
+              "example": "20-1234567",
+              "description": "Value of the identifier that corresponds to the selected otherIdentifierType.",
+              "minLength": 0,
+              "maxLength": 35
+            }
+          },
+          "title": "OtherIdentifierCommonModel"
+        },
+        "account": {
+          "type": "string",
+          "example": "Account",
+          "description": "Account of the One-time correspondent.",
+          "minLength": 0,
+          "maxLength": 50
+        }
+      },
+      "title": "AccountCorrespondent",
+      "description": "Account correspondent."
+    },
+    "defaultReason1": {
+      "type": "string",
+      "description": "Default Payment Reason instructions 1.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "defaultReason2": {
+      "type": "string",
+      "description": "Default Payment Reason instructions 2.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "defaultReason3": {
+      "type": "string",
+      "description": "Default Payment Reason instructions 3.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "defaultReason4": {
+      "type": "string",
+      "description": "Default Payment Reason instructions 4.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "ffc1": {
+      "type": "string",
+      "description": "For further credit instructions 1.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "ffc2": {
+      "type": "string",
+      "description": "For further credit instructions 2.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "ffc3": {
+      "type": "string",
+      "description": "For further credit instructions 3.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "ffc4": {
+      "type": "string",
+      "description": "For further credit instructions 4.",
+      "minLength": 0,
+      "maxLength": 35
+    }
+  },
+  "title": "AccountPaymentInstructions",
+  "description": "Account payment instructions.",
+  "$schema": "http://json-schema.org/schema#"
+}

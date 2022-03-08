@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "required": [
+    "value"
+  ],
+  "properties": {
+    "banStructure": {
+      "type": "string",
+      "example": "BBAN_STRUCTURE",
+      "description": "Type of the BAN. Default = LBAN_1_STRUCTURE",
+      "enum": [
+        "BBAN_STRUCTURE",
+        "IBAN_STRUCTURE",
+        "LBAN_0_STRUCTURE",
+        "LBAN_1_STRUCTURE",
+        "LBAN_2_STRUCTURE",
+        "LBAN_3_STRUCTURE",
+        "LBAN_4_STRUCTURE",
+        "LBAN_5_STRUCTURE",
+        "LBAN_6_STRUCTURE",
+        "LBAN_7_STRUCTURE",
+        "LBAN_8_STRUCTURE",
+        "LBAN_9_STRUCTURE"
+      ]
+    },
+    "value": {
+      "type": "string",
+      "example": "BF1030134020015400945000643",
+      "description": "Account Id value. Account Id length depends on country. IBAN value should include country code and control key."
+    },
+    "accountNature": {
+      "type": "string",
+      "example": "CURRENT_ACCOUNT",
+      "description": "Account nature. Default = CURRENT_ACCOUNT",
+      "enum": [
+        "CURRENT_ACCOUNT",
+        "SAVINGS_ACCOUNT",
+        "INVESTMENT_ACCOUNT",
+        "CUSTODY_ACCOUNT",
+        "OTHER"
+      ]
+    },
+    "statementIdentifier": {
+      "type": "string",
+      "example": "Statement identifier",
+      "description": "Statement identifier.",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "feeStatementIdentifier": {
+      "type": "string",
+      "example": "Fee statement identifier",
+      "description": "Fee statement identifier.",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "description": {
+      "type": "string",
+      "example": "Account Id description",
+      "description": "Account Id description.",
+      "minLength": 0,
+      "maxLength": 35
+    },
+    "reportingFilterType": {
+      "type": "string",
+      "example": "KEY_1",
+      "description": "Reporting filter type. Default = KEY_1",
+      "enum": [
+        "KEY_1",
+        "KEY_2",
+        "KEY_3",
+        "KEY_4",
+        "KEY_5"
+      ]
+    },
+    "establishment": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "CODE_ID",
+          "description": "Code identifier."
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "123e4567-e89b-12d3-a456-426655440001",
+          "description": "UUID identifier. Has priority over the code"
+        }
+      },
+      "title": "ReferenceModel",
+      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
+    }
+  },
+  "title": "AccountIdModel",
+  "description": "Account Id.",
+  "$schema": "http://json-schema.org/schema#"
+}
