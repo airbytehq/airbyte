@@ -5,6 +5,7 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -19,7 +20,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
+import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
@@ -27,10 +28,13 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://%s/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://%s/oauth/token-request";
 
-  public SourceSnowflakeOAuthFlow(
-                                  ConfigRepository configRepository,
-                                  HttpClient httpClient) {
+  public SourceSnowflakeOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
     super(configRepository, httpClient);
+  }
+
+  @VisibleForTesting
+  public SourceSnowflakeOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, final Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
@@ -132,6 +136,6 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
 
   private String extractUrl(JsonNode inputOAuthConfiguration) {
     var url = inputOAuthConfiguration.get("host");
-    return url == null ? StringUtils.EMPTY : url.asText();
+    return url == null ? "snowflakecomputing.com" : url.asText();
   }
 }
