@@ -301,7 +301,7 @@ class CachingSubStream(JenkinsStream, ABC):
 
 
 def normalize_date_string(value: str) -> str:
-    return dateutil.parser.parse(value).isoformat()
+    return dateutil.parser.parse(value).replace(tzinfo=None).isoformat()
 
 
 class Runs(ParentStreamMixin, CachingSubStream):
@@ -316,6 +316,7 @@ class Runs(ParentStreamMixin, CachingSubStream):
     """
     primary_key = ["pipelineFullName", "id"]
 
+    # TODO: change to endTime?
     cursor_field = "startTime"
 
     sync_mode = SyncMode.full_refresh
@@ -339,10 +340,6 @@ class Runs(ParentStreamMixin, CachingSubStream):
         pipeline = stream_slice["parent"]["fullName"]
         return f"organizations/{organization}/pipelines/{pipeline}/runs/"
 
-    def _update_state(self, stream_slice: Mapping[str, Any], state: Mapping[str, Any]) -> None:
-        state_key = self._state_key(stream_slice)
-        self.state[state_key] = state
-
     @staticmethod
     def _state_key(stream_slice: Mapping[str, Any]) -> str:
         if stream_slice is None:
@@ -351,11 +348,25 @@ class Runs(ParentStreamMixin, CachingSubStream):
         pipeline = stream_slice["parent"]["fullName"]
         return f"{organization}/{pipeline}"
 
-    def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(*args, **kwargs):
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
             # Filter out parents that aren't actual Jobs (e.g. folders, multi-branch builds).
             parent_class = stream_slice["parent"]["_class"]
-            if JOB_CLASS in self.resolve_classes(parent_class):
+            if JOB_CLASS not in self.resolve_classes(parent_class):
+                continue
+
+            # Use the "latestRun" information to skip pipelines that haven't been run.
+            run_start_date = normalize_date_string(
+                stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field, self._start_date)
+            )
+            latest_run = stream_slice["parent"]["latestRun"] or {}
+            latest_start_date = normalize_date_string(latest_run.get(self.cursor_field, self._start_date))
+            if latest_start_date > run_start_date:
                 yield stream_slice
 
     def read_records(
@@ -365,13 +376,13 @@ class Runs(ParentStreamMixin, CachingSubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date = stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field, self._start_date)
+        start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field, self._start_date))
 
         max_state = start_date
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            run_start_time = record.get(self.cursor_field)
-            # Runs can be queued but not started yet. For now, we ignore runs that haven't completed.
-            if run_start_time is not None and run_start_time > start_date:
+            # Runs can be queued but not started yet. For now, we ignore runs that haven't started.
+            run_start_time = normalize_date_string(record.get(self.cursor_field, self._start_date))
+            if run_start_time > start_date:
                 record = cast(Dict[str, Any], record)
                 record["pipelineFullName"] = stream_slice["parent"]["fullName"]
                 yield record
@@ -381,7 +392,7 @@ class Runs(ParentStreamMixin, CachingSubStream):
             max_state = max(current_state, max_state)
 
         # Update the state when the slice is completed.
-        self.state[self._state_key(stream_slice)] = {self.cursor_field: normalize_date_string(max_state)}
+        self.state[self._state_key(stream_slice)] = {self.cursor_field: max_state}
 
 
 class Nodes(ParentStreamMixin, CachingSubStream):
