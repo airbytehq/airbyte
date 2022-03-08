@@ -22,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +53,18 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       this.converter = converter;
     }
 
+    public String getContentType() {
+      return contentType;
+    }
+
+    public Function<Map<String, String>, String> getConverter() {
+      return converter;
+    }
+
   }
 
   protected final HttpClient httpClient;
-  private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
 
   public BaseOAuth2Flow(final ConfigRepository configRepository, final HttpClient httpClient) {
