@@ -35,8 +35,8 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
 
   // config which refers to the schema that the test is being run in.
-  private JsonNode config;
-  private JdbcDatabase database;
+  protected JsonNode config;
+  protected JdbcDatabase database;
 
   @Override
   protected String getImageName() {
@@ -90,17 +90,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    config = Jsons.clone(getStaticConfig());
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
-        SnowflakeSource.DRIVER_CLASS,
-        Map.of("role", config.get("role").asText(),
-            "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
-
+    database = setupDataBase();
     final String createSchemaQuery = String.format("CREATE SCHEMA IF NOT EXISTS %s", SCHEMA_NAME);
     final String createTableQuery1 = String
         .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
@@ -128,6 +118,19 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database.execute(dropSchemaQuery);
     database.close();
+  }
+
+  protected JdbcDatabase setupDataBase() {
+    config = Jsons.clone(getStaticConfig());
+    return Databases.createJdbcDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:snowflake://%s/",
+            config.get("host").asText()),
+        SnowflakeSource.DRIVER_CLASS,
+        Map.of("role", config.get("role").asText(),
+            "warehouse", config.get("warehouse").asText(),
+            "database", config.get("database").asText()));
   }
 
 }
