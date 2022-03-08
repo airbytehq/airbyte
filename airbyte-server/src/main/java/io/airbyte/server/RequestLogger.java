@@ -31,30 +31,21 @@ import org.slf4j.MDC;
 public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
-  private static final String MDC_RESPONSE_BODY_KEY = "responseBody";
+  private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
 
   @Context
   private HttpServletRequest servletRequest;
-
-  private ThreadLocal<String> requestBodyThreadLocal;
 
   private final Map<String, String> mdc;
 
   public RequestLogger(final Map<String, String> mdc) {
     this.mdc = mdc;
-    this.requestBodyThreadLocal = new ThreadLocal<>();
   }
 
   @VisibleForTesting
   RequestLogger(final Map<String, String> mdc, final HttpServletRequest servletRequest) {
     this.mdc = mdc;
-    this.requestBodyThreadLocal = new ThreadLocal<>();
     this.servletRequest = servletRequest;
-  }
-
-  @VisibleForTesting
-  String getRequestBody() {
-    return requestBodyThreadLocal.get();
   }
 
   @Override
@@ -67,7 +58,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
-      requestBodyThreadLocal.set(IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
+      requestContext.setProperty(REQUEST_BODY_PROPERTY, IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
     }
   }
 
@@ -79,7 +70,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     final String method = servletRequest.getMethod();
     final String url = servletRequest.getRequestURI();
 
-    final String requestBody = requestBodyThreadLocal.get();
+    final String requestBody = (String) requestContext.getProperty(REQUEST_BODY_PROPERTY);
 
     final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
         servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&
