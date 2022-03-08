@@ -7,7 +7,6 @@ import copy
 import os
 from typing import Any, Callable, List
 
-import humps
 import yaml
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
 from octavia_cli.apply import resources
@@ -255,8 +254,6 @@ class ConnectionRenderer(BaseRenderer):
         Returns:
             str: Catalog rendered as yaml.
         """
-        catalog = ConnectionRenderer.remove_json_schema_from_streams(catalog)
-        catalog = humps.decamelize(catalog)
         return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
 
     def write_yaml(self, project_path: str) -> str:
