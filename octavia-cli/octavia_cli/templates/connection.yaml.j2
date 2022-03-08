@@ -11,7 +11,7 @@ configuration:
   namespace_format: "${SOURCE_NAMESPACE}" # OPTIONAL | string | Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
   prefix: "" # REQUIRED | Prefix that will be prepended to the name of each stream when it is written to the destination
   operation_ids: # OPTIONAL | array
-  - 6c9e2330-4af3-47a9-b252-12fcfefcab55 #  Normalization operation id
+    - 6c9e2330-4af3-47a9-b252-12fcfefcab55 # Normalization operation id
   resource_requirements: # OPTIONAL | object | Resource requirements to run workers (blank for unbounded allocations)
     cpu_limit: "" # OPTIONAL
     cpu_request: ""  # OPTIONAL

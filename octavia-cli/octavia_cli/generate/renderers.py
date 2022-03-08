@@ -13,6 +13,7 @@ from jinja2 import Environment, PackageLoader, Template, select_autoescape
 from octavia_cli.apply import resources
 
 from .definitions import BaseDefinition, ConnectionDefinition
+from .yaml_dumpers import CatalogDumper
 
 JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
@@ -213,6 +214,7 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
 
 class ConnectionRenderer(BaseRenderer):
+
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
@@ -255,7 +257,7 @@ class ConnectionRenderer(BaseRenderer):
         """
         catalog = ConnectionRenderer.remove_json_schema_from_streams(catalog)
         catalog = humps.decamelize(catalog)
-        return yaml.dump(catalog)
+        return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
 
     def write_yaml(self, project_path: str) -> str:
         output_path = self._get_output_path(project_path, ConnectionDefinition.type)

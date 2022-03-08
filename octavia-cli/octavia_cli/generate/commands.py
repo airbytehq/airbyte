@@ -13,7 +13,7 @@ from .renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 @click.group("generate", help="Generate a YAML template for a source, destination or a connection.")
 @click.pass_context
 @requires_init
-def generate(ctx: click.Context):  # pragma: no cover
+def generate(ctx: click.Context):
     pass
 
 
