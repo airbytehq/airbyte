@@ -40,7 +40,7 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
 
     ((ObjectNode) spec.getConnectionSpecification()).put("title", DEV_NULL_DESTINATION_TITLE);
-
+    System.out.println("fake change");
     final ArrayNode types = (ArrayNode) spec.getConnectionSpecification().get("oneOf");
     final Iterator<JsonNode> typesIterator = types.elements();
     while (typesIterator.hasNext()) {
