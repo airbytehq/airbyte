@@ -7,7 +7,7 @@ import os
 
 import pytest
 import yaml
-from octavia_cli.generate.renderer import ConnectorSpecificationRenderer
+from octavia_cli.generate.renderers import ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"

@@ -6,7 +6,7 @@ import click
 import octavia_cli.generate.definitions as definitions
 from octavia_cli.apply import resources
 
-from .renderer import ConnectionRenderer, ConnectorSpecificationRenderer
+from .renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
 
 @click.group("generate", help="Generate a YAML template for a source, destination or a connection.")

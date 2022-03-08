@@ -5,24 +5,24 @@
 from unittest.mock import mock_open, patch
 
 import pytest
-from octavia_cli.generate import renderer
+from octavia_cli.generate import renderers
 
 
 class TestFieldToRender:
     def test_init(self, mocker):
-        mocker.patch.object(renderer.FieldToRender, "_get_one_of_values")
-        mocker.patch.object(renderer, "get_object_fields")
-        mocker.patch.object(renderer.FieldToRender, "_get_array_items")
-        mocker.patch.object(renderer.FieldToRender, "_build_comment")
-        mocker.patch.object(renderer.FieldToRender, "_get_default")
+        mocker.patch.object(renderers.FieldToRender, "_get_one_of_values")
+        mocker.patch.object(renderers, "get_object_fields")
+        mocker.patch.object(renderers.FieldToRender, "_get_array_items")
+        mocker.patch.object(renderers.FieldToRender, "_build_comment")
+        mocker.patch.object(renderers.FieldToRender, "_get_default")
 
         field_metadata = mocker.Mock()
-        field_to_render = renderer.FieldToRender("field_name", True, field_metadata)
+        field_to_render = renderers.FieldToRender("field_name", True, field_metadata)
         assert field_to_render.name == "field_name"
         assert field_to_render.required
         assert field_to_render.field_metadata == field_metadata
         assert field_to_render.one_of_values == field_to_render._get_one_of_values.return_value
-        assert field_to_render.object_properties == renderer.get_object_fields.return_value
+        assert field_to_render.object_properties == renderers.get_object_fields.return_value
         assert field_to_render.array_items == field_to_render._get_array_items.return_value
         assert field_to_render.comment == field_to_render._build_comment.return_value
         assert field_to_render.default == field_to_render._get_default.return_value
@@ -37,12 +37,12 @@ class TestFieldToRender:
         )
 
     def test_get_attr(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         assert field_to_render.foo == "bar"
         assert field_to_render.not_existing is None
 
     def test_is_array_of_objects(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.type = "array"
         field_to_render.items = {"type": "object"}
         assert field_to_render.is_array_of_objects
@@ -51,51 +51,51 @@ class TestFieldToRender:
         assert not field_to_render.is_array_of_objects
 
     def test__get_one_of_values(self, mocker):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.oneOf = False
         assert field_to_render._get_one_of_values() == []
 
-        mocker.patch.object(renderer, "get_object_fields")
+        mocker.patch.object(renderers, "get_object_fields")
         one_of_value = mocker.Mock()
         field_to_render.oneOf = [one_of_value]
         one_of_values = field_to_render._get_one_of_values()
-        renderer.get_object_fields.assert_called_once_with(one_of_value)
-        assert one_of_values == [renderer.get_object_fields.return_value]
+        renderers.get_object_fields.assert_called_once_with(one_of_value)
+        assert one_of_values == [renderers.get_object_fields.return_value]
 
     def test__get_array_items(self, mocker):
-        mocker.patch.object(renderer, "parse_fields")
-        mocker.patch.object(renderer.FieldToRender, "is_array_of_objects", False)
+        mocker.patch.object(renderers, "parse_fields")
+        mocker.patch.object(renderers.FieldToRender, "is_array_of_objects", False)
 
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         assert field_to_render._get_array_items() == []
         field_to_render.items = {"required": [], "properties": []}
-        mocker.patch.object(renderer.FieldToRender, "is_array_of_objects", True)
-        assert field_to_render._get_array_items() == renderer.parse_fields.return_value
-        renderer.parse_fields.assert_called_with([], [])
+        mocker.patch.object(renderers.FieldToRender, "is_array_of_objects", True)
+        assert field_to_render._get_array_items() == renderers.parse_fields.return_value
+        renderers.parse_fields.assert_called_with([], [])
 
     def test__get_required_comment(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.required = True
         assert field_to_render._get_required_comment() == "REQUIRED"
         field_to_render.required = False
         assert field_to_render._get_required_comment() == "OPTIONAL"
 
     def test__get_type_comment(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.type = "mytype"
         assert field_to_render._get_type_comment() == "mytype"
         field_to_render.type = None
         assert field_to_render._get_type_comment() is None
 
     def test__get_secret_comment(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.airbyte_secret = True
         assert field_to_render._get_secret_comment() == "SECRET"
         field_to_render.airbyte_secret = False
         assert field_to_render._get_secret_comment() is None
 
     def test__get_description_comment(self):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.description = "foo"
         assert field_to_render._get_description_comment() == "foo"
         field_to_render.description = None
@@ -112,7 +112,7 @@ class TestFieldToRender:
         ],
     )
     def test__get_example_comment(self, examples_value, expected_output):
-        field_to_render = renderer.FieldToRender("field_name", True, {"foo": "bar"})
+        field_to_render = renderers.FieldToRender("field_name", True, {"foo": "bar"})
         field_to_render.examples = examples_value
         assert field_to_render._get_example_comment() == expected_output
 
@@ -125,19 +125,19 @@ class TestFieldToRender:
         ],
     )
     def test__get_default(self, field_metadata, expected_default):
-        field_to_render = renderer.FieldToRender("field_name", True, field_metadata)
+        field_to_render = renderers.FieldToRender("field_name", True, field_metadata)
         assert field_to_render.default == expected_default
 
     def test__build_comment(self, mocker):
         comment_functions = [mocker.Mock(return_value="foo"), mocker.Mock(return_value=None), mocker.Mock(return_value="bar")]
-        comment = renderer.FieldToRender._build_comment(comment_functions)
+        comment = renderers.FieldToRender._build_comment(comment_functions)
         assert comment == "foo | bar"
 
 
 def test_parse_fields():
     required_fields = ["foo"]
     properties = {"foo": {}, "bar": {}}
-    fields_to_render = renderer.parse_fields(required_fields, properties)
+    fields_to_render = renderers.parse_fields(required_fields, properties)
     assert fields_to_render[0].name == "foo"
     assert fields_to_render[0].required
     assert fields_to_render[1].name == "bar"
@@ -145,36 +145,36 @@ def test_parse_fields():
 
 
 def test_get_object_fields(mocker):
-    mocker.patch.object(renderer, "parse_fields")
+    mocker.patch.object(renderers, "parse_fields")
     field_metadata = {"properties": {"foo": {}, "bar": {}}, "required": ["foo"]}
-    object_properties = renderer.get_object_fields(field_metadata)
-    assert object_properties == renderer.parse_fields.return_value
-    renderer.parse_fields.assert_called_with(["foo"], field_metadata["properties"])
+    object_properties = renderers.get_object_fields(field_metadata)
+    assert object_properties == renderers.parse_fields.return_value
+    renderers.parse_fields.assert_called_with(["foo"], field_metadata["properties"])
     field_metadata = {}
-    assert renderer.get_object_fields(field_metadata) == []
+    assert renderers.get_object_fields(field_metadata) == []
 
 
 class TestBaseRenderer:
     @pytest.fixture
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
-        mocker.patch.object(renderer.BaseRenderer, "__abstractmethods__", set())
+        mocker.patch.object(renderers.BaseRenderer, "__abstractmethods__", set())
 
     def test_init(self, patch_base_class):
-        base = renderer.BaseRenderer("resource_name")
+        base = renderers.BaseRenderer("resource_name")
         assert base.resource_name == "resource_name"
 
     def test_get_output_path(self, patch_base_class, mocker):
-        mocker.patch.object(renderer, "os")
-        renderer.os.path.exists.return_value = False
-        spec_renderer = renderer.BaseRenderer("my_resource_name")
-        renderer.os.path.join.side_effect = [
+        mocker.patch.object(renderers, "os")
+        renderers.os.path.exists.return_value = False
+        spec_renderer = renderers.BaseRenderer("my_resource_name")
+        renderers.os.path.join.side_effect = [
             "./my_definition_types/my_resource_name",
             "./my_definition_types/my_resource_name/configuration.yaml",
         ]
         output_path = spec_renderer._get_output_path(".", "my_definition_type")
-        renderer.os.makedirs.assert_called_once()
-        renderer.os.path.join.assert_has_calls(
+        renderers.os.makedirs.assert_called_once()
+        renderers.os.path.join.assert_has_calls(
             [
                 mocker.call(".", "my_definition_types", "my_resource_name"),
                 mocker.call("./my_definition_types/my_resource_name", "configuration.yaml"),
@@ -185,42 +185,42 @@ class TestBaseRenderer:
 
 class TestConnectorSpecificationRenderer:
     def test_init(self, mocker):
-        assert renderer.ConnectorSpecificationRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("source_or_destination.yaml.j2")
+        assert renderers.ConnectorSpecificationRenderer.TEMPLATE == renderers.JINJA_ENV.get_template("source_or_destination.yaml.j2")
         definition = mocker.Mock()
-        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", definition)
+        spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", definition)
         assert spec_renderer.resource_name == "my_resource_name"
         assert spec_renderer.definition == definition
 
     def test__parse_connection_specification(self, mocker):
-        mocker.patch.object(renderer, "parse_fields")
+        mocker.patch.object(renderers, "parse_fields")
         schema = {"required": ["foo"], "properties": {"foo": "bar"}}
         definition = mocker.Mock()
-        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", definition)
+        spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", definition)
         parsed_schema = spec_renderer._parse_connection_specification(schema)
-        assert renderer.parse_fields.call_count == 1
-        assert parsed_schema[0], renderer.parse_fields.return_value
-        renderer.parse_fields.assert_called_with(["foo"], {"foo": "bar"})
+        assert renderers.parse_fields.call_count == 1
+        assert parsed_schema[0], renderers.parse_fields.return_value
+        renderers.parse_fields.assert_called_with(["foo"], {"foo": "bar"})
 
     def test__parse_connection_specification_one_of(self, mocker):
-        mocker.patch.object(renderer, "parse_fields")
+        mocker.patch.object(renderers, "parse_fields")
         schema = {"oneOf": [{"required": ["foo"], "properties": {"foo": "bar"}}, {"required": ["free"], "properties": {"free": "beer"}}]}
-        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock())
+        spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock())
         parsed_schema = spec_renderer._parse_connection_specification(schema)
-        assert renderer.parse_fields.call_count == 2
-        assert parsed_schema[0], renderer.parse_fields.return_value
-        assert parsed_schema[1], renderer.parse_fields.return_value
+        assert renderers.parse_fields.call_count == 2
+        assert parsed_schema[0], renderers.parse_fields.return_value
+        assert parsed_schema[1], renderers.parse_fields.return_value
         assert len(parsed_schema) == len(schema["oneOf"])
-        renderer.parse_fields.assert_called_with(["free"], {"free": "beer"})
+        renderers.parse_fields.assert_called_with(["free"], {"free": "beer"})
 
     def test_write_yaml(self, mocker):
 
-        mocker.patch.object(renderer.ConnectorSpecificationRenderer, "_get_output_path")
-        mocker.patch.object(renderer.ConnectorSpecificationRenderer, "_parse_connection_specification")
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_get_output_path")
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
-            renderer.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
+            renderers.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
         )
 
-        spec_renderer = renderer.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
+        spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock(type="source"))
         with patch("builtins.open", mock_open()) as mock_file:
             output_path = spec_renderer.write_yaml(".")
         assert output_path == spec_renderer._get_output_path.return_value
@@ -244,34 +244,34 @@ class TestConnectionRenderer:
         return mocker.Mock()
 
     def test_init(self, mock_source, mock_destination):
-        assert renderer.ConnectionRenderer.TEMPLATE == renderer.JINJA_ENV.get_template("connection.yaml.j2")
-        connection_renderer = renderer.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        assert renderers.ConnectionRenderer.TEMPLATE == renderers.JINJA_ENV.get_template("connection.yaml.j2")
+        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
         assert connection_renderer.resource_name == "my_resource_name"
         assert connection_renderer.source == mock_source
         assert connection_renderer.destination == mock_destination
 
     def test_remove_json_schema_from_streams(self):
         catalog = {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
-        new_catalog = renderer.ConnectionRenderer.remove_json_schema_from_streams(catalog)
+        new_catalog = renderers.ConnectionRenderer.remove_json_schema_from_streams(catalog)
         assert new_catalog == {"streams": [{"stream": {"other_key": "other_value"}}]}
         assert catalog == {"streams": [{"stream": {"jsonSchema": "foobar", "other_key": "other_value"}}]}
 
     def test_catalog_to_yaml(self, mocker):
         catalog = {"camelCase": "camelCase", "snake_case": "camelCase"}
-        mocker.patch.object(renderer.ConnectionRenderer, "remove_json_schema_from_streams", mocker.Mock(return_value=catalog))
-        yaml_catalog = renderer.ConnectionRenderer.catalog_to_yaml(catalog)
+        mocker.patch.object(renderers.ConnectionRenderer, "remove_json_schema_from_streams", mocker.Mock(return_value=catalog))
+        yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
         assert yaml_catalog == "camel_case: camelCase\nsnake_case: camelCase\n"
-        renderer.ConnectionRenderer.remove_json_schema_from_streams.assert_called_with(catalog)
+        renderers.ConnectionRenderer.remove_json_schema_from_streams.assert_called_with(catalog)
 
     def test_write_yaml(self, mocker, mock_source, mock_destination):
-        mocker.patch.object(renderer.ConnectionRenderer, "_get_output_path")
-        mocker.patch.object(renderer.ConnectionRenderer, "catalog_to_yaml")
-        mocker.patch.object(renderer.ConnectionRenderer, "TEMPLATE")
+        mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")
+        mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
+        mocker.patch.object(renderers.ConnectionRenderer, "TEMPLATE")
 
-        connection_renderer = renderer.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
+        connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
         with patch("builtins.open", mock_open()) as mock_file:
             output_path = connection_renderer.write_yaml(".")
-        connection_renderer._get_output_path.assert_called_with(".", renderer.ConnectionDefinition.type)
+        connection_renderer._get_output_path.assert_called_with(".", renderers.ConnectionDefinition.type)
         connection_renderer.catalog_to_yaml.assert_called_with(mock_source.catalog)
         mock_file.assert_called_with(output_path, "w")
         mock_file.return_value.write.assert_called_with(connection_renderer.TEMPLATE.render.return_value)
