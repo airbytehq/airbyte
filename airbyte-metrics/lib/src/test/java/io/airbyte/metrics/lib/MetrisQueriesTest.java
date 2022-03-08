@@ -429,4 +429,59 @@ public class MetrisQueriesTest {
 
   }
 
+  @Nested
+  class overallJobRuntimeForTerminalJobsInLastHour {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+    }
+
+    @Test
+    @DisplayName("should ignore non terminal jobs")
+    void shouldIgnoreNonTerminalJobs() throws SQLException {
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.incomplete).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    @DisplayName("should return correct duration for terminal jobs")
+    void shouldReturnTerminalJobs() throws SQLException {
+      final var updateAt = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAt.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(1L, "", JobStatus.succeeded, createAt, updateAt).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(2L, "", JobStatus.failed, createAt, updateAt).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(3L, "", JobStatus.cancelled, createAt, updateAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(3, res.size());
+      for (long time : res) {
+        assertEquals(expAgeSecs, time);
+      }
+    }
+
+    @Test
+    @DisplayName("should not error out or return any result if not applicable")
+    void shouldReturnNothingIfNotApplicable() throws SQLException {
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(0, res.size());
+    }
+
+  }
+
 }

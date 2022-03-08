@@ -117,9 +117,10 @@ public class MetricQueries {
   public static List<Long> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
     final var timeField = "sec";
     final var query = String.format("""
-                                    SELECT extract(epoch from age(updated_at, created_at)) as %s FROM jobs
+                                    SELECT extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
                                     WHERE updated_at IS NOT NULL
-                                      and updated_at >= NOW() - INTERVAL '1 HOUR';""", timeField);
+                                      AND updated_at >= NOW() - INTERVAL '1 HOUR'
+                                      AND jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled';""", timeField);
     return ctx.fetch(query).getValues(timeField, long.class);
   }
 
