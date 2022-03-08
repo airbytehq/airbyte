@@ -12,6 +12,7 @@ import io.airbyte.commons.util.MoreIterators;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.joda.time.DateTime;
 
 public class StandardNameTransformer implements NamingConventionTransformer {
 
@@ -34,6 +35,10 @@ public class StandardNameTransformer implements NamingConventionTransformer {
 
   protected String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
+  }
+
+  protected String applyDefaultCase(final String input) {
+    return input;
   }
 
   /**
@@ -70,13 +75,20 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   }
 
   @Override
-  public String getStageName(String schemaName, String outputTableName) {
-    return schemaName.concat(outputTableName).replaceAll("-", "_").toUpperCase();
+  public String getStageName(final String namespace, final String streamName) {
+    return applyDefaultCase(String.join("_", convertStreamName(namespace), convertStreamName(streamName)));
   }
 
   @Override
-  public String getStagingPath(String schemaName, String tableName, String currentSyncPath) {
-    return (getStageName(schemaName, tableName) + "/staged/" + currentSyncPath).toUpperCase();
+  public String getStagingPath(final String connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+    // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
+    return applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
+        connectionId,
+        getStageName(namespace, streamName),
+        writeDatetime.year().get(),
+        writeDatetime.monthOfYear().get(),
+        writeDatetime.dayOfMonth().get(),
+        writeDatetime.hourOfDay().get()));
   }
 
 }

@@ -6,8 +6,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingSqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.nio.file.Files;
@@ -15,12 +14,18 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingSqlOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+
+  @Override
+  public void uploadRecordsToStage(JdbcDatabase database, File dataFile, String schemaName, String path) throws Exception {
+    throw new NotImplementedException("placeholder function is not implemented yet");
+  }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
@@ -47,6 +52,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     Files.delete(tempFile.toPath());
   }
 
+  @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws SQLException {
     final String query = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
@@ -54,6 +60,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         Map.of("stage", stageName));
   }
 
+  @Override
   public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String stageName, final String dstTableName, final String schemaName)
       throws SQLException {
     final String query = "COPY INTO %s.%s FROM @%s file_format = " +
@@ -63,12 +70,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
+  @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws SQLException {
     AirbyteSentry.executeWithTracing("DropStageIfExists",
         () -> database.execute(String.format("DROP STAGE IF EXISTS %s;", stageName)),
         Map.of("stage", stageName));
   }
 
+  @Override
   public void cleanUpStage(final JdbcDatabase database, final String path) throws SQLException {
     AirbyteSentry.executeWithTracing("CleanStage",
         () -> database.execute(String.format("REMOVE @%s;", path)),

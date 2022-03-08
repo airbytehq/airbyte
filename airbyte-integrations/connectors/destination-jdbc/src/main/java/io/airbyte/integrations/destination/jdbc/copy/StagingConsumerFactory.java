@@ -17,7 +17,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingSqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingOperations;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -31,6 +31,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +41,12 @@ public class StagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
   private static final long MAX_BATCH_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
-  private final String CURRENT_SYNC_PATH = UUID.randomUUID().toString();
+  private final DateTime CURRENT_SYNC_PATH = DateTime.now(DateTimeZone.UTC);
+  private final String RANDOM_CONNECTION_ID = UUID.randomUUID().toString();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
       final JdbcDatabase database,
-      final StagingSqlOperations sqlOperations,
+      final StagingOperations sqlOperations,
       final NamingConventionTransformer namingResolver,
       final JsonNode config,
       final ConfiguredAirbyteCatalog catalog) {
@@ -96,7 +99,7 @@ public class StagingConsumerFactory {
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
-      final StagingSqlOperations stagingSqlOperations,
+      final StagingOperations stagingSqlOperations,
       final List<WriteConfig> writeConfigs,
       final NamingConventionTransformer namingResolver) {
     return () -> {
@@ -149,14 +152,14 @@ public class StagingConsumerFactory {
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String tableName = writeConfig.getOutputTableName();
-      final String path = namingResolver.getStagingPath(schemaName, tableName, CURRENT_SYNC_PATH);
+      final String path = namingResolver.getStagingPath(RANDOM_CONNECTION_ID, schemaName, tableName, CURRENT_SYNC_PATH);
 
       stagingSqlOperations.insertRecords(database, records, schemaName, path);
     };
   }
 
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
-      final StagingSqlOperations sqlOperations,
+      final StagingOperations sqlOperations,
       final List<WriteConfig> writeConfigs,
       final NamingConventionTransformer namingResolver) {
     return (hasFailed) -> {
@@ -169,7 +172,7 @@ public class StagingConsumerFactory {
           final String streamName = writeConfig.getStreamName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
-          final String path = namingResolver.getStagingPath(schemaName, dstTableName, CURRENT_SYNC_PATH);
+          final String path = namingResolver.getStagingPath(RANDOM_CONNECTION_ID, schemaName, dstTableName, CURRENT_SYNC_PATH);
           LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}, stage path {}",
               streamName, schemaName, srcTableName, dstTableName, path);
 
