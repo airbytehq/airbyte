@@ -218,7 +218,7 @@ class ConnectionRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
-        """Connection renderer constructor
+        """Connection renderer constructor.
 
         Args:
             connection_name (str): Name of the connection to render.

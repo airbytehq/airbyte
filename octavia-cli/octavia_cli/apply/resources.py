@@ -373,7 +373,7 @@ class Source(BaseResource):
 
     @property
     def catalog(self) -> AirbyteCatalog:
-        """Retrieve the source Airbyte catalog
+        """Retrieves the source's Airbyte catalog.
 
         Returns:
             AirbyteCatalog: The catalog issued by schema discovery.

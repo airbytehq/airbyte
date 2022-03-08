@@ -11,7 +11,7 @@ import yaml
 #   foo: test
 # - bar: test4
 #   foo: test3
-# Custom behavior to match pretier rules:
+# Custom behavior to match prettier's rules:
 # my_list:
 #   - bar: test2
 #     foo: test

@@ -19,7 +19,7 @@ configuration:
     memory_request: "" # OPTIONAL
   schedule: # OPTIONAL | object
     time_unit: 24 # REQUIRED | integer
-    units: hours # REQUIRES | string | Allowed values: minutes┃hours┃days┃weeks┃months
+    units: hours # REQUIRES | string | Allowed values: minutes, hours, days, weeks, months
   sync_catalog: # OPTIONAL | object
     streams:
       - config:
