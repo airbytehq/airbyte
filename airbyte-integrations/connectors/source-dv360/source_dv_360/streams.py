@@ -15,6 +15,7 @@ import io
 import csv
 import requests
 from .fields import API_REPORT_BUILDER_MAPPING, sanitize
+from requests.exceptions import HTTPError
 
 REPORT_TYPE_MAPPING = {
     "audience_composition": "TYPE_AUDIENCE_COMPOSITION",
@@ -155,7 +156,7 @@ class DBMStream(Stream, ABC):
     start_date=self._start_date, end_date=self._end_date)
     return query
 
-  def read_records(self,catalog_fields: List[str],stream_slice: Mapping[str, Any]=None):
+  def read_records(self,catalog_fields: List[str],stream_slice: Mapping[str, Any]=None, sync_mode=None):
     """
     Get the report from the url specified in the created query. The report is in csv form, with 
     additional meta data below the data that need to be remove.
@@ -173,6 +174,7 @@ class DBMStream(Stream, ABC):
       for row in reader:
         yield row
 
+
   def buffer_reader(self, buffer:io.StringIO):
     """
     Yield all lines from a file text buffer until the empty line is reached
@@ -180,7 +182,7 @@ class DBMStream(Stream, ABC):
     :return a generator of dict rows from the file
     """
     for line in buffer.readlines():
-      if line != '\n':
+      if line != '\n': # NB: the last non empty line contains the sum of the metrics in the data
         yield line
       else:
         break

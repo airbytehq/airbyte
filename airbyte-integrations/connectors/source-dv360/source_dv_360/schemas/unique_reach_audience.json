@@ -2,271 +2,271 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "advertiser ": {
+    "advertiser": {
       "type": [
         "null",
         "string"
       ]
     },
-    "advertiser_id ": {
+    "advertiser_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "age ": {
+    "age": {
       "type": [
         "null",
         "string"
       ]
     },
-    "country ": {
+    "country": {
       "type": [
         "null",
         "string"
       ]
     },
-    "gender ": {
+    "gender": {
       "type": [
         "null",
         "string"
       ]
     },
-    "date ": {
+    "date": {
       "type": [
         "null",
         "string"
       ]
     },
-    "insertion_order_id ": {
+    "insertion_order_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "insertion_order_integration_code ": {
+    "insertion_order_integration_code": {
       "type": [
         "null",
         "string"
       ]
     },
-    "insertion_order ": {
+    "insertion_order": {
       "type": [
         "null",
         "string"
       ]
     },
-    "insertion_order_status ": {
+    "insertion_order_status": {
       "type": [
         "null",
         "string"
       ]
     },
-    "line_item_id ": {
+    "line_item_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "line_item_integration_code ": {
+    "line_item_integration_code": {
       "type": [
         "null",
         "string"
       ]
     },
-    "line_item ": {
+    "line_item": {
       "type": [
         "null",
         "string"
       ]
     },
-    "line_item_status ": {
+    "line_item_status": {
       "type": [
         "null",
         "string"
       ]
     },
-    "line_item_type ": {
+    "line_item_type": {
       "type": [
         "null",
         "string"
       ]
     },
-    "device_type ": {
+    "device_type": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative ": {
+    "creative": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_height ": {
+    "creative_height": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_id ": {
+    "creative_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_size ": {
+    "creative_size": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_source ": {
+    "creative_source": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_status ": {
+    "creative_status": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_type ": {
+    "creative_type": {
       "type": [
         "null",
         "string"
       ]
     },
-    "creative_width ": {
+    "creative_width": {
       "type": [
         "null",
         "string"
       ]
     },
-    "partner_id ": {
+    "partner_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "partner ": {
+    "partner": {
       "type": [
         "null",
         "string"
       ]
     },
-    "month ": {
+    "month": {
       "type": [
         "null",
         "string"
       ]
     },
-    "campaign_id ": {
+    "campaign_id": {
       "type": [
         "null",
         "string"
       ]
     },
-    "campaign ": {
+    "campaign": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_composition_impressions ": {
+    "pct_composition_impressions": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_composition_reach ": {
+    "pct_composition_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_population_reach ": {
+    "pct_population_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "clicks ": {
+    "clicks": {
       "type": [
         "null",
         "string"
       ]
     },
-    "impressions ": {
+    "impressions": {
       "type": [
         "null",
         "string"
       ]
     },
-    "population ": {
+    "population": {
       "type": [
         "null",
         "string"
       ]
     },
-    "target_rating_points ": {
+    "target_rating_points": {
       "type": [
         "null",
         "string"
       ]
     },
-    "unique_reach_average_impression_frequency ": {
+    "unique_reach_average_impression_frequency": {
       "type": [
         "null",
         "string"
       ]
     },
-    "unique_reach_click_reach ": {
+    "unique_reach_click_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "unique_reach_impression_reach ": {
+    "unique_reach_impression_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "unique_reach_viewable_impression_reach ": {
+    "unique_reach_viewable_impression_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "viewable_target_rating_points ": {
+    "viewable_target_rating_points": {
       "type": [
         "null",
         "string"
       ]
     },
-    "viewable_impressions ": {
+    "viewable_impressions": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_viewable_composition_impressions ": {
+    "pct_viewable_composition_impressions": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_viewable_composition_reach ": {
+    "pct_viewable_composition_reach": {
       "type": [
         "null",
         "string"
       ]
     },
-    "pct_viewable_population_reach ": {
+    "pct_viewable_population_reach": {
       "type": [
         "null",
         "string"
