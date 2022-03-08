@@ -88,8 +88,6 @@ def test_expected_output_connector_specification_renderer(
 
 
 def test_expected_output_connection_renderer(octavia_project_directory, mocker):
-    # with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, input_spec_path), "r") as f:
-    #     input_spec = yaml.load(f, yaml.FullLoader)
     mock_source = mocker.Mock(
         resource_id="my_source_id",
         catalog={
