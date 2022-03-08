@@ -14,6 +14,8 @@ const getBorderColor = (props: IStyleProps) => {
     return props.theme.greyColor30;
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.light) {
+    return "transparent";
   }
 
   return props.theme.primaryColor;
@@ -29,6 +31,8 @@ const getBackgroundColor = (props: IStyleProps) => {
     return "transparent";
   } else if (props.danger) {
     return props.theme.dangerColor;
+  } else if (props.light) {
+    return "transparent";
   }
 
   return props.theme.primaryColor;
@@ -40,7 +44,7 @@ const getTextColor = (props: IStyleProps) => {
       return props.theme.dangerColor;
     }
     return props.theme.primaryColor;
-  } else if (props.secondary || props.iconOnly) {
+  } else if (props.secondary || props.iconOnly || props.light) {
     return props.theme.darkGreyColor;
   }
 
@@ -70,6 +74,7 @@ const getDisabledOpacity = (props: IStyleProps) => {
 const getShadowOnHover = (props: IStyleProps) => {
   if (
     props.secondary ||
+    props.light ||
     props.iconOnly ||
     (props.wasActive && !props.clickable)
   ) {

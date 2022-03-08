@@ -285,6 +285,7 @@
   "sources.failureOrigin": "Failure Origin",
   "sources.message": "Message",
   "sources.lastAttempt": "Last attempt:",
+  "sources.cloneText": "New source using this settings",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",
@@ -382,6 +383,9 @@
   "tables.sourceDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All connections with this source will be deleted, including their past logs and configurations.\n  - No existing data in the destination will be altered",
   "tables.destinationDeleteModalText": "This can not be un-done. Note that:\n  - All connections with this destination will be deleted, including their past logs and configurations.\n  - No existing data in the destination will be altered.",
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
+  "tables.sourceSettings": "Source Settings",
+  "tables.newsourceTitle": "New Source",
+  "tables.newsourceHelpText": "Pick a name to help you identify this source",
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",

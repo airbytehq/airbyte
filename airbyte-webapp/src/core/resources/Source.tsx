@@ -69,6 +69,15 @@ export class SourceResource extends BaseResource implements Source {
         await this.fetch("post", `${super.rootUrl()}sources/create`, body),
     };
   }
+
+  static cloneShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: this,
+      fetch: async (body: Readonly<Partial<Source>>): Promise<Source> =>
+        this.fetch("post", `${super.rootUrl()}sources/clone`, body),
+    };
+  }
 }
 
 export default SourceResource;

@@ -20,7 +20,7 @@ const defaultConfig: Config = {
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",
-  apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  apiUrl: `http://ec2-52-91-211-217.compute-1.amazonaws.com:8000/api/v1/`,
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
   isDemo: false,

@@ -67,6 +67,7 @@ type SourceService = {
     source: Source;
     connectionsWithSource: Connection[];
   }) => Promise<void>;
+  cloneSource: (cloneSourcePayload: { sourceId: string }) => Promise<Source>;
 };
 
 const useSource = (): SourceService => {
@@ -84,6 +85,8 @@ const useSource = (): SourceService => {
   const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
+
+  const clonesource = useFetcher(SourceResource.cloneShape());
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -161,6 +164,12 @@ const useSource = (): SourceService => {
         connectionConfiguration: values.connectionConfiguration,
       }
     );
+  };
+
+  const cloneSource: SourceService["cloneSource"] = async ({ sourceId }) => {
+    return await clonesource({
+      sourceId,
+    });
   };
 
   const checkSourceConnection = useCallback(
@@ -241,6 +250,7 @@ const useSource = (): SourceService => {
     updateSource,
     recreateSource,
     deleteSource,
+    cloneSource,
     checkSourceConnection,
   };
 };
