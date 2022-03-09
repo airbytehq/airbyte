@@ -15,92 +15,89 @@
     "additionalProperties": false,
     "properties": {
       "credentials": {
-      "title": "Authorization Method",
-      "type": "object",
-      "oneOf": [
-        {
-          "type": "object",
-          "title": "OAuth2.0",
-          "order": 0,
-          "required": [
-            "client_id",
-            "client_secret"
-          ],
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "Client",
-              "enum": ["Client"],
-              "default": "Client",
-              "order": 0
-            },
-            "client_id": {
-              "type": "string",
-              "title": "Client ID",
-              "description": "The Client ID of your Drift developer application.",
-              "airbyte_secret": true,
-              "order": 1
-            },
-            "client_secret": {
-              "type": "string",
-              "title": "Client Secret",
-              "description": "The Client Secret of your Drift developer application.",
-              "airbyte_secret": true,
-              "order": 2
-            },
-            "access_token": {
-              "type": "string",
-              "title": "Access Token",
-              "description": "Access Token for making authenticated requests.",
-              "airbyte_secret": true,
-              "order": 3
-            },
-            "refresh_token": {
-              "type": "string",
-              "title": "Refresh Token",
-              "description": "Refresh Token for making authenticated requests.",
-              "airbyte_secret": true,
-              "order": 4
-            },
-            "username": {
-              "type": "string",
-              "title": "username Token",
-              "description": "Refresh Token for making authenticated requests.",
-              "order": 5
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "order": 0,
+            "required": ["client_id", "client_secret"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your Drift developer application.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your Drift developer application.",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 3
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Refresh Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 4
+              },
+              "username": {
+                "type": "string",
+                "title": "username Token",
+                "description": "Refresh Token for making authenticated requests.",
+                "order": 5
+              }
+            }
+          },
+          {
+            "title": "Username and Password",
+            "type": "object",
+            "required": ["username", "password"],
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "User",
+                "enum": ["User"],
+                "default": "User",
+                "order": 0
+              },
+              "username": {
+                "description": "The username you created to allow Airbyte to access the database.",
+                "examples": ["AIRBYTE_USER"],
+                "type": "string",
+                "title": "Username",
+                "order": 1
+              },
+              "password": {
+                "description": "The password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 2
+              }
             }
           }
-        },
-        {
-          "title": "Username and Password",
-          "type": "object",
-          "required": ["username", "password"],
-          "order": 1,
-          "properties": {
-            "auth_type": {
-              "type": "string",
-              "const": "User",
-              "enum": ["User"],
-              "default": "User",
-              "order": 0
-            },
-            "username": {
-              "description": "The username you created to allow Airbyte to access the database.",
-              "examples": ["AIRBYTE_USER"],
-              "type": "string",
-              "title": "Username",
-              "order": 1
-            },
-            "password": {
-              "description": "The password associated with the username.",
-              "type": "string",
-              "airbyte_secret": true,
-              "title": "Password",
-              "order": 2
-            }
-          }
-        }
-      ],
-      "order": 0
+        ],
+        "order": 0
       },
       "host": {
         "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
@@ -147,7 +144,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials","auth_type"],
+    "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "Client",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {

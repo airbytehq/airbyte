@@ -138,4 +138,5 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
     var url = inputOAuthConfiguration.get("host");
     return url == null ? "snowflakecomputing.com" : url.asText();
   }
+
 }

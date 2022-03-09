@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,7 +12,7 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest{
+public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -48,7 +52,6 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest{
         .build());
   }
 
-
   @Override
   protected JsonNode getInputOAuthConfiguration() {
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -71,4 +74,5 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest{
 
   @Test
   public void testDeprecatedCompleteSourceOAuth() {}
+
 }
