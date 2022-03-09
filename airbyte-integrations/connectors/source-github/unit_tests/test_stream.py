@@ -9,9 +9,10 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
-from source_github.streams import Projects, PullRequestCommentReactions, Repositories, Teams
+from responses import matchers
+from source_github.streams import Projects, PullRequestCommentReactions, PullRequests, Repositories, Teams
 
-from .utils import read_full_refresh
+from .utils import read_full_refresh, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 
@@ -101,3 +102,67 @@ def test_stream_projects_disabled():
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
+
+
+@responses.activate
+def test_stream_pull_requests_incremental_read():
+
+    page_size = 2
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": page_size,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    stream = PullRequests(**repository_args_with_start_date)
+
+    data = [
+        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
+        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
+        {"id": 3, "updated_at": "2022-02-02T10:10:06Z"},
+        {"id": 4, "updated_at": "2022-02-02T10:10:08Z"},
+        {"id": 5, "updated_at": "2022-02-02T10:10:10Z"},
+        {"id": 6, "updated_at": "2022-02-02T10:10:12Z"},
+    ]
+
+    api_url = "https://api.github.com/repos/organization/repository/pulls"
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[0:2],
+        headers={"Link": '<https://api.github.com/repositories/400052213/pulls?page=2>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": str(page_size), "direction": "asc"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[2:4],
+        match=[matchers.query_param_matcher({"per_page": str(page_size), "direction": "asc", "page": "2"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[5:3:-1],
+        headers={"Link": '<https://api.github.com/repositories/400052213/pulls?page=2>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": str(page_size), "direction": "desc"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[3:1:-1],
+        headers={"Link": '<https://api.github.com/repositories/400052213/pulls?page=3>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": str(page_size), "direction": "desc", "page": "2"}, strict_match=False)],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert [r["id"] for r in records] == [2, 3, 4]
+    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
+
+    records = read_incremental(stream, stream_state)
+    assert [r["id"] for r in records] == [6, 5]
+    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:12Z"}}
