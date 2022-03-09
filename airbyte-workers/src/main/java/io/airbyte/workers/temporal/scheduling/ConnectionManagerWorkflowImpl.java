@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -60,6 +58,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
+  private static final int DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -77,8 +76,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
-
-  final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   private UUID connectionId;
 
@@ -235,7 +232,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
-      if (featureFlags.disablesFailingConnections()) {
+      final int attemptCreationVersion =
+          Workflow.getVersion("disable_failing_connection", Workflow.DEFAULT_VERSION, DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
+
+      if (attemptCreationVersion >= DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
             new AutoDisableConnectionActivityInput(connectionId, Instant.now());
         runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);

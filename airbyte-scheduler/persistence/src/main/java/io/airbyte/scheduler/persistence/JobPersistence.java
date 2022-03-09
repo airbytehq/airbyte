@@ -145,7 +145,6 @@ public interface JobPersistence {
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
 
   /**
-   *
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
    * @return List of jobs that have attempts after the provided timestamp
@@ -160,6 +159,16 @@ public interface JobPersistence {
   List<Job> listJobsWithStatus(Set<JobConfig.ConfigType> configTypes, JobStatus status) throws IOException;
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
+
+  /**
+   * @param connectionId The ID of the connection
+   * @param configType The type of job
+   * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
+   * @return List of job statuses from a specific connection that have attempts after the provided
+   *         timestamp, sorted by jobs' createAt in descending order
+   * @throws IOException
+   */
+  List<JobStatus> listJobStatusWithConnection(UUID connectionId, ConfigType configType, Instant jobCreatedAtTimestamp) throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
