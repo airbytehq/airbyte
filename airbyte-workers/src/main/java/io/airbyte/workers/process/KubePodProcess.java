@@ -10,6 +10,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricsRegistry;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -30,6 +32,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +54,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import lombok.val;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -98,8 +102,11 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
+  private static final String DEFAULT_CPU_REQUEST = "0.1";
+  private static final String DEFAULT_CPU_LIMIT = "0.2";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST);
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
+      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -115,6 +122,12 @@ public class KubePodProcess extends Process implements KubePod {
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
+
+  // init container should fail if no new data copied into the init container within
+  // INIT_RETRY_TIMEOUT_MINUTES
+  private static final double INIT_SLEEP_PERIOD_SECONDS = 0.1;
+  private static final Duration INIT_RETRY_TIMEOUT_MINUTES = Duration.ofMinutes(1);
+  private static final int INIT_RETRY_MAX_ITERATIONS = (int) (INIT_RETRY_TIMEOUT_MINUTES.toSeconds() / INIT_SLEEP_PERIOD_SECONDS);
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
@@ -149,20 +162,24 @@ public class KubePodProcess extends Process implements KubePod {
 
   private static Container getInit(final boolean usesStdin,
                                    final List<VolumeMount> mainVolumeMounts,
-                                   final String busyboxImage) {
-    var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
+                                   final String busyboxImage)
+      throws IOException {
 
-    if (usesStdin) {
-      initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
-    }
-
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 0.1; done;", SUCCESS_FILE_NAME);
+    final var initCommand = MoreResources.readResource("entrypoints/sync/init.sh")
+        .replaceAll("USES_STDIN_VALUE", String.valueOf(usesStdin))
+        .replaceAll("STDOUT_PIPE_FILE_VALUE", STDOUT_PIPE_FILE)
+        .replaceAll("STDERR_PIPE_FILE_VALUE", STDERR_PIPE_FILE)
+        .replaceAll("STDIN_PIPE_FILE_VALUE", STDIN_PIPE_FILE)
+        .replaceAll("MAX_ITERATION_VALUE", String.valueOf(INIT_RETRY_MAX_ITERATIONS))
+        .replaceAll("SUCCESS_FILE_NAME_VALUE", SUCCESS_FILE_NAME)
+        .replaceAll("SLEEP_PERIOD_VALUE", String.valueOf(INIT_SLEEP_PERIOD_SECONDS));
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
         .withImage(busyboxImage)
         .withWorkingDir(CONFIG_DIR)
-        .withCommand("sh", "-c", initEntrypointStr)
+        .withCommand("sh", "-c", initCommand)
+        .withResources(getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build())
         .withVolumeMounts(mainVolumeMounts)
         .build();
   }
@@ -288,8 +305,18 @@ public class KubePodProcess extends Process implements KubePod {
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
+    final PodResource<Pod> pod =
+        client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
+    try {
+      pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
+    } catch (final InterruptedException e) {
+      LOGGER.error("Init pod not found after 5 minutes");
+      LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
+          podDefinition.getMetadata().getNamespace(),
+          podDefinition.getMetadata().getName(),
+          pod.get().toString());
+      throw e;
+    }
     LOGGER.info("Init container present..");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
@@ -478,6 +505,7 @@ public class KubePodProcess extends Process implements KubePod {
         .build();
 
     LOGGER.info("Creating pod...");
+    val start = System.currentTimeMillis();
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
     waitForInitPodToRun(fabricClient, podDefinition);
@@ -497,6 +525,7 @@ public class KubePodProcess extends Process implements KubePod {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
+    DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -520,6 +549,13 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stdout socket server...");
         final var socket = stdoutServerSocket.accept(); // blocks until connected
+        // cat /proc/sys/net/ipv4/tcp_keepalive_time
+        // 300
+        // cat /proc/sys/net/ipv4/tcp_keepalive_probes
+        // 5
+        // cat /proc/sys/net/ipv4/tcp_keepalive_intvl
+        // 60
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stdout...");
         this.stdout = socket.getInputStream();
       } catch (final IOException e) {
@@ -531,6 +567,7 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         LOGGER.info("Creating stderr socket server...");
         final var socket = stderrServerSocket.accept(); // blocks until connected
+        socket.setKeepAlive(true);
         LOGGER.info("Setting stderr...");
         this.stderr = socket.getInputStream();
       } catch (final IOException e) {

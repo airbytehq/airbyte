@@ -258,6 +258,21 @@ class EnvConfigsTest {
     assertEquals(config.getDiscoverJobKubeNodeSelectors().get(), Map.of("airbyte", "server", "something", "nothing"));
   }
 
+  @Test
+  void testPublishMetrics() {
+    envMap.put(EnvConfigs.PUBLISH_METRICS, "true");
+    assertTrue(config.getPublishMetrics());
+
+    envMap.put(EnvConfigs.PUBLISH_METRICS, "false");
+    assertFalse(config.getPublishMetrics());
+
+    envMap.put(EnvConfigs.PUBLISH_METRICS, null);
+    assertFalse(config.getPublishMetrics());
+
+    envMap.put(EnvConfigs.PUBLISH_METRICS, "");
+    assertFalse(config.getPublishMetrics());
+  }
+
   @Nested
   @DisplayName("CheckJobResourceSettings")
   public class CheckJobResourceSettings {

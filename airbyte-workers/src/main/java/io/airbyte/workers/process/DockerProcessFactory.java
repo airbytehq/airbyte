@@ -141,9 +141,6 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(entrypoint);
       }
       if (resourceRequirements != null) {
-        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
-          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
-        }
         if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }

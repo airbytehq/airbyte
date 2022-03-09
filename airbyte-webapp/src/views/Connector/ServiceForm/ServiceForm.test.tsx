@@ -1,4 +1,3 @@
-import React from "react";
 import userEvent from "@testing-library/user-event";
 import { getByTestId, screen, waitFor } from "@testing-library/react";
 import selectEvent from "react-select-event";
@@ -7,15 +6,6 @@ import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
-
-// hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
-jest.mock(
-  "components/Markdown",
-  () =>
-    function ReactMarkdown({ children }: React.PropsWithChildren<unknown>) {
-      return <>{children}</>;
-    }
-);
 
 jest.setTimeout(10000);
 
@@ -304,6 +294,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.emails).toEqual([
         "test1@test.com",
         "test2@test.com",
@@ -323,6 +314,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
@@ -352,10 +344,6 @@ describe("Service Form", () => {
     });
 
     test("should fill right values oneOf field", async () => {
-      const credentials = screen.getByTestId(
-        "connectionConfiguration.credentials"
-      );
-
       const selectContainer = getByTestId(
         container,
         "connectionConfiguration.credentials"
@@ -419,6 +407,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.priceList).toEqual([
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },
