@@ -20,12 +20,6 @@
         "title": "Version",
         "examples": [1, 2]
       },
-      "page_size": {
-        "type": "integer",
-        "description": "Number of rows to return per query.",
-        "title": "Page Size",
-        "example": [50, 100]
-      },
       "username": {
         "type": "string",
         "description": "Username to be used in basic auth",
@@ -34,7 +28,14 @@
       "password": {
         "type": "string",
         "description": "Password to be used in basic auth",
-        "title": "Password"
+        "title": "Password",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The date/datetime an incremental sync should start from. Depending on the record type this will either be a date, or a datetime.",
+        "title": "Start Date",
+        "examples": ["2021-01-10", "2021-01-01T05:06:34"]
       }
     }
   }
