@@ -72,7 +72,7 @@ public class ReporterApp {
       try {
         final var age = configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
         for (long count : age) {
-          DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+          DogStatsDMetricSingleton.percentile(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
         }
       } catch (final SQLException e) {
         e.printStackTrace();
