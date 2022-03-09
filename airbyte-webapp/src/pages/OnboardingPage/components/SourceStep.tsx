@@ -2,18 +2,15 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { JobInfo } from "core/resources/Scheduler";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
-import { JobsLogItem } from "components/JobItem";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-
-import SkipOnboardingButton from "./SkipOnboardingButton";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
+import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
   onSubmit: (values: {
@@ -25,7 +22,6 @@ type IProps = {
   availableServices: SourceDefinition[];
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
-  jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
 
@@ -34,11 +30,10 @@ const SourceStep: React.FC<IProps> = ({
   availableServices,
   hasSuccess,
   error,
-  jobInfo,
   afterSelectConnector,
 }) => {
   const [sourceDefinitionId, setSourceDefinitionId] = useState("");
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const {
     sourceDefinitionSpecification,
@@ -72,11 +67,24 @@ const SourceStep: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <ServiceForm
-        additionBottomControls={
-          <SkipOnboardingButton step="source connection" />
+    <>
+      <TitlesBlock
+        title={
+          <FormattedMessage
+            id="onboarding.createFirstSource"
+            values={{
+              name: (name: React.ReactNode) => (
+                <HighlightedText>{name}</HighlightedText>
+              ),
+            }}
+          />
         }
+      >
+        <FormattedMessage id="onboarding.createFirstSource.text" />
+      </TitlesBlock>
+      <ConnectorCard
+        full
+        jobInfo={LogsRequestError.extractJobInfo(error)}
         allowChangeConnector
         onServiceSelect={onServiceSelect}
         onSubmit={onSubmitForm}
@@ -84,12 +92,10 @@ const SourceStep: React.FC<IProps> = ({
         availableServices={availableServices}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        specifications={sourceDefinitionSpecification?.connectionSpecification}
-        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
+        selectedConnector={sourceDefinitionSpecification}
         isLoading={isLoading}
       />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+    </>
   );
 };
 

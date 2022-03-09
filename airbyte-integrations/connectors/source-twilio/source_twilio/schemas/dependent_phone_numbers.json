@@ -52,16 +52,13 @@
     },
     "capabilities": {
       "properties": {
-        "voice": {
+        "Voice": {
           "type": ["null", "boolean"]
         },
-        "sms": {
+        "SMS": {
           "type": ["null", "boolean"]
         },
-        "mms": {
-          "type": ["null", "boolean"]
-        },
-        "fax": {
+        "MMS": {
           "type": ["null", "boolean"]
         }
       },

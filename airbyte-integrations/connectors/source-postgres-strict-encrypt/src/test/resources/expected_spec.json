@@ -1,0 +1,117 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Postgres Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 5432,
+        "examples": ["5432"],
+        "order": 1
+      },
+      "database": {
+        "title": "DB Name",
+        "description": "Name of the database.",
+        "type": "string",
+        "order": 2
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "default": ["public"],
+        "order": 3
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "replication_method": {
+        "type": "object",
+        "title": "Replication Method",
+        "description": "Replication method to use for extracting data from the database.",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "additionalProperties": false,
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "enum": ["Standard"],
+                "default": "Standard",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "additionalProperties": false,
+            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">Postgres Source</a> docs for more information.",
+            "required": ["method", "replication_slot", "publication"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              },
+              "plugin": {
+                "type": "string",
+                "title": "Plugin",
+                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">Postgres Source</a> docs.",
+                "enum": ["pgoutput", "wal2json"],
+                "default": "pgoutput",
+                "order": 1
+              },
+              "replication_slot": {
+                "type": "string",
+                "title": "Replication Slot",
+                "description": "A plug-in logical replication slot.",
+                "order": 2
+              },
+              "publication": {
+                "type": "string",
+                "title": "Publication",
+                "description": "A Postgres publication used for consuming changes.",
+                "order": 3
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,37 +1,20 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.State;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,7 +37,8 @@ public interface JobPersistence {
   /**
    * Enqueue a new job. Its initial status will be pending.
    *
-   * @param scope key that will be used to determine if two jobs should not be run at the same time.
+   * @param scope key that will be used to determine if two jobs should not be run at the same time;
+   *        it is the primary id of the standard sync (StandardSync#connectionId)
    * @param jobConfig configuration for the job
    * @return job id
    * @throws IOException exception due to interaction with persistence
@@ -102,8 +86,8 @@ public interface JobPersistence {
   int createAttempt(long jobId, Path logPath) throws IOException;
 
   /**
-   * Sets an attempt to FAILED. Also attempts the parent job to FAILED. The job's status will not be
-   * changed if it is already in a terminal state.
+   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status
+   * will not be changed if it is already in a terminal state.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -112,8 +96,8 @@ public interface JobPersistence {
   void failAttempt(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * Sets an attempt to SUCCEEDED. Also attempts the parent job to SUCCEEDED. The job's status is
-   * changed regardless of what state it is in.
+   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status
+   * is changed regardless of what state it is in.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -125,15 +109,49 @@ public interface JobPersistence {
   // END OF LIFECYCLE
   //
 
+  /**
+   * Sets an attempt's temporal workflow id. Later used to cancel the workflow.
+   */
+  void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException;
+
+  /**
+   * Retrieves an attempt's temporal workflow id. Used to cancel the workflow.
+   */
+  Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
+
+  /**
+   * When the output is a StandardSyncOutput, caller of this method should persiste
+   * StandardSyncOutput#state in the configs database by calling
+   * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
+   */
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 
   /**
-   * @param configType - type of config, e.g. sync
+   * Writes a summary of all failures that occurred during the attempt.
+   *
+   * @param jobId job id
+   * @param attemptNumber attempt number
+   * @param failureSummary summary containing failure metadata and ordered list of failures
+   * @throws IOException exception due to interaction with persistence
+   */
+  void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
+
+  /**
+   * @param configTypes - type of config, e.g. sync
    * @param configId - id of that config
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
    */
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
+
+  /**
+   *
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
+   * @return List of jobs that have attempts after the provided timestamp
+   * @throws IOException
+   */
+  List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
 
@@ -145,20 +163,16 @@ public interface JobPersistence {
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
-  /**
-   * if a job does not succeed, we assume that it synced nothing. that is the most conservative
-   * assumption we can make. as long as all destinations write the final data output in a
-   * transactional way, this will be true. if this changes, then we may end up writing duplicate data
-   * with our incremental append only. this is preferable to failing to send data at all. our
-   * incremental append only most closely resembles a deliver at least once strategy anyway.
-   *
-   * @param connectionId - id of the connection whose state we want to fetch.
-   * @return the current state, if any of, the connection
-   * @throws IOException exception due to interaction with persistence
-   */
-  Optional<State> getCurrentState(UUID connectionId) throws IOException;
-
   Optional<Job> getNextJob() throws IOException;
+
+  /**
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the attempts
+   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by
+   *         attempts' endedAt in ascending order
+   * @throws IOException
+   */
+  List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   /// ARCHIVE
 
@@ -203,8 +217,6 @@ public interface JobPersistence {
 
   /**
    * Purges job history while ensuring that the latest saved-state information is maintained.
-   *
-   * @throws IOException
    */
   void purgeJobHistory();
 

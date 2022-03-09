@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -97,6 +77,8 @@ class IncrementalSunshineStream(SunshineStream, ABC):
 
 
 class ObjectTypes(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "objects/types"
 
@@ -154,6 +136,8 @@ class ObjectRecords(IncrementalSunshineStream):
 
 
 class RelationshipTypes(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "relationships/types"
 
@@ -190,6 +174,8 @@ class CustomObjectEvents(SunshineStream):
 
 
 class ObjectTypePolicies(SunshineStream):
+    primary_key = None
+
     def stream_slices(self, **kwargs):
         parent_stream = ObjectTypes(authenticator=self.authenticator, subdomain=self.subdomain, start_date=self._start_date)
         for obj_type in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -220,5 +206,7 @@ class Jobs(SunshineStream):
 
 
 class Limits(SunshineStream):
+    primary_key = "key"
+
     def path(self, **kwargs) -> str:
         return "limits"

@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -46,42 +28,45 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
-  private final CloseableConnectionSupplier connectionSupplier;
+  protected final DataSource dataSource;
 
   public DefaultJdbcDatabase(final DataSource dataSource) {
-    this(new DataSourceConnectionSupplier(dataSource));
+    this(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
-  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier) {
-    this.connectionSupplier = connectionSupplier;
+  public DefaultJdbcDatabase(final DataSource dataSource, final JdbcCompatibleSourceOperations<?> sourceOperations) {
+    super(sourceOperations);
+    this.dataSource = dataSource;
   }
 
   @Override
-  public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
-    try (final Connection connection = connectionSupplier.getConnection()) {
+  public void execute(final CheckedConsumer<Connection, SQLException> query) throws SQLException {
+    try (final Connection connection = dataSource.getConnection()) {
       query.accept(connection);
     }
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = connectionSupplier.getConnection()) {
-      return JdbcUtils.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+    try (final Connection connection = dataSource.getConnection();
+        final Stream<T> results = toStream(query.apply(connection), recordTransform)) {
+      return results.collect(Collectors.toList());
     }
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  @MustBeClosed
+  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(query.apply(connection), recordTransform)
+    final Connection connection = dataSource.getConnection();
+    return toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
-          } catch (SQLException e) {
+          } catch (final SQLException e) {
             throw new RuntimeException(e);
           }
         });
@@ -89,8 +74,8 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    Connection conn = connectionSupplier.getConnection();
-    DatabaseMetaData metaData = conn.getMetaData();
+    final Connection conn = dataSource.getConnection();
+    final DatabaseMetaData metaData = conn.getMetaData();
     conn.close();
     return metaData;
   }
@@ -110,16 +95,17 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @Override
-  public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  @MustBeClosed
+  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = connectionSupplier.getConnection();
-    return JdbcUtils.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    final Connection connection = dataSource.getConnection();
+    return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");
             connection.close();
-          } catch (SQLException e) {
+          } catch (final SQLException e) {
             throw new RuntimeException(e);
           }
         });
@@ -127,41 +113,14 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public void close() throws Exception {
-    connectionSupplier.close();
-  }
-
-  public interface CloseableConnectionSupplier extends AutoCloseable {
-
-    Connection getConnection() throws SQLException;
-
-  }
-
-  public static final class DataSourceConnectionSupplier implements CloseableConnectionSupplier {
-
-    private final DataSource dataSource;
-
-    public DataSourceConnectionSupplier(DataSource dataSource) {
-      this.dataSource = dataSource;
+    // Close the source in case we are using a datasource implementation that requires closing.
+    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
+    if (dataSource instanceof AutoCloseable autoCloseable) {
+      autoCloseable.close();
     }
-
-    @Override
-    public Connection getConnection() throws SQLException {
-      return dataSource.getConnection();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
     }
-
-    @Override
-    public void close() throws Exception {
-      // Just a safety in case we are using a datasource implementation that requires closing.
-      // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
-
-      if (dataSource instanceof AutoCloseable) {
-        ((AutoCloseable) dataSource).close();
-      }
-      if (dataSource instanceof Closeable) {
-        ((Closeable) dataSource).close();
-      }
-    }
-
   }
 
 }

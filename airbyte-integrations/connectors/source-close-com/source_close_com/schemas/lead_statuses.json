@@ -1,0 +1,14 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "label": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "avg_position_1": {
+      "type": ["null", "number"]
+    },
+    "avg_position_2": {
+      "type": ["null", "number"]
+    },
+    "common_keywords": {
+      "type": ["null", "string"]
+    },
+    "traffic_1": {
+      "type": ["null", "integer"]
+    },
+    "traffic_2": {
+      "type": ["null", "integer"]
+    },
+    "costs": {
+      "type": ["null", "number"]
+    },
+    "total_kw_count": {
+      "type": ["null", "string"]
+    },
+    "diff_keywords": {
+      "type": ["null", "string"]
+    }
+  }
+}

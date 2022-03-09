@@ -78,10 +78,38 @@
       "type": ["null", "boolean"]
     },
     "phone": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "email": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "first_char": {
       "type": ["null", "string"]
@@ -137,11 +165,11 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "time"
     },
     "next_activity_id": {
       "type": ["null", "integer"]

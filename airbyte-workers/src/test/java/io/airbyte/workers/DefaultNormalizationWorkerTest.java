@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -28,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
@@ -44,6 +26,7 @@ class DefaultNormalizationWorkerTest {
   private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
 
+  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private Path normalizationRoot;
   private NormalizationInput normalizationInput;
@@ -51,6 +34,7 @@ class DefaultNormalizationWorkerTest {
 
   @BeforeEach
   void setup() throws Exception {
+    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createDirectories(Files.createTempDirectory("test").resolve(WORKSPACE_ROOT));
     normalizationRoot = jobRoot.resolve("normalize");
 
@@ -58,7 +42,7 @@ class DefaultNormalizationWorkerTest {
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncPair.getValue().getDestinationConfiguration())
         .withCatalog(syncPair.getValue().getCatalog())
-        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(workerConfigs.getResourceRequirements());
 
     normalizationRunner = mock(NormalizationRunner.class);
 
@@ -67,13 +51,14 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
+        normalizationInput.getCatalog(), workerConfigs.getResourceRequirements()))
             .thenReturn(true);
   }
 
   @Test
   void test() throws Exception {
-    final DefaultNormalizationWorker normalizationWorker = new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner);
+    final DefaultNormalizationWorker normalizationWorker =
+        new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
 
     normalizationWorker.run(normalizationInput, jobRoot);
 
@@ -83,7 +68,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        normalizationInput.getCatalog(), workerConfigs.getResourceRequirements());
     verify(normalizationRunner).close();
   }
 

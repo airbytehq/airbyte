@@ -2,6 +2,7 @@ import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
 import { WidgetConfigMap } from "core/form/types";
+import { isDefined } from "utils/common";
 
 /**
  * Returns yup.schema for validation
@@ -33,20 +34,22 @@ export const buildYupFormForJsonSchema = (
     | null = null;
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
-    const selectedSchema =
-      jsonSchema.oneOf.find((condition) => {
-        if (typeof condition !== "boolean") {
-          return uiConfig[propertyPath]?.selectedItem === condition.title;
-        }
-        return false;
-      }) ?? jsonSchema.oneOf[0];
+    let selectedSchema = jsonSchema.oneOf.find(
+      (condition) =>
+        typeof condition !== "boolean" &&
+        uiConfig[propertyPath]?.selectedItem === condition.title
+    );
+
+    // Select first oneOf path if no item selected
+    selectedSchema = selectedSchema ?? jsonSchema.oneOf[0];
+
     if (selectedSchema && typeof selectedSchema !== "boolean") {
       return buildYupFormForJsonSchema(
         { type: jsonSchema.type, ...selectedSchema },
         uiConfig,
         jsonSchema,
         propertyKey,
-        propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+        propertyPath
       );
     }
   }
@@ -122,32 +125,33 @@ export const buildYupFormForJsonSchema = (
       schema = objectSchema;
   }
 
-  const hasDefault =
-    jsonSchema.default !== undefined && jsonSchema.default !== null;
+  if (schema) {
+    const hasDefault = isDefined(jsonSchema.default);
 
-  if (schema && hasDefault) {
-    // @ts-ignore can't infer correct type here so lets just use default from json_schema
-    schema = schema.default(jsonSchema.default);
-  }
+    if (hasDefault) {
+      // @ts-ignore can't infer correct type here so lets just use default from json_schema
+      schema = schema.default(jsonSchema.default);
+    }
 
-  if (schema && !hasDefault && jsonSchema.const) {
-    // @ts-ignore can't infer correct type here so lets just use default from json_schema
-    schema = schema.default(jsonSchema.const);
-  }
+    if (!hasDefault && jsonSchema.const) {
+      // @ts-ignore can't infer correct type here so lets just use default from json_schema
+      schema = schema.oneOf([jsonSchema.const]).default(jsonSchema.const);
+    }
 
-  if (schema && jsonSchema.enum) {
-    // @ts-ignore as enum is array we are going to use it as oneOf for yup
-    schema = schema.oneOf(jsonSchema.enum);
-  }
+    if (jsonSchema.enum) {
+      // @ts-ignore as enum is array we are going to use it as oneOf for yup
+      schema = schema.oneOf(jsonSchema.enum);
+    }
 
-  const isRequired =
-    !hasDefault &&
-    parentSchema &&
-    Array.isArray(parentSchema?.required) &&
-    parentSchema.required.find((item) => item === propertyKey);
+    const isRequired =
+      !hasDefault &&
+      parentSchema &&
+      Array.isArray(parentSchema?.required) &&
+      parentSchema.required.find((item) => item === propertyKey);
 
-  if (isRequired && schema) {
-    schema = schema.required("form.empty.error");
+    if (schema && isRequired) {
+      schema = schema.required("form.empty.error");
+    }
   }
 
   return schema || yup.mixed();

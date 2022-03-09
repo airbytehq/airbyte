@@ -2,15 +2,40 @@ connector_image: airbyte/source-mailchimp:dev
 tests:
   spec:
     - spec_path: "source_mailchimp/spec.json"
+      timeout_seconds: 60
   connection:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
       status: "succeed"
+      timeout_seconds: 180
+    # for auth with API token
+    - config_path: "secrets/config_apikey.json"
+      status: "succeed"
+      timeout_seconds: 180
+    # for auth with oauth2 token
+    - config_path: "secrets/config_oauth.json"
+      status: "succeed"
+      timeout_seconds: 180
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+      timeout_seconds: 180
+    - config_path: "integration_tests/invalid_config_apikey.json"
+      status: "failed"
+      timeout_seconds: 180
+    - config_path: "integration_tests/invalid_config_oauth.json"
+      status: "failed"
+      timeout_seconds: 180
   discovery:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
+    # for auth with API token
+    - config_path: "secrets/config_apikey.json"
+    # for auth with oauth2 token
+    - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
 #  THIS TEST IS COMMENTED OUT. Tests are supposed to accept
 #  `state = {cursor_field: value}`. When we have dependent endpoint path
@@ -29,4 +54,6 @@ tests:
 #        Email_activity: [ "timestamp" ]
   full_refresh:
     - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

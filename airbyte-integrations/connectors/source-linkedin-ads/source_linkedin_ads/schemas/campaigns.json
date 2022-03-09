@@ -1,0 +1,168 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "targetingCriteria": {
+      "type": ["null", "object"],
+      "properties": {
+        "include": {
+          "type": ["null", "object"],
+          "properties": {
+            "and": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "values": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "exclude": {
+          "type": ["null", "object"],
+          "properties": {
+            "or": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "values": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "servingStatuses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "type": ["null", "object"],
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        },
+        "language": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "version": {
+      "type": ["null", "object"],
+      "properties": {
+        "versionTag": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "associatedEntity": {
+      "type": ["null", "string"]
+    },
+    "runSchedule": {
+      "type": ["null", "object"],
+      "properties": {
+        "start": {
+          "type": ["null", "integer"]
+        },
+        "end": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "optimizationTargetType": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignGroup": {
+      "type": ["null", "string"]
+    },
+    "dailyBudget": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "unitCost": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "creativeSelection": {
+      "type": ["null", "string"]
+    },
+    "costType": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "offsiteDeliveryEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "audienceExpansionEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "account": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "storyDeliveryEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "pacingStrategy": {
+      "type": ["null", "string"]
+    },
+    "format": {
+      "type": ["null", "string"]
+    },
+    "objectiveType": {
+      "type": ["null", "string"]
+    }
+  }
+}

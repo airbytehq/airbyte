@@ -14,15 +14,16 @@ import ConnectionResource, {
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { Source } from "core/resources/Source";
-import { Routes } from "pages/routes";
-import useRouter from "../useRouter";
-import { Destination } from "core/resources/Destination";
+import { RoutePaths } from "pages/routes";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import useRouter from "hooks/useRouter";
+import { useGetService } from "core/servicesProvider";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
+
 import { equal } from "utils/objects";
-import { useAnalytics } from "hooks/useAnalytics";
+import { Destination, Source, SourceDefinition } from "core/domain/connector";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -65,8 +66,14 @@ type UpdateStateConnection = {
 
 function useConnectionService(): ConnectionService {
   const config = useConfig();
+  const middlewares = useGetService<RequestMiddleware[]>(
+    "DefaultRequestMiddlewares"
+  );
 
-  return useMemo(() => new ConnectionService(config.apiUrl), [config]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
+    config,
+  ]);
 }
 
 export const useConnectionLoad = (
@@ -95,19 +102,23 @@ const useConnection = (): {
   updateConnection: (conn: UpdateConnection) => Promise<Connection>;
   updateStateConnection: (conn: UpdateStateConnection) => Promise<void>;
   resetConnection: (connId: string) => Promise<void>;
+  syncConnection: (conn: Connection) => Promise<void>;
   deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
   const { push } = useRouter();
-  const { finishOnboarding, workspace } = useWorkspace();
-  const analyticsService = useAnalytics();
+  const { workspace } = useWorkspace();
+  const analyticsService = useAnalyticsService();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
   );
-  const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+  const deleteConnectionResource = useFetcher(
+    ConnectionResource.deleteShapeItem()
+  );
   const resetConnectionResource = useFetcher(ConnectionResource.reset());
+  const syncConnectionResource = useFetcher(ConnectionResource.syncShape());
 
   const createConnection = async ({
     values,
@@ -155,14 +166,38 @@ const useConnection = (): {
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId,
       });
-      if (workspace.displaySetupWizard) {
-        await finishOnboarding();
-      }
 
       return result;
     } catch (e) {
       throw e;
     }
+  };
+
+  const updateConnectionsStore = useFetcher(ConnectionResource.listShape());
+
+  const deleteConnection = async ({
+    connectionId,
+  }: {
+    connectionId: string;
+  }) => {
+    await deleteConnectionResource({}, { connectionId }, [
+      [
+        ConnectionResource.listShape(),
+        { workspaceId: workspace.workspaceId },
+        (cId: string, connectionsIds: { connections: string[] }) => {
+          const res = connectionsIds?.connections || [];
+          const index = res.findIndex((c) => c === cId);
+
+          return {
+            connections: [...res.slice(0, index), ...res.slice(index + 1)],
+          };
+        },
+      ],
+    ]);
+
+    await updateConnectionsStore({ workspaceId: workspace.workspaceId });
+
+    push(RoutePaths.Connections);
   };
 
   const updateConnection = async ({
@@ -204,16 +239,6 @@ const useConnection = (): {
     );
   };
 
-  const deleteConnection = async ({
-    connectionId,
-  }: {
-    connectionId: string;
-  }) => {
-    await deleteConnectionResource({ connectionId });
-
-    push(Routes.Connections);
-  };
-
   const resetConnection = useCallback(
     async (connectionId: string) => {
       await resetConnectionResource({ connectionId });
@@ -221,12 +246,41 @@ const useConnection = (): {
     [resetConnectionResource]
   );
 
+  const syncConnection = async (connection: Connection) => {
+    const frequency = FrequencyConfig.find((item) =>
+      equal(item.config, connection.schedule)
+    );
+
+    analyticsService.track("Source - Action", {
+      action: "Full refresh sync",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
+      frequency: frequency?.text,
+    });
+    await syncConnectionResource({
+      connectionId: connection.connectionId,
+    });
+  };
+
   return {
     createConnection,
     updateConnection,
     updateStateConnection,
     resetConnection,
     deleteConnection,
+    syncConnection,
   };
 };
+
+const useConnectionList = (): { connections: Connection[] } => {
+  const { workspace } = useWorkspace();
+  return useResource(ConnectionResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  });
+};
+
+export { useConnectionList };
 export default useConnection;

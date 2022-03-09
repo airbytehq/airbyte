@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Optional
@@ -41,7 +21,7 @@ class CsvFormat(BaseModel):
     delimiter: str = Field(
         default=",",
         min_length=1,
-        description="The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+        description="The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
     )
     quote_char: str = Field(
         default='"', description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank."
@@ -51,7 +31,7 @@ class CsvFormat(BaseModel):
         description="The character used optionally for escaping special characters. To disallow escaping, leave this field blank.",
     )
     encoding: Optional[str] = Field(
-        default=None,
+        default="utf8",
         description='The character encoding of the CSV data. Leave blank to default to <strong>UTF-8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
     )
     double_quote: bool = Field(default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.")
@@ -69,4 +49,15 @@ class CsvFormat(BaseModel):
         examples=[
             '{"timestamp_parsers": ["%m/%d/%Y %H:%M", "%Y/%m/%d %H:%M"], "strings_can_be_null": true, "null_values": ["NA", "NULL"]}'
         ],
+    )
+    advanced_options: str = Field(
+        default="{}",
+        description="Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
+        examples=['{"column_names": ["column1", "column2"]}'],
+    )
+    infer_datatypes: Optional[bool] = Field(
+        default=True,
+        description="Configures whether a scheme for the source should be inferred from the current data or not."
+        "If set to false and a custom schema is set, then the custom_schema is used"
+        "If a custom schema is not set, and this is set to false, then all fields will be read as strings",
     )

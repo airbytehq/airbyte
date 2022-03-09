@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -70,7 +50,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
    *
    * @param databaseName Name of the database that the connector is syncing
    */
-  public static void setDatabaseName(String databaseName) {
+  public static void setDatabaseName(final String databaseName) {
     if (FilteredFileDatabaseHistory.databaseName == null) {
       FilteredFileDatabaseHistory.databaseName = databaseName;
     } else if (!FilteredFileDatabaseHistory.databaseName.equals(databaseName)) {
@@ -81,10 +61,10 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  public void configure(Configuration config,
-                        HistoryRecordComparator comparator,
-                        DatabaseHistoryListener listener,
-                        boolean useCatalogBeforeSchema) {
+  public void configure(final Configuration config,
+                        final HistoryRecordComparator comparator,
+                        final DatabaseHistoryListener listener,
+                        final boolean useCatalogBeforeSchema) {
     fileDatabaseHistory.configure(config, comparator, listener, useCatalogBeforeSchema);
   }
 
@@ -94,12 +74,12 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  public void storeRecord(HistoryRecord record) throws DatabaseHistoryException {
+  public void storeRecord(final HistoryRecord record) throws DatabaseHistoryException {
     if (record == null) {
       return;
     }
     try {
-      String dbNameInRecord = record.document().getString(Fields.DATABASE_NAME);
+      final String dbNameInRecord = record.document().getString(Fields.DATABASE_NAME);
       if (databaseName != null && dbNameInRecord != null && !dbNameInRecord.equals(databaseName)) {
         return;
       }
@@ -113,7 +93,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
           .getDeclaredMethod("storeRecord", record.getClass());
       storeRecordMethod.setAccessible(true);
       storeRecordMethod.invoke(fileDatabaseHistory, record);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+    } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -126,7 +106,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  protected void recoverRecords(Consumer<HistoryRecord> records) {
+  protected void recoverRecords(final Consumer<HistoryRecord> records) {
     try {
       /**
        * We are using reflection because the method
@@ -137,7 +117,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
           .getDeclaredMethod("recoverRecords", Consumer.class);
       recoverRecords.setAccessible(true);
       recoverRecords.invoke(fileDatabaseHistory, records);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+    } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

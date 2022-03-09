@@ -1,35 +1,15 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
 
 
@@ -45,6 +25,9 @@ class AirbyteSpec(object):
 
 
 class Connector(ABC):
+    # configure whether the `check_config_against_spec_or_exit()` needs to be called
+    check_config_against_spec: bool = True
+
     # can be overridden to change an input config
     def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
         """
@@ -65,7 +48,7 @@ class Connector(ABC):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
@@ -76,7 +59,7 @@ class Connector(ABC):
         return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     @abstractmethod
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.

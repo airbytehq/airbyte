@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,7 +13,15 @@ from subprocess import run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    Type,
+)
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
@@ -80,13 +68,24 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> Optional[ConfiguredAirbyteCatalog]:
+def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> ConfiguredAirbyteCatalog:
+    """Take ConfiguredAirbyteCatalog from discover command by default"""
     if configured_catalog_path:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         for configured_stream in catalog.streams:
             configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
         return catalog
-    return None
+    streams = [
+        ConfiguredAirbyteStream(
+            stream=stream,
+            sync_mode=stream.supported_sync_modes[0],
+            destination_sync_mode=DestinationSyncMode.append,
+            cursor_field=stream.default_cursor_field,
+            primary_key=stream.source_defined_primary_key,
+        )
+        for _, stream in discovered_catalog.items()
+    ]
+    return ConfiguredAirbyteCatalog(streams=streams)
 
 
 @pytest.fixture(name="image_tag")
@@ -174,7 +173,7 @@ def detailed_logger() -> Logger:
     if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
         LOG_DIR = os.path.join("/test_input", LOG_DIR)
     run(["mkdir", "-p", LOG_DIR])
-    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "") + ".txt"
+    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "").replace(":", "_") + ".txt"
     filename = os.path.join(LOG_DIR, filename)
     formatter = logging.Formatter("%(message)s")
     logger = logging.getLogger(f"detailed_logger {filename}")

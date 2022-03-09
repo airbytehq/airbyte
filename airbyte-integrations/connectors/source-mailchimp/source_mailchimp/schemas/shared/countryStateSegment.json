@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "title": "Location-Based Segment",
+  "description": "Segment by a specific country or US state.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "IPGeoCountryState",
+      "enum": ["IPGeoCountryState"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ipgeo"],
+      "title": "Segment Field",
+      "description": "Segmenting subscribers who are within a specific location.",
+      "example": "ipgeo"
+    },
+    "op": {
+      "type": "string",
+      "enum": [
+        "ipgeocountry",
+        "ipgeonotcountry",
+        "ipgeostate",
+        "ipgeonotstate"
+      ],
+      "title": "Segment Operator",
+      "description": "Segment members who are within a specific country or US state.",
+      "example": "ipgeocountry"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Data",
+      "description": "The two-letter country code or US state abbreviation.",
+      "example": "US"
+    }
+  }
+}

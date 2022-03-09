@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -30,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
@@ -40,6 +21,7 @@ class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
     page_size = 100
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @property
     def data_field(self):
@@ -83,6 +65,20 @@ class TwilioStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         return params
+
+    @transformer.registerCustomTransform
+    def custom_transform_function(original_value: Any, field_schema: Mapping[str, Any]) -> Any:
+        if original_value and "format" in field_schema and field_schema["format"] == "date-time":
+            try:
+                return pendulum.from_format(original_value, "ddd, D MMM YYYY HH:mm:ss ZZ").in_timezone("UTC").to_iso8601_string()
+            except ValueError:
+                # Twilio API returns datetime in two formats:
+                #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
+                #   - ISO8601, like "2020-12-11T04:29:09Z".
+                # If `ValueError` exception was raised this means that datetime was already in ISO8601 format and there
+                # is no need in transforming anything.
+                pass
+        return original_value
 
 
 class IncrementalTwilioStream(TwilioStream, ABC):

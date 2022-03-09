@@ -5,17 +5,27 @@
     "title": "Facebook Pages Spec",
     "type": "object",
     "required": ["access_token", "page_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "access_token": {
         "type": "string",
+        "title": "Page Access Token",
         "description": "Facebook Page Access Token",
         "airbyte_secret": true
       },
       "page_id": {
         "type": "string",
+        "title": "Page ID",
         "description": "Page ID"
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }

@@ -9,12 +9,12 @@
       "readOnly": true
     },
     "tempoWorklogId": {
-      "type": "string",
+      "type": "integer",
       "description": "The ID of the tempo worklog.",
       "readOnly": true
     },
     "jiraWorklogId": {
-      "type": "string",
+      "type": "integer",
       "description": "The ID of the jira worklog.",
       "readOnly": true
     },
@@ -22,13 +22,13 @@
       "type": "object",
       "description": "Details of the issue",
       "additionalProperties": {
-        "type": "string",
+        "type": ["string", "integer"],
         "readOnly": true
       },
       "readOnly": true
     },
     "timeSpentSeconds": {
-      "type": "string",
+      "type": "integer",
       "description": "Time spend in seconds of the worklog",
       "readOnly": true
     },
@@ -70,10 +70,11 @@
       "type": "object",
       "description": "Additional attribute of the worklog",
       "readOnly": true,
-      "additionalProperties": {
-        "type": "string",
-        "readOnly": true
-      }
+      "additionalProperties": true
+    },
+    "billableSeconds": {
+      "type": ["null", "integer"],
+      "description": "Billable time spent working"
     }
   },
   "additionalProperties": false

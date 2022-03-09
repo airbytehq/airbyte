@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -57,7 +37,7 @@ default_stream_slices_return_value = [None]
 
 
 class SnapchatMarketingException(Exception):
-    """ Just for formatting the exception as SnapchatMarketing"""
+    """Just for formatting the exception as SnapchatMarketing"""
 
 
 def get_depend_on_ids(depends_on_stream, depends_on_stream_config: Mapping, slice_key_name: str) -> List:
@@ -137,7 +117,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
     @property
     def response_root_name(self):
-        """ Using the class name in lower to set the root node for response parsing """
+        """Using the class name in lower to set the root node for response parsing"""
         return self.name
 
     @property
@@ -204,13 +184,8 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     last_slice = None
     current_slice = None
     first_run = True
-    initial_state = None
-    max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = kwargs.get("stream_state")
-        self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
-        self.max_state = self.initial_state
         depends_on_stream_config = {"authenticator": self.authenticator, "start_date": self.start_date}
         stream_slices = get_depend_on_ids(self.depends_on_stream, depends_on_stream_config, self.slice_key_name)
 
@@ -248,13 +223,9 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
         This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
         """
-
-        if self.first_run:
-            self.first_run = False
-            return {self.cursor_field: self.initial_state}
-        else:
-            self.max_state = max(self.max_state, latest_record[self.cursor_field])
-            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else self.initial_state}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -279,14 +250,14 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
 
 class Organizations(SnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
+    """Docs: https://marketingapi.snapchat.com/docs/#organizations"""
 
     def path(self, **kwargs) -> str:
         return "me/organizations"
 
 
 class Adaccounts(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"""
 
     depends_on_stream = Organizations
     slice_key_name = "organization_id"
@@ -296,13 +267,13 @@ class Adaccounts(IncrementalSnapchatMarketingStream):
 
 
 class Creatives(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives"""
 
     depends_on_stream = Adaccounts
 
 
 class Media(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-media """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-media"""
 
     depends_on_stream = Adaccounts
 
@@ -312,25 +283,25 @@ class Media(IncrementalSnapchatMarketingStream):
 
 
 class Campaigns(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns"""
 
     depends_on_stream = Adaccounts
 
 
 class Ads(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account"""
 
     depends_on_stream = Adaccounts
 
 
 class Adsquads(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account"""
 
     depends_on_stream = Adaccounts
 
 
 class Segments(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments"""
 
     depends_on_stream = Adaccounts
 

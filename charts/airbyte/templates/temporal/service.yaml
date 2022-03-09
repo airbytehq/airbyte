@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.fullname" . }}-temporal
+spec:
+  type: {{ .Values.temporal.service.type }}
+  ports:
+  - port: {{ .Values.temporal.service.port }}
+    protocol: TCP
+    targetPort: 7233
+  selector:
+    airbyte: temporal

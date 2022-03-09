@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -42,16 +22,16 @@ public class DynamodbChecker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbChecker.class);
 
-  public static void attemptDynamodbWriteAndDelete(DynamodbDestinationConfig dynamodbDestinationConfig) throws Exception {
-    var prefix = dynamodbDestinationConfig.getTableName();
+  public static void attemptDynamodbWriteAndDelete(final DynamodbDestinationConfig dynamodbDestinationConfig) throws Exception {
+    final var prefix = dynamodbDestinationConfig.getTableNamePrefix();
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteDynamodbItem(dynamodbDestinationConfig, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteDynamodbItem(DynamodbDestinationConfig dynamodbDestinationConfig, String outputTableName)
+  private static void attemptWriteAndDeleteDynamodbItem(final DynamodbDestinationConfig dynamodbDestinationConfig, final String outputTableName)
       throws Exception {
-    DynamoDB dynamoDB = new DynamoDB(getAmazonDynamoDB(dynamodbDestinationConfig));
-    Table table = dynamoDB.createTable(outputTableName, // create table
+    final DynamoDB dynamoDB = new DynamoDB(getAmazonDynamoDB(dynamodbDestinationConfig));
+    final Table table = dynamoDB.createTable(outputTableName, // create table
         Arrays.asList(new KeySchemaElement(JavaBaseConstants.COLUMN_NAME_AB_ID, KeyType.HASH), new KeySchemaElement("sync_time", KeyType.RANGE)),
         Arrays.asList(new AttributeDefinition(JavaBaseConstants.COLUMN_NAME_AB_ID, ScalarAttributeType.S),
             new AttributeDefinition("sync_time", ScalarAttributeType.N)),
@@ -59,10 +39,10 @@ public class DynamodbChecker {
     table.waitForActive();
 
     try {
-      PutItemOutcome outcome = table
+      final PutItemOutcome outcome = table
           .putItem(
               new Item().withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", System.currentTimeMillis()));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
     }
 
@@ -70,13 +50,13 @@ public class DynamodbChecker {
     table.waitForDelete();
   }
 
-  public static AmazonDynamoDB getAmazonDynamoDB(DynamodbDestinationConfig dynamodbDestinationConfig) {
-    var endpoint = dynamodbDestinationConfig.getEndpoint();
-    var region = dynamodbDestinationConfig.getRegion();
-    var accessKeyId = dynamodbDestinationConfig.getAccessKeyId();
-    var secretAccessKey = dynamodbDestinationConfig.getSecretAccessKey();
+  public static AmazonDynamoDB getAmazonDynamoDB(final DynamodbDestinationConfig dynamodbDestinationConfig) {
+    final var endpoint = dynamodbDestinationConfig.getEndpoint();
+    final var region = dynamodbDestinationConfig.getRegion();
+    final var accessKeyId = dynamodbDestinationConfig.getAccessKeyId();
+    final var secretAccessKey = dynamodbDestinationConfig.getSecretAccessKey();
 
-    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    final var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
     if (endpoint.isEmpty()) {
       return AmazonDynamoDBClientBuilder.standard()
@@ -85,7 +65,7 @@ public class DynamodbChecker {
           .build();
 
     } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
       return AmazonDynamoDBClientBuilder

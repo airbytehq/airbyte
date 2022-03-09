@@ -1,33 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -35,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -67,6 +43,7 @@ public class TestStreamingJdbcDatabase {
   private JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
   private JdbcDatabase defaultJdbcDatabase;
   private JdbcDatabase streamingJdbcDatabase;
+  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -97,7 +74,7 @@ public class TestStreamingJdbcDatabase {
         config.get("database").asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
-    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQueryConfiguration);
+    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), jdbcStreamingQueryConfiguration);
 
     defaultJdbcDatabase.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -108,45 +85,6 @@ public class TestStreamingJdbcDatabase {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testExecute() throws SQLException {
-    CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
-    doNothing().when(defaultJdbcDatabase).execute(queryExecutor);
-
-    streamingJdbcDatabase.execute(queryExecutor);
-
-    verify(defaultJdbcDatabase).execute(queryExecutor);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testBufferedResultQuery() throws SQLException {
-    doReturn(RECORDS_AS_JSON).when(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
-
-    final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
-
-    assertEquals(RECORDS_AS_JSON, actual);
-    verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testResultSetQuery() throws SQLException {
-    doReturn(RECORDS_AS_JSON.stream()).when(defaultJdbcDatabase).resultSetQuery(any(), any());
-
-    final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
-    final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
-    actual.close();
-
-    assertEquals(RECORDS_AS_JSON, actualAsList);
-    verify(defaultJdbcDatabase).resultSetQuery(any(), any());
   }
 
   @Test
@@ -162,14 +100,14 @@ public class TestStreamingJdbcDatabase {
           ps1.set(ps);
           return ps;
         },
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
     // verify that the query configuration is invoked.
     verify(jdbcStreamingQueryConfiguration).accept(connection1.get(), ps1.get());
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())

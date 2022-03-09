@@ -1,22 +1,22 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 import { components } from "react-select";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import {
-  useListWorkspaces,
   useWorkspaceService,
+  useListCloudWorkspacesAsync,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import ExitIcon from "./components/ExitIcon";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import ExitIcon from "./components/ExitIcon";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
-  padding: 6px 16px 8px;
+  padding: 12px 16px 12px;
   width: 100%;
   min-height: 34px;
   border-top: 1px solid ${(props) => props.theme.greyColor20};
@@ -41,34 +41,83 @@ const TextBlock = styled.div`
   display: inline-block;
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+const TopElement = styled.div<{ single: boolean }>`
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px 12px;
+
+  & > span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  ${({ single, theme }) =>
+    !single && `border-bottom: 1px solid ${theme.greyColor20};`}
+`;
+
+const List = styled.div`
+  & .react-select__option {
+    & div {
+      font-weight: 400;
+      font-size: 11px;
+      color: #1a194d;
+    }
+  }
+`;
+
+type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false> & {
+  selectedWorkspace: string;
+};
 
 const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
   children,
+  selectedWorkspace,
   ...props
 }) => {
-  const { selectWorkspace } = useWorkspaceService();
+  const { exitWorkspace } = useWorkspaceService();
+
   return (
-    <>
+    <List>
+      <TopElement single={props.options.length === 0}>
+        <span>{selectedWorkspace}</span>
+      </TopElement>
       <components.MenuList {...props}>{children}</components.MenuList>
       <BottomElement>
-        <Block onClick={() => selectWorkspace("")}>
+        <Block onClick={exitWorkspace}>
           <ExitIcon />
-          <TextBlock>
+          <TextBlock data-testid="workspaces.viewAllWorkspaces">
             <FormattedMessage id="workspaces.viewAllWorkspaces" />
           </TextBlock>
         </Block>
       </BottomElement>
-    </>
+    </List>
   );
 };
 
 const WorkspacePopout: React.FC<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: (props: { onOpen: () => void; value: any }) => React.ReactNode;
 }> = ({ children }) => {
-  const workspace = useCurrentWorkspace();
-  const { data: workspaces } = useListWorkspaces();
+  const { formatMessage } = useIntl();
+  const { data: workspaceList, isLoading } = useListCloudWorkspacesAsync();
   const { selectWorkspace } = useWorkspaceService();
+  const workspace = useCurrentWorkspace();
+
+  const options = useMemo(
+    () =>
+      workspaceList
+        ?.filter((w) => w.workspaceId !== workspace.workspaceId)
+        .map((workspace) => ({
+          value: workspace.workspaceId,
+          label: workspace.name,
+        })),
+    [workspaceList, workspace]
+  );
 
   return (
     <Popout
@@ -76,14 +125,19 @@ const WorkspacePopout: React.FC<{
         children({ onOpen: targetProps.onOpen, value: workspace.name })
       }
       components={{
-        MenuList: WorkspacesList,
+        MenuList: (props) => (
+          <WorkspacesList {...props} selectedWorkspace={workspace.name} />
+        ),
       }}
       isSearchable={false}
-      options={workspaces?.map((workspace) => ({
-        value: workspace.workspaceId,
-        label: workspace.name,
-      }))}
-      value={workspace.workspaceId}
+      options={options}
+      isLoading={isLoading}
+      loadingMessage={() =>
+        formatMessage({
+          id: "workspaces.loading",
+        })
+      }
+      value={workspace.slug}
       onChange={({ value }) => selectWorkspace(value)}
     />
   );

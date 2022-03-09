@@ -16,6 +16,7 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | No |  |
 
 ## Getting started
@@ -28,3 +29,9 @@ To use the MeiliSearch destination, you'll need an existing MeiliSearch instance
 
 The setup only requires two fields. First is the `host` which is the address at which MeiliSearch can be reached. If running on a localhost by default it will be on `http://localhost:7700`. Note that you must include the protocol. The second piece of information is the API key. If no API key is set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the value for your API by following these [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in the MeiliSearch docs.
 
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.12 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.2.11 | 2021-12-28 | [9156](https://github.com/airbytehq/airbyte/pull/9156) | Update connector fields title/description |

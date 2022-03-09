@@ -1,0 +1,26 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "has_mobile_app": {
+      "type": ["boolean", "null"]
+    },
+    "has_permission": {
+      "type": ["boolean", "null"]
+    },
+    "is_callable": {
+      "type": ["boolean", "null"]
+    },
+    "is_callable_webrtc": {
+      "type": ["boolean", "null"]
+    },
+    "is_pushable": {
+      "type": ["boolean", "null"]
+    },
+    "reason_code": {
+      "type": ["integer", "null"]
+    },
+    "reason_description": {
+      "type": ["string", "null"]
+    }
+  }
+}

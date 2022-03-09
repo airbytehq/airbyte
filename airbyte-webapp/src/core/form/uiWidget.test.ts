@@ -156,13 +156,20 @@ test("should select correct key for enum", () => {
   );
   expect(uiWidgetState).toEqual({
     "key.dataset_name": {},
-    "key.format": {},
+    "key.format": {
+      default: "csv",
+    },
     "key.provider": {
       selectedItem: "GCS: Google Cloud Storage",
     },
-    "key.provider.reader_impl": {},
+    "key.provider.reader_impl": {
+      default: "gcsfs",
+    },
     "key.provider.service_account_json": {},
-    "key.provider.storage": {},
+    "key.provider.storage": {
+      const: "GCS",
+      default: "GCS",
+    },
     "key.reader_options": {},
     "key.url": {},
   });

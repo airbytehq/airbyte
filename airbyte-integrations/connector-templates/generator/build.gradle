@@ -3,18 +3,20 @@ plugins {
     id "com.github.node-gradle.node" version "2.2.4"
 }
 
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
+
 node {
     download = true
-    version = "14.11.0"
+    version = nodeVersion
 }
 
 assemble.dependsOn(npmInstall)
 
 task testScaffoldTemplates
 
-def addScaffoldTemplateTask(name, packageName,scaffoldParams=[]) {
+def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[]) {
     def taskName = "testScaffoldTemplate_${name}"
-    def outputDir = "airbyte-integrations/connectors/source-${packageName}"
+    def outputDir = "airbyte-integrations/connectors/${outputDirName}"
 
    def task = tasks.create(taskName) {
         inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/")
@@ -38,9 +40,9 @@ def addScaffoldTemplateTask(name, packageName,scaffoldParams=[]) {
     testScaffoldTemplates.dependsOn task
 }
 
-addScaffoldTemplateTask('Python Source', 'scaffold-source-python')
-addScaffoldTemplateTask('Python HTTP API Source', 'scaffold-source-http')
-addScaffoldTemplateTask('Java JDBC Source', 'scaffold-java-jdbc')
-addScaffoldTemplateTask('Python Destination', 'scaffold-destination-python')
+addScaffoldTemplateTask('Python Source', 'scaffold-source-python', 'source-scaffold-source-python')
+addScaffoldTemplateTask('Python HTTP API Source', 'scaffold-source-http', 'source-scaffold-source-http')
+addScaffoldTemplateTask('Java JDBC Source', 'scaffold-java-jdbc', 'source-scaffold-java-jdbc')
+addScaffoldTemplateTask('Python Destination', 'scaffold-destination-python', 'destination-scaffold-destination-python')
 // TODO: enable Singer template testing
 //addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])

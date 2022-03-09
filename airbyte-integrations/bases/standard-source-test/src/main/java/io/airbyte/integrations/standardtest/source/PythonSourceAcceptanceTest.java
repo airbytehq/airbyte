@@ -1,30 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
 
-import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -32,8 +12,11 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,20 +66,25 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() throws IOException {
-    return Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
-        .map(JsonNode::textValue)
-        .collect(toList());
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) throws IOException {
+    final List<String> regexTests = Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
+        .map(JsonNode::textValue).toList();
+    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).toList();
+    LOGGER.info("Running " + regexTests.size() + " regex tests...");
+    regexTests.forEach(regex -> {
+      LOGGER.info("Looking for [" + regex + "]");
+      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
+    });
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest");
     runExecutableVoid(Command.SETUP);
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     runExecutableVoid(Command.TEARDOWN);
   }
 
@@ -110,19 +98,19 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     TEARDOWN
   }
 
-  private <T> T runExecutable(Command cmd, Class<T> klass) throws IOException {
+  private <T> T runExecutable(final Command cmd, final Class<T> klass) throws IOException {
     return Jsons.object(runExecutable(cmd), klass);
   }
 
-  private JsonNode runExecutable(Command cmd) throws IOException {
+  private JsonNode runExecutable(final Command cmd) throws IOException {
     return Jsons.deserialize(IOs.readFile(runExecutableInternal(cmd), OUTPUT_FILENAME));
   }
 
-  private void runExecutableVoid(Command cmd) throws IOException {
+  private void runExecutableVoid(final Command cmd) throws IOException {
     runExecutableInternal(cmd);
   }
 
-  private Path runExecutableInternal(Command cmd) throws IOException {
+  private Path runExecutableInternal(final Command cmd) throws IOException {
     LOGGER.info("testRoot = " + testRoot);
     final List<String> dockerCmd =
         Lists.newArrayList(
@@ -145,9 +133,9 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
     LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 1, TimeUnit.MINUTES);
 
-    int exitCode = process.exitValue();
+    final int exitCode = process.exitValue();
     if (exitCode != 0) {
       throw new RuntimeException("python execution failed");
     }

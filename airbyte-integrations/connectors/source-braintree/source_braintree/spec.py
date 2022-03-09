@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -42,18 +22,30 @@ class BraintreeConfig(BaseModel):
 
     merchant_id: str = Field(
         name="Merchant ID",
-        description='<a href="https://docs.airbyte.io/integrations/sources/braintree">Merchant ID</a> is the unique identifier for entire gateway account.',
+        title="Merchant ID",
+        description='The unique identifier for your entire gateway account. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this ID.',
     )
-    public_key: str = Field(name="Public key", description="This is your user-specific public identifier for Braintree.")
-    private_key: str = Field(name="Private Key", description="This is your user-specific private identifier.", airbyte_secret=True)
+    public_key: str = Field(
+        name="Public Key",
+        title="Public Key",
+        description='Braintree Public Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+    )
+    private_key: str = Field(
+        name="Private Key",
+        title="Private Key",
+        description='Braintree Private Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+        airbyte_secret=True,
+    )
     start_date: datetime = Field(
         None,
-        name="Start date",
-        description="The date from which you'd like to replicate data for Braintree API for UTC timezone, All data generated after this date will be replicated.",
+        name="Start Date",
+        title="Start Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         examples=["2020", "2020-12-30", "2020-11-22 20:20:05"],
     )
     environment: Environment = Field(
         name="Environment",
+        title="Environment",
         description="Environment specifies where the data will come from.",
         examples=["sandbox", "production", "qa", "development"],
     )
@@ -65,3 +57,13 @@ class BraintreeConfig(BaseModel):
     @validator("environment", pre=True)
     def to_camel_case(cls, v):
         return camelize(v)
+
+    @classmethod
+    def schema(cls, **kwargs):
+        schema = super().schema(**kwargs)
+        if "definitions" in schema:
+            schema["definitions"]["Environment"].pop("description")
+            schema["properties"]["environment"].update(schema["definitions"]["Environment"])
+            schema["properties"]["environment"].pop("allOf", None)
+            del schema["definitions"]
+        return schema

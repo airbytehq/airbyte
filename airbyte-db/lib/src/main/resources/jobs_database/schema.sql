@@ -1,5 +1,5 @@
 -- types
- CREATE
+CREATE
     TYPE JOB_STATUS AS ENUM(
         'pending',
         'running',
@@ -27,7 +27,7 @@ CREATE
     );
 
 -- tables
- CREATE
+CREATE
     TABLE
         IF NOT EXISTS AIRBYTE_METADATA(
             KEY VARCHAR(255) PRIMARY KEY,

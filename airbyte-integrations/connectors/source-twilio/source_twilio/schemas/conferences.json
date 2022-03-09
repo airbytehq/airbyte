@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "api_version": {
@@ -36,17 +36,14 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
-      "type": ["array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": false,
-        "properties": {
-          "participants": {
-            "type": ["null", "string"]
-          },
-          "recordings": {
-            "type": ["null", "string"]
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "participants": {
+          "type": ["null", "string"]
+        },
+        "recordings": {
+          "type": ["null", "string"]
         }
       }
     }

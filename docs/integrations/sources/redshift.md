@@ -23,6 +23,7 @@ The Redshift source does not alter the schema present in your warehouse. Dependi
 | SSL Support | Yes |  |
 | SSH Tunnel Connection | Coming soon |  |
 | Namespaces | Yes | Enabled by default |
+| Schema Selection | Yes | Multiple schemas may be used at one time. Keep empty to process all of existing schemas |
 
 #### Incremental Sync
 
@@ -45,9 +46,19 @@ This is dependent on your networking setup. The easiest way to verify if Airbyte
 
 Next is to provide the necessary information on how to connect to your cluster such as the `host` whcih is part of the connection string or Endpoint accessible [here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html#rs-gsg-how-to-get-connection-string) without the `port` and `database` name \(it typically includes the cluster-id, region and end with `.redshift.amazonaws.com`\).
 
+## Encryption
+
+All Redshift connections are encrypted using SSL
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.9   | 2022-02-21 | [9744](https://github.com/airbytehq/airbyte/pull/9744) | List only the tables on which the user has SELECT permissions.
+| 0.3.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.3.7   | 2022-01-26 | [9721](https://github.com/airbytehq/airbyte/pull/9721) | Added schema selection |
+| 0.3.6   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
+| 0.3.5   | 2021-12-24 | [8958](https://github.com/airbytehq/airbyte/pull/8958) | Add support for JdbcType.ARRAY |
+| 0.3.4   | 2021-10-21 | [7234](https://github.com/airbytehq/airbyte/pull/7234) | Allow SSL traffic only |
+| 0.3.3   | 2021-10-12 | [6965](https://github.com/airbytehq/airbyte/pull/6965) | Added SSL Support |
 | 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |

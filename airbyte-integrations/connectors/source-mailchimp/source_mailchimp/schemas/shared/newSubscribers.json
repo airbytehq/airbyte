@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "title": "New Subscribers Prebuilt Segment",
+  "description": "Segment by when people subscribed.",
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "NewSubscribers",
+      "enum": ["NewSubscribers"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["timestamp_opt"],
+      "title": "Segment Field",
+      "description": "Segment by when people subscribed."
+    },
+    "op": {
+      "type": "string",
+      "enum": ["date_within"],
+      "title": "Segment Operator",
+      "description": "Whe the event took place, namely within a time frame."
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Data",
+      "description": "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { JSONSchema7 } from "json-schema";
-import { JobInfo } from "core/resources/Scheduler";
+import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
   catalog: SyncSchema;
@@ -19,7 +19,7 @@ export enum DestinationSyncMode {
   Dedupted = "append_dedup",
 }
 
-export type SyncSchemaStreamInner = {
+export type AirbyteSchemaStream = {
   stream: AirbyteStream;
   config: AirbyteStreamConfiguration;
 };
@@ -37,13 +37,13 @@ export type AirbyteStream = {
   jsonSchema: SchemaFields;
   supportedSyncModes: SyncMode[];
   sourceDefinedCursor: boolean | null;
-  sourceDefinedPrimaryKey: string[][];
-  defaultCursorField: string[];
+  sourceDefinedPrimaryKey: Path[];
+  defaultCursorField: Path;
 };
 
 export type AirbyteStreamConfiguration = {
-  cursorField: string[];
-  primaryKey: string[][];
+  cursorField: Path;
+  primaryKey: Path[];
   selected: boolean;
   syncMode: SyncMode;
   destinationSyncMode: DestinationSyncMode;
@@ -53,3 +53,9 @@ export type AirbyteStreamConfiguration = {
 export type SyncSchema = {
   streams: SyncSchemaStream[];
 };
+
+export type AirbyteSyncSchema = {
+  streams: AirbyteSchemaStream[];
+};
+
+export type Path = string[];

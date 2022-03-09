@@ -1,32 +1,15 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from unittest.mock import MagicMock
 
+from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 from pytest import fixture
-from source_trello.source import TrelloStream
+from source_trello.source import Boards, Cards, TrelloStream
+
+from .helpers import NO_SLEEP_HEADERS, read_all_records
 
 
 @fixture
@@ -49,3 +32,68 @@ def test_next_page_token(patch_base_class, config):
     inputs = {"response": MagicMock()}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
+
+
+def test_boards_stream(requests_mock):
+    mock_boards_request = requests_mock.get(
+        "https://api.trello.com/1/members/me/boards",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}],
+    )
+
+    config = {"authenticator": NoAuth(), "start_date": "2021-02-11T08:35:49.540Z"}
+    stream1 = Boards(config=config)
+    records = read_all_records(stream1)
+    assert records == [{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}]
+
+    stream2 = Boards(config={**config, "board_ids": ["b22222222222222222222222"]})
+    records = read_all_records(stream2)
+    assert records == [{"id": "b22222222222222222222222", "name": "board_2"}]
+
+    stream3 = Boards(config={**config, "board_ids": ["not-found"]})
+    records = read_all_records(stream3)
+    assert records == []
+
+    assert mock_boards_request.call_count == 3
+
+
+def test_cards_stream(requests_mock):
+    mock_boards_request = requests_mock.get(
+        "https://api.trello.com/1/members/me/boards",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}],
+    )
+
+    mock_cards_request_1 = requests_mock.get(
+        "https://api.trello.com/1/boards/b11111111111111111111111/cards/all",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "c11111111111111111111111", "name": "card_1"}, {"id": "c22222222222222222222222", "name": "card_2"}],
+    )
+
+    mock_cards_request_2 = requests_mock.get(
+        "https://api.trello.com/1/boards/b22222222222222222222222/cards/all",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "c33333333333333333333333", "name": "card_3"}, {"id": "c44444444444444444444444", "name": "card_4"}],
+    )
+
+    config = {"authenticator": NoAuth(), "start_date": "2021-02-11T08:35:49.540Z"}
+    stream1 = Cards(config=config)
+    records = read_all_records(stream1)
+    assert records == [
+        {"id": "c11111111111111111111111", "name": "card_1"},
+        {"id": "c22222222222222222222222", "name": "card_2"},
+        {"id": "c33333333333333333333333", "name": "card_3"},
+        {"id": "c44444444444444444444444", "name": "card_4"},
+    ]
+
+    stream2 = Cards(config={**config, "board_ids": ["b22222222222222222222222"]})
+    records = read_all_records(stream2)
+    assert records == [{"id": "c33333333333333333333333", "name": "card_3"}, {"id": "c44444444444444444444444", "name": "card_4"}]
+
+    stream3 = Cards(config={**config, "board_ids": ["not-found"]})
+    records = read_all_records(stream3)
+    assert records == []
+
+    assert mock_boards_request.call_count == 3
+    assert mock_cards_request_1.call_count == 1
+    assert mock_cards_request_2.call_count == 2

@@ -1,65 +1,68 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
 
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
-import io.airbyte.workers.protocols.Mapper;
-import io.airbyte.workers.protocols.MessageTracker;
-import io.airbyte.workers.protocols.Source;
+import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+/**
+ * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
+ * container to the Destination container. It manages the full lifecycle of this process. This
+ * includes:
+ * <ul>
+ * <li>Starting the Source and Destination containers</li>
+ * <li>Passing data from Source to Destination</li>
+ * <li>Executing any configured map-only operations (Mappers) in between the Source and
+ * Destination</li>
+ * <li>Collecting metadata about the data that is passing from Source to Destination</li>
+ * <li>Listening for state messages emitted from the Destination to keep track of what data has been
+ * replicated.</li>
+ * <li>Handling shutdown of the Source and Destination</li>
+ * <li>Handling failure cases and returning state for partially completed replications (so that the
+ * next replication can pick up where it left off instead of starting from the beginning)</li>
+ * </ul>
+ */
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
 
   private final String jobId;
   private final int attempt;
-  private final Source<AirbyteMessage> source;
-  private final Mapper<AirbyteMessage> mapper;
-  private final Destination<AirbyteMessage> destination;
-  private final MessageTracker<AirbyteMessage> sourceMessageTracker;
-  private final MessageTracker<AirbyteMessage> destinationMessageTracker;
+  private final AirbyteSource source;
+  private final AirbyteMapper mapper;
+  private final AirbyteDestination destination;
+  private final MessageTracker messageTracker;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -67,18 +70,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
-                                  final Source<AirbyteMessage> source,
-                                  final Mapper<AirbyteMessage> mapper,
-                                  final Destination<AirbyteMessage> destination,
-                                  final MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                  final MessageTracker<AirbyteMessage> destinationMessageTracker) {
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker messageTracker) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
-    this.sourceMessageTracker = sourceMessageTracker;
-    this.destinationMessageTracker = destinationMessageTracker;
+    this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
 
     this.cancelled = new AtomicBoolean(false);
@@ -98,7 +99,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
+  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -106,7 +107,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
+    final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
+    final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
+
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
@@ -122,28 +126,44 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destination.start(destinationConfig, jobRoot);
         source.start(sourceConfig, jobRoot);
 
-        final Future<?> destinationOutputThreadFuture = executors.submit(getDestinationOutputRunnable(
-            destination,
-            cancelled,
-            destinationMessageTracker,
-            mdc));
+        // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
+        // thrown
+        final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
+            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc),
+            executors).whenComplete((msg, ex) -> {
+              if (ex != null) {
+                if (ex.getCause() instanceof DestinationException) {
+                  destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+                } else {
+                  destinationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+                }
+              }
+            });
 
-        final Future<?> replicationThreadFuture = executors.submit(getReplicationRunnable(
-            source,
-            destination,
-            cancelled,
-            mapper,
-            sourceMessageTracker,
-            mdc));
+        final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
+            executors).whenComplete((msg, ex) -> {
+              if (ex != null) {
+                if (ex.getCause() instanceof SourceException) {
+                  replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
+                } else if (ex.getCause() instanceof DestinationException) {
+                  replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+                } else {
+                  replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
+                }
+              }
+            });
 
-        LOGGER.info("Waiting for source thread to join.");
-        replicationThreadFuture.get();
-        LOGGER.info("Source thread complete.");
-        LOGGER.info("Waiting for destination thread to join.");
-        destinationOutputThreadFuture.get();
-        LOGGER.info("Destination thread complete.");
+        LOGGER.info("Waiting for source and destination threads to complete.");
+        // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
+        // exception. So in order to handle exceptions from a future immediately without needing to wait for
+        // the other future to finish, we first call CompletableFuture#anyOf.
+        CompletableFuture.anyOf(replicationThreadFuture, destinationOutputThreadFuture).get();
+        LOGGER.info("One of source or destination thread complete. Waiting on the other.");
+        CompletableFuture.allOf(replicationThreadFuture, destinationOutputThreadFuture).get();
+        LOGGER.info("Source and destination threads complete.");
 
-      } catch (Exception e) {
+      } catch (final Exception e) {
         hasFailed.set(true);
         LOGGER.error("Sync worker failed.", e);
       } finally {
@@ -162,28 +182,76 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         outputStatus = ReplicationStatus.COMPLETED;
       }
 
+      final SyncStats totalSyncStats = new SyncStats()
+          .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
+          .withBytesEmitted(messageTracker.getTotalBytesEmitted())
+          .withStateMessagesEmitted(messageTracker.getTotalStateMessagesEmitted());
+
+      if (outputStatus == ReplicationStatus.COMPLETED) {
+        totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
+      } else if (messageTracker.getTotalRecordsCommitted().isPresent()) {
+        totalSyncStats.setRecordsCommitted(messageTracker.getTotalRecordsCommitted().get());
+      } else {
+        LOGGER.warn("Could not reliably determine committed record counts, committed record stats will be set to null");
+        totalSyncStats.setRecordsCommitted(null);
+      }
+
+      // assume every stream with stats is in streamToEmittedRecords map
+      final List<StreamSyncStats> streamSyncStats = messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
+        final SyncStats syncStats = new SyncStats()
+            .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
+            .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
+            .withStateMessagesEmitted(null); // TODO (parker) populate per-stream state messages emitted once supported in V2
+
+        if (outputStatus == ReplicationStatus.COMPLETED) {
+          syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
+        } else if (messageTracker.getStreamToCommittedRecords().isPresent()) {
+          syncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
+        } else {
+          syncStats.setRecordsCommitted(null);
+        }
+        return new StreamSyncStats()
+            .withStreamName(stream)
+            .withStats(syncStats);
+      }).collect(Collectors.toList());
+
       final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
           .withStatus(outputStatus)
-          .withRecordsSynced(sourceMessageTracker.getRecordCount())
-          .withBytesSynced(sourceMessageTracker.getBytesCount())
+          .withRecordsSynced(messageTracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
+          .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
+          .withTotalStats(totalSyncStats)
+          .withStreamStats(streamSyncStats)
           .withStartTime(startTime)
           .withEndTime(System.currentTimeMillis());
 
       LOGGER.info("sync summary: {}", summary);
-
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      if (sourceMessageTracker.getOutputState().isPresent()) {
+      // only .setFailures() if a failure occurred
+      final FailureReason sourceFailure = replicationRunnableFailureRef.get();
+      final FailureReason destinationFailure = destinationRunnableFailureRef.get();
+      final List<FailureReason> failures = new ArrayList<>();
+      if (sourceFailure != null) {
+        failures.add(sourceFailure);
+      }
+      if (destinationFailure != null) {
+        failures.add(destinationFailure);
+      }
+      if (!failures.isEmpty()) {
+        output.setFailures(failures);
+      }
+
+      if (messageTracker.getSourceOutputState().isPresent()) {
         LOGGER.info("Source output at least one state message");
       } else {
         LOGGER.info("Source did not output any state messages");
       }
 
-      if (destinationMessageTracker.getOutputState().isPresent()) {
-        LOGGER.info("State capture: Updated state to: {}", destinationMessageTracker.getOutputState());
-        final State state = destinationMessageTracker.getOutputState().get();
+      if (messageTracker.getDestinationOutputState().isPresent()) {
+        LOGGER.info("State capture: Updated state to: {}", messageTracker.getDestinationOutputState());
+        final State state = messageTracker.getDestinationOutputState().get();
         output.withState(state);
       } else if (syncInput.getState() != null) {
         LOGGER.warn("State capture: No new state, falling back on input state: {}", syncInput.getState());
@@ -193,30 +261,39 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       return output;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
     }
 
   }
 
-  private static Runnable getReplicationRunnable(Source<AirbyteMessage> source,
-                                                 Destination<AirbyteMessage> destination,
-                                                 AtomicBoolean cancelled,
-                                                 Mapper<AirbyteMessage> mapper,
-                                                 MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                                 Map<String, String> mdc) {
+  private static Runnable getReplicationRunnable(final AirbyteSource source,
+                                                 final AirbyteDestination destination,
+                                                 final AtomicBoolean cancelled,
+                                                 final AirbyteMapper mapper,
+                                                 final MessageTracker messageTracker,
+                                                 final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       var recordsRead = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional = source.attemptRead();
+          final Optional<AirbyteMessage> messageOptional;
+          try {
+            messageOptional = source.attemptRead();
+          } catch (final Exception e) {
+            throw new SourceException("Source process read attempt failed", e);
+          }
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
-            sourceMessageTracker.accept(message);
-            destination.accept(message);
+            messageTracker.acceptFromSource(message);
+            try {
+              destination.accept(message);
+            } catch (final Exception e) {
+              throw new DestinationException("Destination process message delivery failed", e);
+            }
             recordsRead += 1;
 
             if (recordsRead % 1000 == 0) {
@@ -224,41 +301,70 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           }
         }
-        destination.notifyEndOfStream();
-      } catch (Exception e) {
+        LOGGER.info("Total records read: {}", recordsRead);
+        try {
+          destination.notifyEndOfStream();
+        } catch (final Exception e) {
+          throw new DestinationException("Destination process end of stream notification failed", e);
+        }
+        if (!cancelled.get() && source.getExitValue() != 0) {
+          throw new SourceException("Source process exited with non-zero exit code " + source.getExitValue());
+        }
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
           // final read after the source is closed before it's terminated.
           // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
           // was not cancelled.
-          throw new RuntimeException(e);
+
+          if (e instanceof SourceException || e instanceof DestinationException) {
+            // Surface Source and Destination exceptions directly so that they can be classified properly by the
+            // worker
+            throw e;
+          } else {
+            throw new RuntimeException(e);
+          }
         }
       }
     };
   }
 
-  private static Runnable getDestinationOutputRunnable(Destination<AirbyteMessage> destination,
-                                                       AtomicBoolean cancelled,
-                                                       MessageTracker<AirbyteMessage> destinationMessageTracker,
-                                                       Map<String, String> mdc) {
+  private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
+                                                       final AtomicBoolean cancelled,
+                                                       final MessageTracker messageTracker,
+                                                       final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
       try {
         while (!cancelled.get() && !destination.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
+          final Optional<AirbyteMessage> messageOptional;
+          try {
+            messageOptional = destination.attemptRead();
+          } catch (final Exception e) {
+            throw new DestinationException("Destination process read attempt failed", e);
+          }
           if (messageOptional.isPresent()) {
-            LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
-            destinationMessageTracker.accept(messageOptional.get());
+            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
+            messageTracker.acceptFromDestination(messageOptional.get());
           }
         }
-      } catch (Exception e) {
+        if (!cancelled.get() && destination.getExitValue() != 0) {
+          throw new DestinationException("Destination process exited with non-zero exit code " + destination.getExitValue());
+        }
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the destination's closure and can attempt one
           // final read after the destination is closed before it's terminated.
           // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
           // was not cancelled.
-          throw new RuntimeException(e);
+
+          if (e instanceof DestinationException) {
+            // Surface Destination exceptions directly so that they can be classified properly by the worker
+            throw e;
+          } else {
+            throw new RuntimeException(e);
+          }
         }
       }
     };
@@ -270,7 +376,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling replication worker...");
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       e.printStackTrace();
     }
     cancelled.set(true);
@@ -278,15 +384,39 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling destination...");
     try {
       destination.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling destination: ", e);
     }
 
     LOGGER.info("Cancelling source...");
     try {
       source.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling source: ", e);
+    }
+
+  }
+
+  private static class SourceException extends RuntimeException {
+
+    SourceException(final String message) {
+      super(message);
+    }
+
+    SourceException(final String message, final Throwable cause) {
+      super(message, cause);
+    }
+
+  }
+
+  private static class DestinationException extends RuntimeException {
+
+    DestinationException(final String message) {
+      super(message);
+    }
+
+    DestinationException(final String message, final Throwable cause) {
+      super(message, cause);
     }
 
   }

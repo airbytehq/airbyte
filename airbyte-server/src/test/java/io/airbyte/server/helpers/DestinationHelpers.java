@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.helpers;
@@ -44,19 +24,20 @@ public class DestinationHelpers {
     return Jsons.deserialize(Files.readString(path));
   }
 
-  public static DestinationConnection generateDestination(UUID destinationDefinitionId) throws IOException {
+  public static DestinationConnection generateDestination(final UUID destinationDefinitionId) throws IOException {
     return generateDestination(destinationDefinitionId, "my default dest name", false);
   }
 
-  public static DestinationConnection generateDestination(UUID destinationDefinitionId, String name) throws IOException {
+  public static DestinationConnection generateDestination(final UUID destinationDefinitionId, final String name) throws IOException {
     return generateDestination(destinationDefinitionId, name, false);
   }
 
-  public static DestinationConnection generateDestination(UUID destinationDefinitionId, boolean tombstone) throws IOException {
+  public static DestinationConnection generateDestination(final UUID destinationDefinitionId, final boolean tombstone) throws IOException {
     return generateDestination(destinationDefinitionId, "my default dest name", tombstone);
   }
 
-  public static DestinationConnection generateDestination(UUID destinationDefinitionId, String name, boolean tombstone) throws IOException {
+  public static DestinationConnection generateDestination(final UUID destinationDefinitionId, final String name, final boolean tombstone)
+      throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
 
@@ -71,7 +52,8 @@ public class DestinationHelpers {
         .withTombstone(tombstone);
   }
 
-  public static DestinationRead getDestinationRead(DestinationConnection destination, StandardDestinationDefinition standardDestinationDefinition) {
+  public static DestinationRead getDestinationRead(final DestinationConnection destination,
+                                                   final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destination.getWorkspaceId())

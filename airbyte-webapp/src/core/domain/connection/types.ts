@@ -1,16 +1,11 @@
 import { SyncSchema } from "core/domain/catalog";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 import { Operation } from "./operation";
+import { AirbyteJSONSchema } from "core/jsonSchema";
+import { Destination, Source } from "../connector";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ConnectionConfiguration = any;
+type ConnectionConfiguration = unknown;
 
-type ConnectionSpecification = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  properties: any;
-  required: string[];
-};
+type ConnectionSpecification = AirbyteJSONSchema;
 
 export type { ConnectionConfiguration, ConnectionSpecification };
 
@@ -20,9 +15,17 @@ export enum ConnectionNamespaceDefinition {
   CustomFormat = "customformat",
 }
 
+export enum ConnectionSchedule {
+  Minutes = "minutes",
+  Hours = "hours",
+  Days = "days",
+  Weeks = "weeks",
+  Months = "months",
+}
+
 export type ScheduleProperties = {
   units: number;
-  timeUnit: string;
+  timeUnit: ConnectionSchedule;
 };
 
 export interface Connection {

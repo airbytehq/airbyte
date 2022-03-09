@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -52,10 +32,7 @@ def get_prop(col_type: str) -> Dict[str, any]:
         "DATE": {"type": "string", "format": "date"},
         "DATETIME": {"type": "string", "format": "date-time"},
     }
-    if col_type in props.keys():
-        return props[col_type]
-    else:  # assume string
-        return props["TEXT_NUMBER"]
+    return props.get(col_type, {"type": "string"})
 
 
 def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
@@ -117,6 +94,7 @@ class SourceSmartsheets(Source):
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
 
             stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
+            stream.supported_sync_modes = ["full_refresh"]
             streams.append(stream)
 
         except Exception as e:
@@ -152,6 +130,8 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
+                    # convert all data to string as it is only expected format in schema
+                    values = tuple(str(i["value"]) if "value" in i else "" for i in row["cells"])
                     try:
                         id_name_map = {d['id']: d['title'] for d in sheet['columns']}
                         data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}

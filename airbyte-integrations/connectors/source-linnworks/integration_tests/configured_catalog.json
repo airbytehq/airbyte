@@ -1,0 +1,1791 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stock_locations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "StockLocationId": {
+              "type": "string",
+              "description": "Location ID"
+            },
+            "StockLocationIntId": {
+              "type": "integer",
+              "description": "Stock location integer id"
+            },
+            "LocationName": {
+              "type": "string",
+              "description": "Location name"
+            },
+            "IsFulfillmentCenter": {
+              "type": "boolean",
+              "description": "If location is a fulfillment center"
+            },
+            "LocationTag": {
+              "type": "string",
+              "description": "Location tag"
+            },
+            "BinRack": {
+              "type": ["null", "string"],
+              "description": "Bin rack"
+            },
+            "IsWarehouseManaged": {
+              "type": ["null", "boolean"],
+              "description": "If the location is warehouse managed."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["StockLocationIntId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "stock_location_details",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Address1": {
+              "type": "string",
+              "description": "1st line of address"
+            },
+            "Address2": {
+              "type": "string",
+              "description": "2nd line of address"
+            },
+            "City": {
+              "type": "string",
+              "description": "City"
+            },
+            "County": {
+              "type": "string",
+              "description": "County / Region"
+            },
+            "Country": {
+              "type": "string",
+              "description": "Country"
+            },
+            "ZipCode": {
+              "type": "string",
+              "description": "Postal code"
+            },
+            "IsNotTrackable": {
+              "type": "boolean",
+              "description": "Is the location trackable"
+            },
+            "LocationTag": {
+              "type": "string",
+              "description": "Location tag"
+            },
+            "CountInOrderUntilAcknowledgement": {
+              "type": "boolean",
+              "description": "Count in order"
+            },
+            "FulfilmentCenterDeductStockWhenProcessed": {
+              "type": "boolean",
+              "description": "Fulfilment center and stock will be deducted when order processed"
+            },
+            "IsWarehouseManaged": {
+              "type": "boolean",
+              "description": "Indicates if the location is warehouse managed"
+            },
+            "StockLocationId": {
+              "type": "string",
+              "description": "Location ID"
+            },
+            "LocationName": {
+              "type": "string",
+              "description": "Location name"
+            },
+            "IsFulfillmentCenter": {
+              "type": "boolean",
+              "description": "If location is a fulfillment center"
+            },
+            "StockLocationIntId": {
+              "type": "integer",
+              "description": "Stock location integer id."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["StockLocationIntId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "stock_items",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Suppliers": {
+              "type": "array",
+              "description": "Suppliers",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "IsDefault": {
+                    "type": "boolean",
+                    "description": "If supplier information is default"
+                  },
+                  "Supplier": {
+                    "type": "string",
+                    "description": "Supplier name"
+                  },
+                  "SupplierID": {
+                    "type": "string",
+                    "description": "Supplier ID"
+                  },
+                  "Code": {
+                    "type": "string",
+                    "description": "Supplier code"
+                  },
+                  "SupplierBarcode": {
+                    "type": "string",
+                    "description": "Supplier barcode"
+                  },
+                  "LeadTime": {
+                    "type": "integer",
+                    "description": "Supplier lead time"
+                  },
+                  "PurchasePrice": {
+                    "type": "number",
+                    "description": "Supplier purchase price"
+                  },
+                  "MinPrice": {
+                    "type": "number",
+                    "description": "Minimum price"
+                  },
+                  "MaxPrice": {
+                    "type": "number",
+                    "description": "Maximum price"
+                  },
+                  "AveragePrice": {
+                    "type": "number",
+                    "description": "Average price"
+                  },
+                  "AverageLeadTime": {
+                    "type": "number",
+                    "description": "Average lead time"
+                  },
+                  "SupplierMinOrderQty": {
+                    "type": "integer",
+                    "description": "Minimum order quantity from this supplier"
+                  },
+                  "SupplierPackSize": {
+                    "type": "integer",
+                    "description": "Supplier pack size"
+                  },
+                  "SupplierCurrency": {
+                    "type": "string",
+                    "description": "Supplier default currency"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item integer Id"
+                  }
+                }
+              }
+            },
+            "StockLevels": {
+              "type": "array",
+              "description": "Stock Levels",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Location": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Location ID",
+                    "properties": {
+                      "StockLocationId": {
+                        "type": "string",
+                        "description": "Location ID"
+                      },
+                      "StockLocationIntId": {
+                        "type": "integer",
+                        "description": "Stock location integer id"
+                      },
+                      "LocationName": {
+                        "type": "string",
+                        "description": "Location name"
+                      },
+                      "IsFulfillmentCenter": {
+                        "type": "boolean",
+                        "description": "If location is a fulfillment center"
+                      },
+                      "LocationTag": {
+                        "type": "string",
+                        "description": "Location tag"
+                      },
+                      "BinRack": {
+                        "type": ["null", "string"],
+                        "description": "Bin rack"
+                      },
+                      "IsWarehouseManaged": {
+                        "type": ["null", "boolean"],
+                        "description": "If the location is warehouse managed"
+                      }
+                    }
+                  },
+                  "StockLevel": {
+                    "type": "integer",
+                    "description": "Stock level"
+                  },
+                  "StockValue": {
+                    "type": "number",
+                    "description": "Stock value"
+                  },
+                  "MinimumLevel": {
+                    "type": "integer",
+                    "description": "Minimum level"
+                  },
+                  "InOrderBook": {
+                    "type": "integer",
+                    "description": "Currently in open orders"
+                  },
+                  "Due": {
+                    "type": "integer",
+                    "description": "Due to come in purchase orders"
+                  },
+                  "JIT": {
+                    "type": "boolean",
+                    "description": "Stock Item Just In Time (JIT) status"
+                  },
+                  "InOrders": {
+                    "type": "integer",
+                    "description": "Currently in open orders"
+                  },
+                  "Available": {
+                    "type": "integer",
+                    "description": "StockLevel - InOrders"
+                  },
+                  "UnitCost": {
+                    "type": "number",
+                    "description": "if( Quantity == 0 ) dbo.StockItem.PurchasePrice Else CurrentStockValue / Quantity"
+                  },
+                  "SKU": {
+                    "type": ["null", "string"],
+                    "description": "Product SKU"
+                  },
+                  "AutoAdjust": {
+                    "type": "boolean",
+                    "description": "If level is auto adjusted"
+                  },
+                  "LastUpdateDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Last time stock level was adjusted"
+                  },
+                  "LastUpdateOperation": {
+                    "type": "string",
+                    "description": "Name of last update operation"
+                  },
+                  "rowid": {
+                    "type": "string",
+                    "description": "dbo.StockLevel.rowid"
+                  },
+                  "PendingUpdate": {
+                    "type": "boolean",
+                    "description": "dbo.StockLevel.PendingUpdate"
+                  },
+                  "StockItemPurchasePrice": {
+                    "type": "number",
+                    "description": "Stock item purchase price. It's used to calculate UnitCost"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item interger Id"
+                  }
+                }
+              }
+            },
+            "ItemChannelDescriptions": {
+              "type": "array",
+              "description": "List of item descriptions",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "pkRowId": {
+                    "type": "string",
+                    "description": "Record row ID (generate random GUID)"
+                  },
+                  "Source": {
+                    "type": "string",
+                    "description": "ChannelName/Source (e.g. EBAY)"
+                  },
+                  "SubSource": {
+                    "type": "string",
+                    "description": "Channel subsource (e.g EBAY1)"
+                  },
+                  "Description": {
+                    "type": "string",
+                    "description": "Product description"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item interger Id"
+                  }
+                }
+              }
+            },
+            "ItemExtendedProperties": {
+              "type": "array",
+              "description": "List of extended properties",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "pkRowId": {
+                    "type": "string",
+                    "description": "Record row ID (generate random)"
+                  },
+                  "fkStockItemId": {
+                    "type": "string",
+                    "description": "Stock Item ID"
+                  },
+                  "ProperyName": {
+                    "type": "string",
+                    "description": "Property name"
+                  },
+                  "PropertyValue": {
+                    "type": "string",
+                    "description": "Property value"
+                  },
+                  "PropertyType": {
+                    "type": "string",
+                    "description": "Property type"
+                  }
+                }
+              }
+            },
+            "ItemChannelTitles": {
+              "type": "array",
+              "description": "List item titles",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "pkRowId": {
+                    "type": "string",
+                    "description": "Record row id (generate random)"
+                  },
+                  "Source": {
+                    "type": "string",
+                    "description": "ChannelName/Source (e.g. EBAY)"
+                  },
+                  "SubSource": {
+                    "type": "string",
+                    "description": "SubSource (EBAY1)"
+                  },
+                  "Title": {
+                    "type": "string",
+                    "description": "Item title"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item integer Id"
+                  }
+                }
+              }
+            },
+            "ItemChannelPrices": {
+              "type": "array",
+              "description": "List of item prices",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Rules": {
+                    "type": "array",
+                    "description": "Pricing rule",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "pkRowId": {
+                          "type": ["null", "integer"],
+                          "description": "Record row ID (optional)"
+                        },
+                        "fkStockPricingId": {
+                          "type": "string",
+                          "description": "Stock pricing ID"
+                        },
+                        "Type": {
+                          "type": "string",
+                          "description": "Type"
+                        },
+                        "LowerBound": {
+                          "type": "integer",
+                          "description": "Lower level"
+                        },
+                        "Value": {
+                          "type": "number",
+                          "description": "Value/Price level"
+                        }
+                      }
+                    }
+                  },
+                  "pkRowId": {
+                    "type": "string",
+                    "description": "Record row ID (generate random)"
+                  },
+                  "Source": {
+                    "type": "string",
+                    "description": "ChannelName/Source (e.g. EBAY)"
+                  },
+                  "SubSource": {
+                    "type": "string",
+                    "description": "SubSource (e.g. EBAY1)"
+                  },
+                  "Price": {
+                    "type": "number",
+                    "description": "Channel price"
+                  },
+                  "Tag": {
+                    "type": "string",
+                    "description": "Product price tag"
+                  },
+                  "UpdateStatus": {
+                    "type": "string"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item interger Id"
+                  }
+                }
+              }
+            },
+            "Images": {
+              "type": "array",
+              "description": "Image urls",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Source": {
+                    "type": "string",
+                    "description": "URL to thumnail image"
+                  },
+                  "FullSource": {
+                    "type": "string",
+                    "description": "Url to full size image"
+                  },
+                  "CheckSumValue": {
+                    "type": ["null", "string"],
+                    "description": "Image check sum"
+                  },
+                  "pkRowId": {
+                    "type": "string",
+                    "description": "Unique id of image"
+                  },
+                  "IsMain": {
+                    "type": "boolean",
+                    "description": "Is the image the main image"
+                  },
+                  "SortOrder": {
+                    "type": "integer",
+                    "description": "Sort order for the image"
+                  },
+                  "ChecksumValue": {
+                    "type": ["null", "string"],
+                    "description": "Internal checksum value"
+                  },
+                  "RawChecksum": {
+                    "type": ["null", "string"],
+                    "description": "Raw file checksum (Used for UI to determine if the image file is the same before submitting for upload)"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item Id"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer",
+                    "description": "Stock Item interger Id"
+                  }
+                }
+              }
+            },
+            "ItemNumber": {
+              "type": "string",
+              "description": "SKU"
+            },
+            "ItemTitle": {
+              "type": "string",
+              "description": "Item title"
+            },
+            "BarcodeNumber": {
+              "type": "string",
+              "description": "Barcode number"
+            },
+            "MetaData": {
+              "type": "string",
+              "description": "Item description"
+            },
+            "isBatchedStockType": {
+              "type": "boolean",
+              "description": "Returns true is the stock item is tracked by batch"
+            },
+            "PurchasePrice": {
+              "type": "number",
+              "description": "Default item purchase price"
+            },
+            "RetailPrice": {
+              "type": ["null", "number"],
+              "description": "Default item retail price"
+            },
+            "TaxRate": {
+              "type": "number",
+              "description": "Default item tax rate. Set -1 to use country tax rate"
+            },
+            "PostalServiceId": {
+              "type": "string",
+              "description": "Default postal service id"
+            },
+            "PostalServiceName": {
+              "type": "string",
+              "description": "Default postal service name"
+            },
+            "CategoryId": {
+              "type": "string",
+              "description": "Default category id"
+            },
+            "CategoryName": {
+              "type": "string",
+              "description": "Default category name"
+            },
+            "PackageGroupId": {
+              "type": "string",
+              "description": "Default package group id"
+            },
+            "PackageGroupName": {
+              "type": ["null", "string"],
+              "description": "Default package group name"
+            },
+            "Height": {
+              "type": "number",
+              "description": "Item height"
+            },
+            "Width": {
+              "type": "number",
+              "description": "Item width"
+            },
+            "Depth": {
+              "type": "number",
+              "description": "Item depth"
+            },
+            "Weight": {
+              "type": "number",
+              "description": "Item weight"
+            },
+            "CreationDate": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "description": "Stock item creation date"
+            },
+            "InventoryTrackingType": {
+              "type": "integer",
+              "description": "Stock item tracking type. 0 = none. 1 = Ordered by Sell by Date. 2 = Ordered by Priority Sequence"
+            },
+            "BatchNumberScanRequired": {
+              "type": "boolean",
+              "description": "User must scan batch number when procesing orders"
+            },
+            "SerialNumberScanRequired": {
+              "type": "boolean",
+              "description": "User must scan item serial number when processing ordesr"
+            },
+            "StockItemId": {
+              "type": "string",
+              "description": "Stock Item Id"
+            },
+            "StockItemIntId": {
+              "type": "integer",
+              "description": "Stock Item interger Id"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["StockItemIntId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "processed_orders",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pkOrderID": {
+              "type": "string",
+              "description": "Order ID"
+            },
+            "cShippingAddress": {
+              "type": ["null", "string"],
+              "description": "Customer's shipping address"
+            },
+            "dReceivedDate": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date when order was received on a channel"
+            },
+            "dProcessedOn": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Date when order was processed"
+            },
+            "timeDiff": {
+              "type": "number",
+              "description": "Days elapsed between order received and order processed"
+            },
+            "fPostageCost": {
+              "type": "number",
+              "description": "Order postage cost"
+            },
+            "fTotalCharge": {
+              "type": "number",
+              "description": "Order total charge"
+            },
+            "PostageCostExTax": {
+              "type": "number",
+              "description": "Postage cost excluding tax"
+            },
+            "Subtotal": {
+              "type": "number",
+              "description": "Order subtotal"
+            },
+            "fTax": {
+              "type": "number",
+              "description": "Order tax"
+            },
+            "TotalDiscount": {
+              "type": "number",
+              "description": "Total discount"
+            },
+            "ProfitMargin": {
+              "type": "number",
+              "description": "Profit margin"
+            },
+            "CountryTaxRate": {
+              "type": "number",
+              "description": "Country specific tax rate"
+            },
+            "nOrderId": {
+              "type": "integer",
+              "description": "Linnworks order ID"
+            },
+            "nStatus": {
+              "type": "integer",
+              "description": "Order status"
+            },
+            "cCurrency": {
+              "type": "string",
+              "description": "Order currency"
+            },
+            "PostalTrackingNumber": {
+              "type": "string",
+              "description": "Postal tracking number"
+            },
+            "cCountry": {
+              "type": "string",
+              "description": "Country"
+            },
+            "Source": {
+              "type": "string",
+              "description": "ChannelName/Source (e.g. EBAY)"
+            },
+            "PostalServiceName": {
+              "type": "string",
+              "description": "Postal service name (e.g. Next day delivery)"
+            },
+            "PostalServiceCode": {
+              "type": "string",
+              "description": "Postal service code"
+            },
+            "Vendor": {
+              "type": ["null", "string"],
+              "description": "Courier name (e.g. DPD)"
+            },
+            "BillingEmailAddress": {
+              "type": ["null", "string"]
+            },
+            "ReferenceNum": {
+              "type": "string",
+              "description": "Order reference number"
+            },
+            "SecondaryReference": {
+              "type": "string",
+              "description": "An additional reference number for the order"
+            },
+            "ExternalReference": {
+              "type": "string",
+              "description": "This is an additional reference number from the sales channel, typically used by eBay"
+            },
+            "Address1": {
+              "type": "string",
+              "description": "Order first line of address"
+            },
+            "Address2": {
+              "type": "string",
+              "description": "Order second line of address"
+            },
+            "Address3": {
+              "type": "string",
+              "description": "Order third line of address"
+            },
+            "Town": {
+              "type": "string",
+              "description": "Town"
+            },
+            "Region": {
+              "type": "string",
+              "description": "Region, county, area"
+            },
+            "BuyerPhoneNumber": {
+              "type": "string",
+              "description": "Buyer phone number"
+            },
+            "Company": {
+              "type": "string",
+              "description": "Company"
+            },
+            "SubSource": {
+              "type": "string",
+              "description": "Order subsource (e.g. EBAY1)"
+            },
+            "ChannelBuyerName": {
+              "type": "string",
+              "description": "Channel specific name used to identify the buyer, such as a username, normally used for eBay"
+            },
+            "AccountName": {
+              "type": "string",
+              "description": "Customer channel account name"
+            },
+            "cFullName": {
+              "type": "string",
+              "description": "Customer full name"
+            },
+            "cEmailAddress": {
+              "type": "string",
+              "description": "Customer email address"
+            },
+            "cPostCode": {
+              "type": "string",
+              "description": "Post Code"
+            },
+            "dPaidOn": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When order was marked as PAID"
+            },
+            "dCancelledOn": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When order was cancelled"
+            },
+            "PackageCategory": {
+              "type": ["null", "string"],
+              "description": "Package category"
+            },
+            "PackageTitle": {
+              "type": ["null", "string"],
+              "description": "Package name"
+            },
+            "ItemWeight": {
+              "type": "number",
+              "description": "Items weight"
+            },
+            "TotalWeight": {
+              "type": "number",
+              "description": "Total order weight"
+            },
+            "FolderCollection": {
+              "type": ["null", "string"],
+              "description": "Folder name of an order"
+            },
+            "cBillingAddress": {
+              "type": ["null", "string"],
+              "description": "Customer billing address"
+            },
+            "BillingName": {
+              "type": ["null", "string"],
+              "description": "Customer billing name"
+            },
+            "BillingCompany": {
+              "type": ["null", "string"],
+              "description": "Customer billing company"
+            },
+            "BillingAddress1": {
+              "type": ["null", "string"],
+              "description": "Billing address line one"
+            },
+            "BillingAddress2": {
+              "type": ["null", "string"],
+              "description": "Billing address line two"
+            },
+            "BillingAddress3": {
+              "type": ["null", "string"],
+              "description": "Billing address line three"
+            },
+            "BillingTown": {
+              "type": ["null", "string"],
+              "description": "Billing town"
+            },
+            "BillingRegion": {
+              "type": ["null", "string"],
+              "description": "Billing region, area, county"
+            },
+            "BillingPostCode": {
+              "type": ["null", "string"],
+              "description": "Billing postcode"
+            },
+            "BillingCountryName": {
+              "type": ["null", "string"],
+              "description": "Billing country"
+            },
+            "BillingPhoneNumber": {
+              "type": ["null", "string"],
+              "description": "Billing phone number"
+            },
+            "HoldOrCancel": {
+              "type": "boolean",
+              "description": "If order on hold or cancelled."
+            },
+            "IsResend": {
+              "type": "boolean",
+              "description": "If order was created from a resend"
+            },
+            "IsExchange": {
+              "type": "boolean",
+              "description": "If order was created from an exchange"
+            },
+            "TaxId": {
+              "type": "string",
+              "description": "Order tax id"
+            },
+            "FulfilmentLocationName": {
+              "type": "string",
+              "description": "Order fulfilment location"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dProcessedOn"],
+        "source_defined_primary_key": [["nOrderId"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "processed_order_details",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "OrderId": {
+              "type": "string",
+              "description": "Order ID (pkOrderId)"
+            },
+            "NumOrderId": {
+              "type": "integer",
+              "description": "Linnworks order number"
+            },
+            "Processed": {
+              "type": "boolean",
+              "description": "If order is processed"
+            },
+            "ProcessedDateTime": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "description": "Date and time when order was processed"
+            },
+            "FulfilmentLocationId": {
+              "type": "string",
+              "description": "Location ID"
+            },
+            "GeneralInfo": {
+              "type": "object",
+              "description": "General information about order",
+              "additionalProperties": false,
+              "properties": {
+                "Status": {
+                  "type": "integer",
+                  "description": "Order Status (0 = UNPAID, 1 = PAID, 2 = RETURN, 3 = PENDING, 4 = RESEND)"
+                },
+                "LabelPrinted": {
+                  "type": "boolean",
+                  "description": "Is label printed"
+                },
+                "LabelError": {
+                  "type": "string",
+                  "description": "Is there a label error"
+                },
+                "InvoicePrinted": {
+                  "type": "boolean",
+                  "description": "Is invoice printed"
+                },
+                "PickListPrinted": {
+                  "type": "boolean",
+                  "description": "Is pick list printed"
+                },
+                "IsRuleRun": {
+                  "type": "boolean",
+                  "description": "If rules engine rule ran on an order"
+                },
+                "Notes": {
+                  "type": "integer",
+                  "description": "Quantity of order notes"
+                },
+                "PartShipped": {
+                  "type": "boolean",
+                  "description": "If order partly shipped"
+                },
+                "Marker": {
+                  "type": ["null", "integer"],
+                  "description": "Order marker (0 = NOT TAG, 1 = Tag 1, 2 = Tag 2, 3 = Tag 3, 4 = Tag 4, 5 = Tag 5, 6 = Tag 6, 7 = Parked)"
+                },
+                "IsParked": {
+                  "type": "boolean",
+                  "description": "Is the order parked?"
+                },
+                "Identifiers": {
+                  "type": "array",
+                  "description": "Order identifiers. [Prime | Scheduled]",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "IdentifierId": {
+                        "type": "integer",
+                        "description": "Internal identifier id. Use to update image and name."
+                      },
+                      "IsCustom": {
+                        "type": "boolean",
+                        "description": "Is the tag user or system defined?"
+                      },
+                      "ImageId": {
+                        "type": "string"
+                      },
+                      "ImageUrl": {
+                        "type": "string"
+                      },
+                      "Tag": {
+                        "type": "string",
+                        "description": "Internal tag for identification purposes"
+                      },
+                      "Name": {
+                        "type": "string",
+                        "description": "Name displayed where the tag is used"
+                      }
+                    }
+                  }
+                },
+                "ReferenceNum": {
+                  "type": "string",
+                  "description": "Order reference number (Channel defined)"
+                },
+                "SecondaryReference": {
+                  "type": "string",
+                  "description": "An additional reference number for the orderr (Used by some channels)"
+                },
+                "ExternalReferenceNum": {
+                  "type": "string",
+                  "description": "This is an additional reference number from the sales channel, typically used by eBay"
+                },
+                "ReceivedDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "The date and time at which the order was placed on the sales channel"
+                },
+                "Source": {
+                  "type": "string",
+                  "description": "Order ChannelName/Source (e.g. EBAY)"
+                },
+                "SubSource": {
+                  "type": "string",
+                  "description": "Order Subsource (e.g. EBAY1)"
+                },
+                "SiteCode": {
+                  "type": "string",
+                  "description": "SiteCode used to differentiate between different sites from a single channel (eg. Amazon UK, Amazon US, Amazon FR...)"
+                },
+                "HoldOrCancel": {
+                  "type": "boolean",
+                  "description": "This shows whether the order has been marked as on hold, for processed orders if the order has been cancelled OnHold = 1"
+                },
+                "DespatchByDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Despatch by Date"
+                },
+                "ScheduledDelivery": {
+                  "type": "object",
+                  "description": "Scheduled delivery dates. Take priority over despatch by date",
+                  "additionalProperties": false,
+                  "properties": {
+                    "From": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "To": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "HasScheduledDelivery": {
+                  "type": "boolean"
+                },
+                "Location": {
+                  "type": "string",
+                  "description": "Order location ID"
+                },
+                "NumItems": {
+                  "type": "integer",
+                  "description": "Quantity of order items"
+                },
+                "PickwaveIds": {
+                  "type": "array",
+                  "description": "All related Pickwave Ids",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "StockAllocationType": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "ShippingInfo": {
+              "type": "object",
+              "description": "Order shipping information",
+              "additionalProperties": false,
+              "properties": {
+                "Vendor": {
+                  "type": "string",
+                  "description": "Courier name (e.g. Royal Mail)"
+                },
+                "PostalServiceId": {
+                  "type": "string",
+                  "description": "Postal service ID"
+                },
+                "PostalServiceName": {
+                  "type": "string",
+                  "description": "Postal service name (e.g. Next day delivery)"
+                },
+                "TotalWeight": {
+                  "type": "number",
+                  "description": "Order total weight"
+                },
+                "ItemWeight": {
+                  "type": "number",
+                  "description": "If order is processed"
+                },
+                "PackageCategoryId": {
+                  "type": "string",
+                  "description": "Package category ID"
+                },
+                "PackageCategory": {
+                  "type": "string",
+                  "description": "Package category name"
+                },
+                "PackageTypeId": {
+                  "type": ["null", "string"],
+                  "description": "Package type ID"
+                },
+                "PackageType": {
+                  "type": "string",
+                  "description": "Package type name"
+                },
+                "PostageCost": {
+                  "type": "number",
+                  "description": "Order postage cost"
+                },
+                "PostageCostExTax": {
+                  "type": "number",
+                  "description": "Order postage cost excluding tax"
+                },
+                "TrackingNumber": {
+                  "type": "string",
+                  "description": "Order tracking number provided by courier"
+                },
+                "ManualAdjust": {
+                  "type": "boolean",
+                  "description": "If there is an adjustment to shipping cost was made"
+                }
+              }
+            },
+            "CustomerInfo": {
+              "type": "object",
+              "description": "Order Customer information (Name, email etc)",
+              "additionalProperties": false,
+              "properties": {
+                "ChannelBuyerName": {
+                  "type": "string",
+                  "description": "Username of customer (Comes from channel)"
+                },
+                "Address": {
+                  "type": "object",
+                  "description": "Customer address",
+                  "additionalProperties": false,
+                  "properties": {
+                    "EmailAddress": {
+                      "type": "string",
+                      "description": "Customer's email address."
+                    },
+                    "Address1": {
+                      "type": "string",
+                      "description": "First line of customer address."
+                    },
+                    "Address2": {
+                      "type": "string",
+                      "description": "Second line of customer address."
+                    },
+                    "Address3": {
+                      "type": "string",
+                      "description": "Third line of customer address."
+                    },
+                    "Town": {
+                      "type": "string",
+                      "description": "Customer's town."
+                    },
+                    "Region": {
+                      "type": "string",
+                      "description": "Customer's region."
+                    },
+                    "PostCode": {
+                      "type": "string",
+                      "description": "Customer's postcode."
+                    },
+                    "Country": {
+                      "type": "string",
+                      "description": "Customer's country."
+                    },
+                    "Continent": {
+                      "type": "string",
+                      "description": "Customer's continent"
+                    },
+                    "FullName": {
+                      "type": "string",
+                      "description": "Customer's first and second name."
+                    },
+                    "Company": {
+                      "type": "string",
+                      "description": "Customer's company name."
+                    },
+                    "PhoneNumber": {
+                      "type": "string",
+                      "description": "Customer's telephone number."
+                    },
+                    "CountryId": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "BillingAddress": {
+                  "type": "object",
+                  "description": "Customer billing address",
+                  "additionalProperties": false,
+                  "properties": {
+                    "EmailAddress": {
+                      "type": "string",
+                      "description": "Customer's email address."
+                    },
+                    "Address1": {
+                      "type": "string",
+                      "description": "First line of customer address."
+                    },
+                    "Address2": {
+                      "type": "string",
+                      "description": "Second line of customer address."
+                    },
+                    "Address3": {
+                      "type": "string",
+                      "description": "Third line of customer address."
+                    },
+                    "Town": {
+                      "type": "string",
+                      "description": "Customer's town."
+                    },
+                    "Region": {
+                      "type": "string",
+                      "description": "Customer's region."
+                    },
+                    "PostCode": {
+                      "type": "string",
+                      "description": "Customer's postcode."
+                    },
+                    "Country": {
+                      "type": "string",
+                      "description": "Customer's country."
+                    },
+                    "Continent": {
+                      "type": "string",
+                      "description": "Customer's continent"
+                    },
+                    "FullName": {
+                      "type": "string",
+                      "description": "Customer's first and second name."
+                    },
+                    "Company": {
+                      "type": "string",
+                      "description": "Customer's company name."
+                    },
+                    "PhoneNumber": {
+                      "type": "string",
+                      "description": "Customer's telephone number."
+                    },
+                    "CountryId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "TotalsInfo": {
+              "type": "object",
+              "description": "Order totals information",
+              "additionalProperties": false,
+              "properties": {
+                "pkOrderId": {
+                  "type": "string",
+                  "description": "Order Id"
+                },
+                "Subtotal": {
+                  "type": "number",
+                  "description": "Order subtotal"
+                },
+                "PostageCost": {
+                  "type": "number",
+                  "description": "Order postage cost"
+                },
+                "PostageCostExTax": {
+                  "type": "number",
+                  "description": "Order postage cost ex. tax"
+                },
+                "Tax": {
+                  "type": "number",
+                  "description": "Tax"
+                },
+                "TotalCharge": {
+                  "type": "number",
+                  "description": "Total charge"
+                },
+                "PaymentMethod": {
+                  "type": "string",
+                  "description": "Payment method"
+                },
+                "PaymentMethodId": {
+                  "type": "string",
+                  "description": "Payment method ID"
+                },
+                "ProfitMargin": {
+                  "type": "number",
+                  "description": "Profit margin"
+                },
+                "TotalDiscount": {
+                  "type": "number",
+                  "description": "Total discount applied to the order"
+                },
+                "Currency": {
+                  "type": "string",
+                  "description": "Order currency"
+                },
+                "CountryTaxRate": {
+                  "type": "number",
+                  "description": "Country tax rate"
+                },
+                "ConversionRate": {
+                  "type": "number",
+                  "description": "Currency conversion rate. Set at point of save by the currency"
+                }
+              }
+            },
+            "ExtendedProperties": {
+              "type": "array",
+              "description": "Extended properties of an order",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "RowId": {
+                    "type": "string",
+                    "description": "Record row ID"
+                  },
+                  "Name": {
+                    "type": "string",
+                    "description": "Extended property name"
+                  },
+                  "Value": {
+                    "type": "string",
+                    "description": "Extended property value"
+                  },
+                  "Type": {
+                    "type": "string",
+                    "description": "Extended property type"
+                  }
+                }
+              }
+            },
+            "FolderName": {
+              "type": "array",
+              "description": "Folder names assigned to an order",
+              "items": {
+                "type": "string"
+              }
+            },
+            "Items": {
+              "type": "array",
+              "description": "List of order items",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "ItemId": {
+                    "type": "string",
+                    "description": "Stock Item ID"
+                  },
+                  "ItemNumber": {
+                    "type": "string",
+                    "description": "Item number as on channel"
+                  },
+                  "SKU": {
+                    "type": "string",
+                    "description": "Product SKU"
+                  },
+                  "ItemSource": {
+                    "type": "string",
+                    "description": "Item source / channel name"
+                  },
+                  "Title": {
+                    "type": "string",
+                    "description": "Item title"
+                  },
+                  "Quantity": {
+                    "type": "integer",
+                    "description": "Quantity"
+                  },
+                  "CategoryId": {
+                    "type": "string"
+                  },
+                  "CategoryName": {
+                    "type": "string",
+                    "description": "Product category"
+                  },
+                  "CompositeAvailablity": {
+                    "type": ["null", "integer"],
+                    "description": "Composite availability"
+                  },
+                  "StockLevelsSpecified": {
+                    "type": "boolean",
+                    "description": "If stock level specified"
+                  },
+                  "OnOrder": {
+                    "type": "integer",
+                    "description": "Level due in purchase orders"
+                  },
+                  "OnPurchaseOrder": {
+                    "type": "object",
+                    "description": "Purchase order bound to this item",
+                    "additionalProperties": false,
+                    "properties": {
+                      "pkPurchaseItemId": {
+                        "type": "string",
+                        "description": "Primary key of the bound"
+                      },
+                      "Rowid": {
+                        "type": "string"
+                      },
+                      "pkPurchaseId": {
+                        "type": "string"
+                      },
+                      "ExternalInvoiceNumber": {
+                        "type": "string"
+                      },
+                      "fkSupplierId": {
+                        "type": "string"
+                      },
+                      "DateOfDelivery": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "QuotedDeliveryDate": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "SupplierName": {
+                        "type": "string"
+                      },
+                      "fkLocationId": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "InOrderBook": {
+                    "type": ["null", "integer"],
+                    "description": "Quantity currently in open orders"
+                  },
+                  "Level": {
+                    "type": "integer",
+                    "description": "Current stock level"
+                  },
+                  "MinimumLevel": {
+                    "type": ["null", "integer"],
+                    "description": "Minimum level"
+                  },
+                  "AvailableStock": {
+                    "type": "integer",
+                    "description": "Currently available stock level (Level-InOrderBook)"
+                  },
+                  "PricePerUnit": {
+                    "type": "number",
+                    "description": "Unit price"
+                  },
+                  "UnitCost": {
+                    "type": "number",
+                    "description": "Unit cost"
+                  },
+                  "DespatchStockUnitCost": {
+                    "type": "number",
+                    "description": "Despatch stock unit cost"
+                  },
+                  "Discount": {
+                    "type": "number",
+                    "description": "Percentage (0%, 10%, 20%, etc...)"
+                  },
+                  "Tax": {
+                    "type": "number",
+                    "description": "Actual tax value on an item"
+                  },
+                  "TaxRate": {
+                    "type": "number",
+                    "description": "Tax rate"
+                  },
+                  "Cost": {
+                    "type": "number",
+                    "description": "Total item cost (exc tax)"
+                  },
+                  "CostIncTax": {
+                    "type": "number",
+                    "description": "Total item cost (inc tax)"
+                  },
+                  "CompositeSubItems": {
+                    "$comment": "It should be \"$ref\": \"#/properties/Items\" but Airbyte doesn't support recursive $refs.",
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "IsService": {
+                    "type": "boolean",
+                    "description": "if item is a service"
+                  },
+                  "SalesTax": {
+                    "type": "number",
+                    "description": "Sales Tax"
+                  },
+                  "TaxCostInclusive": {
+                    "type": "boolean",
+                    "description": "If tax is included in a cost"
+                  },
+                  "PartShipped": {
+                    "type": "boolean",
+                    "description": "If order is partly shipped"
+                  },
+                  "Weight": {
+                    "type": "number",
+                    "description": "Order weight"
+                  },
+                  "BarcodeNumber": {
+                    "type": "string",
+                    "description": "Product barcode"
+                  },
+                  "Market": {
+                    "type": "integer",
+                    "description": "Market"
+                  },
+                  "ChannelSKU": {
+                    "type": "string",
+                    "description": "Channel product SKU"
+                  },
+                  "ChannelTitle": {
+                    "type": "string",
+                    "description": "Channel product title"
+                  },
+                  "DiscountValue": {
+                    "type": "number"
+                  },
+                  "HasImage": {
+                    "type": "boolean",
+                    "description": "If item got an image"
+                  },
+                  "ImageId": {
+                    "type": ["null", "string"],
+                    "description": "Image ID"
+                  },
+                  "AdditionalInfo": {
+                    "type": "array",
+                    "description": "List of order item options",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "pkOptionId": {
+                          "type": "string",
+                          "description": "Option ID"
+                        },
+                        "Property": {
+                          "type": "string",
+                          "description": "Option property"
+                        },
+                        "Value": {
+                          "type": "string",
+                          "description": "Value of the option"
+                        }
+                      }
+                    }
+                  },
+                  "StockLevelIndicator": {
+                    "type": "integer",
+                    "description": "Stock level indicator"
+                  },
+                  "ShippingCost": {
+                    "type": "number",
+                    "description": "If batch number scan required"
+                  },
+                  "PartShippedQty": {
+                    "type": "integer",
+                    "description": "ShippingCost"
+                  },
+                  "ItemName": {
+                    "type": "string",
+                    "description": "PartShippedQty"
+                  },
+                  "BatchNumberScanRequired": {
+                    "type": "boolean",
+                    "description": "ItemName"
+                  },
+                  "SerialNumberScanRequired": {
+                    "type": "boolean",
+                    "description": "If serial number scan required"
+                  },
+                  "BinRack": {
+                    "type": "string",
+                    "description": "Binrack location"
+                  },
+                  "BinRacks": {
+                    "type": "array",
+                    "description": "List of BinRacks used for OrderItem",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Quantity": {
+                          "type": "integer",
+                          "description": "Quantity for BinRack per Location"
+                        },
+                        "BinRack": {
+                          "type": "string",
+                          "description": "BinRack"
+                        },
+                        "Location": {
+                          "type": "string",
+                          "description": "LocationId of the BinRack"
+                        },
+                        "BatchId": {
+                          "type": ["null", "integer"],
+                          "description": "If the item is batched, identifies the batch number"
+                        },
+                        "OrderItemBatchId": {
+                          "type": ["null", "integer"],
+                          "description": "If the item is batched, identifies the unique order item batch row"
+                        }
+                      }
+                    }
+                  },
+                  "InventoryTrackingType": {
+                    "type": "integer",
+                    "description": "Identifies whether the item has a sell by date or other defined order in which inventory is to be sold"
+                  },
+                  "isBatchedStockItem": {
+                    "type": "boolean",
+                    "description": "If item has batches"
+                  },
+                  "IsWarehouseManaged": {
+                    "type": "boolean"
+                  },
+                  "IsUnlinked": {
+                    "type": "boolean"
+                  },
+                  "ParentItemId": {
+                    "type": "string"
+                  },
+                  "StockItemIntId": {
+                    "type": "integer"
+                  },
+                  "Boxes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "BoxId": {
+                          "type": "integer",
+                          "description": "Unique box id."
+                        },
+                        "StockItemIntId": {
+                          "type": "integer"
+                        },
+                        "BoxName": {
+                          "type": "string",
+                          "description": "Box name max 16 characters"
+                        },
+                        "Width": {
+                          "type": "number",
+                          "description": "Width of the box"
+                        },
+                        "Height": {
+                          "type": "number",
+                          "description": "Height of the box"
+                        },
+                        "Length": {
+                          "type": "number",
+                          "description": "Depth of the box"
+                        },
+                        "Weight": {
+                          "type": "number",
+                          "description": "Total weight of the box."
+                        },
+                        "ValuePercentage": {
+                          "type": "number",
+                          "description": "Value break down percentage"
+                        },
+                        "Barcode": {
+                          "type": "string",
+                          "description": "Box barcode, max 64 characters."
+                        },
+                        "PackagingTypeId": {
+                          "type": "string",
+                          "description": "Packaging type id"
+                        },
+                        "LogicalDelete": {
+                          "type": "boolean",
+                          "description": "IsDeleted flag."
+                        }
+                      }
+                    }
+                  },
+                  "RowId": {
+                    "type": "string",
+                    "description": "Record row ID"
+                  },
+                  "OrderId": {
+                    "type": "string",
+                    "description": "Order ID (pkOrderID)"
+                  },
+                  "StockItemId": {
+                    "type": "string",
+                    "description": "Stock Item ID"
+                  },
+                  "StockId": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "Notes": {
+              "type": "array",
+              "description": "List of order notes",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "OrderNoteId": {
+                    "type": "string",
+                    "description": "Order note ID"
+                  },
+                  "OrderId": {
+                    "type": "string",
+                    "description": "Order Id"
+                  },
+                  "NoteDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time when note was added"
+                  },
+                  "Internal": {
+                    "type": "boolean",
+                    "description": "order note type (Internal or External)"
+                  },
+                  "Note": {
+                    "type": "string",
+                    "description": "Note's text"
+                  },
+                  "CreatedBy": {
+                    "type": "string",
+                    "description": "User that created note"
+                  },
+                  "NoteTypeId": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "PaidDateTime": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "description": "Date and time when the order was marked as paid"
+            },
+            "TaxId": {
+              "type": "string",
+              "description": "Buyer's tax number."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["ProcessedDateTime"],
+        "source_defined_primary_key": [["NumOrderId"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

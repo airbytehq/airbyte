@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -32,11 +12,20 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CdcMySqlSourceDatatypeTest.class);
 
   private MySQLContainer<?> container;
   private JsonNode config;
@@ -47,7 +36,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -105,8 +94,8 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             + container.getUsername() + "@'%';");
   }
 
-  private void executeQuery(String query) {
-    try (Database database = Databases.createDatabase(
+  private void executeQuery(final String query) {
+    try (final Database database = Databases.createDatabase(
         "root",
         "test",
         String.format("jdbc:mysql://%s:%s/%s",
@@ -118,7 +107,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -128,7 +117,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-128", "127")
             .addExpectedValues(null, "-128", "127")
             .build());
@@ -136,7 +125,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .build());
@@ -144,7 +133,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("smallint zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -153,7 +142,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-8388608", "8388607")
             .addExpectedValues(null, "-8388608", "8388607")
             .build());
@@ -161,7 +150,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("mediumint zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -170,7 +159,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
@@ -178,7 +167,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("int unsigned")
             .addInsertValues("3428724653")
             .addExpectedValues("3428724653")
@@ -187,7 +176,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("int zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
@@ -196,7 +185,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "9223372036854775807")
             .addExpectedValues(null, "9223372036854775807")
             .build());
@@ -204,102 +193,131 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("null", "10.5")
+            .addExpectedValues(null, "10.5")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("double")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)),
-                String.valueOf(1 / Math.pow(10, 45)))
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("decimal(10,4)")
-            .addInsertValues("0.1880", "null")
+            .addInsertValues("0.188", "null")
             .addExpectedValues("0.1880", null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.00")
+            .addInsertValues("1700000.00")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "1", "0")
-            // @TODO returns True/False instead of 1/0.
-            // .addExpectedValues(null, "1", "0")
+            .addExpectedValues(null, "true", "false")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
-            .addExpectedValues(null, null, null, null)
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'2021-01-01'")
+            .addExpectedValues(null, "2021-01-01T00:00:00Z")
+            .build());
+
+    // Check Zero-date value for mandatory field
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .fullSourceDataType("date not null")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'0000-00-00'")
+            .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'0000-00-00 00:00:00'")
-            .addExpectedValues(null, null)
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'2005-10-10 23:22:21'")
+            .addExpectedValues(null, "2005-10-10T23:22:21.000000Z")
             .build());
 
+    // Check Zero-date value for mandatory field
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'2013-09-05T10:10:02'")
-            .addExpectedValues("2013-09-05T10:10:02")
+            .fullSourceDataType("datetime not null")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'0000-00-00 00:00:00'")
+            .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null")
             .addNullExpectedValue()
+            .build());
+
+    // Check Zero-date value for mandatory field
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamp")
+            .fullSourceDataType("timestamp not null")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'0000-00-00 00:00:00.000000'")
+            .addExpectedValues("1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'-838:59:59.000000'", "'00:00:01.000000'")
-            .addExpectedValues(null, "-3020399000000", "1000000")
+            .airbyteType(JsonSchemaType.STRING)
+            // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
+            // https://debezium.io/documentation/reference/connectors/mysql.html#mysql-temporal-types
+            .addInsertValues("null", "'-23:59:59'", "'00:00:00'")
+            .addExpectedValues(null, "1970-01-01T23:59:59Z", "1970-01-01T00:00:00Z")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("varchar(256) character set cp1251")
             .addInsertValues("null", "'тест'")
-            // @TODO stream returns invalid text "С‚РµСЃС‚"
-            // .addExpectedValues(null, "тест")
+            .addExpectedValues(null, "тест")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("varchar(256) character set utf16")
             .addInsertValues("null", "0xfffd")
-            // @TODO streamer returns invalid text "�"
-            // .addExpectedValues(null, "�")
+            .addExpectedValues(null, "�")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("varchar(256)")
             .addInsertValues("null", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
             .addExpectedValues(null, "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~")
@@ -308,59 +326,56 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .fullSourceDataType("varbinary(256)")
-            .addInsertValues("null", "'test'")
-            // @TODO Returns binary value instead of text
-            // .addExpectedValues(null, "test")
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
+            .fullSourceDataType("varbinary(20000)") //// size should be enough to save test.png
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("blob")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'test'")
-            // @TODO Returns binary value instead of text
-            // .addExpectedValues(null, "test")
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumtext")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "lpad('0', 16777214, '0')")
-            // @TODO returns null instead of long text
-            // .addExpectedValues(null, StringUtils.leftPad("0", 16777214, "0"))
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues(getLogString(1048000), "'test'", "'тест'")
+            .addExpectedValues(StringUtils.leftPad("0", 1048000, "0"), "test", "тест")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinytext")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'test'", "'тест'")
+            .addExpectedValues(null, "test", "тест")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("longtext")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'test'", "'тест'")
+            .addExpectedValues(null, "test", "тест")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("text")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "'test'", "'тест'")
+            .addExpectedValues(null, "test", "тест")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
             .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
@@ -368,19 +383,39 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("point")
-            .airbyteType(JsonSchemaPrimitive.OBJECT)
+            .airbyteType(JsonSchemaType.OBJECT)
             .addInsertValues("null", "(ST_GeomFromText('POINT(1 1)'))")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bool")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "1", "127", "-128")
-            // @TODO returns number instead of boolean
-            // .addExpectedValues(null, "true", "false", "false")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("null", "1", "0")
+            .addExpectedValues(null, "true", "false")
             .build());
 
+  }
+
+  private String getLogString(final int length) {
+    final int maxLpadLength = 262144;
+    final StringBuilder stringBuilder = new StringBuilder("concat(");
+    final int fullChunks = length / maxLpadLength;
+    for (int i = 1; i <= fullChunks; i++) {
+      stringBuilder.append("lpad('0', 262144, '0'),");
+    }
+    stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
+    return stringBuilder.toString();
+  }
+
+  private String getFileDataInBase64() {
+    File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
+    try {
+      return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+    } catch (IOException e) {
+      LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
+    }
+    return null;
   }
 
 }
