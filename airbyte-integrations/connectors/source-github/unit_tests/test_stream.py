@@ -241,4 +241,5 @@ def test_stream_commits_state_upgrade():
 
     stream_state = {"organization/repository": {"created_at": "2022-02-02T10:10:02Z"}}
     records = read_incremental(stream, stream_state)
-    assert stream_state == {'organization/repository': {'master': {'created_at': '2022-02-02T10:10:04Z'}}}
+    assert [r["sha"] for r in records] == [2]
+    assert stream_state == {"organization/repository": {"master": {"created_at": "2022-02-02T10:10:04Z"}}}
