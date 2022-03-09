@@ -48,7 +48,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB), Map.of(),
+        workerConfigs.getResourceRequirements(), Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB), Map.of(), Map.of(),
         "spec");
   }
 
@@ -59,6 +59,7 @@ class AirbyteIntegrationLauncherTest {
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        Map.of(),
         Map.of(),
         "check",
         "--config", "config");
@@ -72,6 +73,7 @@ class AirbyteIntegrationLauncherTest {
         workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
         Map.of(),
+        Map.of(),
         "discover",
         "--config", "config");
   }
@@ -83,6 +85,7 @@ class AirbyteIntegrationLauncherTest {
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(),
         Map.of(),
         Lists.newArrayList(
             "read",
@@ -98,6 +101,7 @@ class AirbyteIntegrationLauncherTest {
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(),
         Map.of(),
         "write",
         "--config", "config",
