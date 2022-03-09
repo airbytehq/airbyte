@@ -2,12 +2,16 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import abc
 import os
 from typing import Any, Callable, List
 
-from jinja2 import Environment, PackageLoader, select_autoescape
+import yaml
+from jinja2 import Environment, PackageLoader, Template, select_autoescape
+from octavia_cli.apply import resources
 
-from .definitions import BaseDefinition
+from .definitions import BaseDefinition, ConnectionDefinition
+from .yaml_dumpers import CatalogDumper
 
 JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
@@ -127,14 +131,77 @@ def get_object_fields(field_metadata: dict) -> List["FieldToRender"]:
     return []
 
 
-class ConnectionSpecificationRenderer:
+class BaseRenderer(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def TEMPLATE(
+        self,
+    ) -> Template:  # pragma: no cover
+        pass
+
+    def __init__(self, resource_name: str) -> None:
+        self.resource_name = resource_name
+
+    def _get_output_path(self, project_path: str, definition_type: str) -> str:
+        """Get rendered file output path
+
+        Args:
+            project_path (str): Current project path.
+            definition_type (str): Current definition_type.
+
+        Returns:
+            str: Full path to the output path.
+        """
+        directory = os.path.join(project_path, f"{definition_type}s", self.resource_name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        return os.path.join(directory, "configuration.yaml")
+
+    @abc.abstractmethod
+    def _render(self):  # pragma: no cover
+        """Runs the template rendering.
+
+        Raises:
+            NotImplementedError: Must be implemented on subclasses.
+        """
+        raise NotImplementedError
+
+    def write_yaml(self, project_path: str) -> str:
+        """Write rendered specification to a YAML file in local project path.
+
+        Args:
+            project_path (str): Path to directory hosting the octavia project.
+
+        Returns:
+            str: Path to the rendered specification.
+        """
+        output_path = self._get_output_path(project_path, self.definition.type)
+        rendered = self._render()
+
+        with open(output_path, "w") as f:
+            f.write(rendered)
+        return output_path
+
+
+class ConnectorSpecificationRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
 
     def __init__(self, resource_name: str, definition: BaseDefinition) -> None:
-        self.resource_name = resource_name
+        """Connector specification renderer constructor.
+
+        Args:
+            resource_name (str): Name of the source or destination.
+            definition (BaseDefinition): The definition related to a source or a destination.
+        """
+        super().__init__(resource_name)
         self.definition = definition
 
     def _parse_connection_specification(self, schema: dict) -> List[List["FieldToRender"]]:
+        """Create a renderable structure from the specification schema
+
+        Returns:
+            List[List["FieldToRender"]]: List of list of fields to render.
+        """
         if schema.get("oneOf"):
             roots = []
             for one_of_value in schema.get("oneOf"):
@@ -145,19 +212,50 @@ class ConnectionSpecificationRenderer:
             required_fields = schema.get("required", [])
             return [parse_fields(required_fields, schema["properties"])]
 
-    def _get_output_path(self, project_path: str) -> str:
-        directory = os.path.join(project_path, f"{self.definition.type}s", self.resource_name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        return os.path.join(directory, "configuration.yaml")
-
-    def write_yaml(self, project_path: str) -> str:
-        output_path = self._get_output_path(project_path)
+    def _render(self) -> str:
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
-        rendered = self.TEMPLATE.render(
+        return self.TEMPLATE.render(
             {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
         )
 
-        with open(output_path, "w") as f:
-            f.write(rendered)
-        return output_path
+
+class ConnectionRenderer(BaseRenderer):
+
+    TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
+    definition = ConnectionDefinition
+
+    def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
+        """Connection renderer constructor.
+
+        Args:
+            connection_name (str): Name of the connection to render.
+            source (resources.Source): Connection's source.
+            destination (resources.Destination): Connections's destination.
+        """
+        super().__init__(connection_name)
+        self.source = source
+        self.destination = destination
+
+    @staticmethod
+    def catalog_to_yaml(catalog: dict) -> str:
+        """Convert the source catalog to a YAML string.
+        Convert camel case to snake case.
+
+        Args:
+            catalog (dict): Source's catalog.
+
+        Returns:
+            str: Catalog rendered as yaml.
+        """
+        return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
+
+    def _render(self) -> str:
+        yaml_catalog = self.catalog_to_yaml(self.source.catalog)
+        return self.TEMPLATE.render(
+            {
+                "connection_name": self.resource_name,
+                "source_id": self.source.resource_id,
+                "destination_id": self.destination.resource_id,
+                "catalog": yaml_catalog,
+            }
+        )
