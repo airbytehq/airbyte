@@ -493,7 +493,7 @@ def test_factory(mocker, mock_api_client, local_configuration, resource_to_mock,
     mocker.patch.object(resources, "yaml")
     if resource_to_mock is not None:
         mocker.patch.object(resources, resource_to_mock)
-    resources.yaml.safe_load.return_value = local_configuration
+    resources.yaml.load.return_value = local_configuration
     with patch("builtins.open", mock_open(read_data="data")) as mock_file:
         if not expected_error:
             resource = resources.factory(mock_api_client, "workspace_id", "my_config.yaml")
