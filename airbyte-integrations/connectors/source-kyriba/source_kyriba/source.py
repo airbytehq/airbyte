@@ -29,6 +29,19 @@ class KyribaClient:
         self.access_token = response.json()["access_token"]
         return TokenAuthenticator(self.access_token)
 
+class KyribaClient:
+    def __init__(self, username: str, password: str, gateway_url: str):
+        self.username = username
+        self.password = password
+        self.url = f"{gateway_url}/oauth/token"
+
+    def login(self) -> TokenAuthenticator:
+        data = {"grant_type": "client_credentials"}
+        auth = requests.auth.HTTPBasicAuth(self.username, self.password)
+        response = requests.post(self.url, auth=auth, data=data)
+        response.raise_for_status()
+        access_token = response.json()["access_token"]
+        return TokenAuthenticator(access_token)
 
 # Basic full refresh stream
 class KyribaStream(HttpStream):
