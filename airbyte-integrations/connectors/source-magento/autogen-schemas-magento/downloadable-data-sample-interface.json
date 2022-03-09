@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Sample(or link) id"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "sort_order": {
+      "type": "integer",
+      "description": "Order index for sample"
+    },
+    "sample_type": {
+      "type": "string"
+    },
+    "sample_file": {
+      "type": "string",
+      "description": "relative file path"
+    },
+    "sample_file_content": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-file-content-interface"
+    },
+    "sample_url": {
+      "type": "string",
+      "description": "file URL"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-sample-extension-interface"
+    }
+  },
+  "required": [
+    "title",
+    "sort_order",
+    "sample_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

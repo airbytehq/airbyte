@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "description": "Formatted Price interface. Aggregate formatted html with price representations. E.g.: <span class=\"price\">$9.00</span> Consider currency, rounding and html",
+  "properties": {
+    "final_price": {
+      "type": "string",
+      "description": "Html with final price"
+    },
+    "max_price": {
+      "type": "string",
+      "description": "Max price of a product"
+    },
+    "minimal_price": {
+      "type": "string",
+      "description": "The minimal price of the product or variation"
+    },
+    "max_regular_price": {
+      "type": "string",
+      "description": "Max regular price"
+    },
+    "minimal_regular_price": {
+      "type": "string",
+      "description": "Minimal regular price"
+    },
+    "special_price": {
+      "type": "string",
+      "description": "Special price"
+    },
+    "regular_price": {
+      "type": "string",
+      "description": "Price - is price of product without discounts and special price with taxes and fixed product tax"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-formatted-price-info-extension-interface"
+    }
+  },
+  "required": [
+    "final_price",
+    "max_price",
+    "minimal_price",
+    "max_regular_price",
+    "minimal_regular_price",
+    "special_price",
+    "regular_price"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

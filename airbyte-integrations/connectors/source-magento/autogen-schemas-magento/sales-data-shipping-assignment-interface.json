@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Interface ShippingAssignmentInterface",
+  "properties": {
+    "shipping": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipping-interface"
+    },
+    "items": {
+      "type": "array",
+      "description": "Order items of shipping assignment",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-order-item-interface"
+      }
+    },
+    "stock_id": {
+      "type": "integer",
+      "description": "Stock id"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipping-assignment-extension-interface"
+    }
+  },
+  "required": [
+    "shipping",
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

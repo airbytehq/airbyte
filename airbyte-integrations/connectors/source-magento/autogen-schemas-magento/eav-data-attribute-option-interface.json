@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "description": "Created from:",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Option label"
+    },
+    "value": {
+      "type": "string",
+      "description": "Option value"
+    },
+    "sort_order": {
+      "type": "integer",
+      "description": "Option order"
+    },
+    "is_default": {
+      "type": "boolean",
+      "description": "Default"
+    },
+    "store_labels": {
+      "type": "array",
+      "description": "Option label for store scopes",
+      "items": {
+        "$ref": "_definitions.json#/definitions/eav-data-attribute-option-label-interface"
+      }
+    }
+  },
+  "required": [
+    "label",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

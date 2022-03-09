@@ -1,0 +1,205 @@
+{
+  "type": "object",
+  "description": "Invoice interface. An invoice is a record of the receipt of payment for an order.",
+  "properties": {
+    "base_currency_code": {
+      "type": "string",
+      "description": "Base currency code."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Base discount amount."
+    },
+    "base_grand_total": {
+      "type": "number",
+      "description": "Base grand total."
+    },
+    "base_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Base discount tax compensation amount."
+    },
+    "base_shipping_amount": {
+      "type": "number",
+      "description": "Base shipping amount."
+    },
+    "base_shipping_discount_tax_compensation_amnt": {
+      "type": "number",
+      "description": "Base shipping discount tax compensation amount."
+    },
+    "base_shipping_incl_tax": {
+      "type": "number",
+      "description": "Base shipping including tax."
+    },
+    "base_shipping_tax_amount": {
+      "type": "number",
+      "description": "Base shipping tax amount."
+    },
+    "base_subtotal": {
+      "type": "number",
+      "description": "Base subtotal."
+    },
+    "base_subtotal_incl_tax": {
+      "type": "number",
+      "description": "Base subtotal including tax."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Base tax amount."
+    },
+    "base_total_refunded": {
+      "type": "number",
+      "description": "Base total refunded."
+    },
+    "base_to_global_rate": {
+      "type": "number",
+      "description": "Base-to-global rate."
+    },
+    "base_to_order_rate": {
+      "type": "number",
+      "description": "Base-to-order rate."
+    },
+    "billing_address_id": {
+      "type": "integer",
+      "description": "Billing address ID."
+    },
+    "can_void_flag": {
+      "type": "integer",
+      "description": "Can void flag value."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount."
+    },
+    "discount_description": {
+      "type": "string",
+      "description": "Discount description."
+    },
+    "email_sent": {
+      "type": "integer",
+      "description": "Email-sent flag value."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Invoice ID."
+    },
+    "global_currency_code": {
+      "type": "string",
+      "description": "Global currency code."
+    },
+    "grand_total": {
+      "type": "number",
+      "description": "Grand total."
+    },
+    "discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Discount tax compensation amount."
+    },
+    "increment_id": {
+      "type": "string",
+      "description": "Increment ID."
+    },
+    "is_used_for_refund": {
+      "type": "integer",
+      "description": "Is-used-for-refund flag value."
+    },
+    "order_currency_code": {
+      "type": "string",
+      "description": "Order currency code."
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Order ID."
+    },
+    "shipping_address_id": {
+      "type": "integer",
+      "description": "Shipping address ID."
+    },
+    "shipping_amount": {
+      "type": "number",
+      "description": "Shipping amount."
+    },
+    "shipping_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Shipping discount tax compensation amount."
+    },
+    "shipping_incl_tax": {
+      "type": "number",
+      "description": "Shipping including tax."
+    },
+    "shipping_tax_amount": {
+      "type": "number",
+      "description": "Shipping tax amount."
+    },
+    "state": {
+      "type": "integer",
+      "description": "State."
+    },
+    "store_currency_code": {
+      "type": "string",
+      "description": "Store currency code."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store ID."
+    },
+    "store_to_base_rate": {
+      "type": "number",
+      "description": "Store-to-base rate."
+    },
+    "store_to_order_rate": {
+      "type": "number",
+      "description": "Store-to-order rate."
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal."
+    },
+    "subtotal_incl_tax": {
+      "type": "number",
+      "description": "Subtotal including tax."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount."
+    },
+    "total_qty": {
+      "type": "number",
+      "description": "Total quantity."
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "Transaction ID."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Updated-at timestamp."
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of invoice items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-invoice-item-interface"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "description": "Array of any invoice comments. Otherwise, null.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-invoice-comment-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-invoice-extension-interface"
+    }
+  },
+  "required": [
+    "order_id",
+    "total_qty",
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

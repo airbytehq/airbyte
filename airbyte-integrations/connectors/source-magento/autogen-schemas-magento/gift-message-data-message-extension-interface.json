@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\GiftMessage\\Api\\Data\\MessageInterface",
+  "properties": {
+    "entity_id": {
+      "type": "string"
+    },
+    "entity_type": {
+      "type": "string"
+    },
+    "wrapping_id": {
+      "type": "integer"
+    },
+    "wrapping_allow_gift_receipt": {
+      "type": "boolean"
+    },
+    "wrapping_add_printed_card": {
+      "type": "boolean"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

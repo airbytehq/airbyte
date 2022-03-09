@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Customer address region interface.",
+  "properties": {
+    "region_code": {
+      "type": "string",
+      "description": "Region code"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region"
+    },
+    "region_id": {
+      "type": "integer",
+      "description": "Region id"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/customer-data-region-extension-interface"
+    }
+  },
+  "required": [
+    "region_code",
+    "region",
+    "region_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

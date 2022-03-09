@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "Product Special Price Interface is used to encapsulate data that can be processed by efficient price API.",
+  "properties": {
+    "price": {
+      "type": "number",
+      "description": "Product special price value."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "ID of store, that contains special price value."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU of product, that contains special price value."
+    },
+    "price_from": {
+      "type": "string",
+      "description": "Start date for special price in Y-m-d H:i:s format."
+    },
+    "price_to": {
+      "type": "string",
+      "description": "End date for special price in Y-m-d H:i:s format."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-special-price-extension-interface"
+    }
+  },
+  "required": [
+    "price",
+    "store_id",
+    "sku",
+    "price_from",
+    "price_to"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

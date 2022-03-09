@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "sku": {
+      "type": "string"
+    },
+    "position": {
+      "type": "integer"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Category id"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-category-product-link-extension-interface"
+    }
+  },
+  "required": [
+    "category_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

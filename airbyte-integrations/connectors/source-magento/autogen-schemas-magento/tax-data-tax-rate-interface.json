@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "description": "Tax rate interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "tax_country_id": {
+      "type": "string",
+      "description": "Country id"
+    },
+    "tax_region_id": {
+      "type": "integer",
+      "description": "Region id"
+    },
+    "region_name": {
+      "type": "string",
+      "description": "Region name"
+    },
+    "tax_postcode": {
+      "type": "string",
+      "description": "Postcode"
+    },
+    "zip_is_range": {
+      "type": "integer",
+      "description": "Zip is range"
+    },
+    "zip_from": {
+      "type": "integer",
+      "description": "Zip range from"
+    },
+    "zip_to": {
+      "type": "integer",
+      "description": "Zip range to"
+    },
+    "rate": {
+      "type": "number",
+      "description": "Tax rate in percentage"
+    },
+    "code": {
+      "type": "string",
+      "description": "Tax rate code"
+    },
+    "titles": {
+      "type": "array",
+      "description": "Tax rate titles",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-tax-rate-title-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-tax-rate-extension-interface"
+    }
+  },
+  "required": [
+    "tax_country_id",
+    "rate",
+    "code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

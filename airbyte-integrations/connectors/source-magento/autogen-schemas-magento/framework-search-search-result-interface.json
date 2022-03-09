@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Interface SearchResultInterface",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-search-document-interface"
+      }
+    },
+    "aggregations": {
+      "$ref": "_definitions.json#/definitions/framework-search-aggregation-interface"
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "aggregations",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

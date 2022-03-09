@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "description": "Product Render image interface. Represents physical characteristics of image, that can be used in product listing or product view",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Image url"
+    },
+    "code": {
+      "type": "string",
+      "description": "Image code"
+    },
+    "height": {
+      "type": "number",
+      "description": "Image height"
+    },
+    "width": {
+      "type": "number",
+      "description": "Image width in px"
+    },
+    "label": {
+      "type": "string",
+      "description": "Image label"
+    },
+    "resized_width": {
+      "type": "number",
+      "description": "Resize width"
+    },
+    "resized_height": {
+      "type": "number",
+      "description": "Resize height"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-image-extension-interface"
+    }
+  },
+  "required": [
+    "url",
+    "code",
+    "height",
+    "width",
+    "label",
+    "resized_width",
+    "resized_height"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

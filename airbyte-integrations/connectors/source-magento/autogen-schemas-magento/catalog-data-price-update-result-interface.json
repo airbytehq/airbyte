@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "Interface returned in case of incorrect price passed to efficient price API.",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Error message, that contains description of error occurred during price update."
+    },
+    "parameters": {
+      "type": "array",
+      "description": "Parameters, that could be displayed in error message placeholders.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-price-update-result-extension-interface"
+    }
+  },
+  "required": [
+    "message",
+    "parameters"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "description": "Interface ShippingInformationInterface",
+  "properties": {
+    "shipping_address": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-interface"
+    },
+    "billing_address": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-interface"
+    },
+    "shipping_method_code": {
+      "type": "string",
+      "description": "Shipping method code"
+    },
+    "shipping_carrier_code": {
+      "type": "string",
+      "description": "Carrier code"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/checkout-data-shipping-information-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "shipping_address",
+    "shipping_method_code",
+    "shipping_carrier_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Interface for cms block search results.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Blocks list.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/cms-data-block-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

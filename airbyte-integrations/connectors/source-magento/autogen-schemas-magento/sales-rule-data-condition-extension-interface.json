@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\SalesRule\\Api\\Data\\ConditionInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

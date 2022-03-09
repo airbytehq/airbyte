@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Extended customer custom attributes interface.",
+  "properties": {
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID."
+    },
+    "company_id": {
+      "type": "integer",
+      "description": "Company ID."
+    },
+    "job_title": {
+      "type": "string",
+      "description": "Get job title."
+    },
+    "status": {
+      "type": "integer",
+      "description": "Customer status."
+    },
+    "telephone": {
+      "type": "string",
+      "description": "Get telephone."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-company-customer-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

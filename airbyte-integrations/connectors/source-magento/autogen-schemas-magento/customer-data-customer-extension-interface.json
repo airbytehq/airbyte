@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Customer\\Api\\Data\\CustomerInterface",
+  "properties": {
+    "company_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-company-customer-interface"
+    },
+    "is_subscribed": {
+      "type": "boolean"
+    },
+    "amazon_id": {
+      "type": "string"
+    },
+    "vertex_customer_code": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

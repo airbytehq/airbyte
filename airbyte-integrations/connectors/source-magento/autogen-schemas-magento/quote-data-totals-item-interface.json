@@ -1,0 +1,105 @@
+{
+  "type": "object",
+  "description": "Interface TotalsItemInterface",
+  "properties": {
+    "item_id": {
+      "type": "integer",
+      "description": "Item id"
+    },
+    "price": {
+      "type": "number",
+      "description": "Item price in quote currency."
+    },
+    "base_price": {
+      "type": "number",
+      "description": "Item price in base currency."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Item quantity."
+    },
+    "row_total": {
+      "type": "number",
+      "description": "Row total in quote currency."
+    },
+    "base_row_total": {
+      "type": "number",
+      "description": "Row total in base currency."
+    },
+    "row_total_with_discount": {
+      "type": "number",
+      "description": "Row total with discount in quote currency. Otherwise, null."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount in quote currency. Otherwise, null."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Tax amount in base currency. Otherwise, null."
+    },
+    "tax_percent": {
+      "type": "number",
+      "description": "Tax percent. Otherwise, null."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount in quote currency. Otherwise, null."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Discount amount in base currency. Otherwise, null."
+    },
+    "discount_percent": {
+      "type": "number",
+      "description": "Discount percent. Otherwise, null."
+    },
+    "price_incl_tax": {
+      "type": "number",
+      "description": "Price including tax in quote currency. Otherwise, null."
+    },
+    "base_price_incl_tax": {
+      "type": "number",
+      "description": "Price including tax in base currency. Otherwise, null."
+    },
+    "row_total_incl_tax": {
+      "type": "number",
+      "description": "Row total including tax in quote currency. Otherwise, null."
+    },
+    "base_row_total_incl_tax": {
+      "type": "number",
+      "description": "Row total including tax in base currency. Otherwise, null."
+    },
+    "options": {
+      "type": "string",
+      "description": "Item price in quote currency."
+    },
+    "weee_tax_applied_amount": {
+      "type": "number",
+      "description": "Item weee tax applied amount in quote currency."
+    },
+    "weee_tax_applied": {
+      "type": "string",
+      "description": "Item weee tax applied in quote currency."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-totals-item-extension-interface"
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name. Otherwise, null."
+    }
+  },
+  "required": [
+    "item_id",
+    "price",
+    "base_price",
+    "qty",
+    "row_total",
+    "base_row_total",
+    "options",
+    "weee_tax_applied_amount",
+    "weee_tax_applied"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Interface GiftCardOptionInterface",
+  "properties": {
+    "giftcard_amount": {
+      "type": "string",
+      "description": "Gift card amount."
+    },
+    "custom_giftcard_amount": {
+      "type": "number",
+      "description": "Gift card open amount value."
+    },
+    "giftcard_sender_name": {
+      "type": "string",
+      "description": "Gift card sender name."
+    },
+    "giftcard_recipient_name": {
+      "type": "string",
+      "description": "Gift card recipient name."
+    },
+    "giftcard_sender_email": {
+      "type": "string",
+      "description": "Gift card sender email."
+    },
+    "giftcard_recipient_email": {
+      "type": "string",
+      "description": "Gift card recipient email."
+    },
+    "giftcard_message": {
+      "type": "string",
+      "description": "Giftcard message."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/gift-card-data-gift-card-option-extension-interface"
+    }
+  },
+  "required": [
+    "giftcard_amount",
+    "giftcard_sender_name",
+    "giftcard_recipient_name",
+    "giftcard_sender_email",
+    "giftcard_recipient_email"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

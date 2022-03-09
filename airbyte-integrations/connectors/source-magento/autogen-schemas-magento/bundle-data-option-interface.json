@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "description": "Interface OptionInterface",
+  "properties": {
+    "option_id": {
+      "type": "integer",
+      "description": "Option id"
+    },
+    "title": {
+      "type": "string",
+      "description": "Option title"
+    },
+    "required": {
+      "type": "boolean",
+      "description": "Is required option"
+    },
+    "type": {
+      "type": "string",
+      "description": "Input type"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Option position"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Product sku"
+    },
+    "product_links": {
+      "type": "array",
+      "description": "Product links",
+      "items": {
+        "$ref": "_definitions.json#/definitions/bundle-data-link-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/bundle-data-option-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

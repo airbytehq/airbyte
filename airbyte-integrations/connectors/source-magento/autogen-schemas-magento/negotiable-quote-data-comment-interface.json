@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "description": "Interface CommentInterface",
+  "properties": {
+    "entity_id": {
+      "type": "integer",
+      "description": "Comment ID."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Negotiable quote ID, that this comment belongs to."
+    },
+    "creator_type": {
+      "type": "integer",
+      "description": "The comment creator type."
+    },
+    "is_decline": {
+      "type": "integer",
+      "description": "Is quote was declined by seller."
+    },
+    "is_draft": {
+      "type": "integer",
+      "description": "Is quote draft flag."
+    },
+    "creator_id": {
+      "type": "integer",
+      "description": "Comment creator ID."
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Comment created at."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-comment-extension-interface"
+    },
+    "attachments": {
+      "type": "array",
+      "description": "Existing attachments.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/negotiable-quote-data-comment-attachment-interface"
+      }
+    }
+  },
+  "required": [
+    "entity_id",
+    "parent_id",
+    "creator_type",
+    "is_decline",
+    "is_draft",
+    "creator_id",
+    "comment",
+    "created_at",
+    "attachments"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

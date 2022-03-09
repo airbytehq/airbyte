@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Applied tax rate interface.",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Code"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "percent": {
+      "type": "number",
+      "description": "Tax Percent"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-applied-tax-rate-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,100 @@
+{
+  "type": "object",
+  "description": "Shipment interface. A shipment is a delivery package that contains products. A shipment document accompanies the shipment. This document lists the products and their quantities in the delivery package.",
+  "properties": {
+    "billing_address_id": {
+      "type": "integer",
+      "description": "Billing address ID."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID."
+    },
+    "email_sent": {
+      "type": "integer",
+      "description": "Email-sent flag value."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Shipment ID."
+    },
+    "increment_id": {
+      "type": "string",
+      "description": "Increment ID."
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Order ID."
+    },
+    "packages": {
+      "type": "array",
+      "description": "Array of packages, if any. Otherwise, null.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipment-package-interface"
+      }
+    },
+    "shipment_status": {
+      "type": "integer",
+      "description": "Shipment status."
+    },
+    "shipping_address_id": {
+      "type": "integer",
+      "description": "Shipping address ID."
+    },
+    "shipping_label": {
+      "type": "string",
+      "description": "Shipping label."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store ID."
+    },
+    "total_qty": {
+      "type": "number",
+      "description": "Total quantity."
+    },
+    "total_weight": {
+      "type": "number",
+      "description": "Total weight."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Updated-at timestamp."
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipment-item-interface"
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "description": "Array of tracks.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipment-track-interface"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "description": "Array of comments.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipment-comment-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipment-extension-interface"
+    }
+  },
+  "required": [
+    "order_id",
+    "items",
+    "tracks",
+    "comments"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

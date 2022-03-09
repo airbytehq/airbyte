@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Interface GrandTotalDetailsInterface",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "description": "Tax amount value"
+    },
+    "rates": {
+      "type": "array",
+      "description": "Tax rates info",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-grand-total-rates-interface"
+      }
+    },
+    "group_id": {
+      "type": "integer",
+      "description": "Group identifier"
+    }
+  },
+  "required": [
+    "amount",
+    "rates",
+    "group_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

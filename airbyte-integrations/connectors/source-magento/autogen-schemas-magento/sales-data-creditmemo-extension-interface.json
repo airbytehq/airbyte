@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\CreditmemoInterface",
+  "properties": {
+    "base_customer_balance_amount": {
+      "type": "number"
+    },
+    "customer_balance_amount": {
+      "type": "number"
+    },
+    "base_gift_cards_amount": {
+      "type": "number"
+    },
+    "gift_cards_amount": {
+      "type": "number"
+    },
+    "gw_base_price": {
+      "type": "string"
+    },
+    "gw_price": {
+      "type": "string"
+    },
+    "gw_items_base_price": {
+      "type": "string"
+    },
+    "gw_items_price": {
+      "type": "string"
+    },
+    "gw_card_base_price": {
+      "type": "string"
+    },
+    "gw_card_price": {
+      "type": "string"
+    },
+    "gw_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_tax_amount": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

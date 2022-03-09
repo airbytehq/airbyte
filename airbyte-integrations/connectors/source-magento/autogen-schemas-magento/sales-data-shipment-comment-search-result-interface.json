@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Shipment comment search result interface. A shipment is a delivery package that contains products. A shipment document accompanies the shipment. This document lists the products and their quantities in the delivery package. A shipment document can contain comments.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of collection items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipment-comment-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

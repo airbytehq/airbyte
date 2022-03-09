@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "description": "SharedCatalogInterface interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID."
+    },
+    "name": {
+      "type": "string",
+      "description": "Shared Catalog name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Shared Catalog description."
+    },
+    "customer_group_id": {
+      "type": "integer",
+      "description": "Customer Group Id."
+    },
+    "type": {
+      "type": "integer",
+      "description": "Shared Catalog type."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created time for Shared Catalog."
+    },
+    "created_by": {
+      "type": "integer",
+      "description": "Admin id for Shared Catalog."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store id for Shared Catalog."
+    },
+    "tax_class_id": {
+      "type": "integer",
+      "description": "Tax class id."
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "customer_group_id",
+    "type",
+    "created_at",
+    "created_by",
+    "store_id",
+    "tax_class_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

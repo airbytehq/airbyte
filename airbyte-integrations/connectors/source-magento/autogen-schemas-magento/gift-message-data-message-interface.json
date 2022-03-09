@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "description": "Interface MessageInterface",
+  "properties": {
+    "gift_message_id": {
+      "type": "integer",
+      "description": "Gift message ID. Otherwise, null."
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID. Otherwise, null."
+    },
+    "sender": {
+      "type": "string",
+      "description": "Sender name."
+    },
+    "recipient": {
+      "type": "string",
+      "description": "Recipient name."
+    },
+    "message": {
+      "type": "string",
+      "description": "Message text."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/gift-message-data-message-extension-interface"
+    }
+  },
+  "required": [
+    "sender",
+    "recipient",
+    "message"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

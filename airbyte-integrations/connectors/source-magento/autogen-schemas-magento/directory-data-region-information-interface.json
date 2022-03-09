@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Region Information interface.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Region id"
+    },
+    "code": {
+      "type": "string",
+      "description": "Region code"
+    },
+    "name": {
+      "type": "string",
+      "description": "Region name"
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Directory\\Api\\Data\\RegionInformationInterface"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

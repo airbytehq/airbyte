@@ -1,0 +1,111 @@
+{
+  "type": "object",
+  "description": "Invoice item interface. An invoice is a record of the receipt of payment for an order. An invoice item is a purchased item in an invoice.",
+  "properties": {
+    "additional_data": {
+      "type": "string",
+      "description": "Additional data."
+    },
+    "base_cost": {
+      "type": "number",
+      "description": "Base cost."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Base discount amount."
+    },
+    "base_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Base discount tax compensation amount."
+    },
+    "base_price": {
+      "type": "number",
+      "description": "Base price."
+    },
+    "base_price_incl_tax": {
+      "type": "number",
+      "description": "Base price including tax."
+    },
+    "base_row_total": {
+      "type": "number",
+      "description": "Base row total."
+    },
+    "base_row_total_incl_tax": {
+      "type": "number",
+      "description": "Base row total including tax."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Base tax amount."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Invoice item ID."
+    },
+    "discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Discount tax compensation amount."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "price": {
+      "type": "number",
+      "description": "Price."
+    },
+    "price_incl_tax": {
+      "type": "number",
+      "description": "Price including tax."
+    },
+    "product_id": {
+      "type": "integer",
+      "description": "Product ID."
+    },
+    "row_total": {
+      "type": "number",
+      "description": "Row total."
+    },
+    "row_total_incl_tax": {
+      "type": "number",
+      "description": "Row total including tax."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-invoice-item-extension-interface"
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order item ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    }
+  },
+  "required": [
+    "sku",
+    "order_item_id",
+    "qty"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

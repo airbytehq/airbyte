@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\ProductRenderInterface",
+  "properties": {
+    "wishlist_button": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-button-interface"
+    },
+    "review_html": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

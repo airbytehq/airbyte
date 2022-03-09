@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\OrderItemInterface",
+  "properties": {
+    "gift_message": {
+      "$ref": "_definitions.json#/definitions/gift-message-data-message-interface"
+    },
+    "gw_id": {
+      "type": "string"
+    },
+    "gw_base_price": {
+      "type": "string"
+    },
+    "gw_price": {
+      "type": "string"
+    },
+    "gw_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_tax_amount": {
+      "type": "string"
+    },
+    "gw_base_price_invoiced": {
+      "type": "string"
+    },
+    "gw_price_invoiced": {
+      "type": "string"
+    },
+    "gw_base_tax_amount_invoiced": {
+      "type": "string"
+    },
+    "gw_tax_amount_invoiced": {
+      "type": "string"
+    },
+    "gw_base_price_refunded": {
+      "type": "string"
+    },
+    "gw_price_refunded": {
+      "type": "string"
+    },
+    "gw_base_tax_amount_refunded": {
+      "type": "string"
+    },
+    "gw_tax_amount_refunded": {
+      "type": "string"
+    },
+    "vertex_tax_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "invoice_text_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tax_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "customer_group_id": {
+      "type": "integer",
+      "description": "Customer group id"
+    },
+    "qty": {
+      "type": "number",
+      "description": "Tier qty"
+    },
+    "value": {
+      "type": "number",
+      "description": "Price value"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-tier-price-extension-interface"
+    }
+  },
+  "required": [
+    "customer_group_id",
+    "qty",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Bundle\\Api\\Data\\OptionTypeInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

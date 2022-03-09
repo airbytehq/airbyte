@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\ProductInterface",
+  "properties": {
+    "website_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "category_links": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-category-link-interface"
+      }
+    },
+    "bundle_product_options": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/bundle-data-option-interface"
+      }
+    },
+    "stock_item": {
+      "$ref": "_definitions.json#/definitions/catalog-inventory-data-stock-item-interface"
+    },
+    "configurable_product_options": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/configurable-product-data-option-interface"
+      }
+    },
+    "configurable_product_links": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "downloadable_product_links": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/downloadable-data-link-interface"
+      }
+    },
+    "downloadable_product_samples": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/downloadable-data-sample-interface"
+      }
+    },
+    "giftcard_amounts": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/gift-card-data-giftcard-amount-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

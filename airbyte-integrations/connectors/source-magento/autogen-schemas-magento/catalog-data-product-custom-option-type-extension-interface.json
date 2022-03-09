@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\ProductCustomOptionTypeInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

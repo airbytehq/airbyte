@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\ShippingInterface",
+  "properties": {
+    "ext_order_id": {
+      "type": "string"
+    },
+    "shipping_experience": {
+      "$ref": "_definitions.json#/definitions/temando-shipping-data-order-shipping-experience-interface"
+    },
+    "collection_point": {
+      "$ref": "_definitions.json#/definitions/temando-shipping-data-collection-point-order-collection-point-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\ProductOptionInterface",
+  "properties": {
+    "custom_options": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-custom-option-interface"
+      }
+    },
+    "bundle_options": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/bundle-data-bundle-option-interface"
+      }
+    },
+    "configurable_item_options": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/configurable-product-data-configurable-item-option-value-interface"
+      }
+    },
+    "downloadable_option": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-downloadable-option-interface"
+    },
+    "giftcard_item_option": {
+      "$ref": "_definitions.json#/definitions/gift-card-data-gift-card-option-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

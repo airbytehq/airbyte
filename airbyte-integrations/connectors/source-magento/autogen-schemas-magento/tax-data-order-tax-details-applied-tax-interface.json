@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "description": "Interface OrderTaxDetailsAppliedTaxInterface",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Code"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "percent": {
+      "type": "number",
+      "description": "Tax Percent"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Tax amount"
+    },
+    "base_amount": {
+      "type": "number",
+      "description": "Tax amount in base currency"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-order-tax-details-applied-tax-extension-interface"
+    }
+  },
+  "required": [
+    "amount",
+    "base_amount"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

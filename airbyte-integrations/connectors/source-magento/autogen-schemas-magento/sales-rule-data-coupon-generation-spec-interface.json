@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "description": "CouponGenerationSpecInterface",
+  "properties": {
+    "rule_id": {
+      "type": "integer",
+      "description": "The id of the rule associated with the coupon"
+    },
+    "format": {
+      "type": "string",
+      "description": "Format of generated coupon code"
+    },
+    "quantity": {
+      "type": "integer",
+      "description": "Of coupons to generate"
+    },
+    "length": {
+      "type": "integer",
+      "description": "Length of coupon code"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "The prefix"
+    },
+    "suffix": {
+      "type": "string",
+      "description": "The suffix"
+    },
+    "delimiter_at_every": {
+      "type": "integer",
+      "description": "The spacing where the delimiter should exist"
+    },
+    "delimiter": {
+      "type": "string",
+      "description": "The delimiter"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-coupon-generation-spec-extension-interface"
+    }
+  },
+  "required": [
+    "rule_id",
+    "format",
+    "quantity",
+    "length"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

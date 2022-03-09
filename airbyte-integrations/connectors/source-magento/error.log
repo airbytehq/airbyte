@@ -1,0 +1,51 @@
+Traceback (most recent call last):
+  File "main.py", line 8, in <module>
+    from airbyte_cdk.entrypoint import launch
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/__init__.py", line 6, in <module>
+    from .entrypoint import AirbyteEntrypoint
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/entrypoint.py", line 17, in <module>
+    from airbyte_cdk.sources import Source
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/sources/__init__.py", line 5, in <module>
+    from .abstract_source import AbstractSource
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/sources/abstract_source.py", line 26, in <module>
+    from airbyte_cdk.sources.streams import Stream
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/sources/streams/__init__.py", line 6, in <module>
+    from .core import Stream
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/sources/streams/core.py", line 13, in <module>
+    from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/airbyte_cdk/sources/utils/schema_helpers.py", line 13, in <module>
+    import jsonref
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/jsonref.py", line 32, in <module>
+    import requests
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/requests/__init__.py", line 43, in <module>
+    import urllib3
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/__init__.py", line 13, in <module>
+    from .connectionpool import HTTPConnectionPool, HTTPSConnectionPool, connection_from_url
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/connectionpool.py", line 12, in <module>
+    from .connection import (
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/connection.py", line 15, in <module>
+    from .util.proxy import create_proxy_ssl_context
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/util/__init__.py", line 8, in <module>
+    from .ssl_ import (
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/util/ssl_.py", line 17, in <module>
+    from .url import BRACELESS_IPV6_ADDRZ_RE, IPV4_RE
+  File "/mnt/c/development/skiwebshop/airbyte/airbyte-integrations/connectors/source-magento/.venv/lib/python3.8/site-packages/urllib3/util/url.py", line 61, in <module>
+    IPV6_RE = re.compile("^" + IPV6_PAT + "$")
+  File "/usr/lib/python3.8/re.py", line 252, in compile
+    return _compile(pattern, flags)
+  File "/usr/lib/python3.8/re.py", line 304, in _compile
+    p = sre_compile.compile(pattern, flags)
+  File "/usr/lib/python3.8/sre_compile.py", line 768, in compile
+    code = _code(p, flags)
+  File "/usr/lib/python3.8/sre_compile.py", line 607, in _code
+  File "/usr/lib/python3.8/sre_compile.py", line 209, in _compile
+    _compile(code, av, flags)
+  File "/usr/lib/python3.8/sre_compile.py", line 156, in _compile
+    _compile(code, av[2], flags)
+  File "/usr/lib/python3.8/sre_compile.py", line 148, in _compile
+    _compile(code, av[2], flags)
+  File "/usr/lib/python3.8/sre_compile.py", line 120, in _compile
+    charset, hascased = _optimize_charset(av, iscased, tolower, fixes)
+  File "/usr/lib/python3.8/sre_compile.py", line 312, in _optimize_charset
+    charmap[i] = 1
+KeyboardInterrupt

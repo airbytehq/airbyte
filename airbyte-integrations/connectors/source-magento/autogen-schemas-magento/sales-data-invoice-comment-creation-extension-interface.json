@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\InvoiceCommentCreationInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

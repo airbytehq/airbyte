@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "CMS block interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID"
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "content": {
+      "type": "string",
+      "description": "Content"
+    },
+    "creation_time": {
+      "type": "string",
+      "description": "Creation time"
+    },
+    "update_time": {
+      "type": "string",
+      "description": "Update time"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Active"
+    }
+  },
+  "required": [
+    "identifier"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

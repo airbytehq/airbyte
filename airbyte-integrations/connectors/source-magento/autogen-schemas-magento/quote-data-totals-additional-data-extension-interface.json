@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\TotalsAdditionalDataInterface",
+  "properties": {
+    "gift_messages": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/gift-message-data-message-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

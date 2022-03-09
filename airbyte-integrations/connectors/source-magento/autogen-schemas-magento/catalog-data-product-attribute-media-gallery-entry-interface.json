@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Gallery entry ID"
+    },
+    "media_type": {
+      "type": "string",
+      "description": "Media type"
+    },
+    "label": {
+      "type": "string",
+      "description": "Gallery entry alternative text"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Gallery entry position (sort order)"
+    },
+    "disabled": {
+      "type": "boolean",
+      "description": "If gallery entry is hidden from product page"
+    },
+    "types": {
+      "type": "array",
+      "description": "Gallery entry image types (thumbnail, image, small_image etc)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "file": {
+      "type": "string",
+      "description": "File path"
+    },
+    "content": {
+      "$ref": "_definitions.json#/definitions/framework-data-image-content-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-attribute-media-gallery-entry-extension-interface"
+    }
+  },
+  "required": [
+    "media_type",
+    "label",
+    "position",
+    "disabled",
+    "types"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

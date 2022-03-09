@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "description": "Interface TotalsInformationInterface",
+  "properties": {
+    "address": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-interface"
+    },
+    "shipping_method_code": {
+      "type": "string",
+      "description": "Shipping method code"
+    },
+    "shipping_carrier_code": {
+      "type": "string",
+      "description": "Carrier code"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/checkout-data-totals-information-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "address"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

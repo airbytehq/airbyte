@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "Interface TrackInterface",
+  "properties": {
+    "entity_id": {
+      "type": "integer",
+      "description": "Entity id"
+    },
+    "rma_entity_id": {
+      "type": "integer",
+      "description": "Rma entity id"
+    },
+    "track_number": {
+      "type": "string",
+      "description": "Track number"
+    },
+    "carrier_title": {
+      "type": "string",
+      "description": "Carrier title"
+    },
+    "carrier_code": {
+      "type": "string",
+      "description": "Carrier code"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/rma-data-track-extension-interface"
+    }
+  },
+  "required": [
+    "entity_id",
+    "rma_entity_id",
+    "track_number",
+    "carrier_title",
+    "carrier_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

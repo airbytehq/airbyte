@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "Interface OptionValueInterface",
+  "properties": {
+    "value_index": {
+      "type": "integer"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/configurable-product-data-option-value-extension-interface"
+    }
+  },
+  "required": [
+    "value_index"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

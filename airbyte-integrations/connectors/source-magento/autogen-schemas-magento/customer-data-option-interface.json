@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "Option interface.",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Option label"
+    },
+    "value": {
+      "type": "string",
+      "description": "Option value"
+    },
+    "options": {
+      "type": "array",
+      "description": "Nested options",
+      "items": {
+        "$ref": "_definitions.json#/definitions/customer-data-option-interface"
+      }
+    }
+  },
+  "required": [
+    "label"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

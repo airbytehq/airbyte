@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Button interface. This interface represents all manner of product buttons: add to cart, add to compare, etc... The buttons describes by this interface should have interaction with backend",
+  "properties": {
+    "post_data": {
+      "type": "string",
+      "description": "Post data"
+    },
+    "url": {
+      "type": "string",
+      "description": "Url, needed to add product to cart"
+    },
+    "required_options": {
+      "type": "boolean",
+      "description": "Flag whether a product has options or not"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-button-extension-interface"
+    }
+  },
+  "required": [
+    "post_data",
+    "url",
+    "required_options"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

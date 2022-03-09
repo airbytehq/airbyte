@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "description": "Error details",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Error message"
+    },
+    "parameters": {
+      "type": "array",
+      "description": "Error parameters list",
+      "items": {
+        "type": "object",
+        "description": "Error parameters item",
+        "properties": {
+          "resources": {
+            "type": "string",
+            "description": "ACL resource"
+          },
+          "fieldName": {
+            "type": "string",
+            "description": "Missing or invalid field name"
+          },
+          "fieldValue": {
+            "type": "string",
+            "description": "Incorrect field value"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

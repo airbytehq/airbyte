@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface AttributeGroupInterface",
+  "properties": {
+    "attribute_group_id": {
+      "type": "string",
+      "description": "Id"
+    },
+    "attribute_group_name": {
+      "type": "string",
+      "description": "Name"
+    },
+    "attribute_set_id": {
+      "type": "integer",
+      "description": "Attribute set id"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/eav-data-attribute-group-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Gift Card data",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "code": {
+      "type": "string",
+      "description": "Code"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount"
+    },
+    "base_amount": {
+      "type": "number",
+      "description": "Base Amount"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "amount",
+    "base_amount"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

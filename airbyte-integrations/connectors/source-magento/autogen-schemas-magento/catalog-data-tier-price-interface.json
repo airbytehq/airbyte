@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "description": "Tier price interface.",
+  "properties": {
+    "price": {
+      "type": "number",
+      "description": "Tier price."
+    },
+    "price_type": {
+      "type": "string",
+      "description": "Tier price type."
+    },
+    "website_id": {
+      "type": "integer",
+      "description": "Website id."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "customer_group": {
+      "type": "string",
+      "description": "Customer group."
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-tier-price-extension-interface"
+    }
+  },
+  "required": [
+    "price",
+    "price_type",
+    "website_id",
+    "sku",
+    "customer_group",
+    "quantity"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

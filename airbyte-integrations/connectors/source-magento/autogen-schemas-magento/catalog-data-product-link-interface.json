@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "description": "SKU"
+    },
+    "link_type": {
+      "type": "string",
+      "description": "Link type"
+    },
+    "linked_product_sku": {
+      "type": "string",
+      "description": "Linked product sku"
+    },
+    "linked_product_type": {
+      "type": "string",
+      "description": "Linked product type (simple, virtual, etc)"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Linked item position"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-link-extension-interface"
+    }
+  },
+  "required": [
+    "sku",
+    "link_type",
+    "linked_product_sku",
+    "linked_product_type",
+    "position"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

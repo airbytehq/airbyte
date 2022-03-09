@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "description": "Role data transfer object interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Role id."
+    },
+    "role_name": {
+      "type": "string",
+      "description": "Role name."
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Permissions.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/company-data-permission-interface"
+      }
+    },
+    "company_id": {
+      "type": "integer",
+      "description": "Company id."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-role-extension-interface"
+    }
+  },
+  "required": [
+    "permissions"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

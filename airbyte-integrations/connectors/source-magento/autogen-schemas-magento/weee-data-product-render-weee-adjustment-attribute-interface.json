@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "List of all weee attributes, their amounts, etc.., that product has",
+  "properties": {
+    "amount": {
+      "type": "string",
+      "description": "Weee attribute amount"
+    },
+    "tax_amount": {
+      "type": "string",
+      "description": "Tax which is calculated to fixed product tax attribute"
+    },
+    "tax_amount_incl_tax": {
+      "type": "string",
+      "description": "Tax amount of weee attribute"
+    },
+    "amount_excl_tax": {
+      "type": "string",
+      "description": "Product amount exclude tax"
+    },
+    "attribute_code": {
+      "type": "string",
+      "description": "Weee attribute code"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/weee-data-product-render-weee-adjustment-attribute-extension-interface"
+    }
+  },
+  "required": [
+    "amount",
+    "tax_amount",
+    "tax_amount_incl_tax",
+    "amount_excl_tax",
+    "attribute_code",
+    "extension_attributes"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\TotalsItemInterface",
+  "properties": {
+    "negotiable_quote_item_totals": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-item-totals-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

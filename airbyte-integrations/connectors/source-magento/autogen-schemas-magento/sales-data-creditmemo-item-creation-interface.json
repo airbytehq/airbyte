@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface CreditmemoItemCreationInterface",
+  "properties": {
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-creditmemo-item-creation-extension-interface"
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order item ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    }
+  },
+  "required": [
+    "order_item_id",
+    "qty"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

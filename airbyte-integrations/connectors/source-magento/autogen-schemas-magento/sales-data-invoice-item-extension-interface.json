@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\InvoiceItemInterface",
+  "properties": {
+    "vertex_tax_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "invoice_text_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tax_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

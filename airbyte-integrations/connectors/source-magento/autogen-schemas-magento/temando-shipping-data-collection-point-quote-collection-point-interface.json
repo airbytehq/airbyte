@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "description": "Temando Quote Collection Point Interface \u2013 Checkout/Quoting",
+  "properties": {
+    "entity_id": {
+      "type": "integer"
+    },
+    "collection_point_id": {
+      "type": "string"
+    },
+    "recipient_address_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "street": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "opening_hours": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shipping_experiences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "selected": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "entity_id",
+    "collection_point_id",
+    "recipient_address_id",
+    "name",
+    "country",
+    "region",
+    "postcode",
+    "city",
+    "street",
+    "opening_hours",
+    "shipping_experiences",
+    "selected"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\CartInterface",
+  "properties": {
+    "shipping_assignments": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-shipping-assignment-interface"
+      }
+    },
+    "negotiable_quote": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-interface"
+    },
+    "amazon_order_reference_id": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

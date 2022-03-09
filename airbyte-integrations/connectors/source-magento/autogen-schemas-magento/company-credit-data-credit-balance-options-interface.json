@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Credit balance data transfer object interface.",
+  "properties": {
+    "purchase_order": {
+      "type": "string",
+      "description": "Purchase order number."
+    },
+    "order_increment": {
+      "type": "string",
+      "description": "Order increment."
+    },
+    "currency_display": {
+      "type": "string",
+      "description": "Currency display."
+    },
+    "currency_base": {
+      "type": "string",
+      "description": "Currency base."
+    }
+  },
+  "required": [
+    "purchase_order",
+    "order_increment",
+    "currency_display",
+    "currency_base"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,126 @@
+{
+  "type": "object",
+  "description": "Order address interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+  "properties": {
+    "address_type": {
+      "type": "string",
+      "description": "Address type."
+    },
+    "city": {
+      "type": "string",
+      "description": "City."
+    },
+    "company": {
+      "type": "string",
+      "description": "Company."
+    },
+    "country_id": {
+      "type": "string",
+      "description": "Country ID."
+    },
+    "customer_address_id": {
+      "type": "integer",
+      "description": "Country address ID."
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID."
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Order address ID."
+    },
+    "fax": {
+      "type": "string",
+      "description": "Fax number."
+    },
+    "firstname": {
+      "type": "string",
+      "description": "First name."
+    },
+    "lastname": {
+      "type": "string",
+      "description": "Last name."
+    },
+    "middlename": {
+      "type": "string",
+      "description": "Middle name."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "postcode": {
+      "type": "string",
+      "description": "Postal code."
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Prefix."
+    },
+    "region": {
+      "type": "string",
+      "description": "Region."
+    },
+    "region_code": {
+      "type": "string",
+      "description": "Region code."
+    },
+    "region_id": {
+      "type": "integer",
+      "description": "Region ID."
+    },
+    "street": {
+      "type": "array",
+      "description": "Array of any street values. Otherwise, null.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "description": "Suffix."
+    },
+    "telephone": {
+      "type": "string",
+      "description": "Telephone number."
+    },
+    "vat_id": {
+      "type": "string",
+      "description": "VAT ID."
+    },
+    "vat_is_valid": {
+      "type": "integer",
+      "description": "VAT-is-valid flag value."
+    },
+    "vat_request_date": {
+      "type": "string",
+      "description": "VAT request date."
+    },
+    "vat_request_id": {
+      "type": "string",
+      "description": "VAT request ID."
+    },
+    "vat_request_success": {
+      "type": "integer",
+      "description": "VAT-request-success flag value."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-address-extension-interface"
+    }
+  },
+  "required": [
+    "address_type",
+    "city",
+    "country_id",
+    "firstname",
+    "lastname",
+    "postcode",
+    "telephone"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

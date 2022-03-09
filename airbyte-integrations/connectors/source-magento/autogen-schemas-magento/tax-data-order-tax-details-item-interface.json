@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Interface OrderTaxDetailsItemInterface",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type (shipping, product, weee, gift wrapping, etc)"
+    },
+    "item_id": {
+      "type": "integer",
+      "description": "Item id if this item is a product"
+    },
+    "associated_item_id": {
+      "type": "integer",
+      "description": "Associated item id if this item is associated with another item, null otherwise"
+    },
+    "applied_taxes": {
+      "type": "array",
+      "description": "Applied taxes",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-order-tax-details-applied-tax-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-order-tax-details-item-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

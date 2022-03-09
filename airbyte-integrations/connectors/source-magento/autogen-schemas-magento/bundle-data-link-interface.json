@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "description": "Interface LinkInterface",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identifier"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Linked product sku"
+    },
+    "option_id": {
+      "type": "integer",
+      "description": "Option id"
+    },
+    "qty": {
+      "type": "number",
+      "description": "Qty"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Position"
+    },
+    "is_default": {
+      "type": "boolean",
+      "description": "Is default"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price"
+    },
+    "price_type": {
+      "type": "integer",
+      "description": "Price type"
+    },
+    "can_change_quantity": {
+      "type": "integer",
+      "description": "Whether quantity could be changed"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/bundle-data-link-extension-interface"
+    }
+  },
+  "required": [
+    "is_default",
+    "price",
+    "price_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Eav\\Api\\Data\\AttributeGroupInterface",
+  "properties": {
+    "attribute_group_code": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

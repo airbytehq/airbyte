@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "Faceted data",
+  "properties": {
+    "buckets": {
+      "type": "array",
+      "description": "All Document fields",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-search-bucket-interface"
+      }
+    },
+    "bucket_names": {
+      "type": "array",
+      "description": "Document field names",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "buckets",
+    "bucket_names"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

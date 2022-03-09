@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "description": "Shipment package interface. A shipment is a delivery package that contains products. A shipment document accompanies the shipment. This document lists the products and their quantities in the delivery package.",
+  "properties": {
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipment-package-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "description": "Image Content data interface",
+  "properties": {
+    "base64_encoded_data": {
+      "type": "string",
+      "description": "Media data (base64 encoded content)"
+    },
+    "type": {
+      "type": "string",
+      "description": "MIME type"
+    },
+    "name": {
+      "type": "string",
+      "description": "Image name"
+    }
+  },
+  "required": [
+    "base64_encoded_data",
+    "type",
+    "name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

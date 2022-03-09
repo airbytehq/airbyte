@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface OptionTypeInterface",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Type label"
+    },
+    "code": {
+      "type": "string",
+      "description": "Type code"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/bundle-data-option-type-extension-interface"
+    }
+  },
+  "required": [
+    "label",
+    "code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

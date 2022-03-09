@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\OrderAddressInterface",
+  "properties": {
+    "checkout_fields": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

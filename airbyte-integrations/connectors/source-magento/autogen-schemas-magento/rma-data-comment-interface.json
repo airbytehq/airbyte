@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "description": "Interface CommentInterface",
+  "properties": {
+    "comment": {
+      "type": "string",
+      "description": "Comment"
+    },
+    "rma_entity_id": {
+      "type": "integer",
+      "description": "Rma Id"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created_at"
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Entity_id"
+    },
+    "customer_notified": {
+      "type": "boolean",
+      "description": "Is_customer_notified"
+    },
+    "visible_on_front": {
+      "type": "boolean",
+      "description": "Is_visible_on_front"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status"
+    },
+    "admin": {
+      "type": "boolean",
+      "description": "Is_admin"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/rma-data-comment-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "comment",
+    "rma_entity_id",
+    "created_at",
+    "entity_id",
+    "customer_notified",
+    "visible_on_front",
+    "status",
+    "admin"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "description": "Video Content data interface",
+  "properties": {
+    "media_type": {
+      "type": "string",
+      "description": "MIME type"
+    },
+    "video_provider": {
+      "type": "string",
+      "description": "Provider"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Video URL"
+    },
+    "video_title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "video_description": {
+      "type": "string",
+      "description": "Video Description"
+    },
+    "video_metadata": {
+      "type": "string",
+      "description": "Metadata"
+    }
+  },
+  "required": [
+    "media_type",
+    "video_provider",
+    "video_url",
+    "video_title",
+    "video_description",
+    "video_metadata"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

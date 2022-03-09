@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface CustomOptionInterface",
+  "properties": {
+    "option_id": {
+      "type": "string",
+      "description": "Option id"
+    },
+    "option_value": {
+      "type": "string",
+      "description": "Option value"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-custom-option-extension-interface"
+    }
+  },
+  "required": [
+    "option_id",
+    "option_value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

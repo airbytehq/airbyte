@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "description": "Interface ShippingInterface",
+  "properties": {
+    "address": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-address-interface"
+    },
+    "method": {
+      "type": "string",
+      "description": "Shipping method"
+    },
+    "total": {
+      "$ref": "_definitions.json#/definitions/sales-data-total-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipping-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

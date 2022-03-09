@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "code": {
+      "type": "integer",
+      "description": "Link type code"
+    },
+    "name": {
+      "type": "string",
+      "description": "Link type name"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-link-type-extension-interface"
+    }
+  },
+  "required": [
+    "code",
+    "name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

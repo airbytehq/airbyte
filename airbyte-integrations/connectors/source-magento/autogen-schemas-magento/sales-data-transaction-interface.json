@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "description": "Transaction interface. A transaction is an interaction between a merchant and a customer such as a purchase, a credit, a refund, and so on.",
+  "properties": {
+    "transaction_id": {
+      "type": "integer",
+      "description": "Transaction ID."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "The parent ID for the transaction. Otherwise, null."
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Order ID."
+    },
+    "payment_id": {
+      "type": "integer",
+      "description": "Payment ID."
+    },
+    "txn_id": {
+      "type": "string",
+      "description": "Transaction business ID."
+    },
+    "parent_txn_id": {
+      "type": "string",
+      "description": "Parent transaction business ID."
+    },
+    "txn_type": {
+      "type": "string",
+      "description": "Transaction type."
+    },
+    "is_closed": {
+      "type": "integer",
+      "description": "Is-closed flag value."
+    },
+    "additional_information": {
+      "type": "array",
+      "description": "Array of additional information. Otherwise, null.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "child_transactions": {
+      "type": "array",
+      "description": "Array of child transactions.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-transaction-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-transaction-extension-interface"
+    }
+  },
+  "required": [
+    "transaction_id",
+    "order_id",
+    "payment_id",
+    "txn_id",
+    "parent_txn_id",
+    "txn_type",
+    "is_closed",
+    "created_at",
+    "child_transactions"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

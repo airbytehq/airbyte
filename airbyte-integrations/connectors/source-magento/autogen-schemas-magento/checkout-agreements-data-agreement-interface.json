@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "description": "Interface AgreementInterface",
+  "properties": {
+    "agreement_id": {
+      "type": "integer",
+      "description": "Agreement ID."
+    },
+    "name": {
+      "type": "string",
+      "description": "Agreement name."
+    },
+    "content": {
+      "type": "string",
+      "description": "Agreement content."
+    },
+    "content_height": {
+      "type": "string",
+      "description": "Agreement content height. Otherwise, null."
+    },
+    "checkbox_text": {
+      "type": "string",
+      "description": "Agreement checkbox text."
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Agreement status."
+    },
+    "is_html": {
+      "type": "boolean",
+      "description": "* true - HTML. * false - plain text."
+    },
+    "mode": {
+      "type": "integer",
+      "description": "The agreement applied mode."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/checkout-agreements-data-agreement-extension-interface"
+    }
+  },
+  "required": [
+    "agreement_id",
+    "name",
+    "content",
+    "checkbox_text",
+    "is_active",
+    "is_html",
+    "mode"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

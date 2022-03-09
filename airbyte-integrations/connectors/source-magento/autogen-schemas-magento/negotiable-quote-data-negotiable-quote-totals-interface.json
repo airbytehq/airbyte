@@ -1,0 +1,89 @@
+{
+  "type": "object",
+  "description": "Extension attribute for quote totals model.",
+  "properties": {
+    "items_count": {
+      "type": "integer",
+      "description": "The number of different items or products in the cart."
+    },
+    "quote_status": {
+      "type": "string",
+      "description": "Negotiable quote status."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "The cart creation date and time."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "The cart last update date and time."
+    },
+    "customer_group": {
+      "type": "integer",
+      "description": "Customer group id."
+    },
+    "base_to_quote_rate": {
+      "type": "number",
+      "description": "Base currency to quote currency rate."
+    },
+    "cost_total": {
+      "type": "number",
+      "description": "Total cost for quote."
+    },
+    "base_cost_total": {
+      "type": "number",
+      "description": "Total cost for quote in base currency."
+    },
+    "original_total": {
+      "type": "number",
+      "description": "Original quote total."
+    },
+    "base_original_total": {
+      "type": "number",
+      "description": "Original quote total in base currency."
+    },
+    "original_tax": {
+      "type": "number",
+      "description": "Original tax amount for quote."
+    },
+    "base_original_tax": {
+      "type": "number",
+      "description": "Original tax amount for quote in base currency."
+    },
+    "original_price_incl_tax": {
+      "type": "number",
+      "description": "Original price with included tax for quote."
+    },
+    "base_original_price_incl_tax": {
+      "type": "number",
+      "description": "Original price with included tax for quote in base currency."
+    },
+    "negotiated_price_type": {
+      "type": "integer",
+      "description": "Negotiable quote type."
+    },
+    "negotiated_price_value": {
+      "type": "number",
+      "description": "Negotiable price value for quote."
+    }
+  },
+  "required": [
+    "items_count",
+    "quote_status",
+    "created_at",
+    "updated_at",
+    "customer_group",
+    "base_to_quote_rate",
+    "cost_total",
+    "base_cost_total",
+    "original_total",
+    "base_original_total",
+    "original_tax",
+    "base_original_tax",
+    "original_price_incl_tax",
+    "base_original_price_incl_tax",
+    "negotiated_price_type",
+    "negotiated_price_value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

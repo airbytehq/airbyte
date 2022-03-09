@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "Temando Collection Point Search Request Interface",
+  "properties": {
+    "shipping_address_id": {
+      "type": "integer"
+    },
+    "country_id": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "pending": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "shipping_address_id",
+    "country_id",
+    "postcode",
+    "pending"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Order company extension attributes interface. Adds new company attributes to orders.",
+  "properties": {
+    "order_id": {
+      "type": "integer",
+      "description": "Order ID."
+    },
+    "company_id": {
+      "type": "integer",
+      "description": "Company ID."
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-company-order-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Tax\\Api\\Data\\OrderTaxDetailsAppliedTaxInterface",
+  "properties": {
+    "rates": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-applied-tax-rate-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

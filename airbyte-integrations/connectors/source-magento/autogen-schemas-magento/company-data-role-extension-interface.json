@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Company\\Api\\Data\\RoleInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

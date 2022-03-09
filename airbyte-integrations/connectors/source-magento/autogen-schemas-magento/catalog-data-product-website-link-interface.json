@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "sku": {
+      "type": "string"
+    },
+    "website_id": {
+      "type": "integer",
+      "description": "Website ids"
+    }
+  },
+  "required": [
+    "sku",
+    "website_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

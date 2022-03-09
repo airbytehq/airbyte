@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "description": "Gateway vault payment token interface.",
+  "properties": {
+    "entity_id": {
+      "type": "integer",
+      "description": "Entity ID."
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID."
+    },
+    "public_hash": {
+      "type": "string",
+      "description": "Public hash"
+    },
+    "payment_method_code": {
+      "type": "string",
+      "description": "Payment method code"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Token creation timestamp"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Token expiration timestamp"
+    },
+    "gateway_token": {
+      "type": "string",
+      "description": "Gateway token ID"
+    },
+    "token_details": {
+      "type": "string",
+      "description": "Token details"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Is active."
+    },
+    "is_visible": {
+      "type": "boolean",
+      "description": "Is visible."
+    }
+  },
+  "required": [
+    "public_hash",
+    "payment_method_code",
+    "type",
+    "gateway_token",
+    "token_details",
+    "is_active",
+    "is_visible"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

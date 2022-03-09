@@ -1,0 +1,91 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\TotalSegmentInterface",
+  "properties": {
+    "tax_grandtotal_details": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-grand-total-details-interface"
+      }
+    },
+    "gift_cards": {
+      "type": "string"
+    },
+    "gw_order_id": {
+      "type": "string"
+    },
+    "gw_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gw_allow_gift_receipt": {
+      "type": "string"
+    },
+    "gw_add_card": {
+      "type": "string"
+    },
+    "gw_price": {
+      "type": "string"
+    },
+    "gw_base_price": {
+      "type": "string"
+    },
+    "gw_items_price": {
+      "type": "string"
+    },
+    "gw_items_base_price": {
+      "type": "string"
+    },
+    "gw_card_price": {
+      "type": "string"
+    },
+    "gw_card_base_price": {
+      "type": "string"
+    },
+    "gw_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_tax_amount": {
+      "type": "string"
+    },
+    "gw_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_base_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_card_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_card_base_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_items_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_items_base_price_incl_tax": {
+      "type": "string"
+    },
+    "vertex_tax_calculation_messages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

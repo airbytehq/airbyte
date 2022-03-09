@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Interface PaymentMethodInterface",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Payment method code"
+    },
+    "title": {
+      "type": "string",
+      "description": "Payment method title"
+    }
+  },
+  "required": [
+    "code",
+    "title"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

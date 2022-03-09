@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "description": "Invoice comment interface. An invoice is a record of the receipt of payment for an order. An invoice can include comments that detail the invoice history.",
+  "properties": {
+    "is_customer_notified": {
+      "type": "integer",
+      "description": "Is-customer-notified flag value."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-invoice-comment-extension-interface"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    },
+    "is_visible_on_front": {
+      "type": "integer",
+      "description": "Is-visible-on-storefront flag value."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Invoice ID."
+    }
+  },
+  "required": [
+    "is_customer_notified",
+    "parent_id",
+    "comment",
+    "is_visible_on_front"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

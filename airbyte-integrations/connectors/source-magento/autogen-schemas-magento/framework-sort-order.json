@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Data object for sort order.",
+  "properties": {
+    "field": {
+      "type": "string",
+      "description": "Sorting field."
+    },
+    "direction": {
+      "type": "string",
+      "description": "Sorting direction."
+    }
+  },
+  "required": [
+    "field",
+    "direction"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "description": "Tax rule interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "code": {
+      "type": "string",
+      "description": "Tax rule code"
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Priority"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Sort order."
+    },
+    "customer_tax_class_ids": {
+      "type": "array",
+      "description": "Customer tax class id",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "product_tax_class_ids": {
+      "type": "array",
+      "description": "Product tax class id",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "tax_rate_ids": {
+      "type": "array",
+      "description": "Tax rate ids",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "calculate_subtotal": {
+      "type": "boolean",
+      "description": "Calculate subtotal."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-tax-rule-extension-interface"
+    }
+  },
+  "required": [
+    "code",
+    "priority",
+    "position",
+    "customer_tax_class_ids",
+    "product_tax_class_ids",
+    "tax_rate_ids"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

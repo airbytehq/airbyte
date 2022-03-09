@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "description": "Interface RequisitionListItemInterface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Requisition List ID."
+    },
+    "sku": {
+      "type": "string",
+      "description": "Product SKU."
+    },
+    "requisition_list_id": {
+      "type": "integer",
+      "description": "Requisition List ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Product Qty."
+    },
+    "options": {
+      "type": "array",
+      "description": "Requisition list item options.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store ID."
+    },
+    "added_at": {
+      "type": "string",
+      "description": "Added_at value."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/requisition-list-data-requisition-list-item-extension-interface"
+    }
+  },
+  "required": [
+    "id",
+    "sku",
+    "requisition_list_id",
+    "qty",
+    "options",
+    "store_id",
+    "added_at"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

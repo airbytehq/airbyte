@@ -1,0 +1,235 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\OrderInterface",
+  "properties": {
+    "shipping_assignments": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-shipping-assignment-interface"
+      }
+    },
+    "payment_additional_info": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/payment-data-payment-additional-info-interface"
+      }
+    },
+    "applied_taxes": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-order-tax-details-applied-tax-interface"
+      }
+    },
+    "item_applied_taxes": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/tax-data-order-tax-details-item-interface"
+      }
+    },
+    "converting_from_quote": {
+      "type": "boolean"
+    },
+    "company_order_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-company-order-interface"
+    },
+    "base_customer_balance_amount": {
+      "type": "number"
+    },
+    "customer_balance_amount": {
+      "type": "number"
+    },
+    "base_customer_balance_invoiced": {
+      "type": "number"
+    },
+    "customer_balance_invoiced": {
+      "type": "number"
+    },
+    "base_customer_balance_refunded": {
+      "type": "number"
+    },
+    "customer_balance_refunded": {
+      "type": "number"
+    },
+    "base_customer_balance_total_refunded": {
+      "type": "number"
+    },
+    "customer_balance_total_refunded": {
+      "type": "number"
+    },
+    "gift_cards": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/gift-card-account-data-gift-card-interface"
+      }
+    },
+    "base_gift_cards_amount": {
+      "type": "number"
+    },
+    "gift_cards_amount": {
+      "type": "number"
+    },
+    "base_gift_cards_invoiced": {
+      "type": "number"
+    },
+    "gift_cards_invoiced": {
+      "type": "number"
+    },
+    "base_gift_cards_refunded": {
+      "type": "number"
+    },
+    "gift_cards_refunded": {
+      "type": "number"
+    },
+    "gift_message": {
+      "$ref": "_definitions.json#/definitions/gift-message-data-message-interface"
+    },
+    "gw_id": {
+      "type": "string"
+    },
+    "gw_allow_gift_receipt": {
+      "type": "string"
+    },
+    "gw_add_card": {
+      "type": "string"
+    },
+    "gw_base_price": {
+      "type": "string"
+    },
+    "gw_price": {
+      "type": "string"
+    },
+    "gw_items_base_price": {
+      "type": "string"
+    },
+    "gw_items_price": {
+      "type": "string"
+    },
+    "gw_card_base_price": {
+      "type": "string"
+    },
+    "gw_card_price": {
+      "type": "string"
+    },
+    "gw_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_tax_amount": {
+      "type": "string"
+    },
+    "gw_base_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_items_base_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_items_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_card_base_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_card_price_incl_tax": {
+      "type": "string"
+    },
+    "gw_base_price_invoiced": {
+      "type": "string"
+    },
+    "gw_price_invoiced": {
+      "type": "string"
+    },
+    "gw_items_base_price_invoiced": {
+      "type": "string"
+    },
+    "gw_items_price_invoiced": {
+      "type": "string"
+    },
+    "gw_card_base_price_invoiced": {
+      "type": "string"
+    },
+    "gw_card_price_invoiced": {
+      "type": "string"
+    },
+    "gw_base_tax_amount_invoiced": {
+      "type": "string"
+    },
+    "gw_tax_amount_invoiced": {
+      "type": "string"
+    },
+    "gw_items_base_tax_invoiced": {
+      "type": "string"
+    },
+    "gw_items_tax_invoiced": {
+      "type": "string"
+    },
+    "gw_card_base_tax_invoiced": {
+      "type": "string"
+    },
+    "gw_card_tax_invoiced": {
+      "type": "string"
+    },
+    "gw_base_price_refunded": {
+      "type": "string"
+    },
+    "gw_price_refunded": {
+      "type": "string"
+    },
+    "gw_items_base_price_refunded": {
+      "type": "string"
+    },
+    "gw_items_price_refunded": {
+      "type": "string"
+    },
+    "gw_card_base_price_refunded": {
+      "type": "string"
+    },
+    "gw_card_price_refunded": {
+      "type": "string"
+    },
+    "gw_base_tax_amount_refunded": {
+      "type": "string"
+    },
+    "gw_tax_amount_refunded": {
+      "type": "string"
+    },
+    "gw_items_base_tax_refunded": {
+      "type": "string"
+    },
+    "gw_items_tax_refunded": {
+      "type": "string"
+    },
+    "gw_card_base_tax_refunded": {
+      "type": "string"
+    },
+    "gw_card_tax_refunded": {
+      "type": "string"
+    },
+    "reward_points_balance": {
+      "type": "integer"
+    },
+    "reward_currency_amount": {
+      "type": "number"
+    },
+    "base_reward_currency_amount": {
+      "type": "number"
+    },
+    "amazon_order_reference_id": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

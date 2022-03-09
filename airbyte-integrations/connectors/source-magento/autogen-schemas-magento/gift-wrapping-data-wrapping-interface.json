@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "description": "Interface WrappingInterface",
+  "properties": {
+    "wrapping_id": {
+      "type": "integer"
+    },
+    "design": {
+      "type": "string"
+    },
+    "status": {
+      "type": "integer"
+    },
+    "base_price": {
+      "type": "number"
+    },
+    "image_name": {
+      "type": "string"
+    },
+    "image_base64_content": {
+      "type": "string"
+    },
+    "base_currency_code": {
+      "type": "string"
+    },
+    "website_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Wrapping image URL."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/gift-wrapping-data-wrapping-extension-interface"
+    }
+  },
+  "required": [
+    "design",
+    "status",
+    "base_price"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

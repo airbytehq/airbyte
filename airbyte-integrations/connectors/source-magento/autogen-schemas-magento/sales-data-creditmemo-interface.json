@@ -1,0 +1,220 @@
+{
+  "type": "object",
+  "description": "Credit memo interface. After a customer places and pays for an order and an invoice has been issued, the merchant can create a credit memo to refund all or part of the amount paid for any returned or undelivered items. The memo restores funds to the customer account so that the customer can make future purchases.",
+  "properties": {
+    "adjustment": {
+      "type": "number",
+      "description": "Credit memo adjustment."
+    },
+    "adjustment_negative": {
+      "type": "number",
+      "description": "Credit memo negative adjustment."
+    },
+    "adjustment_positive": {
+      "type": "number",
+      "description": "Credit memo positive adjustment."
+    },
+    "base_adjustment": {
+      "type": "number",
+      "description": "Credit memo base adjustment."
+    },
+    "base_adjustment_negative": {
+      "type": "number",
+      "description": "Credit memo negative base adjustment."
+    },
+    "base_adjustment_positive": {
+      "type": "number",
+      "description": "Credit memo positive base adjustment."
+    },
+    "base_currency_code": {
+      "type": "string",
+      "description": "Credit memo base currency code."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Credit memo base discount amount."
+    },
+    "base_grand_total": {
+      "type": "number",
+      "description": "Credit memo base grand total."
+    },
+    "base_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Credit memo base discount tax compensation amount."
+    },
+    "base_shipping_amount": {
+      "type": "number",
+      "description": "Credit memo base shipping amount."
+    },
+    "base_shipping_discount_tax_compensation_amnt": {
+      "type": "number",
+      "description": "Credit memo base shipping discount tax compensation amount."
+    },
+    "base_shipping_incl_tax": {
+      "type": "number",
+      "description": "Credit memo base shipping including tax."
+    },
+    "base_shipping_tax_amount": {
+      "type": "number",
+      "description": "Credit memo base shipping tax amount."
+    },
+    "base_subtotal": {
+      "type": "number",
+      "description": "Credit memo base subtotal."
+    },
+    "base_subtotal_incl_tax": {
+      "type": "number",
+      "description": "Credit memo base subtotal including tax."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Credit memo base tax amount."
+    },
+    "base_to_global_rate": {
+      "type": "number",
+      "description": "Credit memo base-to-global rate."
+    },
+    "base_to_order_rate": {
+      "type": "number",
+      "description": "Credit memo base-to-order rate."
+    },
+    "billing_address_id": {
+      "type": "integer",
+      "description": "Credit memo billing address ID."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Credit memo created-at timestamp."
+    },
+    "creditmemo_status": {
+      "type": "integer",
+      "description": "Credit memo status."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Credit memo discount amount."
+    },
+    "discount_description": {
+      "type": "string",
+      "description": "Credit memo discount description."
+    },
+    "email_sent": {
+      "type": "integer",
+      "description": "Credit memo email sent flag value."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Credit memo ID."
+    },
+    "global_currency_code": {
+      "type": "string",
+      "description": "Credit memo global currency code."
+    },
+    "grand_total": {
+      "type": "number",
+      "description": "Credit memo grand total."
+    },
+    "discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Credit memo discount tax compensation amount."
+    },
+    "increment_id": {
+      "type": "string",
+      "description": "Credit memo increment ID."
+    },
+    "invoice_id": {
+      "type": "integer",
+      "description": "Credit memo invoice ID."
+    },
+    "order_currency_code": {
+      "type": "string",
+      "description": "Credit memo order currency code."
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Credit memo order ID."
+    },
+    "shipping_address_id": {
+      "type": "integer",
+      "description": "Credit memo shipping address ID."
+    },
+    "shipping_amount": {
+      "type": "number",
+      "description": "Credit memo shipping amount."
+    },
+    "shipping_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Credit memo shipping discount tax compensation amount."
+    },
+    "shipping_incl_tax": {
+      "type": "number",
+      "description": "Credit memo shipping including tax."
+    },
+    "shipping_tax_amount": {
+      "type": "number",
+      "description": "Credit memo shipping tax amount."
+    },
+    "state": {
+      "type": "integer",
+      "description": "Credit memo state."
+    },
+    "store_currency_code": {
+      "type": "string",
+      "description": "Credit memo store currency code."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Credit memo store ID."
+    },
+    "store_to_base_rate": {
+      "type": "number",
+      "description": "Credit memo store-to-base rate."
+    },
+    "store_to_order_rate": {
+      "type": "number",
+      "description": "Credit memo store-to-order rate."
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Credit memo subtotal."
+    },
+    "subtotal_incl_tax": {
+      "type": "number",
+      "description": "Credit memo subtotal including tax."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Credit memo tax amount."
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "Credit memo transaction ID."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Credit memo updated-at timestamp."
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of credit memo items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-creditmemo-item-interface"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "description": "Array of any credit memo comments. Otherwise, null.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-creditmemo-comment-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-creditmemo-extension-interface"
+    }
+  },
+  "required": [
+    "order_id",
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Attachment files content interface.",
+  "properties": {
+    "base64_encoded_data": {
+      "type": "string",
+      "description": "Media data (base64 encoded content)."
+    },
+    "type": {
+      "type": "string",
+      "description": "MIME type."
+    },
+    "name": {
+      "type": "string",
+      "description": "File name."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-attachment-content-extension-interface"
+    }
+  },
+  "required": [
+    "base64_encoded_data",
+    "type",
+    "name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

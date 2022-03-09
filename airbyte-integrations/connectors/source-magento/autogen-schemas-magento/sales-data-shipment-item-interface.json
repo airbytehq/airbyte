@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "description": "Shipment item interface. A shipment is a delivery package that contains products. A shipment document accompanies the shipment. This document lists the products and their quantities in the delivery package. A product is an item in a shipment.",
+  "properties": {
+    "additional_data": {
+      "type": "string",
+      "description": "Additional data."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Shipment item ID."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "price": {
+      "type": "number",
+      "description": "Price."
+    },
+    "product_id": {
+      "type": "integer",
+      "description": "Product ID."
+    },
+    "row_total": {
+      "type": "number",
+      "description": "Row total."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipment-item-extension-interface"
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order item ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    }
+  },
+  "required": [
+    "order_item_id",
+    "qty"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

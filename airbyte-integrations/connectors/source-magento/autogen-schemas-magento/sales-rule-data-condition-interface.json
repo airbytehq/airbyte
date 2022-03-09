@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "description": "Interface ConditionInterface",
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "description": "Condition type"
+    },
+    "conditions": {
+      "type": "array",
+      "description": "List of conditions",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-rule-data-condition-interface"
+      }
+    },
+    "aggregator_type": {
+      "type": "string",
+      "description": "The aggregator type"
+    },
+    "operator": {
+      "type": "string",
+      "description": "The operator of the condition"
+    },
+    "attribute_name": {
+      "type": "string",
+      "description": "The attribute name of the condition"
+    },
+    "value": {
+      "type": "string",
+      "description": "The value of the condition"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-condition-extension-interface"
+    }
+  },
+  "required": [
+    "condition_type",
+    "operator",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

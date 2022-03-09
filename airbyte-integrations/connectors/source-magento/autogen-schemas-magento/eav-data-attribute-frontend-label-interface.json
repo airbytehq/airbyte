@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "description": "Interface AttributeFrontendLabelInterface",
+  "properties": {
+    "store_id": {
+      "type": "integer",
+      "description": "Store id"
+    },
+    "label": {
+      "type": "string",
+      "description": "Option label"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

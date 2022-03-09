@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "description": "Interface CriteriaInterface",
+  "properties": {
+    "mapper_interface_name": {
+      "type": "string",
+      "description": "Associated Mapper Interface name"
+    },
+    "criteria_list": {
+      "type": "array",
+      "description": "Criteria objects added to current Composite Criteria",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-criteria-interface"
+      }
+    },
+    "filters": {
+      "type": "array",
+      "description": "List of filters",
+      "items": {
+        "type": "string"
+      }
+    },
+    "orders": {
+      "type": "array",
+      "description": "Ordering criteria",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limit": {
+      "type": "array",
+      "description": "Limit",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "mapper_interface_name",
+    "criteria_list",
+    "filters",
+    "orders",
+    "limit"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

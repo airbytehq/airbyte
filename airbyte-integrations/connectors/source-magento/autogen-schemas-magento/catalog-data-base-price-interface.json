@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Price interface.",
+  "properties": {
+    "price": {
+      "type": "number",
+      "description": "Price."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store id."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-base-price-extension-interface"
+    }
+  },
+  "required": [
+    "price",
+    "store_id",
+    "sku"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

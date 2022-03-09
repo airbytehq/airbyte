@@ -1,0 +1,125 @@
+{
+  "type": "object",
+  "description": "Interface AttributeSetSearchResultsInterface",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Attribute sets list.",
+      "items": {
+        "type": "object",
+        "description": "Interface AttributeSetInterface",
+        "properties": {
+          "attribute_set_id": {
+            "type": "integer",
+            "description": "Attribute set ID"
+          },
+          "attribute_set_name": {
+            "type": "string",
+            "description": "Attribute set name"
+          },
+          "sort_order": {
+            "type": "integer",
+            "description": "Attribute set sort order index"
+          },
+          "entity_type_id": {
+            "type": "integer",
+            "description": "Attribute set entity type id"
+          },
+          "extension_attributes": {
+            "type": "object",
+            "description": "ExtensionInterface class for @see \\Magento\\Eav\\Api\\Data\\AttributeSetInterface"
+          }
+        },
+        "required": [
+          "attribute_set_name",
+          "sort_order"
+        ]
+      }
+    },
+    "search_criteria": {
+      "type": "object",
+      "description": "Search criteria interface.",
+      "properties": {
+        "filter_groups": {
+          "type": "array",
+          "description": "A list of filter groups.",
+          "items": {
+            "type": "object",
+            "description": "Groups two or more filters together using a logical OR",
+            "properties": {
+              "filters": {
+                "type": "array",
+                "description": "A list of filters in this group",
+                "items": {
+                  "type": "object",
+                  "description": "Filter which can be used by any methods from service layer.",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "description": "Field"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Value"
+                    },
+                    "condition_type": {
+                      "type": "string",
+                      "description": "Condition type"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "value"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "sort_orders": {
+          "type": "array",
+          "description": "Sort order.",
+          "items": {
+            "type": "object",
+            "description": "Data object for sort order.",
+            "properties": {
+              "field": {
+                "type": "string",
+                "description": "Sorting field."
+              },
+              "direction": {
+                "type": "string",
+                "description": "Sorting direction."
+              }
+            },
+            "required": [
+              "field",
+              "direction"
+            ]
+          }
+        },
+        "page_size": {
+          "type": "integer",
+          "description": "Page size."
+        },
+        "current_page": {
+          "type": "integer",
+          "description": "Current page."
+        }
+      },
+      "required": [
+        "filter_groups"
+      ]
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

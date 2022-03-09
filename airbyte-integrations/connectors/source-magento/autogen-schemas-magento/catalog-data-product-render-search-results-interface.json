@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "description": "Dto that holds render information about products",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "List of products rendered information",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-render-interface"
+      }
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

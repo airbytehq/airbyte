@@ -1,0 +1,86 @@
+{
+  "type": "object",
+  "description": "CMS page interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID"
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title"
+    },
+    "page_layout": {
+      "type": "string",
+      "description": "Page layout"
+    },
+    "meta_title": {
+      "type": "string",
+      "description": "Meta title"
+    },
+    "meta_keywords": {
+      "type": "string",
+      "description": "Meta keywords"
+    },
+    "meta_description": {
+      "type": "string",
+      "description": "Meta description"
+    },
+    "content_heading": {
+      "type": "string",
+      "description": "Content heading"
+    },
+    "content": {
+      "type": "string",
+      "description": "Content"
+    },
+    "creation_time": {
+      "type": "string",
+      "description": "Creation time"
+    },
+    "update_time": {
+      "type": "string",
+      "description": "Update time"
+    },
+    "sort_order": {
+      "type": "string",
+      "description": "Sort order"
+    },
+    "layout_update_xml": {
+      "type": "string",
+      "description": "Layout update xml"
+    },
+    "custom_theme": {
+      "type": "string",
+      "description": "Custom theme"
+    },
+    "custom_root_template": {
+      "type": "string",
+      "description": "Custom root template"
+    },
+    "custom_layout_update_xml": {
+      "type": "string",
+      "description": "Custom layout update xml"
+    },
+    "custom_theme_from": {
+      "type": "string",
+      "description": "Custom theme from"
+    },
+    "custom_theme_to": {
+      "type": "string",
+      "description": "Custom theme to"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Active"
+    }
+  },
+  "required": [
+    "identifier"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

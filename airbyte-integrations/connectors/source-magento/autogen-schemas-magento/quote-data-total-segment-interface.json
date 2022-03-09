@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Interface TotalsInterface",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Code"
+    },
+    "title": {
+      "type": "string",
+      "description": "Total title"
+    },
+    "value": {
+      "type": "number",
+      "description": "Total value"
+    },
+    "area": {
+      "type": "string",
+      "description": "Display area code."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-total-segment-extension-interface"
+    }
+  },
+  "required": [
+    "code",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

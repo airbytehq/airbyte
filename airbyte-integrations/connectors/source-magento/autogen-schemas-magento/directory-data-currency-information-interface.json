@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "description": "Currency Information interface.",
+  "properties": {
+    "base_currency_code": {
+      "type": "string",
+      "description": "The base currency code for the store."
+    },
+    "base_currency_symbol": {
+      "type": "string",
+      "description": "The currency symbol of the base currency for the store."
+    },
+    "default_display_currency_code": {
+      "type": "string",
+      "description": "The default display currency code for the store."
+    },
+    "default_display_currency_symbol": {
+      "type": "string",
+      "description": "The currency symbol of the default display currency for the store."
+    },
+    "available_currency_codes": {
+      "type": "array",
+      "description": "The list of allowed currency codes for the store.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exchange_rates": {
+      "type": "array",
+      "description": "The list of exchange rate information for the store.",
+      "items": {
+        "type": "object",
+        "description": "Exchange Rate interface.",
+        "properties": {
+          "currency_to": {
+            "type": "string",
+            "description": "The currency code associated with the exchange rate."
+          },
+          "rate": {
+            "type": "number",
+            "description": "The exchange rate for the associated currency and the store's base currency."
+          },
+          "extension_attributes": {
+            "type": "object",
+            "description": "ExtensionInterface class for @see \\Magento\\Directory\\Api\\Data\\ExchangeRateInterface"
+          }
+        },
+        "required": [
+          "currency_to",
+          "rate"
+        ]
+      }
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Directory\\Api\\Data\\CurrencyInformationInterface"
+    }
+  },
+  "required": [
+    "base_currency_code",
+    "base_currency_symbol",
+    "default_display_currency_code",
+    "default_display_currency_symbol",
+    "available_currency_codes",
+    "exchange_rates"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

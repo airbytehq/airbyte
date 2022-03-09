@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "description": "Interface SearchCriteriaInterface",
+  "properties": {
+    "request_name": {
+      "type": "string"
+    },
+    "filter_groups": {
+      "type": "array",
+      "description": "A list of filter groups.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-search-filter-group"
+      }
+    },
+    "sort_orders": {
+      "type": "array",
+      "description": "Sort order.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-sort-order"
+      }
+    },
+    "page_size": {
+      "type": "integer",
+      "description": "Page size."
+    },
+    "current_page": {
+      "type": "integer",
+      "description": "Current page."
+    }
+  },
+  "required": [
+    "request_name",
+    "filter_groups"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

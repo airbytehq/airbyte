@@ -1,0 +1,149 @@
+{
+  "type": "object",
+  "description": "Credit memo item interface. After a customer places and pays for an order and an invoice has been issued, the merchant can create a credit memo to refund all or part of the amount paid for any returned or undelivered items. The memo restores funds to the customer account so that the customer can make future purchases. A credit memo item is an invoiced item for which a merchant creates a credit memo.",
+  "properties": {
+    "additional_data": {
+      "type": "string",
+      "description": "Additional data."
+    },
+    "base_cost": {
+      "type": "number",
+      "description": "The base cost for a credit memo item."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "The base discount amount for a credit memo item."
+    },
+    "base_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "The base discount tax compensation amount for a credit memo item."
+    },
+    "base_price": {
+      "type": "number",
+      "description": "The base price for a credit memo item."
+    },
+    "base_price_incl_tax": {
+      "type": "number",
+      "description": "Base price including tax."
+    },
+    "base_row_total": {
+      "type": "number",
+      "description": "Base row total."
+    },
+    "base_row_total_incl_tax": {
+      "type": "number",
+      "description": "Base row total including tax."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Base tax amount."
+    },
+    "base_weee_tax_applied_amount": {
+      "type": "number",
+      "description": "Base WEEE tax applied amount."
+    },
+    "base_weee_tax_applied_row_amnt": {
+      "type": "number",
+      "description": "Base WEEE tax applied row amount."
+    },
+    "base_weee_tax_disposition": {
+      "type": "number",
+      "description": "Base WEEE tax disposition."
+    },
+    "base_weee_tax_row_disposition": {
+      "type": "number",
+      "description": "Base WEEE tax row disposition."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Credit memo item ID."
+    },
+    "discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Discount tax compensation amount."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name."
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order item ID."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "price": {
+      "type": "number",
+      "description": "Price."
+    },
+    "price_incl_tax": {
+      "type": "number",
+      "description": "Price including tax."
+    },
+    "product_id": {
+      "type": "integer",
+      "description": "Product ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    },
+    "row_total": {
+      "type": "number",
+      "description": "Row total."
+    },
+    "row_total_incl_tax": {
+      "type": "number",
+      "description": "Row total including tax."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount."
+    },
+    "weee_tax_applied": {
+      "type": "string",
+      "description": "WEEE tax applied."
+    },
+    "weee_tax_applied_amount": {
+      "type": "number",
+      "description": "WEEE tax applied amount."
+    },
+    "weee_tax_applied_row_amount": {
+      "type": "number",
+      "description": "WEEE tax applied row amount."
+    },
+    "weee_tax_disposition": {
+      "type": "number",
+      "description": "WEEE tax disposition."
+    },
+    "weee_tax_row_disposition": {
+      "type": "number",
+      "description": "WEEE tax row disposition."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-creditmemo-item-extension-interface"
+    }
+  },
+  "required": [
+    "base_cost",
+    "base_price",
+    "entity_id",
+    "order_item_id",
+    "qty"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,128 @@
+{
+  "type": "object",
+  "description": "Interface TotalsInterface",
+  "properties": {
+    "grand_total": {
+      "type": "number",
+      "description": "Grand total in quote currency"
+    },
+    "base_grand_total": {
+      "type": "number",
+      "description": "Grand total in base currency"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal in quote currency"
+    },
+    "base_subtotal": {
+      "type": "number",
+      "description": "Subtotal in base currency"
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount in quote currency"
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Discount amount in base currency"
+    },
+    "subtotal_with_discount": {
+      "type": "number",
+      "description": "Subtotal in quote currency with applied discount"
+    },
+    "base_subtotal_with_discount": {
+      "type": "number",
+      "description": "Subtotal in base currency with applied discount"
+    },
+    "shipping_amount": {
+      "type": "number",
+      "description": "Shipping amount in quote currency"
+    },
+    "base_shipping_amount": {
+      "type": "number",
+      "description": "Shipping amount in base currency"
+    },
+    "shipping_discount_amount": {
+      "type": "number",
+      "description": "Shipping discount amount in quote currency"
+    },
+    "base_shipping_discount_amount": {
+      "type": "number",
+      "description": "Shipping discount amount in base currency"
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount in quote currency"
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Tax amount in base currency"
+    },
+    "weee_tax_applied_amount": {
+      "type": "number",
+      "description": "Item weee tax applied amount in quote currency."
+    },
+    "shipping_tax_amount": {
+      "type": "number",
+      "description": "Shipping tax amount in quote currency"
+    },
+    "base_shipping_tax_amount": {
+      "type": "number",
+      "description": "Shipping tax amount in base currency"
+    },
+    "subtotal_incl_tax": {
+      "type": "number",
+      "description": "Subtotal including tax in quote currency"
+    },
+    "base_subtotal_incl_tax": {
+      "type": "number",
+      "description": "Subtotal including tax in base currency"
+    },
+    "shipping_incl_tax": {
+      "type": "number",
+      "description": "Shipping including tax in quote currency"
+    },
+    "base_shipping_incl_tax": {
+      "type": "number",
+      "description": "Shipping including tax in base currency"
+    },
+    "base_currency_code": {
+      "type": "string",
+      "description": "Base currency code"
+    },
+    "quote_currency_code": {
+      "type": "string",
+      "description": "Quote currency code"
+    },
+    "coupon_code": {
+      "type": "string",
+      "description": "Applied coupon code"
+    },
+    "items_qty": {
+      "type": "integer",
+      "description": "Items qty"
+    },
+    "items": {
+      "type": "array",
+      "description": "Totals by items",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-totals-item-interface"
+      }
+    },
+    "total_segments": {
+      "type": "array",
+      "description": "Dynamically calculated totals",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-total-segment-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-totals-extension-interface"
+    }
+  },
+  "required": [
+    "weee_tax_applied_amount",
+    "total_segments"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

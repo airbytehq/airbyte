@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Facet Bucket",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Field name"
+    },
+    "values": {
+      "type": "array",
+      "description": "Field values",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-search-aggregation-value-interface"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "values"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

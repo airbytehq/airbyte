@@ -1,0 +1,561 @@
+{
+    "type": "object",
+    "description": "Order interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+    "properties": {
+        "adjustment_negative": {
+            "type": "number",
+            "description": "Negative adjustment value."
+        },
+        "adjustment_positive": {
+            "type": "number",
+            "description": "Positive adjustment value."
+        },
+        "applied_rule_ids": {
+            "type": "string",
+            "description": "Applied rule IDs."
+        },
+        "base_adjustment_negative": {
+            "type": "number",
+            "description": "Base negative adjustment value."
+        },
+        "base_adjustment_positive": {
+            "type": "number",
+            "description": "Base positive adjustment value."
+        },
+        "base_currency_code": {
+            "type": "string",
+            "description": "Base currency code."
+        },
+        "base_discount_amount": {
+            "type": "number",
+            "description": "Base discount amount."
+        },
+        "base_discount_canceled": {
+            "type": "number",
+            "description": "Base discount canceled."
+        },
+        "base_discount_invoiced": {
+            "type": "number",
+            "description": "Base discount invoiced."
+        },
+        "base_discount_refunded": {
+            "type": "number",
+            "description": "Base discount refunded."
+        },
+        "base_grand_total": {
+            "type": "number",
+            "description": "Base grand total."
+        },
+        "base_discount_tax_compensation_amount": {
+            "type": "number",
+            "description": "Base discount tax compensation amount."
+        },
+        "base_discount_tax_compensation_invoiced": {
+            "type": "number",
+            "description": "Base discount tax compensation invoiced."
+        },
+        "base_discount_tax_compensation_refunded": {
+            "type": "number",
+            "description": "Base discount tax compensation refunded."
+        },
+        "base_shipping_amount": {
+            "type": "number",
+            "description": "Base shipping amount."
+        },
+        "base_shipping_canceled": {
+            "type": "number",
+            "description": "Base shipping canceled."
+        },
+        "base_shipping_discount_amount": {
+            "type": "number",
+            "description": "Base shipping discount amount."
+        },
+        "base_shipping_discount_tax_compensation_amnt": {
+            "type": "number",
+            "description": "Base shipping discount tax compensation amount."
+        },
+        "base_shipping_incl_tax": {
+            "type": "number",
+            "description": "Base shipping including tax."
+        },
+        "base_shipping_invoiced": {
+            "type": "number",
+            "description": "Base shipping invoiced."
+        },
+        "base_shipping_refunded": {
+            "type": "number",
+            "description": "Base shipping refunded."
+        },
+        "base_shipping_tax_amount": {
+            "type": "number",
+            "description": "Base shipping tax amount."
+        },
+        "base_shipping_tax_refunded": {
+            "type": "number",
+            "description": "Base shipping tax refunded."
+        },
+        "base_subtotal": {
+            "type": "number",
+            "description": "Base subtotal."
+        },
+        "base_subtotal_canceled": {
+            "type": "number",
+            "description": "Base subtotal canceled."
+        },
+        "base_subtotal_incl_tax": {
+            "type": "number",
+            "description": "Base subtotal including tax."
+        },
+        "base_subtotal_invoiced": {
+            "type": "number",
+            "description": "Base subtotal invoiced."
+        },
+        "base_subtotal_refunded": {
+            "type": "number",
+            "description": "Base subtotal refunded."
+        },
+        "base_tax_amount": {
+            "type": "number",
+            "description": "Base tax amount."
+        },
+        "base_tax_canceled": {
+            "type": "number",
+            "description": "Base tax canceled."
+        },
+        "base_tax_invoiced": {
+            "type": "number",
+            "description": "Base tax invoiced."
+        },
+        "base_tax_refunded": {
+            "type": "number",
+            "description": "Base tax refunded."
+        },
+        "base_total_canceled": {
+            "type": "number",
+            "description": "Base total canceled."
+        },
+        "base_total_due": {
+            "type": "number",
+            "description": "Base total due."
+        },
+        "base_total_invoiced": {
+            "type": "number",
+            "description": "Base total invoiced."
+        },
+        "base_total_invoiced_cost": {
+            "type": "number",
+            "description": "Base total invoiced cost."
+        },
+        "base_total_offline_refunded": {
+            "type": "number",
+            "description": "Base total offline refunded."
+        },
+        "base_total_online_refunded": {
+            "type": "number",
+            "description": "Base total online refunded."
+        },
+        "base_total_paid": {
+            "type": "number",
+            "description": "Base total paid."
+        },
+        "base_total_qty_ordered": {
+            "type": "number",
+            "description": "Base total quantity ordered."
+        },
+        "base_total_refunded": {
+            "type": "number",
+            "description": "Base total refunded."
+        },
+        "base_to_global_rate": {
+            "type": "number",
+            "description": "Base-to-global rate."
+        },
+        "base_to_order_rate": {
+            "type": "number",
+            "description": "Base-to-order rate."
+        },
+        "billing_address_id": {
+            "type": "integer",
+            "description": "Billing address ID."
+        },
+        "can_ship_partially": {
+            "type": "integer",
+            "description": "Can-ship-partially flag value."
+        },
+        "can_ship_partially_item": {
+            "type": "integer",
+            "description": "Can-ship-partially-item flag value."
+        },
+        "coupon_code": {
+            "type": "string",
+            "description": "Coupon code."
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Created-at timestamp."
+        },
+        "customer_dob": {
+            "type": "string",
+            "description": "Customer date-of-birth (DOB)."
+        },
+        "customer_email": {
+            "type": "string",
+            "description": "Customer email address."
+        },
+        "customer_firstname": {
+            "type": "string",
+            "description": "Customer first name."
+        },
+        "customer_gender": {
+            "type": "integer",
+            "description": "Customer gender."
+        },
+        "customer_group_id": {
+            "type": "integer",
+            "description": "Customer group ID."
+        },
+        "customer_id": {
+            "type": "integer",
+            "description": "Customer ID."
+        },
+        "customer_is_guest": {
+            "type": "integer",
+            "description": "Customer-is-guest flag value."
+        },
+        "customer_lastname": {
+            "type": "string",
+            "description": "Customer last name."
+        },
+        "customer_middlename": {
+            "type": "string",
+            "description": "Customer middle name."
+        },
+        "customer_note": {
+            "type": "string",
+            "description": "Customer note."
+        },
+        "customer_note_notify": {
+            "type": "integer",
+            "description": "Customer-note-notify flag value."
+        },
+        "customer_prefix": {
+            "type": "string",
+            "description": "Customer prefix."
+        },
+        "customer_suffix": {
+            "type": "string",
+            "description": "Customer suffix."
+        },
+        "customer_taxvat": {
+            "type": "string",
+            "description": "Customer value-added tax (VAT)."
+        },
+        "discount_amount": {
+            "type": "number",
+            "description": "Discount amount."
+        },
+        "discount_canceled": {
+            "type": "number",
+            "description": "Discount canceled."
+        },
+        "discount_description": {
+            "type": "string",
+            "description": "Discount description."
+        },
+        "discount_invoiced": {
+            "type": "number",
+            "description": "Discount invoiced."
+        },
+        "discount_refunded": {
+            "type": "number",
+            "description": "Discount refunded amount."
+        },
+        "edit_increment": {
+            "type": "integer",
+            "description": "Edit increment value."
+        },
+        "email_sent": {
+            "type": "integer",
+            "description": "Email-sent flag value."
+        },
+        "entity_id": {
+            "type": "integer",
+            "description": "Order ID."
+        },
+        "ext_customer_id": {
+            "type": "string",
+            "description": "External customer ID."
+        },
+        "ext_order_id": {
+            "type": "string",
+            "description": "External order ID."
+        },
+        "forced_shipment_with_invoice": {
+            "type": "integer",
+            "description": "Forced-shipment-with-invoice flag value."
+        },
+        "global_currency_code": {
+            "type": "string",
+            "description": "Global currency code."
+        },
+        "grand_total": {
+            "type": "number",
+            "description": "Grand total."
+        },
+        "discount_tax_compensation_amount": {
+            "type": "number",
+            "description": "Discount tax compensation amount."
+        },
+        "discount_tax_compensation_invoiced": {
+            "type": "number",
+            "description": "Discount tax compensation invoiced amount."
+        },
+        "discount_tax_compensation_refunded": {
+            "type": "number",
+            "description": "Discount tax compensation refunded amount."
+        },
+        "hold_before_state": {
+            "type": "string",
+            "description": "Hold before state."
+        },
+        "hold_before_status": {
+            "type": "string",
+            "description": "Hold before status."
+        },
+        "increment_id": {
+            "type": "string",
+            "description": "Increment ID."
+        },
+        "is_virtual": {
+            "type": "integer",
+            "description": "Is-virtual flag value."
+        },
+        "order_currency_code": {
+            "type": "string",
+            "description": "Order currency code."
+        },
+        "original_increment_id": {
+            "type": "string",
+            "description": "Original increment ID."
+        },
+        "payment_authorization_amount": {
+            "type": "number",
+            "description": "Payment authorization amount."
+        },
+        "payment_auth_expiration": {
+            "type": "integer",
+            "description": "Payment authorization expiration date."
+        },
+        "protect_code": {
+            "type": "string",
+            "description": "Protect code."
+        },
+        "quote_address_id": {
+            "type": "integer",
+            "description": "Quote address ID."
+        },
+        "quote_id": {
+            "type": "integer",
+            "description": "Quote ID."
+        },
+        "relation_child_id": {
+            "type": "string",
+            "description": "Relation child ID."
+        },
+        "relation_child_real_id": {
+            "type": "string",
+            "description": "Relation child real ID."
+        },
+        "relation_parent_id": {
+            "type": "string",
+            "description": "Relation parent ID."
+        },
+        "relation_parent_real_id": {
+            "type": "string",
+            "description": "Relation parent real ID."
+        },
+        "remote_ip": {
+            "type": "string",
+            "description": "Remote IP address."
+        },
+        "shipping_amount": {
+            "type": "number",
+            "description": "Shipping amount."
+        },
+        "shipping_canceled": {
+            "type": "number",
+            "description": "Shipping canceled amount."
+        },
+        "shipping_description": {
+            "type": "string",
+            "description": "Shipping description."
+        },
+        "shipping_discount_amount": {
+            "type": "number",
+            "description": "Shipping discount amount."
+        },
+        "shipping_discount_tax_compensation_amount": {
+            "type": "number",
+            "description": "Shipping discount tax compensation amount."
+        },
+        "shipping_incl_tax": {
+            "type": "number",
+            "description": "Shipping including tax amount."
+        },
+        "shipping_invoiced": {
+            "type": "number",
+            "description": "Shipping invoiced amount."
+        },
+        "shipping_refunded": {
+            "type": "number",
+            "description": "Shipping refunded amount."
+        },
+        "shipping_tax_amount": {
+            "type": "number",
+            "description": "Shipping tax amount."
+        },
+        "shipping_tax_refunded": {
+            "type": "number",
+            "description": "Shipping tax refunded amount."
+        },
+        "state": {
+            "type": "string",
+            "description": "State."
+        },
+        "status": {
+            "type": "string",
+            "description": "Status."
+        },
+        "store_currency_code": {
+            "type": "string",
+            "description": "Store currency code."
+        },
+        "store_id": {
+            "type": "integer",
+            "description": "Store ID."
+        },
+        "store_name": {
+            "type": "string",
+            "description": "Store name."
+        },
+        "store_to_base_rate": {
+            "type": "number",
+            "description": "Store-to-base rate."
+        },
+        "store_to_order_rate": {
+            "type": "number",
+            "description": "Store-to-order rate."
+        },
+        "subtotal": {
+            "type": "number",
+            "description": "Subtotal."
+        },
+        "subtotal_canceled": {
+            "type": "number",
+            "description": "Subtotal canceled amount."
+        },
+        "subtotal_incl_tax": {
+            "type": "number",
+            "description": "Subtotal including tax amount."
+        },
+        "subtotal_invoiced": {
+            "type": "number",
+            "description": "Subtotal invoiced amount."
+        },
+        "subtotal_refunded": {
+            "type": "number",
+            "description": "Subtotal refunded amount."
+        },
+        "tax_amount": {
+            "type": "number",
+            "description": "Tax amount."
+        },
+        "tax_canceled": {
+            "type": "number",
+            "description": "Tax canceled amount."
+        },
+        "tax_invoiced": {
+            "type": "number",
+            "description": "Tax invoiced amount."
+        },
+        "tax_refunded": {
+            "type": "number",
+            "description": "Tax refunded amount."
+        },
+        "total_canceled": {
+            "type": "number",
+            "description": "Total canceled."
+        },
+        "total_due": {
+            "type": "number",
+            "description": "Total due."
+        },
+        "total_invoiced": {
+            "type": "number",
+            "description": "Total invoiced amount."
+        },
+        "total_item_count": {
+            "type": "integer",
+            "description": "Total item count."
+        },
+        "total_offline_refunded": {
+            "type": "number",
+            "description": "Total offline refunded amount."
+        },
+        "total_online_refunded": {
+            "type": "number",
+            "description": "Total online refunded amount."
+        },
+        "total_paid": {
+            "type": "number",
+            "description": "Total paid."
+        },
+        "total_qty_ordered": {
+            "type": "number",
+            "description": "Total quantity ordered."
+        },
+        "total_refunded": {
+            "type": "number",
+            "description": "Total amount refunded."
+        },
+        "updated_at": {
+            "type": "string",
+            "description": "Updated-at timestamp."
+        },
+        "weight": {
+            "type": "number",
+            "description": "Weight."
+        },
+        "x_forwarded_for": {
+            "type": "string",
+            "description": "X-Forwarded-For field value."
+        },
+        "items": {
+            "type": "array",
+            "description": "Array of ordered items."
+        },
+        "billing_address": {
+            "type": "object",
+            "description": "Object of billing adress data"
+        },
+        "payment": {
+            "type": "object",
+            "description": "Order payment interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer."
+        },
+        "status_histories": {
+            "type": "array",
+            "description": "Array of status histories."
+        },
+        "extension_attributes": {
+            "type": "object",
+            "description": "Array of multiple extension attributes"
+        }
+    },
+    "required": [
+        "base_grand_total",
+        "customer_email",
+        "grand_total",
+        "items"
+    ],
+    "$schema": "http://json-schema.org/schema#"
+}

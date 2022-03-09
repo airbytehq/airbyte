@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\CreditmemoCreationArgumentsInterface",
+  "properties": {
+    "return_to_stock_items": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

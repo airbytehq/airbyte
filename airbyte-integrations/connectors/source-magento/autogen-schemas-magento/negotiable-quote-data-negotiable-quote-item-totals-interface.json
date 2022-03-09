@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "description": "Extension attribute for quote item totals model.",
+  "properties": {
+    "cost": {
+      "type": "number",
+      "description": "Cost for quote item."
+    },
+    "catalog_price": {
+      "type": "number",
+      "description": "Catalog price for quote item."
+    },
+    "base_catalog_price": {
+      "type": "number",
+      "description": "Catalog price for quote item in base currency."
+    },
+    "catalog_price_incl_tax": {
+      "type": "number",
+      "description": "Catalog price with included tax for quote item."
+    },
+    "base_catalog_price_incl_tax": {
+      "type": "number",
+      "description": "Catalog price with included tax for quote item in base currency."
+    },
+    "cart_price": {
+      "type": "number",
+      "description": "Cart price for quote item."
+    },
+    "base_cart_price": {
+      "type": "number",
+      "description": "Cart price for quote item in base currency."
+    },
+    "cart_tax": {
+      "type": "number",
+      "description": "Tax from catalog price for quote item."
+    },
+    "base_cart_tax": {
+      "type": "number",
+      "description": "Tax from catalog price for quote item in base currency."
+    },
+    "cart_price_incl_tax": {
+      "type": "number",
+      "description": "Cart price with included tax for quote item."
+    },
+    "base_cart_price_incl_tax": {
+      "type": "number",
+      "description": "Cart price with included tax for quote item in base currency."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-item-totals-extension-interface"
+    }
+  },
+  "required": [
+    "cost",
+    "catalog_price",
+    "base_catalog_price",
+    "catalog_price_incl_tax",
+    "base_catalog_price_incl_tax",
+    "cart_price",
+    "base_cart_price",
+    "cart_tax",
+    "base_cart_tax",
+    "cart_price_incl_tax",
+    "base_cart_price_incl_tax"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Interface GrandTotalRatesInterface",
+  "properties": {
+    "percent": {
+      "type": "string",
+      "description": "Tax percentage value"
+    },
+    "title": {
+      "type": "string",
+      "description": "Rate title"
+    }
+  },
+  "required": [
+    "percent",
+    "title"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

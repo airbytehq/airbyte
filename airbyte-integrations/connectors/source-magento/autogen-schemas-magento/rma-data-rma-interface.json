@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "description": "Interface RmaInterface",
+  "properties": {
+    "increment_id": {
+      "type": "string",
+      "description": "Entity_id"
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Entity_id"
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Order_id"
+    },
+    "order_increment_id": {
+      "type": "string",
+      "description": "Order_increment_id"
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store_id"
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer_id"
+    },
+    "date_requested": {
+      "type": "string",
+      "description": "Date_requested"
+    },
+    "customer_custom_email": {
+      "type": "string",
+      "description": "Customer_custom_email"
+    },
+    "items": {
+      "type": "array",
+      "description": "Items",
+      "items": {
+        "$ref": "_definitions.json#/definitions/rma-data-item-interface"
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "Status"
+    },
+    "comments": {
+      "type": "array",
+      "description": "Comments list",
+      "items": {
+        "$ref": "_definitions.json#/definitions/rma-data-comment-interface"
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "description": "Tracks list",
+      "items": {
+        "$ref": "_definitions.json#/definitions/rma-data-track-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/rma-data-rma-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "increment_id",
+    "entity_id",
+    "order_id",
+    "order_increment_id",
+    "store_id",
+    "customer_id",
+    "date_requested",
+    "customer_custom_email",
+    "items",
+    "status",
+    "comments",
+    "tracks"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

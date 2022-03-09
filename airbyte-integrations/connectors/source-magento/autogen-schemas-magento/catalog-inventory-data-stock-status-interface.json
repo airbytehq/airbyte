@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "description": "Interface StockStatusInterface",
+  "properties": {
+    "product_id": {
+      "type": "integer"
+    },
+    "stock_id": {
+      "type": "integer"
+    },
+    "qty": {
+      "type": "integer"
+    },
+    "stock_status": {
+      "type": "integer"
+    },
+    "stock_item": {
+      "$ref": "_definitions.json#/definitions/catalog-inventory-data-stock-item-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-inventory-data-stock-status-extension-interface"
+    }
+  },
+  "required": [
+    "product_id",
+    "stock_id",
+    "qty",
+    "stock_status",
+    "stock_item"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

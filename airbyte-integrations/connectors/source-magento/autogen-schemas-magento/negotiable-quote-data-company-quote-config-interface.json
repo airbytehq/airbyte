@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "description": "Interface CompanyQuoteConfigInterface",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Company id"
+    },
+    "is_quote_enabled": {
+      "type": "boolean",
+      "description": "Quote enabled for company"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-company-quote-config-extension-interface"
+    }
+  },
+  "required": [
+    "is_quote_enabled"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

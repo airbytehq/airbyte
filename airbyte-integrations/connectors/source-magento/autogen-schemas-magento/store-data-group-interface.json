@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "Group interface",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "website_id": {
+      "type": "integer"
+    },
+    "root_category_id": {
+      "type": "integer"
+    },
+    "default_store_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Group code."
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Store\\Api\\Data\\GroupInterface"
+    }
+  },
+  "required": [
+    "id",
+    "website_id",
+    "root_category_id",
+    "default_store_id",
+    "name",
+    "code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

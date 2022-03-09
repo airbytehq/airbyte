@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "description": "Interface LinkInterface Represents link with collected data and initialized vector for decryption.",
+  "properties": {
+    "url": {
+      "type": "string"
+    },
+    "initialization_vector": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "url",
+    "initialization_vector"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

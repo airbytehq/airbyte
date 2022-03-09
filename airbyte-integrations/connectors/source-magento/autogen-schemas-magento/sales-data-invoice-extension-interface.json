@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\InvoiceInterface",
+  "properties": {
+    "base_customer_balance_amount": {
+      "type": "number"
+    },
+    "customer_balance_amount": {
+      "type": "number"
+    },
+    "base_gift_cards_amount": {
+      "type": "number"
+    },
+    "gift_cards_amount": {
+      "type": "number"
+    },
+    "gw_base_price": {
+      "type": "string"
+    },
+    "gw_price": {
+      "type": "string"
+    },
+    "gw_items_base_price": {
+      "type": "string"
+    },
+    "gw_items_price": {
+      "type": "string"
+    },
+    "gw_card_base_price": {
+      "type": "string"
+    },
+    "gw_card_price": {
+      "type": "string"
+    },
+    "gw_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_items_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_base_tax_amount": {
+      "type": "string"
+    },
+    "gw_card_tax_amount": {
+      "type": "string"
+    },
+    "vertex_tax_calculation_shipping_address": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-address-interface"
+    },
+    "vertex_tax_calculation_billing_address": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-address-interface"
+    },
+    "vertex_tax_calculation_order": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

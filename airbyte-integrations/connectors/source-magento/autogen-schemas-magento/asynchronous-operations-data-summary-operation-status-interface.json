@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Getter Class OperationsStatusInterface Instead of OperationInterface this class don't provide all operation data and not responsive to set any data, just to get operation data without serialized_data and result_serialized_data",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "status": {
+      "type": "integer",
+      "description": "Operation status"
+    },
+    "result_message": {
+      "type": "string",
+      "description": "Result message"
+    },
+    "error_code": {
+      "type": "integer",
+      "description": "Error code"
+    }
+  },
+  "required": [
+    "id",
+    "status",
+    "result_message",
+    "error_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Credit memo comment search result interface. After a customer places and pays for an order and an invoice has been issued, the merchant can create a credit memo to refund all or part of the amount paid for any returned or undelivered items. The memo restores funds to the customer account so that the customer can make future purchases. A credit memo usually includes comments that detail why the credit memo amount was credited to the customer.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of collection items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-creditmemo-comment-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

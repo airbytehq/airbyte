@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Interface StockItemCollectionInterface",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Items",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-inventory-data-stock-item-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/catalog-inventory-stock-item-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

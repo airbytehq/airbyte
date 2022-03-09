@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "description": "Shipment track interface. A shipment is a delivery package that contains products. A shipment document accompanies the shipment. This document lists the products and their quantities in the delivery package. Merchants and customers can track shipments.",
+  "properties": {
+    "order_id": {
+      "type": "integer",
+      "description": "The order_id for the shipment package."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Shipment package ID."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Updated-at timestamp."
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipment-track-extension-interface"
+    },
+    "track_number": {
+      "type": "string",
+      "description": "Track number."
+    },
+    "title": {
+      "type": "string",
+      "description": "Title."
+    },
+    "carrier_code": {
+      "type": "string",
+      "description": "Carrier code."
+    }
+  },
+  "required": [
+    "order_id",
+    "parent_id",
+    "weight",
+    "qty",
+    "description",
+    "track_number",
+    "title",
+    "carrier_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

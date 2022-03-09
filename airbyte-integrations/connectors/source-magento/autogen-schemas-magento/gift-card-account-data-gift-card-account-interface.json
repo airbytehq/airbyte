@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "description": "Gift Card Account data",
+  "properties": {
+    "gift_cards": {
+      "type": "array",
+      "description": "Cards codes",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gift_cards_amount": {
+      "type": "number",
+      "description": "Cards amount in quote currency"
+    },
+    "base_gift_cards_amount": {
+      "type": "number",
+      "description": "Cards amount in base currency"
+    },
+    "gift_cards_amount_used": {
+      "type": "number",
+      "description": "Cards amount used in quote currency"
+    },
+    "base_gift_cards_amount_used": {
+      "type": "number",
+      "description": "Cards amount used in base currency"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/gift-card-account-data-gift-card-account-extension-interface"
+    }
+  },
+  "required": [
+    "gift_cards",
+    "gift_cards_amount",
+    "base_gift_cards_amount",
+    "gift_cards_amount_used",
+    "base_gift_cards_amount_used"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

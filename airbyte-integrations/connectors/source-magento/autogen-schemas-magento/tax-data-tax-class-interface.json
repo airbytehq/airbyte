@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Tax class interface.",
+  "properties": {
+    "class_id": {
+      "type": "integer",
+      "description": "Tax class ID."
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Tax class name."
+    },
+    "class_type": {
+      "type": "string",
+      "description": "Tax class type."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-tax-class-extension-interface"
+    }
+  },
+  "required": [
+    "class_name",
+    "class_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

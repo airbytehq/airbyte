@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "description": "Interface ShippingAssignmentInterface",
+  "properties": {
+    "shipping": {
+      "$ref": "_definitions.json#/definitions/quote-data-shipping-interface"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-cart-item-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-shipping-assignment-extension-interface"
+    }
+  },
+  "required": [
+    "shipping",
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

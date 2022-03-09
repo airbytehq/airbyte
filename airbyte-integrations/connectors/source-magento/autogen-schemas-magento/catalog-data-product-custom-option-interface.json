@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "product_sku": {
+      "type": "string",
+      "description": "Product SKU"
+    },
+    "option_id": {
+      "type": "integer",
+      "description": "Option id"
+    },
+    "title": {
+      "type": "string",
+      "description": "Option title"
+    },
+    "type": {
+      "type": "string",
+      "description": "Option type"
+    },
+    "sort_order": {
+      "type": "integer",
+      "description": "Sort order"
+    },
+    "is_require": {
+      "type": "boolean",
+      "description": "Is require"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price"
+    },
+    "price_type": {
+      "type": "string",
+      "description": "Price type"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Sku"
+    },
+    "file_extension": {
+      "type": "string"
+    },
+    "max_characters": {
+      "type": "integer"
+    },
+    "image_size_x": {
+      "type": "integer"
+    },
+    "image_size_y": {
+      "type": "integer"
+    },
+    "values": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-custom-option-values-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-custom-option-extension-interface"
+    }
+  },
+  "required": [
+    "product_sku",
+    "title",
+    "type",
+    "sort_order",
+    "is_require"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

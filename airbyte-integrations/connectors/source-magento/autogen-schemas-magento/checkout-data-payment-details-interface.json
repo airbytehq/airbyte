@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "description": "Interface PaymentDetailsInterface",
+  "properties": {
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-payment-method-interface"
+      }
+    },
+    "totals": {
+      "$ref": "_definitions.json#/definitions/quote-data-totals-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/checkout-data-payment-details-extension-interface"
+    }
+  },
+  "required": [
+    "payment_methods",
+    "totals"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

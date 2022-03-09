@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Interface CartItemInterface",
+  "properties": {
+    "item_id": {
+      "type": "integer",
+      "description": "Item ID. Otherwise, null."
+    },
+    "sku": {
+      "type": "string",
+      "description": "Product SKU. Otherwise, null."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Product quantity."
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name. Otherwise, null."
+    },
+    "price": {
+      "type": "number",
+      "description": "Product price. Otherwise, null."
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Product type. Otherwise, null."
+    },
+    "quote_id": {
+      "type": "string",
+      "description": "Quote id."
+    },
+    "product_option": {
+      "$ref": "_definitions.json#/definitions/quote-data-product-option-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-cart-item-extension-interface"
+    }
+  },
+  "required": [
+    "qty",
+    "quote_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

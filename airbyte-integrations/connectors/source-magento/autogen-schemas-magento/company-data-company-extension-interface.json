@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Company\\Api\\Data\\CompanyInterface",
+  "properties": {
+    "applicable_payment_method": {
+      "type": "integer"
+    },
+    "available_payment_methods": {
+      "type": "string"
+    },
+    "use_config_settings": {
+      "type": "integer"
+    },
+    "quote_config": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-company-quote-config-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

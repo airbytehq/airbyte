@@ -1,0 +1,145 @@
+{
+  "type": "object",
+  "description": "Interface RuleInterface",
+  "properties": {
+    "rule_id": {
+      "type": "integer",
+      "description": "Rule id"
+    },
+    "name": {
+      "type": "string",
+      "description": "Rule name"
+    },
+    "store_labels": {
+      "type": "array",
+      "description": "Display label",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-rule-data-rule-label-interface"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Description"
+    },
+    "website_ids": {
+      "type": "array",
+      "description": "A list of websites the rule applies to",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "customer_group_ids": {
+      "type": "array",
+      "description": "Ids of customer groups that the rule applies to",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "from_date": {
+      "type": "string",
+      "description": "The start date when the coupon is active"
+    },
+    "to_date": {
+      "type": "string",
+      "description": "The end date when the coupon is active"
+    },
+    "uses_per_customer": {
+      "type": "integer",
+      "description": "Number of uses per customer"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "The coupon is active"
+    },
+    "condition": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-condition-interface"
+    },
+    "action_condition": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-condition-interface"
+    },
+    "stop_rules_processing": {
+      "type": "boolean",
+      "description": "To stop rule processing"
+    },
+    "is_advanced": {
+      "type": "boolean",
+      "description": "Is this field needed"
+    },
+    "product_ids": {
+      "type": "array",
+      "description": "Product ids",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "sort_order": {
+      "type": "integer",
+      "description": "Sort order"
+    },
+    "simple_action": {
+      "type": "string",
+      "description": "Simple action of the rule"
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount"
+    },
+    "discount_qty": {
+      "type": "number",
+      "description": "Maximum qty discount is applied"
+    },
+    "discount_step": {
+      "type": "integer",
+      "description": "Discount step"
+    },
+    "apply_to_shipping": {
+      "type": "boolean",
+      "description": "The rule applies to shipping"
+    },
+    "times_used": {
+      "type": "integer",
+      "description": "How many times the rule has been used"
+    },
+    "is_rss": {
+      "type": "boolean",
+      "description": "Whether the rule is in RSS"
+    },
+    "coupon_type": {
+      "type": "string",
+      "description": "Coupon type"
+    },
+    "use_auto_generation": {
+      "type": "boolean",
+      "description": "To auto generate coupon"
+    },
+    "uses_per_coupon": {
+      "type": "integer",
+      "description": "Limit of uses per coupon"
+    },
+    "simple_free_shipping": {
+      "type": "string",
+      "description": "To grant free shipping"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-rule-extension-interface"
+    }
+  },
+  "required": [
+    "website_ids",
+    "customer_group_ids",
+    "uses_per_customer",
+    "is_active",
+    "stop_rules_processing",
+    "is_advanced",
+    "sort_order",
+    "discount_amount",
+    "discount_step",
+    "apply_to_shipping",
+    "times_used",
+    "is_rss",
+    "coupon_type",
+    "use_auto_generation",
+    "uses_per_coupon"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

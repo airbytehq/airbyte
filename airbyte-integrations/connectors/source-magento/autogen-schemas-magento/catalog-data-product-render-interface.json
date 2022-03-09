@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "description": "Represents Data Object which holds enough information to render product This information is put into part as Add To Cart or Add to Compare Data or Price Data",
+  "properties": {
+    "add_to_cart_button": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-button-interface"
+    },
+    "add_to_compare_button": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-button-interface"
+    },
+    "price_info": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-price-info-interface"
+    },
+    "images": {
+      "type": "array",
+      "description": "Enough information, that needed to render image on front",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-render-image-interface"
+      }
+    },
+    "url": {
+      "type": "string",
+      "description": "Product url"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Product identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "type": {
+      "type": "string",
+      "description": "Product type. Such as bundle, grouped, simple, etc..."
+    },
+    "is_salable": {
+      "type": "string",
+      "description": "Information about product saleability (In Stock)"
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Information about current store id or requested store id"
+    },
+    "currency_code": {
+      "type": "string",
+      "description": "Current or desired currency code to product"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-extension-interface"
+    }
+  },
+  "required": [
+    "add_to_cart_button",
+    "add_to_compare_button",
+    "price_info",
+    "images",
+    "url",
+    "id",
+    "name",
+    "type",
+    "is_salable",
+    "store_id",
+    "currency_code",
+    "extension_attributes"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Attribute code"
+    },
+    "type": {
+      "type": "string",
+      "description": "Attribute type"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-link-attribute-extension-interface"
+    }
+  },
+  "required": [
+    "code",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

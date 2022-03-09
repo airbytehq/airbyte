@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "description": "Interface CompanyQuoteConfigInterface",
+  "properties": {
+    "item_id": {
+      "type": "integer",
+      "description": "Quote item id"
+    },
+    "original_price": {
+      "type": "number",
+      "description": "Quote item original price"
+    },
+    "original_tax_amount": {
+      "type": "number",
+      "description": "Quote item original tax amount"
+    },
+    "original_discount_amount": {
+      "type": "number",
+      "description": "Quote item original discount amount"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-item-extension-interface"
+    }
+  },
+  "required": [
+    "item_id",
+    "original_price",
+    "original_tax_amount",
+    "original_discount_amount"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Product type details",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product type code"
+    },
+    "label": {
+      "type": "string",
+      "description": "Product type label"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-type-extension-interface"
+    }
+  },
+  "required": [
+    "name",
+    "label"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

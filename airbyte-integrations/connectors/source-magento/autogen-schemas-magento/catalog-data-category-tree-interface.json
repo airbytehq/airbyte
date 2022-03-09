@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent category ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category name"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether category is active"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Category position"
+    },
+    "level": {
+      "type": "integer",
+      "description": "Category level"
+    },
+    "product_count": {
+      "type": "integer",
+      "description": "Product count"
+    },
+    "children_data": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-category-tree-interface"
+      }
+    }
+  },
+  "required": [
+    "parent_id",
+    "name",
+    "is_active",
+    "position",
+    "level",
+    "product_count",
+    "children_data"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

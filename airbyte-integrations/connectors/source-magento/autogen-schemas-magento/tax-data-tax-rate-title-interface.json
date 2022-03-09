@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Tax rate title interface.",
+  "properties": {
+    "store_id": {
+      "type": "string",
+      "description": "Store id"
+    },
+    "value": {
+      "type": "string",
+      "description": "Title value"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/tax-data-tax-rate-title-extension-interface"
+    }
+  },
+  "required": [
+    "store_id",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

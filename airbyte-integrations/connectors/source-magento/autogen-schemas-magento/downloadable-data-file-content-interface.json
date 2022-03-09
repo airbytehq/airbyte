@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "file_data": {
+      "type": "string",
+      "description": "Data (base64 encoded content)"
+    },
+    "name": {
+      "type": "string",
+      "description": "File name"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-file-content-extension-interface"
+    }
+  },
+  "required": [
+    "file_data",
+    "name"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

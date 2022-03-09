@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\AddressInterface",
+  "properties": {
+    "gift_registry_id": {
+      "type": "integer"
+    },
+    "checkout_fields": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

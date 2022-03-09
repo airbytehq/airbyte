@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Attributes list.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

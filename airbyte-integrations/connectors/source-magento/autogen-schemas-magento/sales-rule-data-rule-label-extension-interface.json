@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\SalesRule\\Api\\Data\\RuleLabelInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

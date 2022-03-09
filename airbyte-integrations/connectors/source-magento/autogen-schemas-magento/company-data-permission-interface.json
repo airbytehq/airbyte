@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Permission interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id."
+    },
+    "role_id": {
+      "type": "integer",
+      "description": "Role id."
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "Resource id."
+    },
+    "permission": {
+      "type": "string",
+      "description": "Permission."
+    }
+  },
+  "required": [
+    "resource_id",
+    "permission"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

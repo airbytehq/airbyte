@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "description": "Downloadable Option",
+  "properties": {
+    "downloadable_links": {
+      "type": "array",
+      "description": "The list of downloadable links",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "required": [
+    "downloadable_links"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,121 @@
+{
+  "type": "object",
+  "description": "Interface AddressInterface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region name"
+    },
+    "region_id": {
+      "type": "integer",
+      "description": "Region id"
+    },
+    "region_code": {
+      "type": "string",
+      "description": "Region code"
+    },
+    "country_id": {
+      "type": "string",
+      "description": "Country id"
+    },
+    "street": {
+      "type": "array",
+      "description": "Street",
+      "items": {
+        "type": "string"
+      }
+    },
+    "company": {
+      "type": "string",
+      "description": "Company"
+    },
+    "telephone": {
+      "type": "string",
+      "description": "Telephone number"
+    },
+    "fax": {
+      "type": "string",
+      "description": "Fax number"
+    },
+    "postcode": {
+      "type": "string",
+      "description": "Postcode"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name"
+    },
+    "firstname": {
+      "type": "string",
+      "description": "First name"
+    },
+    "lastname": {
+      "type": "string",
+      "description": "Last name"
+    },
+    "middlename": {
+      "type": "string",
+      "description": "Middle name"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Prefix"
+    },
+    "suffix": {
+      "type": "string",
+      "description": "Suffix"
+    },
+    "vat_id": {
+      "type": "string",
+      "description": "Vat id"
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer id"
+    },
+    "email": {
+      "type": "string",
+      "description": "Billing/shipping email"
+    },
+    "same_as_billing": {
+      "type": "integer",
+      "description": "Same as billing flag"
+    },
+    "customer_address_id": {
+      "type": "integer",
+      "description": "Customer address id"
+    },
+    "save_in_address_book": {
+      "type": "integer",
+      "description": "Save in address book flag"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "region",
+    "region_id",
+    "region_code",
+    "country_id",
+    "street",
+    "telephone",
+    "postcode",
+    "city",
+    "firstname",
+    "lastname",
+    "email"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "description": "Order status history interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+  "properties": {
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Order status history ID."
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Entity name."
+    },
+    "is_customer_notified": {
+      "type": "integer",
+      "description": "Is-customer-notified flag value."
+    },
+    "is_visible_on_front": {
+      "type": "integer",
+      "description": "Is-visible-on-storefront flag value."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "status": {
+      "type": "string",
+      "description": "Status."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-status-history-extension-interface"
+    }
+  },
+  "required": [
+    "comment",
+    "is_customer_notified",
+    "is_visible_on_front",
+    "parent_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

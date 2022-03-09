@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "description": "Interface OptionInterface",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "attribute_id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "position": {
+      "type": "integer"
+    },
+    "is_use_default": {
+      "type": "boolean"
+    },
+    "values": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/configurable-product-data-option-value-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/configurable-product-data-option-extension-interface"
+    },
+    "product_id": {
+      "type": "integer"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

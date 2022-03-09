@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Order status history search result interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of collection items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-order-status-history-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

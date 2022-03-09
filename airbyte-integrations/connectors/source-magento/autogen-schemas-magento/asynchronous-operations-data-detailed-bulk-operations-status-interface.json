@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Interface BulkStatusInterface Bulk summary data with list of operations items full data.",
+  "properties": {
+    "operations_list": {
+      "type": "array",
+      "description": "Operations list.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/asynchronous-operations-data-detailed-operation-status-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/asynchronous-operations-data-bulk-summary-extension-interface"
+    },
+    "bulk_id": {
+      "type": "string",
+      "description": "Bulk uuid"
+    },
+    "description": {
+      "type": "string",
+      "description": "Bulk description"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Bulk scheduled time"
+    },
+    "user_id": {
+      "type": "integer",
+      "description": "User id"
+    },
+    "operation_count": {
+      "type": "integer",
+      "description": "Total number of operations scheduled in scope of this bulk"
+    }
+  },
+  "required": [
+    "operations_list",
+    "bulk_id",
+    "description",
+    "start_time",
+    "user_id",
+    "operation_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

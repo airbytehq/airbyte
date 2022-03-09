@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "Interface for quote comment attachment.",
+  "properties": {
+    "attachment_id": {
+      "type": "integer",
+      "description": "Attachment ID."
+    },
+    "comment_id": {
+      "type": "integer",
+      "description": "Comment ID."
+    },
+    "file_name": {
+      "type": "string",
+      "description": "File name."
+    },
+    "file_path": {
+      "type": "string",
+      "description": "File path."
+    },
+    "file_type": {
+      "type": "string",
+      "description": "File type."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-comment-attachment-extension-interface"
+    }
+  },
+  "required": [
+    "attachment_id",
+    "comment_id",
+    "file_name",
+    "file_path",
+    "file_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

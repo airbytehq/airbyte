@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Sales\\Api\\Data\\ShipmentCreationArgumentsInterface",
+  "properties": {
+    "shipping_label": {
+      "type": "string"
+    },
+    "ext_shipment_id": {
+      "type": "string"
+    },
+    "ext_return_shipment_id": {
+      "type": "string"
+    },
+    "ext_location_id": {
+      "type": "string"
+    },
+    "ext_tracking_url": {
+      "type": "string"
+    },
+    "ext_tracking_reference": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

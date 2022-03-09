@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Credit Limit data transfer object interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID."
+    },
+    "company_id": {
+      "type": "integer",
+      "description": "Company id."
+    },
+    "credit_limit": {
+      "type": "number",
+      "description": "Credit Limit."
+    },
+    "balance": {
+      "type": "number",
+      "description": "Balance."
+    },
+    "currency_code": {
+      "type": "string",
+      "description": "Currency Code."
+    },
+    "exceed_limit": {
+      "type": "boolean",
+      "description": "Exceed Limit."
+    },
+    "available_limit": {
+      "type": "number",
+      "description": "Available Limit."
+    },
+    "credit_comment": {
+      "type": "string",
+      "description": "Credit comment for company credit history."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-credit-data-credit-limit-extension-interface"
+    }
+  },
+  "required": [
+    "exceed_limit"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

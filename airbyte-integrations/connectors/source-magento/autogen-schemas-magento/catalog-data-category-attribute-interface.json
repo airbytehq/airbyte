@@ -1,0 +1,176 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "is_wysiwyg_enabled": {
+      "type": "boolean",
+      "description": "WYSIWYG flag"
+    },
+    "is_html_allowed_on_front": {
+      "type": "boolean",
+      "description": "The HTML tags are allowed on the frontend"
+    },
+    "used_for_sort_by": {
+      "type": "boolean",
+      "description": "It is used for sorting in product listing"
+    },
+    "is_filterable": {
+      "type": "boolean",
+      "description": "It used in layered navigation"
+    },
+    "is_filterable_in_search": {
+      "type": "boolean",
+      "description": "It is used in search results layered navigation"
+    },
+    "is_used_in_grid": {
+      "type": "boolean",
+      "description": "It is used in catalog product grid"
+    },
+    "is_visible_in_grid": {
+      "type": "boolean",
+      "description": "It is visible in catalog product grid"
+    },
+    "is_filterable_in_grid": {
+      "type": "boolean",
+      "description": "It is filterable in catalog product grid"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Position"
+    },
+    "apply_to": {
+      "type": "array",
+      "description": "Apply to value for the element",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_searchable": {
+      "type": "string",
+      "description": "The attribute can be used in Quick Search"
+    },
+    "is_visible_in_advanced_search": {
+      "type": "string",
+      "description": "The attribute can be used in Advanced Search"
+    },
+    "is_comparable": {
+      "type": "string",
+      "description": "The attribute can be compared on the frontend"
+    },
+    "is_used_for_promo_rules": {
+      "type": "string",
+      "description": "The attribute can be used for promo rules"
+    },
+    "is_visible_on_front": {
+      "type": "string",
+      "description": "The attribute is visible on the frontend"
+    },
+    "used_in_product_listing": {
+      "type": "string",
+      "description": "The attribute can be used in product listing"
+    },
+    "is_visible": {
+      "type": "boolean",
+      "description": "Attribute is visible on frontend."
+    },
+    "scope": {
+      "type": "string",
+      "description": "Attribute scope"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-eav-attribute-extension-interface"
+    },
+    "attribute_id": {
+      "type": "integer",
+      "description": "Id of the attribute."
+    },
+    "attribute_code": {
+      "type": "string",
+      "description": "Code of the attribute."
+    },
+    "frontend_input": {
+      "type": "string",
+      "description": "HTML for input element."
+    },
+    "entity_type_id": {
+      "type": "string",
+      "description": "Entity type id"
+    },
+    "is_required": {
+      "type": "boolean",
+      "description": "Attribute is required."
+    },
+    "options": {
+      "type": "array",
+      "description": "Options of the attribute (key => value pairs for select)",
+      "items": {
+        "$ref": "_definitions.json#/definitions/eav-data-attribute-option-interface"
+      }
+    },
+    "is_user_defined": {
+      "type": "boolean",
+      "description": "Current attribute has been defined by a user."
+    },
+    "default_frontend_label": {
+      "type": "string",
+      "description": "Frontend label for default store"
+    },
+    "frontend_labels": {
+      "type": "array",
+      "description": "Frontend label for each store",
+      "items": {
+        "$ref": "_definitions.json#/definitions/eav-data-attribute-frontend-label-interface"
+      }
+    },
+    "note": {
+      "type": "string",
+      "description": "The note attribute for the element."
+    },
+    "backend_type": {
+      "type": "string",
+      "description": "Backend type."
+    },
+    "backend_model": {
+      "type": "string",
+      "description": "Backend model"
+    },
+    "source_model": {
+      "type": "string",
+      "description": "Source model"
+    },
+    "default_value": {
+      "type": "string",
+      "description": "Default value for the element."
+    },
+    "is_unique": {
+      "type": "string",
+      "description": "This is a unique attribute"
+    },
+    "frontend_class": {
+      "type": "string",
+      "description": "Frontend class of attribute"
+    },
+    "validation_rules": {
+      "type": "array",
+      "description": "Validation rules.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/eav-data-attribute-validation-rule-interface"
+      }
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "attribute_code",
+    "frontend_input",
+    "entity_type_id",
+    "is_required",
+    "frontend_labels"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

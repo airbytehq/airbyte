@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "result_serialized_data": {
+      "type": "string",
+      "description": "Serialized Data"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/asynchronous-operations-data-operation-extension-interface"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "bulk_uuid": {
+      "type": "string",
+      "description": "Bulk uuid"
+    },
+    "topic_name": {
+      "type": "string",
+      "description": "Queue Topic"
+    },
+    "serialized_data": {
+      "type": "string",
+      "description": "Data"
+    },
+    "status": {
+      "type": "integer",
+      "description": "Operation status"
+    },
+    "result_message": {
+      "type": "string",
+      "description": "Result message"
+    },
+    "error_code": {
+      "type": "integer",
+      "description": "Error code"
+    }
+  },
+  "required": [
+    "result_serialized_data",
+    "id",
+    "bulk_uuid",
+    "topic_name",
+    "serialized_data",
+    "status",
+    "result_message",
+    "error_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

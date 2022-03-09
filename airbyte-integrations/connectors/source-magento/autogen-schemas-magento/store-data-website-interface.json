@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Website interface",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Website name"
+    },
+    "default_group_id": {
+      "type": "integer"
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Store\\Api\\Data\\WebsiteInterface"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "name",
+    "default_group_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

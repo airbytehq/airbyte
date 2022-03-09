@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent category ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category name"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether category is active"
+    },
+    "position": {
+      "type": "integer",
+      "description": "Category position"
+    },
+    "level": {
+      "type": "integer",
+      "description": "Category level"
+    },
+    "children": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "available_sort_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "include_in_menu": {
+      "type": "boolean"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-category-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

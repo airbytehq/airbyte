@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Interface PaymentInterface",
+  "properties": {
+    "po_number": {
+      "type": "string",
+      "description": "Purchase order number"
+    },
+    "method": {
+      "type": "string",
+      "description": "Payment method code"
+    },
+    "additional_data": {
+      "type": "array",
+      "description": "Payment additional details",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-payment-extension-interface"
+    }
+  },
+  "required": [
+    "method"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

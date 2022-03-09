@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "Cost interface.",
+  "properties": {
+    "cost": {
+      "type": "number",
+      "description": "Cost value."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store id."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-cost-extension-interface"
+    }
+  },
+  "required": [
+    "cost",
+    "store_id",
+    "sku"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

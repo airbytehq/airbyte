@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\CustomOptionInterface",
+  "properties": {
+    "file_info": {
+      "$ref": "_definitions.json#/definitions/framework-data-image-content-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

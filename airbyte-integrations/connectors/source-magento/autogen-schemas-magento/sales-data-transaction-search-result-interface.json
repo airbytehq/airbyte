@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Transaction search result interface. A transaction is an interaction between a merchant and a customer such as a purchase, a credit, a refund, and so on.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of collection items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-transaction-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

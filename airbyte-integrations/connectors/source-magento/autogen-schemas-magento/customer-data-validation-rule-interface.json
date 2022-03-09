@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Validation rule interface.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Validation rule name"
+    },
+    "value": {
+      "type": "string",
+      "description": "Validation rule value"
+    }
+  },
+  "required": [
+    "name",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

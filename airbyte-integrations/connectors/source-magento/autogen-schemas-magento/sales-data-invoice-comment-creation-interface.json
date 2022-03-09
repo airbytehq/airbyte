@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface InvoiceCommentCreationInterface",
+  "properties": {
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-invoice-comment-creation-extension-interface"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    },
+    "is_visible_on_front": {
+      "type": "integer",
+      "description": "Is-visible-on-storefront flag value."
+    }
+  },
+  "required": [
+    "comment",
+    "is_visible_on_front"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

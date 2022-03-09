@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Interface BundleOptionInterface",
+  "properties": {
+    "option_id": {
+      "type": "integer",
+      "description": "Bundle option id."
+    },
+    "option_qty": {
+      "type": "integer",
+      "description": "Bundle option quantity."
+    },
+    "option_selections": {
+      "type": "array",
+      "description": "Bundle option selection ids.",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/bundle-data-bundle-option-extension-interface"
+    }
+  },
+  "required": [
+    "option_id",
+    "option_qty",
+    "option_selections"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

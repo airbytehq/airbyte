@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Interface RequisitionListInterface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Requisition List ID"
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Requisition List Name"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Requisition List Update Time"
+    },
+    "description": {
+      "type": "string",
+      "description": "Requisition List Description"
+    },
+    "items": {
+      "type": "array",
+      "description": "Requisition List Items",
+      "items": {
+        "$ref": "_definitions.json#/definitions/requisition-list-data-requisition-list-item-interface"
+      }
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/requisition-list-data-requisition-list-extension-interface"
+    }
+  },
+  "required": [
+    "id",
+    "customer_id",
+    "name",
+    "updated_at",
+    "description",
+    "items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

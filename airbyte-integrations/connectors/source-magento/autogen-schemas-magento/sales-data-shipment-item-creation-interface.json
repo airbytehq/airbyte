@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Input argument for shipment item creation Interface ShipmentItemCreationInterface",
+  "properties": {
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-shipment-item-creation-extension-interface"
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order item ID."
+    },
+    "qty": {
+      "type": "number",
+      "description": "Quantity."
+    }
+  },
+  "required": [
+    "order_item_id",
+    "qty"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

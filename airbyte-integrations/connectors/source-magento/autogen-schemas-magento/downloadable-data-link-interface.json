@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Sample(or link) id"
+    },
+    "title": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "integer"
+    },
+    "is_shareable": {
+      "type": "integer",
+      "description": "Shareable status"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price"
+    },
+    "number_of_downloads": {
+      "type": "integer",
+      "description": "Of downloads per user"
+    },
+    "link_type": {
+      "type": "string"
+    },
+    "link_file": {
+      "type": "string",
+      "description": "relative file path"
+    },
+    "link_file_content": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-file-content-interface"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "Link url or null when type is 'file'"
+    },
+    "sample_type": {
+      "type": "string"
+    },
+    "sample_file": {
+      "type": "string",
+      "description": "relative file path"
+    },
+    "sample_file_content": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-file-content-interface"
+    },
+    "sample_url": {
+      "type": "string",
+      "description": "file URL"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/downloadable-data-link-extension-interface"
+    }
+  },
+  "required": [
+    "sort_order",
+    "is_shareable",
+    "price",
+    "link_type",
+    "sample_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

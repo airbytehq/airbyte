@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Option title"
+    },
+    "sort_order": {
+      "type": "integer",
+      "description": "Sort order"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price"
+    },
+    "price_type": {
+      "type": "string",
+      "description": "Price type"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Sku"
+    },
+    "option_type_id": {
+      "type": "integer",
+      "description": "Option type id"
+    }
+  },
+  "required": [
+    "title",
+    "sort_order",
+    "price",
+    "price_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

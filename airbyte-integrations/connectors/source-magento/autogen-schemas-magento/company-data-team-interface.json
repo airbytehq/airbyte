@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "description": "Team interface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-team-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

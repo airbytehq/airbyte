@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "description": "Interface CurrencyInterface",
+  "properties": {
+    "global_currency_code": {
+      "type": "string",
+      "description": "Global currency code"
+    },
+    "base_currency_code": {
+      "type": "string",
+      "description": "Base currency code"
+    },
+    "store_currency_code": {
+      "type": "string",
+      "description": "Store currency code"
+    },
+    "quote_currency_code": {
+      "type": "string",
+      "description": "Quote currency code"
+    },
+    "store_to_base_rate": {
+      "type": "number",
+      "description": "Store currency to base currency rate"
+    },
+    "store_to_quote_rate": {
+      "type": "number",
+      "description": "Store currency to quote currency rate"
+    },
+    "base_to_global_rate": {
+      "type": "number",
+      "description": "Base currency to global currency rate"
+    },
+    "base_to_quote_rate": {
+      "type": "number",
+      "description": "Base currency to quote currency rate"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-currency-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

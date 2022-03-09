@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "description": "StoreConfig interface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Store id"
+    },
+    "code": {
+      "type": "string",
+      "description": "Store code"
+    },
+    "website_id": {
+      "type": "integer",
+      "description": "Website id of the store"
+    },
+    "locale": {
+      "type": "string",
+      "description": "Store locale"
+    },
+    "base_currency_code": {
+      "type": "string",
+      "description": "Base currency code"
+    },
+    "default_display_currency_code": {
+      "type": "string",
+      "description": "Default display currency code"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "Timezone of the store"
+    },
+    "weight_unit": {
+      "type": "string",
+      "description": "The unit of weight"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "Base URL for the store"
+    },
+    "base_link_url": {
+      "type": "string",
+      "description": "Base link URL for the store"
+    },
+    "base_static_url": {
+      "type": "string",
+      "description": "Base static URL for the store"
+    },
+    "base_media_url": {
+      "type": "string",
+      "description": "Base media URL for the store"
+    },
+    "secure_base_url": {
+      "type": "string",
+      "description": "Secure base URL for the store"
+    },
+    "secure_base_link_url": {
+      "type": "string",
+      "description": "Secure base link URL for the store"
+    },
+    "secure_base_static_url": {
+      "type": "string",
+      "description": "Secure base static URL for the store"
+    },
+    "secure_base_media_url": {
+      "type": "string",
+      "description": "Secure base media URL for the store"
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Store\\Api\\Data\\StoreConfigInterface"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "website_id",
+    "locale",
+    "base_currency_code",
+    "default_display_currency_code",
+    "timezone",
+    "weight_unit",
+    "base_url",
+    "base_link_url",
+    "base_static_url",
+    "base_media_url",
+    "secure_base_url",
+    "secure_base_link_url",
+    "secure_base_static_url",
+    "secure_base_media_url"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

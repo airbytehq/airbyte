@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface RuleLabelInterface",
+  "properties": {
+    "store_id": {
+      "type": "integer",
+      "description": "StoreId"
+    },
+    "store_label": {
+      "type": "string",
+      "description": "The label for the store"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-rule-label-extension-interface"
+    }
+  },
+  "required": [
+    "store_id",
+    "store_label"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,91 @@
+{
+  "type": "object",
+  "description": "Interface CartInterface",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Cart/quote ID."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Cart creation date and time. Otherwise, null."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Cart last update date and time. Otherwise, null."
+    },
+    "converted_at": {
+      "type": "string",
+      "description": "Cart conversion date and time. Otherwise, null."
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Active status flag value. Otherwise, null."
+    },
+    "is_virtual": {
+      "type": "boolean",
+      "description": "Virtual flag value. Otherwise, null."
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of items. Otherwise, null.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-cart-item-interface"
+      }
+    },
+    "items_count": {
+      "type": "integer",
+      "description": "Number of different items or products in the cart. Otherwise, null."
+    },
+    "items_qty": {
+      "type": "number",
+      "description": "Total quantity of all cart items. Otherwise, null."
+    },
+    "customer": {
+      "$ref": "_definitions.json#/definitions/customer-data-customer-interface"
+    },
+    "billing_address": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-interface"
+    },
+    "reserved_order_id": {
+      "type": "string",
+      "description": "Reserved order ID. Otherwise, null."
+    },
+    "orig_order_id": {
+      "type": "integer",
+      "description": "Original order ID. Otherwise, null."
+    },
+    "currency": {
+      "$ref": "_definitions.json#/definitions/quote-data-currency-interface"
+    },
+    "customer_is_guest": {
+      "type": "boolean",
+      "description": "For guest customers, false for logged in customers"
+    },
+    "customer_note": {
+      "type": "string",
+      "description": "Notice text"
+    },
+    "customer_note_notify": {
+      "type": "boolean",
+      "description": "Customer notification flag"
+    },
+    "customer_tax_class_id": {
+      "type": "integer",
+      "description": "Customer tax class ID."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store identifier"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-cart-extension-interface"
+    }
+  },
+  "required": [
+    "id",
+    "customer",
+    "store_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

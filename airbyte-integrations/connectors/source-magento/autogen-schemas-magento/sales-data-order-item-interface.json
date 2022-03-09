@@ -1,0 +1,387 @@
+{
+  "type": "object",
+  "description": "Order item interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+  "properties": {
+    "additional_data": {
+      "type": "string",
+      "description": "Additional data."
+    },
+    "amount_refunded": {
+      "type": "number",
+      "description": "Amount refunded."
+    },
+    "applied_rule_ids": {
+      "type": "string",
+      "description": "Applied rule IDs."
+    },
+    "base_amount_refunded": {
+      "type": "number",
+      "description": "Base amount refunded."
+    },
+    "base_cost": {
+      "type": "number",
+      "description": "Base cost."
+    },
+    "base_discount_amount": {
+      "type": "number",
+      "description": "Base discount amount."
+    },
+    "base_discount_invoiced": {
+      "type": "number",
+      "description": "Base discount invoiced."
+    },
+    "base_discount_refunded": {
+      "type": "number",
+      "description": "Base discount refunded."
+    },
+    "base_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Base discount tax compensation amount."
+    },
+    "base_discount_tax_compensation_invoiced": {
+      "type": "number",
+      "description": "Base discount tax compensation invoiced."
+    },
+    "base_discount_tax_compensation_refunded": {
+      "type": "number",
+      "description": "Base discount tax compensation refunded."
+    },
+    "base_original_price": {
+      "type": "number",
+      "description": "Base original price."
+    },
+    "base_price": {
+      "type": "number",
+      "description": "Base price."
+    },
+    "base_price_incl_tax": {
+      "type": "number",
+      "description": "Base price including tax."
+    },
+    "base_row_invoiced": {
+      "type": "number",
+      "description": "Base row invoiced."
+    },
+    "base_row_total": {
+      "type": "number",
+      "description": "Base row total."
+    },
+    "base_row_total_incl_tax": {
+      "type": "number",
+      "description": "Base row total including tax."
+    },
+    "base_tax_amount": {
+      "type": "number",
+      "description": "Base tax amount."
+    },
+    "base_tax_before_discount": {
+      "type": "number",
+      "description": "Base tax before discount."
+    },
+    "base_tax_invoiced": {
+      "type": "number",
+      "description": "Base tax invoiced."
+    },
+    "base_tax_refunded": {
+      "type": "number",
+      "description": "Base tax refunded."
+    },
+    "base_weee_tax_applied_amount": {
+      "type": "number",
+      "description": "Base WEEE tax applied amount."
+    },
+    "base_weee_tax_applied_row_amnt": {
+      "type": "number",
+      "description": "Base WEEE tax applied row amount."
+    },
+    "base_weee_tax_disposition": {
+      "type": "number",
+      "description": "Base WEEE tax disposition."
+    },
+    "base_weee_tax_row_disposition": {
+      "type": "number",
+      "description": "Base WEEE tax row disposition."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created-at timestamp."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount amount."
+    },
+    "discount_invoiced": {
+      "type": "number",
+      "description": "Discount invoiced."
+    },
+    "discount_percent": {
+      "type": "number",
+      "description": "Discount percent."
+    },
+    "discount_refunded": {
+      "type": "number",
+      "description": "Discount refunded."
+    },
+    "event_id": {
+      "type": "integer",
+      "description": "Event ID."
+    },
+    "ext_order_item_id": {
+      "type": "string",
+      "description": "External order item ID."
+    },
+    "free_shipping": {
+      "type": "integer",
+      "description": "Free-shipping flag value."
+    },
+    "gw_base_price": {
+      "type": "number",
+      "description": "GW base price."
+    },
+    "gw_base_price_invoiced": {
+      "type": "number",
+      "description": "GW base price invoiced."
+    },
+    "gw_base_price_refunded": {
+      "type": "number",
+      "description": "GW base price refunded."
+    },
+    "gw_base_tax_amount": {
+      "type": "number",
+      "description": "GW base tax amount."
+    },
+    "gw_base_tax_amount_invoiced": {
+      "type": "number",
+      "description": "GW base tax amount invoiced."
+    },
+    "gw_base_tax_amount_refunded": {
+      "type": "number",
+      "description": "GW base tax amount refunded."
+    },
+    "gw_id": {
+      "type": "integer",
+      "description": "GW ID."
+    },
+    "gw_price": {
+      "type": "number",
+      "description": "GW price."
+    },
+    "gw_price_invoiced": {
+      "type": "number",
+      "description": "GW price invoiced."
+    },
+    "gw_price_refunded": {
+      "type": "number",
+      "description": "GW price refunded."
+    },
+    "gw_tax_amount": {
+      "type": "number",
+      "description": "GW tax amount."
+    },
+    "gw_tax_amount_invoiced": {
+      "type": "number",
+      "description": "GW tax amount invoiced."
+    },
+    "gw_tax_amount_refunded": {
+      "type": "number",
+      "description": "GW tax amount refunded."
+    },
+    "discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Discount tax compensation amount."
+    },
+    "discount_tax_compensation_canceled": {
+      "type": "number",
+      "description": "Discount tax compensation canceled."
+    },
+    "discount_tax_compensation_invoiced": {
+      "type": "number",
+      "description": "Discount tax compensation invoiced."
+    },
+    "discount_tax_compensation_refunded": {
+      "type": "number",
+      "description": "Discount tax compensation refunded."
+    },
+    "is_qty_decimal": {
+      "type": "integer",
+      "description": "Is-quantity-decimal flag value."
+    },
+    "is_virtual": {
+      "type": "integer",
+      "description": "Is-virtual flag value."
+    },
+    "item_id": {
+      "type": "integer",
+      "description": "Item ID."
+    },
+    "locked_do_invoice": {
+      "type": "integer",
+      "description": "Locked DO invoice flag value."
+    },
+    "locked_do_ship": {
+      "type": "integer",
+      "description": "Locked DO ship flag value."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name."
+    },
+    "no_discount": {
+      "type": "integer",
+      "description": "No-discount flag value."
+    },
+    "order_id": {
+      "type": "integer",
+      "description": "Order ID."
+    },
+    "original_price": {
+      "type": "number",
+      "description": "Original price."
+    },
+    "parent_item_id": {
+      "type": "integer",
+      "description": "Parent item ID."
+    },
+    "price": {
+      "type": "number",
+      "description": "Price."
+    },
+    "price_incl_tax": {
+      "type": "number",
+      "description": "Price including tax."
+    },
+    "product_id": {
+      "type": "integer",
+      "description": "Product ID."
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Product type."
+    },
+    "qty_backordered": {
+      "type": "number",
+      "description": "Quantity backordered."
+    },
+    "qty_canceled": {
+      "type": "number",
+      "description": "Quantity canceled."
+    },
+    "qty_invoiced": {
+      "type": "number",
+      "description": "Quantity invoiced."
+    },
+    "qty_ordered": {
+      "type": "number",
+      "description": "Quantity ordered."
+    },
+    "qty_refunded": {
+      "type": "number",
+      "description": "Quantity refunded."
+    },
+    "qty_returned": {
+      "type": "number",
+      "description": "Quantity returned."
+    },
+    "qty_shipped": {
+      "type": "number",
+      "description": "Quantity shipped."
+    },
+    "quote_item_id": {
+      "type": "integer",
+      "description": "Quote item ID."
+    },
+    "row_invoiced": {
+      "type": "number",
+      "description": "Row invoiced."
+    },
+    "row_total": {
+      "type": "number",
+      "description": "Row total."
+    },
+    "row_total_incl_tax": {
+      "type": "number",
+      "description": "Row total including tax."
+    },
+    "row_weight": {
+      "type": "number",
+      "description": "Row weight."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU."
+    },
+    "store_id": {
+      "type": "integer",
+      "description": "Store ID."
+    },
+    "tax_amount": {
+      "type": "number",
+      "description": "Tax amount."
+    },
+    "tax_before_discount": {
+      "type": "number",
+      "description": "Tax before discount."
+    },
+    "tax_canceled": {
+      "type": "number",
+      "description": "Tax canceled."
+    },
+    "tax_invoiced": {
+      "type": "number",
+      "description": "Tax invoiced."
+    },
+    "tax_percent": {
+      "type": "number",
+      "description": "Tax percent."
+    },
+    "tax_refunded": {
+      "type": "number",
+      "description": "Tax refunded."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Updated-at timestamp."
+    },
+    "weee_tax_applied": {
+      "type": "string",
+      "description": "WEEE tax applied."
+    },
+    "weee_tax_applied_amount": {
+      "type": "number",
+      "description": "WEEE tax applied amount."
+    },
+    "weee_tax_applied_row_amount": {
+      "type": "number",
+      "description": "WEEE tax applied row amount."
+    },
+    "weee_tax_disposition": {
+      "type": "number",
+      "description": "WEEE tax disposition."
+    },
+    "weee_tax_row_disposition": {
+      "type": "number",
+      "description": "WEEE tax row disposition."
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight."
+    },
+    "parent_item": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-item-interface"
+    },
+    "product_option": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-option-interface"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-item-extension-interface"
+    }
+  },
+  "required": [
+    "sku"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

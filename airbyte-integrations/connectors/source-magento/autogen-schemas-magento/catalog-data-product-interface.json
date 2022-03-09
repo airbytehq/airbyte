@@ -1,0 +1,92 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Sku"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name"
+    },
+    "attribute_set_id": {
+      "type": "integer",
+      "description": "Attribute set id"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price"
+    },
+    "status": {
+      "type": "integer",
+      "description": "Status"
+    },
+    "visibility": {
+      "type": "integer",
+      "description": "Visibility"
+    },
+    "type_id": {
+      "type": "string",
+      "description": "Type id"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Created date"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Updated date"
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-extension-interface"
+    },
+    "product_links": {
+      "type": "array",
+      "description": "Product links info",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-link-interface"
+      }
+    },
+    "options": {
+      "type": "array",
+      "description": "List of product options",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-custom-option-interface"
+      }
+    },
+    "media_gallery_entries": {
+      "type": "array",
+      "description": "Media gallery entries",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-attribute-media-gallery-entry-interface"
+      }
+    },
+    "tier_prices": {
+      "type": "array",
+      "description": "List of product tier prices",
+      "items": {
+        "$ref": "_definitions.json#/definitions/catalog-data-product-tier-price-interface"
+      }
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "required": [
+    "sku"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "description": "Additional data for totals collection.",
+  "properties": {
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-totals-additional-data-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

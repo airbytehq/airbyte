@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "description": "Store interface",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Store name"
+    },
+    "website_id": {
+      "type": "integer"
+    },
+    "store_group_id": {
+      "type": "integer"
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Store\\Api\\Data\\StoreInterface"
+    }
+  },
+  "required": [
+    "id",
+    "code",
+    "name",
+    "website_id",
+    "store_group_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

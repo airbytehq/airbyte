@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Interface CartSearchResultsInterface",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Carts list.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/quote-data-cart-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

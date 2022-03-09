@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "description": "Temando Order Collection Point Interface \u2013 Order Details/Fulfillment",
+  "properties": {
+    "recipient_address_id": {
+      "type": "integer"
+    },
+    "collection_point_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "street": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "recipient_address_id",
+    "collection_point_id",
+    "name",
+    "country",
+    "region",
+    "postcode",
+    "city",
+    "street"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

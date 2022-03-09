@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface \\Magento\\Framework\\Api\\Search\\AggregationValueInterface",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Aggregation"
+    },
+    "metrics": {
+      "type": "array",
+      "description": "Metrics",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "value",
+    "metrics"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,95 @@
+{
+  "type": "object",
+  "description": "Customer address interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID"
+    },
+    "customer_id": {
+      "type": "integer",
+      "description": "Customer ID"
+    },
+    "region": {
+      "$ref": "_definitions.json#/definitions/customer-data-region-interface"
+    },
+    "region_id": {
+      "type": "integer",
+      "description": "Region ID"
+    },
+    "country_id": {
+      "type": "string",
+      "description": "Country code in ISO_3166-2 format"
+    },
+    "street": {
+      "type": "array",
+      "description": "Street",
+      "items": {
+        "type": "string"
+      }
+    },
+    "company": {
+      "type": "string",
+      "description": "Company"
+    },
+    "telephone": {
+      "type": "string",
+      "description": "Telephone number"
+    },
+    "fax": {
+      "type": "string",
+      "description": "Fax number"
+    },
+    "postcode": {
+      "type": "string",
+      "description": "Postcode"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name"
+    },
+    "firstname": {
+      "type": "string",
+      "description": "First name"
+    },
+    "lastname": {
+      "type": "string",
+      "description": "Last name"
+    },
+    "middlename": {
+      "type": "string",
+      "description": "Middle name"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Prefix"
+    },
+    "suffix": {
+      "type": "string",
+      "description": "Suffix"
+    },
+    "vat_id": {
+      "type": "string",
+      "description": "Vat id"
+    },
+    "default_shipping": {
+      "type": "boolean",
+      "description": "If this address is default shipping address."
+    },
+    "default_billing": {
+      "type": "boolean",
+      "description": "If this address is default billing address"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/customer-data-address-extension-interface"
+    },
+    "custom_attributes": {
+      "type": "array",
+      "description": "Custom attributes values.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/framework-attribute-interface"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

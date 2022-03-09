@@ -1,0 +1,82 @@
+{
+  "type": "object",
+  "description": "Interface TotalInterface",
+  "properties": {
+    "base_shipping_amount": {
+      "type": "number",
+      "description": "Base shipping amount."
+    },
+    "base_shipping_canceled": {
+      "type": "number",
+      "description": "Base shipping canceled."
+    },
+    "base_shipping_discount_amount": {
+      "type": "number",
+      "description": "Base shipping discount amount."
+    },
+    "base_shipping_discount_tax_compensation_amnt": {
+      "type": "number",
+      "description": "Base shipping discount tax compensation amount."
+    },
+    "base_shipping_incl_tax": {
+      "type": "number",
+      "description": "Base shipping including tax."
+    },
+    "base_shipping_invoiced": {
+      "type": "number",
+      "description": "Base shipping invoiced."
+    },
+    "base_shipping_refunded": {
+      "type": "number",
+      "description": "Base shipping refunded."
+    },
+    "base_shipping_tax_amount": {
+      "type": "number",
+      "description": "Base shipping tax amount."
+    },
+    "base_shipping_tax_refunded": {
+      "type": "number",
+      "description": "Base shipping tax refunded."
+    },
+    "shipping_amount": {
+      "type": "number",
+      "description": "Shipping amount."
+    },
+    "shipping_canceled": {
+      "type": "number",
+      "description": "Shipping canceled amount."
+    },
+    "shipping_discount_amount": {
+      "type": "number",
+      "description": "Shipping discount amount."
+    },
+    "shipping_discount_tax_compensation_amount": {
+      "type": "number",
+      "description": "Shipping discount tax compensation amount."
+    },
+    "shipping_incl_tax": {
+      "type": "number",
+      "description": "Shipping including tax amount."
+    },
+    "shipping_invoiced": {
+      "type": "number",
+      "description": "Shipping invoiced amount."
+    },
+    "shipping_refunded": {
+      "type": "number",
+      "description": "Shipping refunded amount."
+    },
+    "shipping_tax_amount": {
+      "type": "number",
+      "description": "Shipping tax amount."
+    },
+    "shipping_tax_refunded": {
+      "type": "number",
+      "description": "Shipping tax refunded amount."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-total-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

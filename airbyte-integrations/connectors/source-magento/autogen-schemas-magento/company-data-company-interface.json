@@ -1,0 +1,101 @@
+{
+  "type": "object",
+  "description": "Interface for Company entity.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Id."
+    },
+    "status": {
+      "type": "integer",
+      "description": "Status."
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name."
+    },
+    "legal_name": {
+      "type": "string",
+      "description": "Legal name."
+    },
+    "company_email": {
+      "type": "string",
+      "description": "Company email."
+    },
+    "vat_tax_id": {
+      "type": "string",
+      "description": "Vat tax id."
+    },
+    "reseller_id": {
+      "type": "string",
+      "description": "Reseller Id."
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    },
+    "street": {
+      "type": "array",
+      "description": "Street.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "city": {
+      "type": "string",
+      "description": "City."
+    },
+    "country_id": {
+      "type": "string",
+      "description": "Country."
+    },
+    "region": {
+      "type": "string",
+      "description": "Region."
+    },
+    "region_id": {
+      "type": "string",
+      "description": "Region Id."
+    },
+    "postcode": {
+      "type": "string",
+      "description": "Postcode."
+    },
+    "telephone": {
+      "type": "string",
+      "description": "Telephone."
+    },
+    "customer_group_id": {
+      "type": "integer",
+      "description": "Customer Group Id."
+    },
+    "sales_representative_id": {
+      "type": "integer",
+      "description": "Sales Representative Id."
+    },
+    "reject_reason": {
+      "type": "string",
+      "description": "Reject Reason."
+    },
+    "rejected_at": {
+      "type": "string",
+      "description": "Rejected at time."
+    },
+    "super_user_id": {
+      "type": "integer",
+      "description": "Company admin customer id."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/company-data-company-extension-interface"
+    }
+  },
+  "required": [
+    "street",
+    "customer_group_id",
+    "sales_representative_id",
+    "reject_reason",
+    "rejected_at",
+    "super_user_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "description": "Interface ConfigurableItemOptionValueInterface",
+  "properties": {
+    "option_id": {
+      "type": "string",
+      "description": "Option SKU"
+    },
+    "option_value": {
+      "type": "integer",
+      "description": "Item id"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/configurable-product-data-configurable-item-option-value-extension-interface"
+    }
+  },
+  "required": [
+    "option_id"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

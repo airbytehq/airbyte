@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Validation results interface.",
+  "properties": {
+    "valid": {
+      "type": "boolean",
+      "description": "If the provided data is valid."
+    },
+    "messages": {
+      "type": "array",
+      "description": "Error messages as array in case of validation failure, else return empty array.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "valid",
+    "messages"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

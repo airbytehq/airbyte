@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "description": "Interface ShippingInterface",
+  "properties": {
+    "address": {
+      "$ref": "_definitions.json#/definitions/quote-data-address-interface"
+    },
+    "method": {
+      "type": "string",
+      "description": "Shipping method"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-shipping-extension-interface"
+    }
+  },
+  "required": [
+    "address",
+    "method"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

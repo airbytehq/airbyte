@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "description": "History data transfer object interface.",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID."
+    },
+    "company_credit_id": {
+      "type": "integer",
+      "description": "Company credit id."
+    },
+    "user_id": {
+      "type": "integer",
+      "description": "User Id."
+    },
+    "user_type": {
+      "type": "integer",
+      "description": "User type: integration, admin, customer."
+    },
+    "currency_credit": {
+      "type": "string",
+      "description": "Currency code of credit."
+    },
+    "currency_operation": {
+      "type": "string",
+      "description": "Currency code of operation."
+    },
+    "rate": {
+      "type": "number",
+      "description": "Currency rate between credit and operation currencies."
+    },
+    "rate_credit": {
+      "type": "number",
+      "description": "Rate between credit and base currencies."
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount."
+    },
+    "balance": {
+      "type": "number",
+      "description": "Outstanding balance."
+    },
+    "credit_limit": {
+      "type": "number",
+      "description": "Credit limit."
+    },
+    "available_limit": {
+      "type": "number",
+      "description": "Available limit."
+    },
+    "type": {
+      "type": "integer",
+      "description": "Type of operation."
+    },
+    "datetime": {
+      "type": "string",
+      "description": "Operation datetime."
+    },
+    "purchase_order": {
+      "type": "string",
+      "description": "Purchase Order number."
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment."
+    }
+  },
+  "required": [
+    "rate",
+    "amount",
+    "balance",
+    "credit_limit"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

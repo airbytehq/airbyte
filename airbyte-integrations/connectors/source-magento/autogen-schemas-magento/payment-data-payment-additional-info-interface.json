@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Payment additional info interface.",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Object key"
+    },
+    "value": {
+      "type": "string",
+      "description": "Object value"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

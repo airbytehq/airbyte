@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\TotalsInterface",
+  "properties": {
+    "coupon_label": {
+      "type": "string"
+    },
+    "base_customer_balance_amount": {
+      "type": "number"
+    },
+    "customer_balance_amount": {
+      "type": "number"
+    },
+    "negotiable_quote_totals": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-totals-interface"
+    },
+    "reward_points_balance": {
+      "type": "number"
+    },
+    "reward_currency_amount": {
+      "type": "number"
+    },
+    "base_reward_currency_amount": {
+      "type": "number"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

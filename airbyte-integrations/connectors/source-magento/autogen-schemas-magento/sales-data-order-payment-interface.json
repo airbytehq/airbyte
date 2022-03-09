@@ -1,0 +1,235 @@
+{
+  "type": "object",
+  "description": "Order payment interface. An order is a document that a web store issues to a customer. Magento generates a sales order that lists the product items, billing and shipping addresses, and shipping and payment methods. A corresponding external document, known as a purchase order, is emailed to the customer.",
+  "properties": {
+    "account_status": {
+      "type": "string",
+      "description": "Account status."
+    },
+    "additional_data": {
+      "type": "string",
+      "description": "Additional data."
+    },
+    "additional_information": {
+      "type": "array",
+      "description": "Array of additional information.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "address_status": {
+      "type": "string",
+      "description": "Address status."
+    },
+    "amount_authorized": {
+      "type": "number",
+      "description": "Amount authorized."
+    },
+    "amount_canceled": {
+      "type": "number",
+      "description": "Amount canceled."
+    },
+    "amount_ordered": {
+      "type": "number",
+      "description": "Amount ordered."
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Amount paid."
+    },
+    "amount_refunded": {
+      "type": "number",
+      "description": "Amount refunded."
+    },
+    "anet_trans_method": {
+      "type": "string",
+      "description": "Anet transaction method."
+    },
+    "base_amount_authorized": {
+      "type": "number",
+      "description": "Base amount authorized."
+    },
+    "base_amount_canceled": {
+      "type": "number",
+      "description": "Base amount canceled."
+    },
+    "base_amount_ordered": {
+      "type": "number",
+      "description": "Base amount ordered."
+    },
+    "base_amount_paid": {
+      "type": "number",
+      "description": "Base amount paid."
+    },
+    "base_amount_paid_online": {
+      "type": "number",
+      "description": "Base amount paid online."
+    },
+    "base_amount_refunded": {
+      "type": "number",
+      "description": "Base amount refunded."
+    },
+    "base_amount_refunded_online": {
+      "type": "number",
+      "description": "Base amount refunded online."
+    },
+    "base_shipping_amount": {
+      "type": "number",
+      "description": "Base shipping amount."
+    },
+    "base_shipping_captured": {
+      "type": "number",
+      "description": "Base shipping captured amount."
+    },
+    "base_shipping_refunded": {
+      "type": "number",
+      "description": "Base shipping refunded amount."
+    },
+    "cc_approval": {
+      "type": "string",
+      "description": "Credit card approval."
+    },
+    "cc_avs_status": {
+      "type": "string",
+      "description": "Credit card avs status."
+    },
+    "cc_cid_status": {
+      "type": "string",
+      "description": "Credit card CID status."
+    },
+    "cc_debug_request_body": {
+      "type": "string",
+      "description": "Credit card debug request body."
+    },
+    "cc_debug_response_body": {
+      "type": "string",
+      "description": "Credit card debug response body."
+    },
+    "cc_debug_response_serialized": {
+      "type": "string",
+      "description": "Credit card debug response serialized."
+    },
+    "cc_exp_month": {
+      "type": "string",
+      "description": "Credit card expiration month."
+    },
+    "cc_exp_year": {
+      "type": "string",
+      "description": "Credit card expiration year."
+    },
+    "cc_last4": {
+      "type": "string",
+      "description": "Last four digits of the credit card."
+    },
+    "cc_number_enc": {
+      "type": "string",
+      "description": "Encrypted credit card number."
+    },
+    "cc_owner": {
+      "type": "string",
+      "description": "Credit card number."
+    },
+    "cc_secure_verify": {
+      "type": "string",
+      "description": "Credit card secure verify."
+    },
+    "cc_ss_issue": {
+      "type": "string",
+      "description": "Credit card SS issue."
+    },
+    "cc_ss_start_month": {
+      "type": "string",
+      "description": "Credit card SS start month."
+    },
+    "cc_ss_start_year": {
+      "type": "string",
+      "description": "Credit card SS start year."
+    },
+    "cc_status": {
+      "type": "string",
+      "description": "Credit card status."
+    },
+    "cc_status_description": {
+      "type": "string",
+      "description": "Credit card status description."
+    },
+    "cc_trans_id": {
+      "type": "string",
+      "description": "Credit card transaction ID."
+    },
+    "cc_type": {
+      "type": "string",
+      "description": "Credit card type."
+    },
+    "echeck_account_name": {
+      "type": "string",
+      "description": "eCheck account name."
+    },
+    "echeck_account_type": {
+      "type": "string",
+      "description": "eCheck account type."
+    },
+    "echeck_bank_name": {
+      "type": "string",
+      "description": "eCheck bank name."
+    },
+    "echeck_routing_number": {
+      "type": "string",
+      "description": "eCheck routing number."
+    },
+    "echeck_type": {
+      "type": "string",
+      "description": "eCheck type."
+    },
+    "entity_id": {
+      "type": "integer",
+      "description": "Entity ID."
+    },
+    "last_trans_id": {
+      "type": "string",
+      "description": "Last transaction ID."
+    },
+    "method": {
+      "type": "string",
+      "description": "Method."
+    },
+    "parent_id": {
+      "type": "integer",
+      "description": "Parent ID."
+    },
+    "po_number": {
+      "type": "string",
+      "description": "PO number."
+    },
+    "protection_eligibility": {
+      "type": "string",
+      "description": "Protection eligibility."
+    },
+    "quote_payment_id": {
+      "type": "integer",
+      "description": "Quote payment ID."
+    },
+    "shipping_amount": {
+      "type": "number",
+      "description": "Shipping amount."
+    },
+    "shipping_captured": {
+      "type": "number",
+      "description": "Shipping captured."
+    },
+    "shipping_refunded": {
+      "type": "number",
+      "description": "Shipping refunded."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-order-payment-extension-interface"
+    }
+  },
+  "required": [
+    "account_status",
+    "additional_information",
+    "cc_last4",
+    "method"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

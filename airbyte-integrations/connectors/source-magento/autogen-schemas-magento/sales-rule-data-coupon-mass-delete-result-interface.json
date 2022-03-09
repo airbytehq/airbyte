@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "description": "Coupon mass delete results interface.",
+  "properties": {
+    "failed_items": {
+      "type": "array",
+      "description": "List of failed items.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_items": {
+      "type": "array",
+      "description": "List of missing items.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "failed_items",
+    "missing_items"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "description": "Interface CategoryInterface",
+  "properties": {
+    "entity_id": {
+      "type": "integer",
+      "description": "Id"
+    },
+    "rma_entity_id": {
+      "type": "integer",
+      "description": "RMA id"
+    },
+    "order_item_id": {
+      "type": "integer",
+      "description": "Order_item_id"
+    },
+    "qty_requested": {
+      "type": "integer",
+      "description": "Qty_requested"
+    },
+    "qty_authorized": {
+      "type": "integer",
+      "description": "Qty_authorized"
+    },
+    "qty_approved": {
+      "type": "integer",
+      "description": "Qty_approved"
+    },
+    "qty_returned": {
+      "type": "integer",
+      "description": "Qty_returned"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Condition"
+    },
+    "resolution": {
+      "type": "string",
+      "description": "Resolution"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/rma-data-item-extension-interface"
+    }
+  },
+  "required": [
+    "entity_id",
+    "rma_entity_id",
+    "order_item_id",
+    "qty_requested",
+    "qty_authorized",
+    "qty_approved",
+    "qty_returned",
+    "reason",
+    "condition",
+    "resolution",
+    "status"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

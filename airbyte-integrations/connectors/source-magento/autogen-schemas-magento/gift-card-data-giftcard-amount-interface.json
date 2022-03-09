@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Interface GiftcardAmountInterface: this interface is used to serialize and deserialize EAV attribute giftcard_amounts",
+  "properties": {
+    "attribute_id": {
+      "type": "integer"
+    },
+    "website_id": {
+      "type": "integer"
+    },
+    "value": {
+      "type": "number"
+    },
+    "website_value": {
+      "type": "number"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/gift-card-data-giftcard-amount-extension-interface"
+    }
+  },
+  "required": [
+    "attribute_id",
+    "website_id",
+    "value",
+    "website_value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

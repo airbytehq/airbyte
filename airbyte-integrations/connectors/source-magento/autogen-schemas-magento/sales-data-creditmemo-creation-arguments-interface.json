@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Interface CreditmemoCreationArgumentsInterface",
+  "properties": {
+    "shipping_amount": {
+      "type": "number",
+      "description": "Credit memo shipping amount."
+    },
+    "adjustment_positive": {
+      "type": "number",
+      "description": "Credit memo positive adjustment."
+    },
+    "adjustment_negative": {
+      "type": "number",
+      "description": "Credit memo negative adjustment."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-data-creditmemo-creation-arguments-extension-interface"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

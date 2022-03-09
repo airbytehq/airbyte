@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Catalog\\Api\\Data\\ProductRender\\PriceInfoInterface",
+  "properties": {
+    "msrp": {
+      "$ref": "_definitions.json#/definitions/msrp-data-product-render-msrp-price-info-interface"
+    },
+    "tax_adjustments": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-render-price-info-interface"
+    },
+    "weee_attributes": {
+      "type": "array",
+      "items": {
+        "$ref": "_definitions.json#/definitions/weee-data-product-render-weee-adjustment-attribute-interface"
+      }
+    },
+    "weee_adjustment": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

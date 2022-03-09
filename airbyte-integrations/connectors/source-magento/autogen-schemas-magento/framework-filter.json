@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "description": "Filter which can be used by any methods from service layer.",
+  "properties": {
+    "field": {
+      "type": "string",
+      "description": "Field"
+    },
+    "value": {
+      "type": "string",
+      "description": "Value"
+    },
+    "condition_type": {
+      "type": "string",
+      "description": "Condition type"
+    }
+  },
+  "required": [
+    "field",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

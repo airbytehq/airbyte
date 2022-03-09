@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "Interface for custom attribute value.",
+  "properties": {
+    "attribute_code": {
+      "type": "string",
+      "description": "Attribute code"
+    },
+    "value": {
+      "type": "string",
+      "description": "Attribute value"
+    }
+  },
+  "required": [
+    "attribute_code",
+    "value"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

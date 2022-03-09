@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "description": "Invoice search result interface. An invoice is a record of the receipt of payment for an order.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of collection items.",
+      "items": {
+        "$ref": "_definitions.json#/definitions/sales-data-invoice-interface"
+      }
+    },
+    "search_criteria": {
+      "$ref": "_definitions.json#/definitions/framework-search-criteria-interface"
+    },
+    "total_count": {
+      "type": "integer",
+      "description": "Total count."
+    }
+  },
+  "required": [
+    "items",
+    "search_criteria",
+    "total_count"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

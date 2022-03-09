@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Option type label"
+    },
+    "code": {
+      "type": "string",
+      "description": "Option type code"
+    },
+    "group": {
+      "type": "string",
+      "description": "Option type group"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/catalog-data-product-custom-option-type-extension-interface"
+    }
+  },
+  "required": [
+    "label",
+    "code",
+    "group"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

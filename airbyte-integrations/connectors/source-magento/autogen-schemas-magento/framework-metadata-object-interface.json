@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "description": "Provides metadata about an attribute.",
+  "properties": {
+    "attribute_code": {
+      "type": "string",
+      "description": "Code of the attribute."
+    }
+  },
+  "required": [
+    "attribute_code"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

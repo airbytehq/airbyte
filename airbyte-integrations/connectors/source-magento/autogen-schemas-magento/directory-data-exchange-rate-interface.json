@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "description": "Exchange Rate interface.",
+  "properties": {
+    "currency_to": {
+      "type": "string",
+      "description": "The currency code associated with the exchange rate."
+    },
+    "rate": {
+      "type": "number",
+      "description": "The exchange rate for the associated currency and the store's base currency."
+    },
+    "extension_attributes": {
+      "type": "object",
+      "description": "ExtensionInterface class for @see \\Magento\\Directory\\Api\\Data\\ExchangeRateInterface"
+    }
+  },
+  "required": [
+    "currency_to",
+    "rate"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

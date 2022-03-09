@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "ExtensionInterface class for @see \\Magento\\Quote\\Api\\Data\\CurrencyInterface",
+  "$schema": "http://json-schema.org/schema#"
+}

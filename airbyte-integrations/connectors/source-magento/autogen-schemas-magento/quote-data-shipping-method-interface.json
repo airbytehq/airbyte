@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "description": "Interface ShippingMethodInterface",
+  "properties": {
+    "carrier_code": {
+      "type": "string",
+      "description": "Shipping carrier code."
+    },
+    "method_code": {
+      "type": "string",
+      "description": "Shipping method code."
+    },
+    "carrier_title": {
+      "type": "string",
+      "description": "Shipping carrier title. Otherwise, null."
+    },
+    "method_title": {
+      "type": "string",
+      "description": "Shipping method title. Otherwise, null."
+    },
+    "amount": {
+      "type": "number",
+      "description": "Shipping amount in store currency."
+    },
+    "base_amount": {
+      "type": "number",
+      "description": "Shipping amount in base currency."
+    },
+    "available": {
+      "type": "boolean",
+      "description": "The value of the availability flag for the current shipping method."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/quote-data-shipping-method-extension-interface"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Shipping Error message."
+    },
+    "price_excl_tax": {
+      "type": "number",
+      "description": "Shipping price excl tax."
+    },
+    "price_incl_tax": {
+      "type": "number",
+      "description": "Shipping price incl tax."
+    }
+  },
+  "required": [
+    "carrier_code",
+    "method_code",
+    "amount",
+    "base_amount",
+    "available",
+    "error_message",
+    "price_excl_tax",
+    "price_incl_tax"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "description": "Interface CouponInterface",
+  "properties": {
+    "coupon_id": {
+      "type": "integer",
+      "description": "Coupon id"
+    },
+    "rule_id": {
+      "type": "integer",
+      "description": "The id of the rule associated with the coupon"
+    },
+    "code": {
+      "type": "string",
+      "description": "Coupon code"
+    },
+    "usage_limit": {
+      "type": "integer",
+      "description": "Usage limit"
+    },
+    "usage_per_customer": {
+      "type": "integer",
+      "description": "Usage limit per customer"
+    },
+    "times_used": {
+      "type": "integer",
+      "description": "The number of times the coupon has been used"
+    },
+    "expiration_date": {
+      "type": "string",
+      "description": "Expiration date"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "description": "The coupon is primary coupon for the rule that it's associated with"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "When the coupon is created"
+    },
+    "type": {
+      "type": "integer",
+      "description": "Of coupon"
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/sales-rule-data-coupon-extension-interface"
+    }
+  },
+  "required": [
+    "rule_id",
+    "times_used",
+    "is_primary"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

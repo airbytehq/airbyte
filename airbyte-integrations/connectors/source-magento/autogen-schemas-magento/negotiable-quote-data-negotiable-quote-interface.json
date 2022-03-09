@@ -1,0 +1,118 @@
+{
+  "type": "object",
+  "description": "Interface NegotiableQuoteInterface",
+  "properties": {
+    "quote_id": {
+      "type": "integer",
+      "description": "Negotiable quote ID."
+    },
+    "is_regular_quote": {
+      "type": "boolean",
+      "description": "Is regular quote."
+    },
+    "status": {
+      "type": "string",
+      "description": "Negotiable quote status."
+    },
+    "negotiated_price_type": {
+      "type": "integer",
+      "description": "Negotiated price type."
+    },
+    "negotiated_price_value": {
+      "type": "number",
+      "description": "Negotiated price value."
+    },
+    "shipping_price": {
+      "type": "number",
+      "description": "Proposed shipping price."
+    },
+    "quote_name": {
+      "type": "string",
+      "description": "Negotiable quote name."
+    },
+    "expiration_period": {
+      "type": "string",
+      "description": "Expiration period."
+    },
+    "email_notification_status": {
+      "type": "integer",
+      "description": "Email notification status."
+    },
+    "has_unconfirmed_changes": {
+      "type": "boolean",
+      "description": "Has unconfirmed changes."
+    },
+    "is_shipping_tax_changed": {
+      "type": "boolean",
+      "description": "Shipping tax changes."
+    },
+    "is_customer_price_changed": {
+      "type": "boolean",
+      "description": "Customer price changes."
+    },
+    "notifications": {
+      "type": "integer",
+      "description": "Quote notifications."
+    },
+    "applied_rule_ids": {
+      "type": "string",
+      "description": "Quote rules."
+    },
+    "is_address_draft": {
+      "type": "boolean",
+      "description": "Is address draft."
+    },
+    "deleted_sku": {
+      "type": "string",
+      "description": "Deleted products sku."
+    },
+    "creator_id": {
+      "type": "integer",
+      "description": "Quote creator id."
+    },
+    "creator_type": {
+      "type": "integer",
+      "description": "Quote creator type."
+    },
+    "original_total_price": {
+      "type": "number",
+      "description": "Quote original total price."
+    },
+    "base_original_total_price": {
+      "type": "number",
+      "description": "Quote original total price in base currency."
+    },
+    "negotiated_total_price": {
+      "type": "number",
+      "description": "Quote negotiated total price."
+    },
+    "base_negotiated_total_price": {
+      "type": "number",
+      "description": "Quote negotiated total price in base currency."
+    },
+    "extension_attributes": {
+      "$ref": "_definitions.json#/definitions/negotiable-quote-data-negotiable-quote-extension-interface"
+    }
+  },
+  "required": [
+    "quote_id",
+    "is_regular_quote",
+    "status",
+    "negotiated_price_type",
+    "negotiated_price_value",
+    "shipping_price",
+    "quote_name",
+    "expiration_period",
+    "email_notification_status",
+    "has_unconfirmed_changes",
+    "is_shipping_tax_changed",
+    "is_customer_price_changed",
+    "notifications",
+    "applied_rule_ids",
+    "is_address_draft",
+    "deleted_sku",
+    "creator_id",
+    "creator_type"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}
