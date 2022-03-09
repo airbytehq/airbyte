@@ -657,8 +657,7 @@ public class EnvConfigs implements Configs {
     // an empty string. Change this logic if this assumption no longer holds.
     final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
         Entry::getKey,
-        entry -> Exceptions.swallowWithDefault(() ->
-            Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
+        entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
