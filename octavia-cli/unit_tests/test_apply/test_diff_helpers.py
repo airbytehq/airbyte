@@ -2,17 +2,13 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import mock_open, patch
-
 import pytest
 from octavia_cli.apply import diff_helpers
 
 
-def test_compute_checksum(mocker):
-    with patch("builtins.open", mock_open(read_data=b"data")) as mock_file:
-        digest = diff_helpers.compute_checksum("test_file_path")
-        assert digest == "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7"
-    mock_file.assert_called_with("test_file_path", "rb")
+def test_hash_config():
+    data_to_hash = {"example": "foo"}
+    assert diff_helpers.hash_config(data_to_hash) == "8d621bd700ff9a864bc603f56b4ec73536110b37d814dd4629767e898da70bef"
 
 
 @pytest.mark.parametrize(
