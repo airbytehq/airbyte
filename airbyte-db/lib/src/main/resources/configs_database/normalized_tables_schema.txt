@@ -67,23 +67,24 @@ Referenced by:
 
 
 
-                             Table "public.actor_definition"
-      Column       |           Type           | Collation | Nullable |      Default
--------------------+--------------------------+-----------+----------+-------------------
- id                | uuid                     |           | not null |
- name              | character varying(256)   |           | not null |
- docker_repository | character varying(256)   |           | not null |
- docker_image_tag  | character varying(256)   |           | not null |
- documentation_url | character varying(256)   |           |          |
- icon              | character varying(256)   |           |          |
- actor_type        | actor_type               |           | not null |
- source_type       | source_type              |           |          |
- spec              | jsonb                    |           | not null |
- created_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
- updated_at        | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
- tombstone         | boolean                  |           | not null | false
- release_stage     | release_stage            |           |          |
- release_date      | date                     |           |          |
+                               Table "public.actor_definition"
+        Column         |           Type           | Collation | Nullable |      Default
+-----------------------+--------------------------+-----------+----------+-------------------
+ id                    | uuid                     |           | not null |
+ name                  | character varying(256)   |           | not null |
+ docker_repository     | character varying(256)   |           | not null |
+ docker_image_tag      | character varying(256)   |           | not null |
+ documentation_url     | character varying(256)   |           |          |
+ icon                  | character varying(256)   |           |          |
+ actor_type            | actor_type               |           | not null |
+ source_type           | source_type              |           |          |
+ spec                  | jsonb                    |           | not null |
+ created_at            | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ updated_at            | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ tombstone             | boolean                  |           | not null | false
+ release_stage         | release_stage            |           |          |
+ release_date          | date                     |           |          |
+ resource_requirements | jsonb                    |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)
 Referenced by:
@@ -112,6 +113,7 @@ Foreign-key constraints:
     "actor_actor_definition_id_fkey" FOREIGN KEY (actor_definition_id) REFERENCES actor_definition(id) ON DELETE CASCADE
     "actor_workspace_id_fkey" FOREIGN KEY (workspace_id) REFERENCES workspace(id) ON DELETE CASCADE
 Referenced by:
+    TABLE "actor_catalog_fetch_event" CONSTRAINT "actor_catalog_fetch_event_actor_id_fkey" FOREIGN KEY (actor_id) REFERENCES actor(id) ON DELETE CASCADE
     TABLE "connection" CONSTRAINT "connection_destination_id_fkey" FOREIGN KEY (destination_id) REFERENCES actor(id) ON DELETE CASCADE
     TABLE "connection" CONSTRAINT "connection_source_id_fkey" FOREIGN KEY (source_id) REFERENCES actor(id) ON DELETE CASCADE
 
@@ -174,11 +176,13 @@ Referenced by:
  resource_requirements | jsonb                     |           |          |
  created_at            | timestamp with time zone  |           | not null | CURRENT_TIMESTAMP
  updated_at            | timestamp with time zone  |           | not null | CURRENT_TIMESTAMP
+ source_catalog_id     | uuid                      |           |          |
 Indexes:
     "connection_pkey" PRIMARY KEY, btree (id)
     "connection_destination_id_idx" btree (destination_id)
     "connection_source_id_idx" btree (source_id)
 Foreign-key constraints:
+    "connection_actor_catalog_id_fk" FOREIGN KEY (source_catalog_id) REFERENCES actor_catalog(id) ON DELETE CASCADE
     "connection_destination_id_fkey" FOREIGN KEY (destination_id) REFERENCES actor(id) ON DELETE CASCADE
     "connection_source_id_fkey" FOREIGN KEY (source_id) REFERENCES actor(id) ON DELETE CASCADE
 Referenced by:
@@ -218,3 +222,41 @@ Indexes:
 Foreign-key constraints:
     "state_connection_id_fkey" FOREIGN KEY (connection_id) REFERENCES connection(id) ON DELETE CASCADE
 
+
+
+
+                            Table "public.actor_catalog"
+    Column    |           Type           | Collation | Nullable |      Default
+--------------+--------------------------+-----------+----------+-------------------
+ id           | uuid                     |           | not null |
+ catalog      | jsonb                    |           | not null |
+ catalog_hash | character varying(32)    |           | not null |
+ created_at   | timestamp with time zone |           | not null |
+ modified_at  | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+Indexes:
+    "actor_catalog_pkey" PRIMARY KEY, btree (id)
+    "actor_catalog_catalog_hash_id_idx" btree (catalog_hash)
+Referenced by:
+    TABLE "actor_catalog_fetch_event" CONSTRAINT "actor_catalog_fetch_event_actor_catalog_id_fkey" FOREIGN KEY (actor_catalog_id) REFERENCES actor_catalog(id) ON DELETE CASCADE
+    TABLE "connection" CONSTRAINT "connection_actor_catalog_id_fk" FOREIGN KEY (source_catalog_id) REFERENCES actor_catalog(id) ON DELETE CASCADE
+
+
+
+
+                        Table "public.actor_catalog_fetch_event"
+      Column      |           Type           | Collation | Nullable |      Default
+------------------+--------------------------+-----------+----------+-------------------
+ id               | uuid                     |           | not null |
+ actor_catalog_id | uuid                     |           | not null |
+ actor_id         | uuid                     |           | not null |
+ config_hash      | character varying(32)    |           | not null |
+ actor_version    | character varying(256)   |           | not null |
+ created_at       | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+ modified_at      | timestamp with time zone |           | not null | CURRENT_TIMESTAMP
+Indexes:
+    "actor_catalog_fetch_event_pkey" PRIMARY KEY, btree (id)
+    "actor_catalog_fetch_event_actor_catalog_id_idx" btree (actor_catalog_id)
+    "actor_catalog_fetch_event_actor_id_idx" btree (actor_id)
+Foreign-key constraints:
+    "actor_catalog_fetch_event_actor_catalog_id_fkey" FOREIGN KEY (actor_catalog_id) REFERENCES actor_catalog(id) ON DELETE CASCADE
+    "actor_catalog_fetch_event_actor_id_fkey" FOREIGN KEY (actor_id) REFERENCES actor(id) ON DELETE CASCADE
