@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -316,7 +317,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             dbName),
         DRIVER_CLASS,
         new MssqlJdbcStreamingQueryConfiguration(),
-        null,
+        Maps.newHashMap(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
