@@ -7,7 +7,7 @@ definition_image: {{ definition.docker_repository }}
 definition_version: {{ definition.docker_image_tag }}
 
 {%- macro render_field(field, is_commented) %}
-{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default %} {{ field.default | tojson() }}{% endif %} # {{ field.comment }}
+{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default %} {% if field.airbyte_secret %}{{ field.default }}{% else %}{{ field.default | tojson() }}{% endif %}{% endif %} # {{ field.comment }}
 {%- endmacro %}
 
 {%- macro render_sub_fields(sub_fields, is_commented) %}
