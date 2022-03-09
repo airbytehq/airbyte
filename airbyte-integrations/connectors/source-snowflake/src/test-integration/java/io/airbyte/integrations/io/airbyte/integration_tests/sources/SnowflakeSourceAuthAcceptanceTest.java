@@ -79,7 +79,6 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
-    // .build();
 
     dataSource.setDriverClassName("net.snowflake.client.jdbc.SnowflakeDriver");
     dataSource.setJdbcUrl(jdbcUrl.toString());

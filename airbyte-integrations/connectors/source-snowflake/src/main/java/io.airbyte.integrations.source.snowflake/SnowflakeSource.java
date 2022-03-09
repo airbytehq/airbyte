@@ -58,7 +58,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   private HikariDataSource createDataSource(final JsonNode config) {
-    // dataSource.setDriverClassName(DRIVER_CLASS);
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
     jdbcUrl.append(String.format(
