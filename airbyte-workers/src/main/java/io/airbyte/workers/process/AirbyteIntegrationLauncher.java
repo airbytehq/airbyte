@@ -48,7 +48,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
-        Collections.emptyMap(),
+        getWorkerMetadata(),
         Collections.emptyMap(),
         "spec");
   }
@@ -65,7 +65,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
-        Collections.emptyMap(),
+        getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
         "--config", configFilename);
@@ -83,7 +83,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
-        Collections.emptyMap(),
+        getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
         "--config", configFilename);
