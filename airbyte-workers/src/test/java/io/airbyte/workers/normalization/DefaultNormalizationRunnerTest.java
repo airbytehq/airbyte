@@ -7,6 +7,7 @@ package io.airbyte.workers.normalization;
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
