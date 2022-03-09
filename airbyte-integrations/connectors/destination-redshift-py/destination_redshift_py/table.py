@@ -4,9 +4,11 @@ from destination_redshift_py.data_type_converter import VARCHAR, TIMESTAMP_WITHO
 from destination_redshift_py.field import Field, DataType
 
 AIRBYTE_ID_NAME = "_airbyte_ab_id"
+AIRBYTE_EMITTED_AT_NAME = "_airbyte_emitted_at"
+
 AIRBYTE_KEY_DATA_TYPE = DataType(name=VARCHAR, length="32")
 AIRBYTE_AB_ID = Field(name=AIRBYTE_ID_NAME, data_type=AIRBYTE_KEY_DATA_TYPE)
-AIRBYTE_EMITTED_AT = Field(name="_airbyte_emitted_at", data_type=DataType(name=TIMESTAMP_WITHOUT_TIME_ZONE))
+AIRBYTE_EMITTED_AT = Field(name=AIRBYTE_EMITTED_AT_NAME, data_type=DataType(name=TIMESTAMP_WITHOUT_TIME_ZONE))
 
 
 class Table:
@@ -47,8 +49,11 @@ class Table:
 
         return f"""
             CREATE TABLE IF NOT EXISTS {self.schema}.{self.name} (
-                {fields}{primary_keys}{foreign_key}, UNIQUE({AIRBYTE_AB_ID.name})  
-            );
+                {fields}{primary_keys}{foreign_key},
+                UNIQUE({AIRBYTE_AB_ID.name})
+            )
+            DISTKEY({AIRBYTE_ID_NAME})
+            SORTKEY ({AIRBYTE_EMITTED_AT_NAME});
         """
 
     def truncate_statement(self) -> str:
