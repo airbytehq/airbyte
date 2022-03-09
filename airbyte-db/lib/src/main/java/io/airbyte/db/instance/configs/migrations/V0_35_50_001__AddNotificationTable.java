@@ -24,11 +24,12 @@ public class V0_35_50_001__AddNotificationTable extends BaseJavaMigration {
 
     final DSLContext ctx = DSL.using(context.getConnection());
 
-    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
-    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(true));
+    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(true));
 
     ctx.createTableIfNotExists("notification_config")
-        .columns(id, name);
+        .columns(id, name)
+        .execute();
   }
 
 }

@@ -111,6 +111,10 @@ create table "public"."connection_operation"(
       "operation_id"
     )
 );
+create table "public"."notification_config"(
+  "id" uuid not null,
+  "name" varchar(256) not null
+);
 create table "public"."operation"(
   "id" uuid not null,
   "workspace_id" uuid not null,
