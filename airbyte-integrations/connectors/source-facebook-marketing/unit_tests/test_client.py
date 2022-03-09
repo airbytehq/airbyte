@@ -108,9 +108,9 @@ class TestBackoff:
         [
             {"json": {"error": {}}, "status_code": 500},
             {"json": {"error": {"code": 104}}},
-             {"json": {"error": {"code": 2}}},
+             {"json": {"error": {"code": 2}}, "status_code": 500},
         ],
-        ids=["server_error", "connection_reset_error"],
+        ids=["server_error", "connection_reset_error", "temporary_oauth_error"],
     )
     def test_common_error_retry(self, error_response, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
