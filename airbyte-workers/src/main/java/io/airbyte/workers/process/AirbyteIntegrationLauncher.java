@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -159,9 +160,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private Map<String, String> getWorkerMetadata() {
     return Map.of(
-        "WORKER_CONNECTOR_IMAGE", imageName,
-        "WORKER_JOB_ID", jobId,
-        "WORKER_JOB_ATTEMPT", String.valueOf(attempt));
+        WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
+        WorkerEnvConstants.WORKER_JOB_ID, jobId,
+        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt));
   }
 
 }

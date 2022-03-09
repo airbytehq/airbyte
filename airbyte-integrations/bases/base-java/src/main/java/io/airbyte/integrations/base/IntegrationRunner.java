@@ -12,6 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -289,14 +293,32 @@ public class IntegrationRunner {
     final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
     final String sentryDsn = env.getOrDefault("SENTRY_DSN", "");
     if (!enableSentry || sentryDsn.equals("")) {
+      LOGGER.debug("Skip Sentry transaction because DSN is not available");
       return NoOpTransaction.getInstance();
     }
 
-    final String connector = env.getOrDefault("APPLICATION", "unknown");
     final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
-    final String airbyteVersion = env.getOrDefault("AIRBYTE_VERSION", "");
-    final String airbyteRole = env.getOrDefault("AIRBYTE_ROLE", "");
-    final boolean isDev = version.equals("dev") || airbyteVersion.equals("dev") || airbyteRole.equals("airbyter");
+    final String airbyteVersion = env.getOrDefault(EnvConfigs.AIRBYTE_VERSION, "");
+    final String airbyteRole = env.getOrDefault(EnvConfigs.AIRBYTE_ROLE, "");
+    final boolean isDev = version.equals(AirbyteVersion.DEV_VERSION)
+        || airbyteVersion.equals(AirbyteVersion.DEV_VERSION)
+        || airbyteRole.equals("airbyter");
+    if (isDev) {
+      LOGGER.debug("Skip Sentry transaction for dev environment");
+      return NoOpTransaction.getInstance();
+    }
+    final String connector = env.getOrDefault("APPLICATION", "");
+    if (connector.equals("")) {
+      LOGGER.debug("Skip Sentry transaction for unknown connector");
+      return NoOpTransaction.getInstance();
+    }
+    final String workerEnvironment = env.getOrDefault("WORKER_ENVIRONMENT", "");
+    final String workerJobId = env.getOrDefault(WorkerEnvConstants.WORKER_JOB_ID, "");
+    final String workerJobAttempt = env.getOrDefault(WorkerEnvConstants.WORKER_JOB_ATTEMPT, "");
+    if (workerEnvironment.equals("") || workerEnvironment.equals(WorkerEnvironment.DOCKER.name())) {
+      LOGGER.debug("Skip Sentry transaction for unknown or docker deployment");
+      return NoOpTransaction.getInstance();
+    }
 
     // https://docs.sentry.io/platforms/java/configuration/
     Sentry.init(options -> {
@@ -307,10 +329,10 @@ public class IntegrationRunner {
       options.setEnvironment(isDev ? "dev" : "production");
       options.setTag("connector", connector);
       options.setTag("connector_version", version);
-      options.setTag("job_id", env.getOrDefault("WORKER_JOB_ID", ""));
-      options.setTag("job_attempt", env.getOrDefault("WORKER_JOB_ATTEMPT", ""));
+      options.setTag("job_id", workerJobId);
+      options.setTag("job_attempt", workerJobAttempt);
       options.setTag("airbyte_version", airbyteVersion);
-      options.setTag("worker_environment", env.getOrDefault("WORKER_ENVIRONMENT", ""));
+      options.setTag("worker_environment", workerEnvironment);
     });
 
     final ITransaction transaction = Sentry.startTransaction(
