@@ -25,7 +25,12 @@
     },
     "reason_code": {
       "type": ["string", "null"],
-      "enum": ["write_off", "subscription_change", "subscription_cancellation", "subscription_pause"]
+      "enum": [
+        "write_off",
+        "subscription_change",
+        "subscription_cancellation",
+        "subscription_pause"
+      ]
     },
     "status": {
       "type": ["string", "null"],
@@ -440,7 +445,7 @@
             "minimum": 1
           },
           "refund_reason_code": {
-            "type": ["string","null"]
+            "type": ["string", "null"]
           }
         }
       }

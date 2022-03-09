@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -167,6 +169,11 @@ public class EnvConfigs implements Configs {
   public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
 
   public static final String DEFAULT_NETWORK = "host";
+
+  public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
+      AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
+      AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
 
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
 
@@ -632,11 +639,22 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
   }
 
+  /**
+   * There are two types of environment variables available to the job container:
+   * <ul>
+   * <li>Exclusive variables prefixed with JOB_DEFAULT_ENV_PREFIX</li>
+   * <li>Shared variables defined in JOB_SHARED_ENVS</li>
+   * </ul>
+   */
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
-    return getAllEnvKeys.get().stream()
+    final Map<String, String> jobPrefixedEnvMap = getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        entry -> Objects.requireNonNullElse(entry.getValue().apply(this), "")));
+    return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
   @Override

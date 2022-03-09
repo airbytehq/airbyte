@@ -18,7 +18,6 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
-ENV APPLICATION_VERSION 0.4.17
 ENV ENABLE_SENTRY true
 
 LABEL io.airbyte.version=0.4.17

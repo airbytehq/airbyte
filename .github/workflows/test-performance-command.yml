@@ -9,6 +9,10 @@ on:
         description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
         required: false
         default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
@@ -32,6 +36,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -68,6 +73,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Install Java
         uses: actions/setup-java@v1
         with:
