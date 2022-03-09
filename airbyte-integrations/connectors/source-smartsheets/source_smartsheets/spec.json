@@ -17,6 +17,11 @@
         "title": "Smartsheet ID",
         "description": "Found in File > Properties",
         "type": "string"
+      },
+      "include_metadata": {
+        "title": "Smartsheet ID",
+        "description": "Include metadata in synced streams? (true / false)",
+        "type": "boolean"
       }
     }
   }
