@@ -2,7 +2,7 @@
     "streams": [
         {
             "stream": {
-                "name": "account",
+                "name": "accounts",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
                 },

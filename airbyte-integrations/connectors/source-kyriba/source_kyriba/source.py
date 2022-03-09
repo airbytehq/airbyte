@@ -106,7 +106,7 @@ class IncrementalKyribaDateStream(IncrementalKyribaStream, ABC):
     cursor_field = "updateDate"
 
 
-class Account(IncrementalKyribaDateStream):
+class Accounts(IncrementalKyribaDateStream):
     def path(self, **kwargs) -> str:
         return "accounts"
 
@@ -129,4 +129,4 @@ class SourceKyriba(AbstractSource):
             "client": client,
             "start_date": config.get("start_date"),
         }
-        return [Account(**kwargs)]
+        return [Accounts(**kwargs)]
