@@ -365,8 +365,8 @@ jobs:
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
-          label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
-          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
+          label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
 
   # In case of self-hosted EC2 errors, remove this block.
