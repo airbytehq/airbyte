@@ -7,12 +7,12 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl.MAX_DAYS_OF_STRAIGHT_FAILURE;
 import static io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl.MAX_FAILURE_JOBS_IN_A_ROW;
 
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
@@ -39,24 +39,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AutoDisableConnectionActivityTest {
 
   @Mock
+  private FeatureFlags mFeatureFlags;
+
+  @Mock
   private ConfigRepository mConfigRepository;
 
   @Mock
   private JobPersistence mJobPersistence;
 
-  @Mock
-  private Job mJobFailure;
-
-  @Mock
-  private Job mJobSuccess;
-
   @InjectMocks
-  private AutoDisableConnectionActivityImpl disableActivity;
+  private AutoDisableConnectionActivityImpl autoDisableActivity;
 
-  private final static UUID connectionId = UUID.randomUUID();
-  private final static StandardSync standardSync = new StandardSync();
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final Instant currInstant = Instant.now();
-  private static final AutoDisableConnectionActivityInput input = new AutoDisableConnectionActivityInput(connectionId, currInstant);
+  private static final AutoDisableConnectionActivityInput ACTIVITY_INPUT = new AutoDisableConnectionActivityInput(CONNECTION_ID, currInstant);
+
+  private final StandardSync standardSync = new StandardSync();
 
   @BeforeEach
   void setUp() {
@@ -64,61 +62,62 @@ class AutoDisableConnectionActivityTest {
   }
 
   @Nested
-  class DisableConnectionTest {
+  class AutoDisableConnectionTest {
 
     @Test
     @DisplayName("Test that the connection is disabled after MAX_FAILURE_JOBS_IN_A_ROW straight failures")
     public void testMaxFailuresInARow() throws IOException, JsonValidationException, ConfigNotFoundException {
-      // 1 success followed by MAX_FAILURE_JOBS_IN_A_ROW failures
-      final List<Job> jobs = new ArrayList<>(Collections.singletonList(mJobSuccess));
-      jobs.addAll(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW, mJobFailure));
+      Mockito.when(mFeatureFlags.disablesFailingConnections()).thenReturn(true);
 
-      Mockito.when(mJobPersistence.listJobs(ConfigType.SYNC, currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS)))
-          .thenReturn(jobs);
-      Mockito.when(mJobFailure.getStatus()).thenReturn(JobStatus.FAILED);
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      // from most recent to least recent: MAX_FAILURE_JOBS_IN_A_ROW and 1 success
+      final List<JobStatus> jobStatuses = new ArrayList<>(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW, JobStatus.FAILED));
+      jobStatuses.add(JobStatus.SUCCEEDED);
+
+      Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+          currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS))).thenReturn(jobStatuses);
+      Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(standardSync);
 
-      disableActivity.autoDisableFailingConnection(input);
+      autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
     }
 
     @Test
     @DisplayName("Test that the connection is _not_ disabled after MAX_FAILURE_JOBS_IN_A_ROW - 1 straight failures")
     public void testLessThanMaxFailuresInARow() throws IOException {
-      // 1 success followed by MAX_FAILURE_JOBS_IN_A_ROW-1 failures
-      final List<Job> jobs = new ArrayList<>(Collections.singletonList(mJobSuccess));
-      jobs.addAll(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW - 1, mJobFailure));
+      // from most recent to least recent: MAX_FAILURE_JOBS_IN_A_ROW-1 and 1 success
+      final List<JobStatus> jobStatuses = new ArrayList<>(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW - 1, JobStatus.FAILED));
+      jobStatuses.add(JobStatus.SUCCEEDED);
 
-      Mockito.when(mJobPersistence.listJobs(ConfigType.SYNC, currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS)))
-          .thenReturn(jobs);
-      Mockito.when(mJobFailure.getStatus()).thenReturn(JobStatus.FAILED);
-      Mockito.when(mJobSuccess.getStatus()).thenReturn(JobStatus.SUCCEEDED);
+      Mockito.when(mFeatureFlags.disablesFailingConnections()).thenReturn(true);
+      Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+          currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS))).thenReturn(jobStatuses);
 
-      disableActivity.autoDisableFailingConnection(input);
+      autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
     }
 
     @Test
     @DisplayName("Test that the connection is _not_ disabled after 0 jobs in last MAX_DAYS_OF_STRAIGHT_FAILURE days")
     public void testNoRuns() throws IOException {
-      Mockito.when(mJobPersistence.listJobs(ConfigType.SYNC, currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS)))
-          .thenReturn(Collections.emptyList());
+      Mockito.when(mFeatureFlags.disablesFailingConnections()).thenReturn(true);
+      Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+          currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS))).thenReturn(Collections.emptyList());
 
-      disableActivity.autoDisableFailingConnection(input);
+      autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
     }
 
     @Test
     @DisplayName("Test that the connection is disabled after only failed jobs in last MAX_DAYS_OF_STRAIGHT_FAILURE days")
     public void testOnlyFailuresInMaxDays() throws IOException, JsonValidationException, ConfigNotFoundException {
-      Mockito.when(mJobPersistence.listJobs(ConfigType.SYNC, currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS)))
-          .thenReturn(Collections.singletonList(mJobFailure));
-      Mockito.when(mJobFailure.getStatus()).thenReturn(JobStatus.FAILED);
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      Mockito.when(mFeatureFlags.disablesFailingConnections()).thenReturn(true);
+      Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+          currInstant.minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS))).thenReturn(Collections.singletonList(JobStatus.FAILED));
+      Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(standardSync);
 
-      disableActivity.autoDisableFailingConnection(input);
+      autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
       Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
     }
 

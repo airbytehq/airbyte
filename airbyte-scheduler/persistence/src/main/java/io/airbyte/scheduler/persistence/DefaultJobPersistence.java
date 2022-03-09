@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.tables.Jobs.JOBS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -26,6 +27,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.jobs.jooq.enums.JobConfigType;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -383,6 +385,20 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<Job> listJobsWithStatus(final ConfigType configType, final JobStatus status) throws IOException {
     return listJobsWithStatus(Sets.newHashSet(configType), status);
+  }
+
+  @Override
+  public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final ConfigType configType, final Instant jobCreatedAtTimestamp)
+      throws IOException {
+    return jobDatabase.query(ctx -> ctx.select(JOBS.STATUS)
+        .from(JOBS)
+        .where(JOBS.SCOPE.eq(connectionId.toString()))
+        .and(JOBS.CONFIG_TYPE.eq(JobConfigType.sync)) // todo: can i change this to use configType?
+        .and(JOBS.CREATED_AT.greaterOrEqual(OffsetDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC)))
+        .fetch()
+        .stream()
+        .flatMap(row -> Stream.of(JobStatus.valueOf(row.value1().getLiteral().toUpperCase())))
+        .collect(Collectors.toList()));
   }
 
   @Override
