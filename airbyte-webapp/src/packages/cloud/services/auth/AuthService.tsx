@@ -15,6 +15,8 @@ import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { getUtmFromStorage } from "utils/utmStorage";
 
 export type AuthUpdatePassword = (
   email: string,
@@ -119,6 +121,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   );
   const auth = useAuth();
   const userService = useGetUserService();
+  const analytics = useAnalyticsService();
   const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
 
   useEffect(() => {
@@ -141,6 +144,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
               name: encodedData.name,
               companyName: encodedData.companyName,
               news: encodedData.news,
+            });
+            analytics.track("Airbyte.UI.User.Created", {
+              user_id: user.userId,
+              name: user.name,
+              email: user.email,
+              ...getUtmFromStorage(),
             });
           }
         }
