@@ -29,18 +29,6 @@ def get_authentication_method(provider: dict) -> AuthenticationMethod:
         return AuthenticationMethod.UNSIGNED
 
 
-def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:
-    """
-    Construct boto3 resource with specified config and remote endpoint
-    :param provider provider configuration from connector configuration.
-    :param session User session to create client from.
-    :param config Client config parameter in case of using creds from .aws/config file.
-    :return Boto3 S3 resource instance.
-    """
-    client_kv_args = _get_s3_client_args(provider, config)
-    return session.resource("s3", **client_kv_args)
-
-
 def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
     """
     Construct boto3 client with specified config and remote endpoint
@@ -87,4 +75,4 @@ def _get_s3_client_args(provider: dict) -> dict:
     return client_kv_args
 
 
-__all__ = ["make_s3_client", "make_s3_resource"]
+__all__ = ["make_s3_client"]
