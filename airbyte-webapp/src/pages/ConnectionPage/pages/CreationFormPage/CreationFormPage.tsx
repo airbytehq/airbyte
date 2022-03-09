@@ -6,22 +6,27 @@ import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
+import { LoadingPage } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
-import CreateEntityView from "./components/CreateEntityView";
+import ConnectionBlock from "components/ConnectionBlock";
+import HeadTitle from "components/HeadTitle";
+import CreateConnectionContent from "components/CreateConnectionContent";
+
+import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
-import ConnectionBlock from "components/ConnectionBlock";
-import { Routes } from "../../../routes";
-import CreateConnectionContent from "components/CreateConnectionContent";
+
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
-import HeadTitle from "components/HeadTitle";
-
-type IProps = {
-  type: "source" | "destination" | "connection";
-};
+import {
+  Destination,
+  DestinationDefinition,
+  Source,
+  SourceDefinition,
+} from "core/domain/connector";
+import { Connection } from "core/domain/connection";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -35,21 +40,41 @@ export enum EntityStepsTypes {
   CONNECTION = "connection",
 }
 
-const CreationFormPage: React.FC<IProps> = ({ type }) => {
-  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
-  const [currentEntityStep, setCurrentEntityStep] = useState(
-    EntityStepsTypes.SOURCE
+const hasSourceId = (state: unknown): state is { sourceId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceId?: string }).sourceId === "string"
   );
+};
 
-  const { location, push } = useRouter();
+const hasDestinationId = (
+  state: unknown
+): state is { destinationId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationId?: string }).destinationId === "string"
+  );
+};
+
+function usePreloadData(): {
+  sourceDefinition?: SourceDefinition;
+  destination?: Destination;
+  source?: Source;
+  destinationDefinition?: DestinationDefinition;
+} {
+  const { location } = useRouter();
+
   const source = useResource(
     SourceResource.detailShape(),
-    location.state?.sourceId
+    hasSourceId(location.state)
       ? {
           sourceId: location.state.sourceId,
         }
       : null
   );
+
   const sourceDefinition = useResource(
     SourceDefinitionResource.detailShape(),
     source
@@ -61,7 +86,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
 
   const destination = useResource(
     DestinationResource.detailShape(),
-    location.state?.destinationId
+    hasDestinationId(location.state)
       ? {
           destinationId: location.state.destinationId,
         }
@@ -76,74 +101,133 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       : null
   );
 
+  return { source, sourceDefinition, destination, destinationDefinition };
+}
+
+const CreationFormPage: React.FC = () => {
+  const { location, push } = useRouter();
+
+  // TODO: Probably there is a better way to figure it out instead of just checking third elem
+  const locationType = location.pathname.split("/")[3];
+
+  const type: EntityStepsTypes =
+    locationType === "connections"
+      ? EntityStepsTypes.CONNECTION
+      : locationType === "source"
+      ? EntityStepsTypes.DESTINATION
+      : EntityStepsTypes.SOURCE;
+
+  const hasConnectors =
+    hasSourceId(location.state) && hasDestinationId(location.state);
+  const [currentStep, setCurrentStep] = useState(
+    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
+  );
+
+  const [currentEntityStep, setCurrentEntityStep] = useState(
+    hasSourceId(location.state)
+      ? EntityStepsTypes.DESTINATION
+      : EntityStepsTypes.SOURCE
+  );
+
+  const {
+    destinationDefinition,
+    sourceDefinition,
+    source,
+    destination,
+  } = usePreloadData();
+
+  const onSelectExistingSource = (id: string) => {
+    push("", {
+      state: {
+        ...(location.state as Record<string, unknown>),
+        sourceId: id,
+      },
+    });
+    setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+    setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+  };
+
+  const onSelectExistingDestination = (id: string) => {
+    push("", {
+      state: {
+        ...(location.state as Record<string, unknown>),
+        destinationId: id,
+      },
+    });
+    setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+    setCurrentStep(StepsTypes.CREATE_CONNECTION);
+  };
+
   const renderStep = () => {
     if (
       currentStep === StepsTypes.CREATE_ENTITY ||
       currentStep === StepsTypes.CREATE_CONNECTOR
     ) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
-        if (location.state?.sourceId) {
-          return (
-            <CreateEntityView
-              type="source"
-              afterSuccess={() => {
-                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+        return (
+          <>
+            {type === EntityStepsTypes.CONNECTION && (
+              <ExistingEntityForm
+                type="source"
+                onSubmit={onSelectExistingSource}
+              />
+            )}
+            <SourceForm
+              afterSubmit={() => {
                 if (type === "connection") {
+                  setCurrentEntityStep(EntityStepsTypes.DESTINATION);
                   setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+                } else {
+                  setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                  setCurrentStep(StepsTypes.CREATE_CONNECTION);
                 }
               }}
             />
-          );
-        }
-
-        return (
-          <SourceForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.DESTINATION);
-              if (type === "connection") {
-                setCurrentStep(StepsTypes.CREATE_CONNECTOR);
-              }
-            }}
-          />
+          </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
-        if (location.state?.destinationId) {
-          return (
-            <CreateEntityView
-              type="destination"
-              afterSuccess={() => {
+        return (
+          <>
+            {type === EntityStepsTypes.CONNECTION && (
+              <ExistingEntityForm
+                type="destination"
+                onSubmit={onSelectExistingDestination}
+              />
+            )}
+            <DestinationForm
+              afterSubmit={() => {
                 setCurrentEntityStep(EntityStepsTypes.CONNECTION);
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
-          );
-        }
-
-        return (
-          <DestinationForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-              setCurrentStep(StepsTypes.CREATE_CONNECTION);
-            }}
-          />
+          </>
         );
       }
     }
 
-    const afterSubmitConnection = () => {
-      if (type === "destination") {
-        push(`${Routes.Source}/${source?.sourceId}`);
-      } else if (type === "source") {
-        push(`${Routes.Destination}/${destination?.destinationId}`);
-      } else {
-        push(`${Routes.Connections}`);
+    const afterSubmitConnection = (connection: Connection) => {
+      switch (type) {
+        case EntityStepsTypes.DESTINATION:
+          push(`../${source?.sourceId}`);
+          break;
+        case EntityStepsTypes.SOURCE:
+          push(`../${destination?.destinationId}`);
+          break;
+        default:
+          push(`../${connection.connectionId}`);
+          break;
       }
     };
 
+    if (!source || !destination) {
+      console.error("unexpected state met");
+      return <LoadingPage />;
+    }
+
     return (
       <CreateConnectionContent
-        source={source!}
-        destination={destination!}
+        source={source}
+        destination={destination}
         afterSubmitConnection={afterSubmitConnection}
       />
     );
@@ -154,15 +238,15 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       ? [
           {
             id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id={"onboarding.createSource"} />,
+            name: <FormattedMessage id="onboarding.createSource" />,
           },
           {
             id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id={"onboarding.createDestination"} />,
+            name: <FormattedMessage id="onboarding.createDestination" />,
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+            name: <FormattedMessage id="onboarding.setUpConnection" />,
           },
         ]
       : [
@@ -170,35 +254,30 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
             id: StepsTypes.CREATE_ENTITY,
             name:
               type === "destination" ? (
-                <FormattedMessage id={"onboarding.createDestination"} />
+                <FormattedMessage id="onboarding.createDestination" />
               ) : (
-                <FormattedMessage id={"onboarding.createSource"} />
+                <FormattedMessage id="onboarding.createSource" />
               ),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+            name: <FormattedMessage id="onboarding.setUpConnection" />,
           },
         ];
 
-  const titleId = () => {
-    switch (type) {
-      case "connection":
-        return "connection.newConnectionTitle";
-      case "destination":
-        return "destinations.newDestinationTitle";
-      case "source":
-        return "sources.newSourceTitle";
-    }
-  };
+  const titleId: string = ({
+    [EntityStepsTypes.CONNECTION]: "connection.newConnectionTitle",
+    [EntityStepsTypes.DESTINATION]: "destinations.newDestinationTitle",
+    [EntityStepsTypes.SOURCE]: "sources.newSourceTitle",
+  } as Record<EntityStepsTypes, string>)[type];
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: titleId() }]} />}
+      headTitle={<HeadTitle titles={[{ id: titleId }]} />}
       pageTitle={
         <PageTitle
           withLine
-          title={<FormattedMessage id={titleId()} />}
+          title={<FormattedMessage id={titleId} />}
           middleComponent={
             <StepsMenu lightMode data={steps} activeStep={currentStep} />
           }

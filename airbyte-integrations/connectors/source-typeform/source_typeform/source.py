@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -40,7 +20,7 @@ from pendulum.datetime import DateTime
 
 
 class TypeformStream(HttpStream, ABC):
-    url_base = "https://api.typeform.com"
+    url_base = "https://api.typeform.com/"
     # maximum number of entities in API response per single page
     limit: int = 200
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
@@ -75,7 +55,7 @@ class TrimForms(TypeformStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Optional[Any] = None,
     ) -> str:
-        return "/forms"
+        return "forms"
 
     def next_page_token(self, response: requests.Response) -> Optional[Any]:
         page = self.get_current_page_token(response.url)
@@ -103,8 +83,13 @@ class TrimForms(TypeformStream):
 
 class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
-            yield {"form_id": item["id"]}
+        form_ids = self.config.get("form_ids", [])
+        if form_ids:
+            for item in form_ids:
+                yield {"form_id": item}
+        else:
+            for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
+                yield {"form_id": item["id"]}
 
         yield from []
 
@@ -123,7 +108,7 @@ class Forms(TrimFormsMixin, TypeformStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Optional[Any] = None,
     ) -> str:
-        return f"/forms/{stream_slice['form_id']}"
+        return f"forms/{stream_slice['form_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
@@ -164,7 +149,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
     limit: int = 1000
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"/forms/{stream_slice['form_id']}/responses"
+        return f"forms/{stream_slice['form_id']}/responses"
 
     def get_form_id(self, record: Mapping[str, Any]) -> Optional[str]:
         """
@@ -216,11 +201,31 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            url = f"{TypeformStream.url_base}/forms"
-            auth_headers = {"Authorization": f"Bearer {config['token']}"}
-            session = requests.get(url, headers=auth_headers)
-            session.raise_for_status()
-            return True, None
+            form_ids = config.get("form_ids", []).copy()
+            # verify if form inputted by user is valid
+            try:
+                url = f"{TypeformStream.url_base}/me"
+                auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                session = requests.get(url, headers=auth_headers)
+                session.raise_for_status()
+            except requests.exceptions.BaseHTTPError as e:
+                return False, f"Cannot authenticate, please verify token. Error: {e}"
+            if form_ids:
+                for form in form_ids:
+                    try:
+                        url = f"{TypeformStream.url_base}/forms/{form}"
+                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                        response = requests.get(url, headers=auth_headers)
+                        response.raise_for_status()
+                    except requests.exceptions.BaseHTTPError as e:
+                        return (
+                            False,
+                            f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again. Error: {e}",
+                        )
+                return True, None
+            else:
+                return True, None
+
         except requests.exceptions.RequestException as e:
             return False, e
 

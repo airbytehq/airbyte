@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import hashlib
@@ -186,6 +166,7 @@ class TableNameRegistry:
         # deal with table name collisions within the same schema first.
         # file name should be equal to table name here
         table_count = 0
+
         for key in self.simple_table_registry:
             for value in self.simple_table_registry[key]:
                 table_count += 1
@@ -209,7 +190,10 @@ class TableNameRegistry:
                 )
                 self.simple_file_registry.add(value.intermediate_schema, value.schema, value.json_path, value.stream_name, table_name)
         registry_size = len(self.registry)
-        assert (table_count * 2) == registry_size, f"Mismatched number of tables {table_count} vs {registry_size} being resolved"
+
+        # Oracle doesnt support namespace and this break this logic.
+        if self.destination_type != DestinationType.ORACLE:
+            assert (table_count * 2) == registry_size, f"Mismatched number of tables {table_count * 2} vs {registry_size} being resolved"
         return resolved_keys
 
     def resolve_file_names(self):
@@ -229,7 +213,10 @@ class TableNameRegistry:
                         value.schema, value.table_name, self.resolve_file_name(value.schema, value.table_name)
                     )
         registry_size = len(self.registry)
-        assert (file_count * 2) == registry_size, f"Mismatched number of tables {file_count} vs {registry_size} being resolved"
+
+        # Oracle doesnt support namespace and this break this logic.
+        if self.destination_type != DestinationType.ORACLE:
+            assert (file_count * 2) == registry_size, f"Mismatched number of tables {file_count * 2} vs {registry_size} being resolved"
 
     def get_hashed_table_name(self, schema: str, json_path: List[str], stream_name: str, table_name: str) -> str:
         """

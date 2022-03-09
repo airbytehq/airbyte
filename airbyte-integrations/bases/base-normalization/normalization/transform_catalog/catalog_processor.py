@@ -1,30 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import os
+import re
 from typing import Any, Dict, List, Set
 
 import yaml
@@ -118,7 +99,17 @@ class CatalogProcessor:
                 schema = stream_config["namespace"]
 
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+            if destination_type == DestinationType.ORACLE:
+                quote_in_parenthesis = re.compile(r"quote\((.*)\)")
+                raw_schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
+                if not quote_in_parenthesis.findall(json_column_name):
+                    json_column_name = name_transformer.normalize_column_name(json_column_name, in_jinja=True)
+            else:
+                column_inside_single_quote = re.compile(r"\'(.*)\'")
+                raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+                if not column_inside_single_quote.findall(json_column_name):
+                    json_column_name = f"'{json_column_name}'"
+
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = destination_type == DestinationType.MYSQL
@@ -148,12 +139,13 @@ class CatalogProcessor:
                 stream_name=stream_name,
                 destination_type=destination_type,
                 raw_schema=raw_schema_name,
+                default_schema=default_schema,
                 schema=schema_name,
                 source_sync_mode=source_sync_mode,
                 destination_sync_mode=destination_sync_mode,
                 cursor_field=cursor_field,
                 primary_key=primary_key,
-                json_column_name=f"'{json_column_name}'",
+                json_column_name=json_column_name,
                 properties=properties,
                 tables_registry=tables_registry,
                 from_table=from_table,

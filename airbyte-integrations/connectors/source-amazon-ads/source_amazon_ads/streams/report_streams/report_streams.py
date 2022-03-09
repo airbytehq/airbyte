@@ -1,29 +1,8 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -77,6 +56,28 @@ class ReportInfo:
     report_id: str
     profile_id: int
     record_type: str
+    status: Status
+    metric_objects: List[dict]
+
+
+class RetryableException(Exception):
+    pass
+
+
+class ReportGenerationFailure(RetryableException):
+    pass
+
+
+class ReportGenerationInProgress(RetryableException):
+    pass
+
+
+class ReportStatusFailure(RetryableException):
+    pass
+
+
+class ReportInitFailure(RetryableException):
+    pass
 
 
 class TooManyRequests(Exception):
@@ -92,10 +93,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     primary_key = None
     CHECK_INTERVAL_SECONDS = 30
+    # Amazon ads updates the data for the next 3 days
+    LOOK_BACK_WINDOW = 3
     # Async report generation time is 15 minutes according to docs:
     # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=20)
+    REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -136,39 +139,57 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             # take any action and just return.
             return
         report_date = stream_slice[self.cursor_field]
+        report_infos = self._init_and_try_read_records(report_date)
+
+        for report_info in report_infos:
+            for metric_object in report_info.metric_objects:
+                yield self._model(
+                    profileId=report_info.profile_id,
+                    recordType=report_info.record_type,
+                    reportDate=report_date,
+                    metric=metric_object,
+                ).dict()
+
+    @backoff.on_exception(
+        backoff.expo,
+        ReportGenerationFailure,
+        max_tries=5,
+    )
+    def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        # According to Amazon Ads API docs metric generation takes maximum 15
-        # minutes. But in case reports wont be generated we dont want this stream to
-        # hung forever. Store timepoint when report generation has started to
-        # check if it takes to long to break a loop.
-        start_time_point = datetime.now()
-        while report_infos and datetime.now() <= start_time_point + self.REPORT_WAIT_TIMEOUT:
-            completed_reports = []
-            logger.info(f"Checking report status, {len(report_infos)} report(s) remained")
-            for report_info in report_infos:
-                report_status, download_url = self._check_status(report_info)
-                if report_status == Status.FAILURE:
-                    raise Exception(f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed")
-                elif report_status == Status.SUCCESS:
-                    metric_objects = self._download_report(report_info, download_url)
-                    for metric_object in metric_objects:
-                        yield self._model(
-                            profileId=report_info.profile_id,
-                            recordType=report_info.record_type,
-                            reportDate=report_date,
-                            metric=metric_object,
-                        ).dict()
-                    completed_reports.append(report_info)
-            for completed_report in completed_reports:
-                report_infos.remove(completed_report)
-            if report_infos:
-                logger.info(f"{len(report_infos)} report(s) remained, taking {self.CHECK_INTERVAL_SECONDS} seconds timeout")
-                time.sleep(self.CHECK_INTERVAL_SECONDS)
-        if not report_infos:
-            logger.info("All reports have been processed")
-        else:
-            raise Exception("Not all reports has been processed due to timeout")
+        self._try_read_records(report_infos)
+        return report_infos
+
+    @backoff.on_exception(
+        backoff.constant,
+        RetryableException,
+        max_time=REPORT_WAIT_TIMEOUT,
+    )
+    def _try_read_records(self, report_infos):
+        incomplete_report_infos = self._incomplete_report_infos(report_infos)
+
+        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
+        for report_info in incomplete_report_infos:
+            report_status, download_url = self._check_status(report_info)
+            report_info.status = report_status
+
+            if report_status == Status.FAILURE:
+                message = f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed"
+                raise ReportGenerationFailure(message)
+            elif report_status == Status.SUCCESS:
+                try:
+                    report_info.metric_objects = self._download_report(report_info, download_url)
+                except requests.HTTPError as error:
+                    raise ReportGenerationFailure(error)
+
+        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
+        if len(pending_report_status) > 0:
+            message = f"Report generation in progress: {repr(pending_report_status)}"
+            raise ReportGenerationInProgress(message)
+
+    def _incomplete_report_infos(self, report_infos):
+        return [r for r in report_infos if r.status != Status.SUCCESS]
 
     def _generate_model(self):
         """
@@ -209,7 +230,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         check_endpoint = f"/v2/reports/{report_info.report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
-        resp = ReportStatus.parse_raw(resp.text)
+
+        try:
+            resp = ReportStatus.parse_raw(resp.text)
+        except ValueError as error:
+            raise ReportStatusFailure(error)
+
         return resp.status, resp.location
 
     @backoff.on_exception(
@@ -245,6 +271,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if not start_report_date:
             start_report_date = now
 
+        # You cannot pull data for amazon ads more than 60 days
+        if (now - start_report_date).days > (60 - ReportStream.LOOK_BACK_WINDOW):
+            start_report_date = now + timedelta(days=-(60 - ReportStream.LOOK_BACK_WINDOW))
+
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
             next_date = next_date.strftime(ReportStream.REPORT_DATE_FORMAT)
@@ -253,6 +283,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+
         if sync_mode == SyncMode.full_refresh:
             # For full refresh stream use date from config start_date field.
             start_date = self._start_date
@@ -262,8 +293,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             start_date = stream_state.get(self.cursor_field)
             if start_date:
                 start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
-                # We already processed records for date specified in stream state, move to the day after
-                start_date += timedelta(days=1)
+                start_date += timedelta(days=-ReportStream.LOOK_BACK_WINDOW)
+
             else:
                 start_date = self._start_date
 
@@ -278,6 +309,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         Override to return dict representing body of POST request for initiating report creation.
         """
 
+    @backoff.on_exception(
+        backoff.expo,
+        ReportInitFailure,
+        max_tries=5,
+    )
     def _init_reports(self, report_date: str) -> List[ReportInfo]:
         """
         Send report generation requests for all profiles and for all record types for specific day.
@@ -305,8 +341,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     report_init_body,
                 )
                 if response.status_code != HTTPStatus.ACCEPTED:
-                    raise Exception(
-                        f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {profile.profileId} profile: {response.text}"
+                    raise ReportInitFailure(
+                        f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
                     )
 
                 response = ReportInitResponse.parse_raw(response.text)
@@ -315,6 +351,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                         report_id=response.reportId,
                         record_type=record_type,
                         profile_id=profile.profileId,
+                        status=Status.IN_PROGRESS,
+                        metric_objects=[],
                     )
                 )
                 logger.info("Initiated successfully")
@@ -330,19 +368,23 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         reports from day before specified report date and we should take into
         account timezone for each profile.
         :param report_date requested date that stored in stream state.
-        :return date parameter for Amazon Ads generate report. It equial to day
-        before current day for the profile's timezone.
+        :return date parameter for Amazon Ads generate report.
         """
         report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
         profile_tz = pytz.timezone(profile.timezone)
         profile_time = report_date.astimezone(profile_tz)
-        profile_yesterday = profile_time - timedelta(days=1)
-        return profile_yesterday.strftime(ReportStream.REPORT_DATE_FORMAT)
+        return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
 
+    @backoff.on_exception(
+        backoff.expo,
+        requests.HTTPError,
+        max_tries=5,
+    )
     def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
         """
         Download and parse report result
         """
         response = self._send_http_request(url, report_info.profile_id)
+        response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
         return json.loads(raw_string)

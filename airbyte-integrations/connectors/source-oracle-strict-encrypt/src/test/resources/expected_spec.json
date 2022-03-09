@@ -1,0 +1,101 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oracle Source Spec",
+    "type": "object",
+    "required": ["host", "port", "sid", "username", "encryption"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string"
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.\nOracle Corporations recommends the following port numbers:\n1521 - Default listening port for client connections to the listener. \n2484 - Recommended and officially registered listening port for client connections to the listener using TCP/IP with SSL",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 1521
+      },
+      "sid": {
+        "title": "SID (Oracle System Identifier)",
+        "type": "string"
+      },
+      "username": {
+        "title": "User",
+        "description": "The username which is used to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "title": "Password",
+        "description": "The password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "encryption": {
+        "title": "Encryption",
+        "type": "object",
+        "description": "The encryption method with is used when communicating with the database.",
+        "order": 6,
+        "oneOf": [
+          {
+            "title": "Native Network Encryption (NNE)",
+            "additionalProperties": false,
+            "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
+            "required": ["encryption_method"],
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "const": "client_nne",
+                "enum": ["client_nne"],
+                "default": "client_nne"
+              },
+              "encryption_algorithm": {
+                "type": "string",
+                "description": "This parameter defines what encryption algorithm is used.",
+                "title": "Encryption Algorithm",
+                "default": "AES256",
+                "enum": ["AES256", "RC4_56", "3DES168"]
+              }
+            }
+          },
+          {
+            "title": "TLS Encrypted (verify certificate)",
+            "additionalProperties": false,
+            "description": "Verify and use the certificate provided by the server.",
+            "required": ["encryption_method", "ssl_certificate"],
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "const": "encrypted_verify_certificate",
+                "enum": ["encrypted_verify_certificate"],
+                "default": "encrypted_verify_certificate"
+              },
+              "ssl_certificate": {
+                "title": "SSL PEM File",
+                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

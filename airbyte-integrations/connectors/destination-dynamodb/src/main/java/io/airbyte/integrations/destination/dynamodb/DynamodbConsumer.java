@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -51,9 +31,9 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public DynamodbConsumer(DynamodbDestinationConfig dynamodbDestinationConfig,
-                          ConfiguredAirbyteCatalog configuredCatalog,
-                          Consumer<AirbyteMessage> outputRecordCollector) {
+  public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
+                          final ConfiguredAirbyteCatalog configuredCatalog,
+                          final Consumer<AirbyteMessage> outputRecordCollector) {
     this.dynamodbDestinationConfig = dynamodbDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -63,8 +43,9 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void startTracked() throws Exception {
 
-    var endpoint = dynamodbDestinationConfig.getEndpoint();
-    AWSCredentials awsCreds = new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
+    final var endpoint = dynamodbDestinationConfig.getEndpoint();
+    final AWSCredentials awsCreds =
+        new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
     AmazonDynamoDB amazonDynamodb = null;
 
     if (endpoint.isEmpty()) {
@@ -73,7 +54,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
           .withRegion(dynamodbDestinationConfig.getRegion())
           .build();
     } else {
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
       amazonDynamodb = AmazonDynamoDBClientBuilder
@@ -84,20 +65,20 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
           .build();
     }
 
-    var uploadTimestamp = System.currentTimeMillis();
+    final var uploadTimestamp = System.currentTimeMillis();
 
-    for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      var writer = new DynamodbWriter(dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
+    for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
+      final var writer = new DynamodbWriter(dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
 
-      AirbyteStream stream = configuredStream.getStream();
-      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
+      final AirbyteStream stream = configuredStream.getStream();
+      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
           .fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
+  protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
       this.lastStateMessage = airbyteMessage;
       return;
@@ -105,8 +86,8 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
       return;
     }
 
-    AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
+    final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
@@ -120,8 +101,8 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
-    for (DynamodbWriter handler : streamNameAndNamespaceToWriters.values()) {
+  protected void close(final boolean hasFailed) throws Exception {
+    for (final DynamodbWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // DynamoDB stream uploader is all or nothing if a failure happens in the destination.

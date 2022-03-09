@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db;
@@ -29,7 +9,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 
 public class IncrementalUtils {
 
-  public static String getCursorField(ConfiguredAirbyteStream stream) {
+  public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
     } else if (stream.getCursorField().size() > 1) {
@@ -39,7 +19,7 @@ public class IncrementalUtils {
     }
   }
 
-  public static JsonSchemaPrimitive getCursorType(ConfiguredAirbyteStream stream, String cursorField) {
+  public static JsonSchemaPrimitive getCursorType(final ConfiguredAirbyteStream stream, final String cursorField) {
     if (stream.getStream().getJsonSchema().get("properties") == null) {
       throw new IllegalStateException(String.format("No properties found in stream: %s.", stream.getStream().getName()));
     }
@@ -60,7 +40,7 @@ public class IncrementalUtils {
   // x < 0 mean replace original
   // x == 0 means keep original
   // x > 0 means keep original
-  public static int compareCursors(String original, String candidate, JsonSchemaPrimitive type) {
+  public static int compareCursors(final String original, final String candidate, final JsonSchemaPrimitive type) {
     if (original == null && candidate == null) {
       return 0;
     }

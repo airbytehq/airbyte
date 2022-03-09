@@ -1,39 +1,15 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
-import tempfile
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-
-cache_file = tempfile.NamedTemporaryFile()
 
 
 class GitlabStream(HttpStream, ABC):
@@ -47,10 +23,6 @@ class GitlabStream(HttpStream, ABC):
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-            yield from super().read_records(**kwargs)
 
     def request_params(
         self,
@@ -173,6 +145,8 @@ class IncrementalGitlabChildStream(GitlabChildStream):
 
 
 class Groups(GitlabStream):
+    use_cache = True
+
     def __init__(self, group_ids: List, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
@@ -193,6 +167,7 @@ class Groups(GitlabStream):
 
 class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
+    use_cache = True
 
     def __init__(self, project_ids: List = None, **kwargs):
         super().__init__(**kwargs)
@@ -278,7 +253,6 @@ class MergeRequests(IncrementalGitlabChildStream):
 
 class MergeRequestCommits(GitlabChildStream):
     path_list = ["project_id", "iid"]
-
     path_template = "projects/{project_id}/merge_requests/{iid}"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):

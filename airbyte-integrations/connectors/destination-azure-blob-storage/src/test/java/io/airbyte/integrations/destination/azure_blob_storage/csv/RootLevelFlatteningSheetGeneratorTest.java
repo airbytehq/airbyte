@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage.csv;
@@ -41,11 +21,11 @@ class RootLevelFlatteningSheetGeneratorTest {
   private final static ObjectMapper MAPPER = MoreMappers.initMapper();
   private final static ObjectNode SCHEMA = MAPPER.createObjectNode();
   static {
-    List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");
+    final List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");
     Collections.shuffle(fields);
 
-    ObjectNode schemaProperties = MAPPER.createObjectNode();
-    for (String field : fields) {
+    final ObjectNode schemaProperties = MAPPER.createObjectNode();
+    for (final String field : fields) {
       schemaProperties.set(field, MAPPER.createObjectNode());
     }
 
@@ -71,7 +51,7 @@ class RootLevelFlatteningSheetGeneratorTest {
 
   @Test
   public void testGetRecordColumns() {
-    ObjectNode json = MAPPER.createObjectNode();
+    final ObjectNode json = MAPPER.createObjectNode();
     // Field c is missing
     json.put("C", 3);
     json.put("B", "value B");

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -41,15 +21,15 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcStateHandler.class);
   private final StateManager stateManager;
 
-  public PostgresCdcStateHandler(StateManager stateManager) {
+  public PostgresCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
   }
 
   @Override
-  public AirbyteMessage saveState(Map<String, String> offset, String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
-    CdcState cdcState = new CdcState().withState(asJson);
+    final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
     final AirbyteStateMessage stateMessage = stateManager.emit();
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);

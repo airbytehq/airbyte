@@ -1,14 +1,16 @@
 import { Connection } from "core/resources/Connection";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 import Status from "core/statuses";
 import {
   ITableDataItem,
   EntityTableDataItem,
   Status as ConnectionStatus,
 } from "./types";
-import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import {
+  Destination,
+  DestinationDefinition,
+  Source,
+  SourceDefinition,
+} from "core/domain/connector";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -40,7 +42,7 @@ export function getEntityTableData<
     const entityDefinitionId = entityItem[`${type}DefinitionId` as keyof SoD];
 
     const definition = definitions.find(
-      // @ts-ignore
+      // @ts-expect-error ignored during react-scripts update
       (def) => def[definitionId] === entityDefinitionId
     );
 

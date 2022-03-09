@@ -42,10 +42,10 @@ The exchangerates API does not require authentication.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config sample_files/config.json
-python main_dev.py discover --config sample_files/config.json
-python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config integration_tests/config.json
+python main.py discover --config integration_tests/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -73,9 +73,9 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-exchange-rates:dev spec
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev check --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev discover --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/integration_tests:/integration_tests airbyte/source-exchange-rates:dev check --config /integration_tests/config.json
+docker run --rm -v $(pwd)/integration_tests:/integration_tests airbyte/source-exchange-rates:dev discover --config /integration_tests/config.json
+docker run --rm -v $(pwd)/integration_tests:/integration_tests airbyte/source-exchange-rates:dev read --config /integration_tests/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Integration Tests

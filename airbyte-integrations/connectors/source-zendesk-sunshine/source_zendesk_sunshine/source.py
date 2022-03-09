@@ -1,30 +1,10 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import base64
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
@@ -43,11 +23,24 @@ class Base64HttpAuthenticator(TokenAuthenticator):
         super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)
 
 
+class ZendeskSunshineAuthenticator:
+    """Provides the authentication capabilities for both old and new methods."""
+
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> Union[Base64HttpAuthenticator, TokenAuthenticator]:
+        credentials = config.get("credentials", {})
+        token = config.get("api_token") or credentials.get("api_token")
+        email = config.get("email") or credentials.get("email")
+        if email and token:
+            return Base64HttpAuthenticator(auth=(f"{email}/token", token))
+        return TokenAuthenticator(token=credentials["access_token"])
+
+
 class SourceZendeskSunshine(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             pendulum.parse(config["start_date"], strict=True)
-            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+            authenticator = ZendeskSunshineAuthenticator.get_auth(config)
             stream = Limits(authenticator=authenticator, subdomain=config["subdomain"], start_date=pendulum.parse(config["start_date"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -67,7 +60,7 @@ class SourceZendeskSunshine(AbstractSource):
         After this time is passed we have no data. It will require permanent population, to pass
         the test criteria `stream should contain at least 1 record)
         """
-        authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        authenticator = ZendeskSunshineAuthenticator.get_auth(config)
         args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": config["start_date"]}
         return [
             ObjectTypes(**args),

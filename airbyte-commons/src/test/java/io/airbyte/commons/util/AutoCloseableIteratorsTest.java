@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.util;
@@ -29,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -38,6 +17,7 @@ import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +38,10 @@ class AutoCloseableIteratorsTest {
 
   @Test
   void testFromStream() throws Exception {
-    final Stream<String> stream = spy(Stream.of("a", "b", "c"));
+    final AtomicBoolean isClosed = new AtomicBoolean(false);
+    final Stream<String> stream = Stream.of("a", "b", "c");
+    stream.onClose(() -> isClosed.set(true));
+
     final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromStream(stream);
 
     assertNext(iterator, "a");
@@ -66,10 +49,10 @@ class AutoCloseableIteratorsTest {
     assertNext(iterator, "c");
     iterator.close();
 
-    verify(stream).close();
+    assertTrue(isClosed.get());
   }
 
-  private void assertNext(Iterator<String> iterator, String value) {
+  private void assertNext(final Iterator<String> iterator, final String value) {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }
@@ -116,12 +99,12 @@ class AutoCloseableIteratorsTest {
     verify(onClose2, times(1)).call();
   }
 
-  private void assertOnCloseInvocations(List<VoidCallable> haveClosed, List<VoidCallable> haveNotClosed) throws Exception {
-    for (VoidCallable voidCallable : haveClosed) {
+  private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {
+    for (final VoidCallable voidCallable : haveClosed) {
       verify(voidCallable).call();
     }
 
-    for (VoidCallable voidCallable : haveNotClosed) {
+    for (final VoidCallable voidCallable : haveNotClosed) {
       verify(voidCallable, never()).call();
     }
   }

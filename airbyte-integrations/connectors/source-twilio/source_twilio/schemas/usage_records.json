@@ -4,7 +4,7 @@
       "type": ["null", "string"]
     },
     "count": {
-      "type": ["null", "string", "integer"]
+      "type": ["null", "integer"]
     },
     "price_unit": {
       "type": ["null", "string"]
@@ -43,14 +43,14 @@
       "type": ["null", "string"]
     },
     "end_date": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "usage_unit": {
       "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number", "string"]
+      "type": ["null", "number"]
     },
     "uri": {
       "type": ["null", "string"]
@@ -59,13 +59,16 @@
       "type": ["null", "string"]
     },
     "usage": {
-      "type": ["null", "number", "string"]
+      "type": ["null", "number"]
     },
     "start_date": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "count_unit": {
+      "type": ["null", "string"]
+    },
+    "as_of": {
       "type": ["null", "string"]
     },
     "api_version": {

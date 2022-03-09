@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.persistence.job_factory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -42,14 +24,19 @@ import java.util.UUID;
 
 public class DefaultSyncJobFactory implements SyncJobFactory {
 
+  private final boolean connectorSpecificResourceDefaultsEnabled;
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
-                               final ConfigRepository configRepository) {
-
+  public DefaultSyncJobFactory(final boolean connectorSpecificResourceDefaultsEnabled,
+                               final DefaultJobCreator jobCreator,
+                               final ConfigRepository configRepository,
+                               final OAuthConfigSupplier oAuthConfigSupplier) {
+    this.connectorSpecificResourceDefaultsEnabled = connectorSpecificResourceDefaultsEnabled;
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   public Long create(final UUID connectionId) {
@@ -57,19 +44,38 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
       final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
       final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
-
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-      final StandardDestinationDefinition destinationDefinition =
-          configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+      final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+          sourceConnection.getSourceDefinitionId(),
+          sourceConnection.getWorkspaceId(),
+          sourceConnection.getConfiguration());
+      sourceConnection.withConfiguration(sourceConfiguration);
+      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+          destinationConnection.getDestinationDefinitionId(),
+          destinationConnection.getWorkspaceId(),
+          destinationConnection.getConfiguration());
+      destinationConnection.withConfiguration(destinationConfiguration);
+      final StandardSourceDefinition sourceDefinition = configRepository
+          .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+      final StandardDestinationDefinition destinationDefinition = configRepository
+          .getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
       final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
       final String destinationImageName =
           DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
 
       final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
-      for (var operationId : standardSync.getOperationIds()) {
+      for (final var operationId : standardSync.getOperationIds()) {
         final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
         standardSyncOperations.add(standardSyncOperation);
+      }
+
+      ActorDefinitionResourceRequirements sourceResourceRequirements = sourceDefinition.getResourceRequirements();
+      ActorDefinitionResourceRequirements destinationResourceRequirements = destinationDefinition.getResourceRequirements();
+
+      // for OSS users, make it possible to ignore default actor-level resource requirements
+      if (!connectorSpecificResourceDefaultsEnabled) {
+        sourceResourceRequirements = null;
+        destinationResourceRequirements = null;
       }
 
       return jobCreator.createSyncJob(
@@ -78,10 +84,12 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           standardSync,
           sourceImageName,
           destinationImageName,
-          standardSyncOperations)
+          standardSyncOperations,
+          sourceResourceRequirements,
+          destinationResourceRequirements)
           .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
-    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
+    } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);
     }
   }

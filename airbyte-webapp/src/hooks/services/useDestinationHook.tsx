@@ -2,17 +2,19 @@ import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import DestinationResource, { Destination } from "core/resources/Destination";
+import DestinationResource from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import useRouter from "../useRouter";
-import DestinationDefinitionSpecificationResource, {
-  DestinationDefinitionSpecification,
-} from "core/resources/DestinationDefinitionSpecification";
+import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import {
+  Destination,
+  DestinationDefinitionSpecification,
+} from "core/domain/connector";
 
 type ValuesProps = {
   name: string;
@@ -27,7 +29,7 @@ export const useDestinationDefinitionSpecificationLoad = (
 ): {
   isLoading: boolean;
   destinationDefinitionSpecification?: DestinationDefinitionSpecification;
-  error?: Error;
+  sourceDefinitionError?: Error;
 } => {
   const {
     loading: isLoading,
@@ -42,7 +44,11 @@ export const useDestinationDefinitionSpecificationLoad = (
       : null
   );
 
-  return { destinationDefinitionSpecification, error, isLoading };
+  return {
+    destinationDefinitionSpecification,
+    sourceDefinitionError: error,
+    isLoading,
+  };
 };
 
 export const useDestinationDefinitionSpecificationLoadAsync = (
@@ -99,7 +105,7 @@ type DestinationService = {
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );
@@ -281,7 +287,7 @@ const useDestination = (): DestinationService => {
       updateConnectionsStore({ connectionId: item.connectionId }, undefined)
     );
 
-    push(Routes.Destination);
+    push(RoutePaths.Destination);
   };
 
   return {

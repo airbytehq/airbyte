@@ -1,30 +1,12 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -58,13 +40,26 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ThreadUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class IntegrationRunnerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunnerTest.class);
 
   private static final String CONFIG_FILE_NAME = "config.json";
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
@@ -97,11 +92,17 @@ class IntegrationRunnerTest {
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
     source = mock(Source.class);
-    Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
+
+    final String testName = Thread.currentThread().getName();
+    ThreadUtils.getAllThreads()
+        .stream()
+        .filter(runningThread -> !runningThread.isDaemon())
+        .forEach(runningThread -> runningThread.setName(testName));
   }
 
   @Test
@@ -143,7 +144,7 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
@@ -163,7 +164,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
 
@@ -185,7 +186,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).discover(CONFIG);
@@ -210,7 +211,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
@@ -230,7 +231,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
@@ -241,13 +242,13 @@ class IntegrationRunnerTest {
 
   @Test
   void testDestinationConsumerLifecycleSuccess() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
+    final AirbyteMessage message1 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
+    final AirbyteMessage message2 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
@@ -257,45 +258,124 @@ class IntegrationRunnerTest {
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n"
-        + Jsons.serialize(singerMessage2) + "\n"
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n"
+        + Jsons.serialize(message2) + "\n"
         + Jsons.serialize(stateMessage)).getBytes()));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
-
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
-    inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
-    inOrder.verify(airbyteMessageConsumerMock).close();
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message2);
+      inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
+    }
   }
 
   @Test
   void testDestinationConsumerLifecycleFailure() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
+    final AirbyteMessage message1 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
+    final AirbyteMessage message2 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes()));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verifyNoMoreInteractions();
+    }
+  }
 
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+  @Test
+  void testInterruptOrphanThreadFailure() {
+    final String testName = Thread.currentThread().getName();
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    startSleepingThread(caughtExceptions, false);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        Assertions::fail,
+        false,
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // all threads should be interrupted
+    assertEquals(List.of(), runningThreads);
+    assertEquals(1, caughtExceptions.size());
+  }
 
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
-    inOrder.verify(airbyteMessageConsumerMock).close();
-    inOrder.verifyNoMoreInteractions();
+  @Test
+  void testNoInterruptOrphanThreadFailure() {
+    final String testName = Thread.currentThread().getName();
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    final AtomicBoolean exitCalled = new AtomicBoolean(false);
+    startSleepingThread(caughtExceptions, true);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        () -> exitCalled.set(true),
+        false,
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // a thread that refuses to be interrupted should remain
+    assertEquals(1, runningThreads.size());
+    assertEquals(1, caughtExceptions.size());
+    assertTrue(exitCalled.get());
+  }
+
+  private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
+    final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    executorService.submit(() -> {
+      for (int tries = 0; tries < 3; tries++) {
+        try {
+          TimeUnit.MINUTES.sleep(5);
+        } catch (final Exception e) {
+          LOGGER.info("Caught Exception", e);
+          caughtExceptions.add(e);
+          if (!ignoreInterrupt) {
+            executorService.shutdownNow();
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  @Test
+  void testParseConnectorImage() {
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(null));
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
+    assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
   }
 
 }

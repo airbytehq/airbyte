@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import StatusIcon from "components/StatusIcon";
+import { StatusIcon } from "components";
 
 const Error = styled(StatusIcon)`
   padding-left: 1px;
@@ -29,7 +29,8 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const TestingConnectionSuccess: React.FC<{ errorMessage: React.ReactNode }> = ({
+// TODO: merge with FetchingConnectorError
+const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({
   errorMessage,
 }) => {
   return (
@@ -43,4 +44,4 @@ const TestingConnectionSuccess: React.FC<{ errorMessage: React.ReactNode }> = ({
   );
 };
 
-export default TestingConnectionSuccess;
+export default TestingConnectionError;

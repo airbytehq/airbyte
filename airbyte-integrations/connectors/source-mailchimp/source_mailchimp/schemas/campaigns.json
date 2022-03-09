@@ -22,7 +22,7 @@
       "readOnly": true
     },
     "type": {
-      "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/CampaignType.json"
+      "$ref": "campaignType.json"
     },
     "create_time": {
       "type": "string",
@@ -43,7 +43,7 @@
       "readOnly": true
     },
     "status": {
-      "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/CampaignStatus.json"
+      "$ref": "campaignStatus.json"
     },
     "emails_sent": {
       "type": "integer",
@@ -110,7 +110,7 @@
           "readOnly": true
         },
         "segment_opts": {
-          "$ref": "https://us1.api.mailchimp.com/schema/3.0/Definitions/SegmentationOptions.json"
+          "$ref": "segmentationOptions.json"
         }
       }
     },

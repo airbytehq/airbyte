@@ -1,31 +1,11 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +16,7 @@ public class TestDataHolder {
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
   private final String sourceType;
-  private final JsonSchemaPrimitive airbyteType;
+  private final JsonSchemaType airbyteType;
   private final List<String> values;
   private final List<String> expectedValues;
   private final String createTablePatternSql;
@@ -47,13 +27,13 @@ public class TestDataHolder {
   private String idColumnName;
   private String testColumnName;
 
-  TestDataHolder(String sourceType,
-                 JsonSchemaPrimitive airbyteType,
-                 List<String> values,
-                 List<String> expectedValues,
-                 String createTablePatternSql,
-                 String insertPatternSql,
-                 String fullSourceDataType) {
+  TestDataHolder(final String sourceType,
+                 final JsonSchemaType airbyteType,
+                 final List<String> values,
+                 final List<String> expectedValues,
+                 final String createTablePatternSql,
+                 final String insertPatternSql,
+                 final String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
@@ -75,7 +55,7 @@ public class TestDataHolder {
   public static class TestDataHolderBuilder {
 
     private String sourceType;
-    private JsonSchemaPrimitive airbyteType;
+    private JsonSchemaType airbyteType;
     private final List<String> values = new ArrayList<>();
     private final List<String> expectedValues = new ArrayList<>();
     private String createTablePatternSql;
@@ -96,7 +76,7 @@ public class TestDataHolder {
      * @param sourceType source data type name
      * @return builder
      */
-    public TestDataHolderBuilder sourceType(String sourceType) {
+    public TestDataHolderBuilder sourceType(final String sourceType) {
       this.sourceType = sourceType;
       if (fullSourceDataType == null)
         fullSourceDataType = sourceType;
@@ -110,7 +90,7 @@ public class TestDataHolder {
      * @param airbyteType Airbyte data type
      * @return builder
      */
-    public TestDataHolderBuilder airbyteType(JsonSchemaPrimitive airbyteType) {
+    public TestDataHolderBuilder airbyteType(final JsonSchemaType airbyteType) {
       this.airbyteType = airbyteType;
       return this;
     }
@@ -124,7 +104,7 @@ public class TestDataHolder {
      * @param createTablePatternSql creation table sql pattern
      * @return builder
      */
-    public TestDataHolderBuilder createTablePatternSql(String createTablePatternSql) {
+    public TestDataHolderBuilder createTablePatternSql(final String createTablePatternSql) {
       this.createTablePatternSql = createTablePatternSql;
       return this;
     }
@@ -137,7 +117,7 @@ public class TestDataHolder {
      * @param insertPatternSql creation table sql pattern
      * @return builder
      */
-    public TestDataHolderBuilder insertPatternSql(String insertPatternSql) {
+    public TestDataHolderBuilder insertPatternSql(final String insertPatternSql) {
       this.insertPatternSql = insertPatternSql;
       return this;
     }
@@ -149,7 +129,7 @@ public class TestDataHolder {
      * @param fullSourceDataType actual string for the column data type description
      * @return builder
      */
-    public TestDataHolderBuilder fullSourceDataType(String fullSourceDataType) {
+    public TestDataHolderBuilder fullSourceDataType(final String fullSourceDataType) {
       this.fullSourceDataType = fullSourceDataType;
       return this;
     }
@@ -162,7 +142,7 @@ public class TestDataHolder {
      * @param insertValue test value
      * @return builder
      */
-    public TestDataHolderBuilder addInsertValues(String... insertValue) {
+    public TestDataHolderBuilder addInsertValues(final String... insertValue) {
       this.values.addAll(Arrays.asList(insertValue));
       return this;
     }
@@ -174,7 +154,7 @@ public class TestDataHolder {
      * @param expectedValue value which should be provided by a streamer
      * @return builder
      */
-    public TestDataHolderBuilder addExpectedValues(String... expectedValue) {
+    public TestDataHolderBuilder addExpectedValues(final String... expectedValue) {
       this.expectedValues.addAll(Arrays.asList(expectedValue));
       return this;
     }
@@ -196,19 +176,19 @@ public class TestDataHolder {
 
   }
 
-  void setNameSpace(String nameSpace) {
+  void setNameSpace(final String nameSpace) {
     this.nameSpace = nameSpace;
   }
 
-  void setTestNumber(long testNumber) {
+  void setTestNumber(final long testNumber) {
     this.testNumber = testNumber;
   }
 
-  void setIdColumnName(String idColumnName) {
+  void setIdColumnName(final String idColumnName) {
     this.idColumnName = idColumnName;
   }
 
-  void setTestColumnName(String testColumnName) {
+  void setTestColumnName(final String testColumnName) {
     this.testColumnName = testColumnName;
   }
 
@@ -216,7 +196,7 @@ public class TestDataHolder {
     return sourceType;
   }
 
-  public JsonSchemaPrimitive getAirbyteType() {
+  public JsonSchemaType getAirbyteType() {
     return airbyteType;
   }
 
@@ -229,7 +209,8 @@ public class TestDataHolder {
   }
 
   public String getNameWithTestPrefix() {
-    return nameSpace + "_" + testNumber + "_" + sourceType;
+    // source type may include space (e.g. "character varying")
+    return nameSpace + "_" + testNumber + "_" + sourceType.replaceAll("\\s", "_");
   }
 
   public String getCreateSqlQuery() {
@@ -238,9 +219,9 @@ public class TestDataHolder {
   }
 
   public List<String> getInsertSqlQueries() {
-    List<String> insertSqls = new ArrayList<>();
+    final List<String> insertSqls = new ArrayList<>();
     int rowId = 1;
-    for (String value : values) {
+    for (final String value : values) {
       insertSqls.add(String.format(insertPatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), rowId++, value));
     }
     return insertSqls;

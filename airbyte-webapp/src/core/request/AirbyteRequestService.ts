@@ -1,4 +1,4 @@
-import merge from "lodash.merge";
+import merge from "lodash/merge";
 
 import { CommonRequestError } from "./CommonRequestError";
 import { VersionError } from "./VersionError";
@@ -56,6 +56,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
     // TODO: refactor
     return response;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let resultJsonResponse: any;
 
   // If some error returned in json, lets try to parse it

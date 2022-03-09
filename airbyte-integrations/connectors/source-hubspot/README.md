@@ -1,6 +1,6 @@
-# Hubspot Source 
+# HubSpot Source
 
-This is the repository for the Hubspot source connector, written in Python. 
+This is the repository for the HubSpot source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/hubspot).
 
 ## Local development
@@ -47,10 +47,10 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ## Testing

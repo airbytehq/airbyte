@@ -1,38 +1,56 @@
 #
-# MIT License
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
+
+import os
+import shutil
+from pathlib import Path
+from subprocess import check_call
 
 from setuptools import find_packages, setup
+from setuptools.command.develop import develop
+from setuptools.command.egg_info import egg_info
+from setuptools.command.install import install
 
-MAIN_REQUIREMENTS = [
-    "tap-kustomer",
-    "airbyte-cdk",
-]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
+def check_singer():
+    tmp_dir = "/tmp/singer-python"
+    if not os.path.exists(tmp_dir):
+        check_call(f"git clone -b v5.8.1 https://github.com/singer-io/singer-python.git {tmp_dir}".split())
+    setup_py = Path(tmp_dir) / "setup.py"
+    setup_py.write_text(setup_py.read_text().replace("jsonschema==", "jsonschema>="))
+    setup_py.write_text(setup_py.read_text().replace("backoff==", "backoff>="))
+    setup_py.write_text(setup_py.read_text().replace("requests==", "backoff>="))
+    check_call(f"pip install -U  {tmp_dir}".split())
+
+
+class CustomInstallCommand(install):
+    def run(self):
+        check_singer()
+        install.run(self)
+        if os.path.exists("/tmp/singer-python"):
+            shutil.rmtree("/tmp/singer-python")
+
+
+class CustomDevelopCommand(develop):
+    def run(self):
+        check_singer()
+        develop.run(self)
+        if os.path.exists("/tmp/singer-python"):
+            shutil.rmtree("/tmp/singer-python")
+
+
+class CustomEggInfoCommand(egg_info):
+    def run(self):
+        check_singer()
+        egg_info.run(self)
+        if os.path.exists("/tmp/singer-python"):
+            shutil.rmtree("/tmp/singer-python")
+
+
+MAIN_REQUIREMENTS = ["airbyte-cdk", "tap-kustomer==1.0.2"]
+
+TEST_REQUIREMENTS = ["pytest~=6.1"]
 
 setup(
     name="source_kustomer_singer",
@@ -41,6 +59,11 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
+    cmdclass={
+        "install": CustomInstallCommand,
+        "develop": CustomDevelopCommand,
+        "egg_info": CustomEggInfoCommand,
+    },
     package_data={"": ["*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,

@@ -7,7 +7,9 @@ data:
     #!/bin/bash
 
     get_worker_pods () {
-      kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=worker-pod --field-selector status.phase!=Running get pods -o go-template --template '{{range .items}} {{.metadata.name}} {{.status.phase}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}'
+      kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=worker-pod \
+        --field-selector status.phase!=Running get pods \
+        -o=jsonpath='{range .items[*]} {.metadata.name} {.status.phase} {.status.conditions[0].lastTransitionTime}{"\n"}{end}'
     }
 
     delete_worker_pod() {

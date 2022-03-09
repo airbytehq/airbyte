@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -30,7 +10,8 @@ from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
+from docker.models.containers import Container
 from pydantic import ValidationError
 
 
@@ -110,26 +91,71 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
-        logging.info("Docker run: \n%s\ninput: %s\noutput: %s", cmd, self.input_folder, self.output_folder)
+        logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
+
+        container = self._client.containers.run(
+            image=self._image,
+            command=cmd,
+            working_dir="/data",
+            volumes=volumes,
+            network_mode="host",
+            detach=True,
+            **kwargs,
+        )
+        with open(self.output_folder / "raw", "wb+") as f:
+            for line in self.read(container, command=cmd):
+                f.write(line.encode())
+                try:
+                    yield AirbyteMessage.parse_raw(line)
+                except ValidationError as exc:
+                    logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
+
+    @classmethod
+    def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
+        """Reads connector's logs per line"""
+        buffer = b""
+        exception = ""
+        line = ""
+        for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
+
+            buffer += chunk
+            while True:
+                # every chunk can include several lines
+                found = buffer.find(b"\n")
+                if found <= -1:
+                    break
+
+                line = buffer[: found + 1].decode("utf-8")
+                if len(exception) > 0 or line.startswith("Traceback (most recent call last)"):
+                    exception += line
+                else:
+                    yield line
+                buffer = buffer[found + 1 :]
+
+        if buffer:
+            # send the latest chunk if exists
+            line = buffer.decode("utf-8")
+            if exception:
+                exception += line
+            else:
+                yield line
         try:
-            logs = self._client.containers.run(
-                image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
-            )
-        except ContainerError as err:
-            # beautify error from container
-            patched_error = ContainerError(
-                container=err.container, exit_status=err.exit_status, command=err.command, image=err.image, stderr=err.stderr.decode()
-            )
-            raise patched_error from None  # get rid of any previous exception stack
-
-        with open(str(self.output_folder / "raw"), "wb+") as f:
-            f.write(logs)
-
-        for line in logs.decode("utf-8").splitlines():
-            try:
-                yield AirbyteMessage.parse_raw(line)
-            except ValidationError as exc:
-                logging.warning("Unable to parse connector's output %s", exc)
+            exit_status = container.wait()
+            container.remove()
+        except NotFound as err:
+            logging.error(f"Waiting error: {err}, logs: {exception or line}")
+            raise
+        if exit_status["StatusCode"]:
+            error = exit_status["Error"] or exception or line
+            logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
+            if with_ext:
+                raise ContainerError(
+                    container=container,
+                    exit_status=exit_status["StatusCode"],
+                    command=command,
+                    image=container.image,
+                    stderr=error,
+                )
 
     @property
     def env_variables(self):

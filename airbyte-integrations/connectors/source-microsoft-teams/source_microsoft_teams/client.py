@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -29,13 +9,14 @@ import json
 import pkgutil
 import sys
 import time
+from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Union
 
 import backoff
 import msal
 import requests
-from airbyte_protocol import AirbyteStream
-from base_python import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from msal.exceptions import MsalServiceError
 
 LOGGER = AirbyteLogger()
@@ -70,11 +51,22 @@ class Client:
             "team_device_usage_report": self.get_team_device_usage_report,
         }
         self.configs = config
+        self.credentials = config.get("credentials")
+        if not self.credentials:
+            self.credentials = {
+                "tenant_id": config["tenant_id"],
+                "client_id": config["client_id"],
+                "client_secret": config["client_secret"],
+            }
         self._group_ids = None
-        self.msal_app = msal.ConfidentialClientApplication(
-            self.configs["client_id"],
-            authority=f"https://login.microsoftonline.com/" f"{self.configs['tenant_id']}",
-            client_credential=self.configs["client_secret"],
+
+    @property
+    @lru_cache(maxsize=None)
+    def msal_app(self):
+        return msal.ConfidentialClientApplication(
+            self.credentials["client_id"],
+            authority=f"https://login.microsoftonline.com/" f"{self.credentials['tenant_id']}",
+            client_credential=self.credentials["client_secret"],
         )
 
     def _get_api_url(self, endpoint: str) -> str:
@@ -83,10 +75,10 @@ class Client:
 
     def _get_access_token(self) -> str:
         scope = ["https://graph.microsoft.com/.default"]
-        # First, the code looks up a token from the cache.
-        result = self.msal_app.acquire_token_silent(scope, account=None)
-        # If no suitable token exists in cache. Let's get a new one from AAD.
-        if not result:
+        refresh_token = self.credentials.get("refresh_token")
+        if refresh_token:
+            result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
+        else:
             result = self.msal_app.acquire_token_for_client(scopes=scope)
         if "access_token" in result:
             return result["access_token"]
@@ -144,12 +136,14 @@ class Client:
             return True, None
         except MsalServiceError as err:
             return False, err.args[0]
+        except Exception as e:
+            return False, str(e)
 
     def get_streams(self):
         streams = []
         for schema, method in self.ENTITY_MAP.items():
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=["full_refresh"]))
         return streams
 
     def get_users(self):

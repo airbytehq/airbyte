@@ -1,5 +1,6 @@
 import { FormBlock } from "core/form/types";
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
+import { isDefined } from "../../utils/common";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -89,6 +90,7 @@ export const jsonSchemaToUiWidget = (
       jsonSchema,
       path: path || key,
       fieldKey: key,
+      hasOauth: jsonSchema.is_auth,
       properties,
       isRequired,
     };
@@ -129,6 +131,9 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
   "order",
   "const",
   "title",
+
+  // airbyte specific fields
+  "airbyte_hidden",
 ];
 
 const pickDefaultFields = (
@@ -149,7 +154,11 @@ const pickDefaultFields = (
   ) {
     partialSchema.enum = schema.items.enum;
   } else if (schema.enum) {
-    partialSchema.enum = schema.enum;
+    if (schema.enum?.length === 1 && isDefined(schema.default)) {
+      partialSchema.const = schema.default;
+    } else {
+      partialSchema.enum = schema.enum;
+    }
   }
 
   return partialSchema;

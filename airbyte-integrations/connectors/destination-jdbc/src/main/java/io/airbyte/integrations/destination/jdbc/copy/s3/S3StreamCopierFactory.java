@@ -1,60 +1,38 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
-public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Config> {
+public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3CopyConfig> {
 
   /**
    * Used by the copy consumer.
    */
   @Override
-  public StreamCopier create(String configuredSchema,
-                             S3Config s3Config,
-                             String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final S3CopyConfig config,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
-      var s3Client = S3StreamCopier.getAmazonS3(s3Config);
+      final AirbyteStream stream = configuredStream.getStream();
+      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final AmazonS3 s3Client = config.s3Config().getS3Client();
 
-      return create(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
-    } catch (Exception e) {
+      return create(stagingFolder, schema, s3Client, db, config, nameTransformer, sqlOperations, configuredStream);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -62,23 +40,14 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
   /**
    * For specific copier suppliers to implement.
    */
-  public abstract StreamCopier create(String stagingFolder,
-                                      DestinationSyncMode syncMode,
-                                      String schema,
-                                      String streamName,
-                                      AmazonS3 s3Client,
-                                      JdbcDatabase db,
-                                      S3Config s3Config,
-                                      ExtendedNameTransformer nameTransformer,
-                                      SqlOperations sqlOperations)
+  protected abstract StreamCopier create(String stagingFolder,
+                                         String schema,
+                                         AmazonS3 s3Client,
+                                         JdbcDatabase db,
+                                         S3CopyConfig config,
+                                         ExtendedNameTransformer nameTransformer,
+                                         SqlOperations sqlOperations,
+                                         ConfiguredAirbyteStream configuredStream)
       throws Exception;
-
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
-    if (stream.getNamespace() != null) {
-      return nameTransformer.convertStreamName(stream.getNamespace());
-    } else {
-      return nameTransformer.convertStreamName(configuredSchema);
-    }
-  }
 
 }

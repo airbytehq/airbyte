@@ -36,6 +36,9 @@
     "messaging_service_sid": {
       "type": ["null", "string"]
     },
+    "price_unit": {
+      "type": ["null", "string"]
+    },
     "num_media": {
       "type": ["null", "integer"]
     },
@@ -43,7 +46,6 @@
       "type": ["null", "integer"]
     },
     "price": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "sid": {

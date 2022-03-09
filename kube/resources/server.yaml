@@ -40,8 +40,8 @@ spec:
                   key: CONFIG_ROOT
             - name: DATABASE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_PASSWORD
             - name: DATABASE_URL
               valueFrom:
@@ -50,8 +50,8 @@ spec:
                   key: DATABASE_URL
             - name: DATABASE_USER
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_USER
             - name: TRACKING_STRATEGY
               valueFrom:
@@ -83,26 +83,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOG_LEVEL
-            - name: RESOURCE_CPU_REQUEST
+            - name: JOB_MAIN_CONTAINER_CPU_REQUEST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: RESOURCE_CPU_REQUEST
-            - name: RESOURCE_CPU_LIMIT
+                  key: JOB_MAIN_CONTAINER_CPU_REQUEST
+            - name: JOB_MAIN_CONTAINER_CPU_LIMIT
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: RESOURCE_CPU_LIMIT
-            - name: RESOURCE_MEMORY_REQUEST
+                  key: JOB_MAIN_CONTAINER_CPU_LIMIT
+            - name: JOB_MAIN_CONTAINER_MEMORY_REQUEST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: RESOURCE_MEMORY_REQUEST
-            - name: RESOURCE_MEMORY_LIMIT
+                  key: JOB_MAIN_CONTAINER_MEMORY_REQUEST
+            - name: JOB_MAIN_CONTAINER_MEMORY_LIMIT
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: RESOURCE_MEMORY_LIMIT
+                  key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
             - name: S3_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:
@@ -115,13 +115,13 @@ spec:
                   key: S3_LOG_BUCKET_REGION
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_SECRET_ACCESS_KEY
             - name: S3_MINIO_ENDPOINT
               valueFrom:
@@ -135,14 +135,24 @@ spec:
                   key: S3_PATH_STYLE_ACCESS
             - name: GOOGLE_APPLICATION_CREDENTIALS
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: GOOGLE_APPLICATION_CREDENTIALS
-            - name: GCP_STORAGE_BUCKET
+            - name: GCS_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: GCP_STORAGE_BUCKET
+                  key: GCS_LOG_BUCKET
+            - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
           ports:
             - containerPort: 8001
           volumeMounts:

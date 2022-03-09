@@ -34,7 +34,7 @@ jq '._airbyte_data | {abilities: .abilities, weight: .weight}'
 And there you have it. You've pulled data from an API directly into a file, with all of the actual configuration for this replication only taking place in the UI.
 
 Note: If you are using Airbyte on Windows with WSL2 and Docker, refer to [this tutorial](../operator-guides/locating-files-local-destination.md) or [this section](../integrations/destinations/local-json.md#access-replicated-data-files) in the local-json destination guide to locate the replicated folder and file.
- 
+
 ## That's it!
 
 This is just the beginning of using Airbyte. We support a large collection of sources and destinations. You can even contribute your own.

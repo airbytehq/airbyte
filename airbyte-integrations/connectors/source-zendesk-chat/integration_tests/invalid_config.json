@@ -1,6 +1,8 @@
 {
+  "start_date": "2020-10-01T00:00:00Z",
+  "subdomain": "",
   "credentials": {
-    "access_token": "wrongkey-access-token",
-    "start_date": "2020-12-12T00:00:00Z"
+    "credentials": "access_token",
+    "access_token": "wrong_access_token"
   }
 }

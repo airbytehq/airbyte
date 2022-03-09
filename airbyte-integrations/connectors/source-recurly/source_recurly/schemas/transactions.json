@@ -3,265 +3,269 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
-    },
-    "object": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "uuid": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 32
     },
     "original_transaction_id": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "account": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "object": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "code": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "company": {
-          "type": "string"
-        },
-        "parent_account_id": {
-          "type": "string"
-        },
-        "bill_to": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "invoice": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "object": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "number": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "voided_by_invoice": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "object": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 13
         },
         "number": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "subscription_ids": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": ["null", "string"],
+        "maxLength": 13
+      }
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "origin": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "currency": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 3
     },
     "amount": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "success": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "backup_payment_method_used": {
+      "type": ["null", "boolean"]
     },
     "refunded": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "billing_address": {
       "type": "object",
       "properties": {
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "phone": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "street1": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "street2": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "region": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "postal_code": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "collection_method": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "payment_method": {
       "type": "object",
       "properties": {
-        "object": {
-          "type": "string"
-        },
         "card_type": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "first_six": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 6
         },
         "last_four": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 4
         },
         "last_two": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 2
         },
         "exp_month": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "exp_year": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "gateway_token": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "gateway_code": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "billing_agreement_id": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "name_on_account": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "account_type": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "routing_number": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         },
         "routing_number_bank": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 256
         }
       }
     },
     "ip_address_v4": {
-      "type": "string"
+      "type": ["null", "string"],
+          "maxLength": 256
     },
     "ip_address_country": {
-      "type": "string"
+      "type": ["null", "string"],
+          "maxLength": 256
     },
     "status_code": {
-      "type": "string"
+      "type": ["null", "string"],
+          "maxLength": 256
     },
     "status_message": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "customer_message": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "customer_message_locale": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 12
     },
     "payment_gateway": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "object": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
+          "type": ["null", "string"],
+          "maxLength": 13
         }
       }
     },
     "gateway_message": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "gateway_reference": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "gateway_approval_code": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "gateway_response_code": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "gateway_response_time": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "gateway_response_values": {
       "type": "object"
     },
     "cvv_check": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "avs_check": {
-      "type": "string"
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "voided_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "collected_at": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

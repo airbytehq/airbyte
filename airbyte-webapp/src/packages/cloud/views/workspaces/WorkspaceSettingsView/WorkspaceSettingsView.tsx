@@ -1,14 +1,18 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Form, Formik, Field, FieldProps } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 
 import {
   Content,
   SettingsCard,
 } from "pages/SettingsPage/pages/SettingsComponents";
 import { Button, LabeledInput, LoadingButton } from "components";
-import { useWorkspaceService } from "packages/cloud/services/workspaces/WorkspacesService";
+import {
+  useRemoveWorkspace,
+  useUpdateWorkspace,
+  useWorkspaceService,
+} from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 const Header = styled.div`
@@ -32,27 +36,37 @@ const Buttons = styled.div`
 export const WorkspaceSettingsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
-  const { selectWorkspace, removeWorkspace } = useWorkspaceService();
-  const { name, workspaceId } = useCurrentWorkspace();
+  const { exitWorkspace } = useWorkspaceService();
+  const workspace = useCurrentWorkspace();
+  const removeWorkspace = useRemoveWorkspace();
+  const updateWorkspace = useUpdateWorkspace();
+
   return (
     <>
       <SettingsCard
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button onClick={() => selectWorkspace("")}>
+            <Button
+              type="button"
+              onClick={exitWorkspace}
+              data-testid="button.changeWorkspace"
+            >
               <FormattedMessage id="settings.generalSettings.changeWorkspace" />
             </Button>
           </Header>
         }
       >
         <Formik
-          initialValues={{ name: name }}
-          onSubmit={async (_, formikHelpers) =>
-            formikHelpers.setFieldError("name", "Not implemented")
+          initialValues={{ name: workspace.name }}
+          onSubmit={async (payload) =>
+            updateWorkspace.mutateAsync({
+              workspaceId: workspace.workspaceId,
+              name: payload.name,
+            })
           }
         >
-          {({ dirty, isSubmitting, resetForm }) => (
+          {({ dirty, isSubmitting, resetForm, isValid }) => (
             <Form>
               <Content>
                 <Field name="name">
@@ -77,6 +91,7 @@ export const WorkspaceSettingsView: React.FC = () => {
                 </Field>
                 <Buttons>
                   <Button
+                    type="button"
                     secondary
                     disabled={!dirty}
                     onClick={() => resetForm()}
@@ -85,7 +100,7 @@ export const WorkspaceSettingsView: React.FC = () => {
                   </Button>
                   <LoadingButton
                     type="submit"
-                    disabled={!dirty}
+                    disabled={!isValid}
                     isLoading={isSubmitting}
                   >
                     save changes
@@ -103,7 +118,7 @@ export const WorkspaceSettingsView: React.FC = () => {
             <LoadingButton
               isLoading={removeWorkspace.isLoading}
               danger
-              onClick={() => removeWorkspace.mutateAsync(workspaceId)}
+              onClick={() => removeWorkspace.mutateAsync(workspace.workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
             </LoadingButton>

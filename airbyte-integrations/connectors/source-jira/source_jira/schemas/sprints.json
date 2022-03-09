@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "self": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completeDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "originBoardId": {
+      "type": "integer"
+    },
+    "goal": {
+      "type": "string"
+    }
+  }
+}

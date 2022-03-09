@@ -15,7 +15,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 ![](../.gitbook/assets/aws_ec2_ami.png)
 
 * Select instance type
-  * For testing out Airbyte, a `t2.medium` instance is likely sufficient.
+  * For testing out Airbyte, a `t2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
   * For long-running Airbyte installations, we recommend a `t2.large` instance.
 
 ![](../.gitbook/assets/aws_ec2_instance_type.png)

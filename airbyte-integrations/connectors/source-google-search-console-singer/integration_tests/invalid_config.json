@@ -1,7 +1,0 @@
-{
-  "credentials_json": "{\n  \"type\": \"service_account\",\n  \"project_id\": \"some_id\",\n  \"private_key_id\": \"key_id\",\n  \"private_key\": \"key\",\n  \"client_email\": \"email\",\n  \"client_id\": \"id\",\n  \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\n  \"token_uri\": \"https://oauth2.googleapis.com/token\",\n  \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\n  \"client_x509_cert_url\": \"\"\n}",
-  "email": "test@test.com",
-  "site_urls": "https://airbyte.io/",
-  "start_date": "2021-04-01T00:00:00Z",
-  "user_agent": "test test@test.com>"
-}

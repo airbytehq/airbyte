@@ -14,7 +14,7 @@
       "type": ["null", "string"]
     },
     "score": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "recommendation": {
       "type": ["null", "string"]
@@ -29,6 +29,9 @@
       "type": ["null", "string"]
     },
     "merchant_message": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     }
   }
