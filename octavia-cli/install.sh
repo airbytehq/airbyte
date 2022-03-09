@@ -54,7 +54,7 @@ install() {
 
 update_or_install() {
     if grep -q "^alias octavia=*" ${DETECTED_PROFILE}; then
-        read -p "❓ - You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r
+        read -p "❓ - You already have an octavia alias in your profile. Do you want to update? (Y/n)" -n 1 -r </dev/tty
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
