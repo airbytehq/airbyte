@@ -95,7 +95,6 @@ class TestBaseResource:
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value=False))
         mocker.patch.object(resources, "compute_checksum")
         resource = resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
-        assert resource.CHECK_RETURN_TYPE is True
         assert resource.APPLY_PRIORITY == 0
         assert resource.workspace_id == "workspace_id"
         assert resource.local_configuration == local_configuration
@@ -145,9 +144,7 @@ class TestBaseResource:
     def test_search(self, resource):
         search_results = resource._search()
         assert search_results == resource._search_fn.return_value
-        resource._search_fn.assert_called_with(
-            resource.api_instance, resource.search_payload, _check_return_type=resource.CHECK_RETURN_TYPE
-        )
+        resource._search_fn.assert_called_with(resource.api_instance, resource.search_payload, _check_return_type=True)
 
     @pytest.mark.parametrize(
         "search_results,expected_error,expected_output",
@@ -363,12 +360,9 @@ class TestDestination:
 
 
 class TestConnection:
-    @pytest.mark.parametrize(
-        "state",
-        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
-    )
-    def test_init(self, mocker, mock_api_client, state):
-        connection_configuration = {
+    @pytest.fixture
+    def connection_configuration(self):
+        return {
             "definition_type": "connection",
             "resource_name": "my_connection",
             "source_id": "my_source",
@@ -407,6 +401,12 @@ class TestConnection:
                 "resourceRequirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
             },
         }
+
+    @pytest.mark.parametrize(
+        "state",
+        [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
+    )
+    def test_init(self, mocker, mock_api_client, state, connection_configuration):
         assert resources.Connection.__base__ == resources.BaseResource
         mocker.patch.object(resources.Connection, "resource_id", "foo")
         connection = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
@@ -447,7 +447,7 @@ class TestConnection:
                 connection_id=connection.state.resource_id, source_id=connection.source_id, destination_id=connection.destination_id
             )
 
-    def test_get_comparable_configuration(self, mocker, mock_api_client, local_configuration):
+    def test_get_comparable_configuration(self, mocker, mock_api_client, connection_configuration):
         mock_base_comparable_configuration = mocker.Mock(
             return_value={"foo": "bar", "connectionId": "should be popped", "operationIds": "should be popped"}
         )
@@ -455,8 +455,29 @@ class TestConnection:
         mocker.patch.object(resources.Connection, "was_created", True)
         mocker.patch.object(resources.Connection, "remote_resource")
 
-        resource = resources.Connection(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         assert resource._get_comparable_configuration() == {"foo": "bar"}
+
+    def test__search(self, mocker, mock_api_client, connection_configuration):
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        mocker.patch.object(resource, "_search_fn")
+        search_results = resource._search()
+        assert search_results == resource._search_fn.return_value
+        resource._search_fn.assert_called_with(resource.api_instance, resource.search_payload, _check_return_type=False)
+
+    def test_create(self, mocker, mock_api_client, connection_configuration):
+        mocker.patch.object(resources.Connection, "_create_or_update")
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        create_result = resource.create()
+        assert create_result == resource._create_or_update.return_value
+        resource._create_or_update.assert_called_with(resource._create_fn, resource.create_payload, _check_return_type=False)
+
+    def test_update(self, mocker, mock_api_client, connection_configuration):
+        mocker.patch.object(resources.Connection, "_create_or_update")
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        update_result = resource.update()
+        assert update_result == resource._create_or_update.return_value
+        resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload, _check_return_type=False)
 
 
 @pytest.mark.parametrize(

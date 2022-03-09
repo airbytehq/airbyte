@@ -114,8 +114,7 @@ class ResourceState:
 
 
 class BaseResource(abc.ABC):
-    CHECK_RETURN_TYPE = True
-    APPLY_PRIORITY = 0
+    APPLY_PRIORITY = 0  # Priority of the resource during the apply. 0 means the resource is top priority.
 
     @property
     @abc.abstractmethod
@@ -235,13 +234,13 @@ class BaseResource(abc.ABC):
             return self.local_configuration.get(name)
         raise AttributeError(f"{self.__class__.__name__}.{name} is invalid.")
 
-    def _search(self) -> Union[SourceReadList, DestinationReadList, ConnectionReadList]:
+    def _search(self, check_return_type=True) -> Union[SourceReadList, DestinationReadList, ConnectionReadList]:
         """Run search of a resources on the remote Airbyte instance.
 
         Returns:
             Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
         """
-        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=self.CHECK_RETURN_TYPE)
+        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=check_return_type)
 
     def _get_state_from_file(self) -> Optional[ResourceState]:
         """Retrieve a state object from a local YAML file if it exists.
@@ -290,6 +289,7 @@ class BaseResource(abc.ABC):
         self,
         operation_fn: Callable,
         payload: Union[SourceCreate, SourceUpdate, DestinationCreate, DestinationUpdate, ConnectionCreate, ConnectionUpdate],
+        _check_return_type: bool = True,
     ) -> Union[SourceRead, DestinationRead]:
         """Wrapper to trigger create or update of remote resource.
 
@@ -297,6 +297,8 @@ class BaseResource(abc.ABC):
             operation_fn (Callable): The API function to run.
             payload (Union[SourceCreate, SourceUpdate, DestinationCreate, DestinationUpdate]): The payload to send to create or update the resource.
 
+        Kwargs:
+            _check_return_type (boolean): Whether to check the types returned in the API agains airbyte-api-client open api spec.
         Raises:
             InvalidConfigurationError: Raised if the create or update payload is invalid.
             ApiException: Raised in case of other API errors.
@@ -305,7 +307,7 @@ class BaseResource(abc.ABC):
             Union[SourceRead, DestinationRead, ConnectionRead]: The created or updated resource.
         """
         try:
-            result = operation_fn(self.api_instance, payload, _check_return_type=self.CHECK_RETURN_TYPE)
+            result = operation_fn(self.api_instance, payload, _check_return_type=_check_return_type)
             return result, ResourceState.create(self.configuration_path, result[self.resource_id_field])
         except airbyte_api_client.ApiException as api_error:
             if api_error.status == 422:
@@ -458,8 +460,7 @@ class Destination(BaseResource):
 
 
 class Connection(BaseResource):
-    CHECK_RETURN_TYPE = False
-    APPLY_PRIORITY = 1
+    APPLY_PRIORITY = 1  # Set to 1 to create connection after source or destination.
     api = connection_api.ConnectionApi
     create_function_name = "create_connection"
     resource_id_field = "connection_id"
@@ -512,6 +513,29 @@ class Connection(BaseResource):
             resource_requirements=self.configuration["resourceRequirements"],
             _check_type=False,
         )
+
+    def create(self) -> dict:
+        return self._create_or_update(
+            self._create_fn, self.create_payload, _check_return_type=False
+        )  # Disable check_return_type as the returned payload does not match the open api spec.
+
+    def update(self) -> dict:
+        """Public function to update the resource on the remote Airbyte instance.
+
+        Returns:
+            Union[SourceRead, DestinationRead, ConnectionRead]: The updated resource.
+        """
+        return self._create_or_update(
+            self._update_fn, self.update_payload, _check_return_type=False
+        )  # Disable check_return_type as the returned payload does not match the open api spec.
+
+    def _search(self, check_return_type=True) -> dict:
+        """Run search of a resources on the remote Airbyte instance.
+
+        Returns:
+            Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
+        """
+        return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
 
     def _get_comparable_configuration(self):
         """Get the object to which local configuration will be compared to.
