@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class AirbyteVersion {
 
-  private static final String DEV_VERSION = "dev";
+  public static final String DEV_VERSION = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
   private final String version;

@@ -130,6 +130,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // resetConnection flag to the next run so that that run can execute the actual reset
       workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
+      workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
+
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
@@ -238,10 +240,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
 
+    if (workflowState.isResetConnection()) {
+      workflowState.setContinueAsReset(true);
+    }
+
     if (maxAttempt > attemptNumber) {
-      if (workflowState.isResetConnection()) {
-        workflowState.setContinueAsReset(true);
-      }
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
@@ -251,6 +254,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           "Job failed after too many retries for connection " + connectionId));
 
       resetNewConnectionInput(connectionUpdaterInput);
+      if (workflowState.isResetConnection()) {
+        connectionUpdaterInput.setFromJobResetFailure(true);
+      }
     }
   }
 
@@ -294,6 +300,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void resetConnection() {
     workflowState.setResetConnection(true);
+    workflowState.setResetWithScheduling(false);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
@@ -303,11 +310,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void retryFailedActivity() {
     workflowState.setRetryFailedActivity(true);
-  }
-
-  @Override
-  public void simulateFailure() {
-    workflowState.setFailed(true);
   }
 
   @Override
@@ -342,7 +344,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * delete
    */
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() || workflowState.isResetConnection();
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() ||
+        (!workflowState.isResetWithScheduling() && workflowState.isResetConnection());
   }
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -556,10 +559,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return true;
     }
 
-    // For testing purpose we simulate a failure using a signal method to avoid having to do a static
-    // mock.
-    // We do override failure reason in this case.
-    return false || workflowState.isFailed();
+    return false;
   }
 
   /**
