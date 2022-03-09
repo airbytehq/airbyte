@@ -33,7 +33,11 @@ configuration:
         stream:
           defaultCursorField:
             - foo
-          jsonSchema: {}
+          jsonSchema:
+            $schema: http://json-schema.org/draft-07/schema#
+            properties:
+              foo:
+                type: number
           name: stream_1
           namespace: null
           sourceDefinedCursor: null
@@ -49,7 +53,11 @@ configuration:
           syncMode: full_refresh
         stream:
           defaultCursorField: []
-          jsonSchema: {}
+          jsonSchema:
+            $schema: http://json-schema.org/draft-07/schema#
+            properties:
+              bar:
+                type: number
           name: stream_2
           namespace: null
           sourceDefinedCursor: null

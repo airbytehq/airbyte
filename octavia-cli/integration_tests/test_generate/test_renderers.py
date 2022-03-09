@@ -95,7 +95,14 @@ def test_expected_output_connection_renderer(octavia_project_directory, mocker):
                 {
                     "stream": {
                         "name": "stream_1",
-                        "jsonSchema": {},
+                        "jsonSchema": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "properties": {
+                                "foo": {
+                                    "type": "number",
+                                }
+                            },
+                        },
                         "supportedSyncModes": ["full_refresh"],
                         "sourceDefinedCursor": None,
                         "defaultCursorField": ["foo"],
@@ -114,7 +121,14 @@ def test_expected_output_connection_renderer(octavia_project_directory, mocker):
                 {
                     "stream": {
                         "name": "stream_2",
-                        "jsonSchema": {},
+                        "jsonSchema": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "properties": {
+                                "bar": {
+                                    "type": "number",
+                                }
+                            },
+                        },
                         "supportedSyncModes": ["full_refresh", "incremental"],
                         "sourceDefinedCursor": None,
                         "defaultCursorField": [],
