@@ -94,7 +94,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          export AWS_PROFILE=${AWS_PROFILE}
+          export AWS_PROFILE=${AWS_PROFILE_ACCOUNT_STG}
           export TF_VAR_change_cause=${IMAGE_TAG}
           export TF_VAR_image_tag=${IMAGE_TAG}
           cd deployments/stg/us_east_2
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: git config --global url."https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/viewthespace".insteadOf "https://github.com/viewthespace"
 
-      - name: plan_prd
+      - name: deploy-prd
         shell: bash
         run: |
           set -e
