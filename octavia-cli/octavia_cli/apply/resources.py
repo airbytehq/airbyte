@@ -208,7 +208,7 @@ class BaseResource(abc.ABC):
 
     def _get_comparable_configuration(
         self,
-    ):  # pragma: no cover
+    ) -> dict:  # pragma: no cover
         if not self.was_created:
             raise NonExistingResourceError("Can't find a comparable configuration as the remote resource does not exists.")
         else:
@@ -520,24 +520,14 @@ class Connection(BaseResource):
         )  # Disable check_return_type as the returned payload does not match the open api spec.
 
     def update(self) -> dict:
-        """Public function to update the resource on the remote Airbyte instance.
-
-        Returns:
-            Union[SourceRead, DestinationRead, ConnectionRead]: The updated resource.
-        """
         return self._create_or_update(
             self._update_fn, self.update_payload, _check_return_type=False
         )  # Disable check_return_type as the returned payload does not match the open api spec.
 
     def _search(self, check_return_type=True) -> dict:
-        """Run search of a resources on the remote Airbyte instance.
-
-        Returns:
-            Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
-        """
         return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
 
-    def _get_comparable_configuration(self):
+    def _get_comparable_configuration(self) -> dict:
         """Get the object to which local configuration will be compared to.
 
         Returns:
