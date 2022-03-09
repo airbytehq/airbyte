@@ -112,8 +112,8 @@ create table "public"."connection_operation"(
     )
 );
 create table "public"."notification_config"(
-  "id" uuid not null,
-  "name" varchar(256) not null
+  "id" uuid null,
+  "name" varchar(256) null
 );
 create table "public"."operation"(
   "id" uuid not null,
