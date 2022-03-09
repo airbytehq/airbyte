@@ -26,7 +26,8 @@ This script:
 
 ## 2.b If you want to directly run the CLI without alias in your current directory:
 ```bash
-docker run --rm -v ${PWD}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
+mkdir my_octavia_project_directory
+docker run --rm -v ./my_octavia_project_directory:/home/octavia-project --network host -e AIRBYTE_URL="http://localhost:8000" airbyte/octavia-cli:dev
 ````
 
 # Current development status
