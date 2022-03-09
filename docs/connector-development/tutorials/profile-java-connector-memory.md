@@ -31,6 +31,8 @@ The example focuses on docker deployment, because it is more straightforward. It
 
         // optionally, add a max heap size to limit the memory usage
         '-Xmx2000m',
+      ]
+   }
    ```
 
 2. Modify `airbyte-integrations/connectors/<connector-name>/Dockerfile` to expose the JMX port.
@@ -54,7 +56,7 @@ The example focuses on docker deployment, because it is more straightforward. It
     }
     ```
 
-    Disable the [`host` network mode](https://docs.docker.com/network/host/) by removing the following code block in the same file. This is necessary because under `host` network mode, published ports are discarded.
+    Disable the [`host` network mode](https://docs.docker.com/network/host/) by _removing_ the following code block in the same file. This is necessary because under the `host` network mode, published ports are discarded.
 
     ```java
     if (networkName != null) {
