@@ -368,4 +368,14 @@ class IntegrationRunnerTest {
     });
   }
 
+  @Test
+  void testParseConnectorImage() {
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(null));
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
+    assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
+  }
+
 }
