@@ -13,7 +13,7 @@ from octavia_cli.apply import resources
 from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
 
-JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
+JINJA_ENV = Environment(loader=PackageLoader(__package__), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
 
 class FieldToRender:
