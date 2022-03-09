@@ -2,13 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
-import ImageBlock from "components/ImageBlock";
+import { ContentCard, ImageBlock } from "components";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
 import EnabledControl from "./EnabledControl";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+
 import { Connection } from "core/resources/Connection";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;

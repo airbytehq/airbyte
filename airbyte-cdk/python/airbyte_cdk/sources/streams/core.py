@@ -1,36 +1,18 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from deprecated.classic import deprecated
 
 
 def package_name_from_class(cls: object) -> str:
@@ -39,13 +21,52 @@ def package_name_from_class(cls: object) -> str:
     return module.__name__.split(".")[0]
 
 
+class IncrementalMixin(ABC):
+    """Mixin to make stream incremental.
+
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
+
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
+    """
+
+    @property
+    @abstractmethod
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+
+
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
     # Use self.logger in subclasses to log any messages
-    logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
+    @property
+    def logger(self):
+        return logging.getLogger(f"airbyte.streams.{self.name}")
+
+    # TypeTransformer object to perform output data transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     @property
     def name(self) -> str:
@@ -120,15 +141,17 @@ class Stream(ABC):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-        If the stream has no primary keys, return None.
+          If the stream has no primary keys, return None.
         """
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
+        :param sync_mode:
+        :param cursor_field:
         :param stream_state:
         :return:
         """
@@ -148,9 +171,9 @@ class Stream(ABC):
         """
         return None
 
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """
-        Override to extract state from the latest record. Needed to implement incremental sync.
+        """Override to extract state from the latest record. Needed to implement incremental sync.
 
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
 

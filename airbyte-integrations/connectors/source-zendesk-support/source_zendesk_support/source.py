@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -28,21 +8,25 @@ from typing import Any, List, Mapping, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_zendesk_support.streams import SourceZendeskException
 
 from .streams import (
+    Brands,
+    CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
     Organizations,
     SatisfactionRatings,
+    Schedules,
     SlaPolicies,
-    SourceZendeskException,
     Tags,
     TicketAudits,
     TicketComments,
     TicketFields,
     TicketForms,
+    TicketMetricEvents,
     TicketMetrics,
     Tickets,
     Users,
@@ -67,7 +51,9 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
+        if config["auth_method"]["auth_method"] == "access_token":
+            return TokenAuthenticator(token=config["auth_method"]["access_token"])
+        elif config["auth_method"]["auth_method"] == "api_token":
             return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
 
@@ -82,7 +68,7 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
@@ -122,6 +108,10 @@ class SourceZendeskSupport(AbstractSource):
             TicketFields(**args),
             TicketForms(**args),
             TicketMetrics(**args),
+            TicketMetricEvents(**args),
             Tickets(**args),
             Users(**args),
+            Brands(**args),
+            CustomRoles(**args),
+            Schedules(**args),
         ]

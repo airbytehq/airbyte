@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -28,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.PrintWriter;
@@ -36,32 +17,48 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class JdbcSqlOperations implements SqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
+  protected static final String SHOW_SCHEMAS = "show schemas;";
+  protected static final String NAME = "name";
 
-  @Override
-  public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
-    database.execute(createSchemaQuery(schemaName));
+  // this adapter modifies record message before inserting them to the destination
+  protected final Optional<DataAdapter> dataAdapter;
+
+  protected JdbcSqlOperations() {
+    this.dataAdapter = Optional.empty();
   }
 
-  private String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
-  }
-
-  @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
-    database.execute(createTableQuery(database, schemaName, tableName));
+  protected JdbcSqlOperations(final DataAdapter dataAdapter) {
+    this.dataAdapter = Optional.of(dataAdapter);
   }
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+    if (!isSchemaExists(database, schemaName)) {
+      AirbyteSentry.executeWithTracing("CreateSchema",
+          () -> database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName)),
+          Map.of("schema", schemaName));
+    }
+  }
+
+  @Override
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+    AirbyteSentry.executeWithTracing("CreateTableIfNotExists",
+        () -> database.execute(createTableQuery(database, schemaName, tableName)),
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
+  }
+
+  @Override
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -71,56 +68,53 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  protected void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
-    PrintWriter writer = null;
-    try {
-      writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
-      var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
-
-      for (AirbyteRecordMessage record : records) {
-        var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(formatData(record.getData()));
-        var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
+    try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
+        final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+      for (final AirbyteRecordMessage record : records) {
+        final var uuid = UUID.randomUUID().toString();
+        final var jsonData = Jsons.serialize(formatData(record.getData()));
+        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
-      }
-    } finally {
-      if (writer != null) {
-        writer.close();
       }
     }
   }
 
-  protected JsonNode formatData(JsonNode data) {
+  protected JsonNode formatData(final JsonNode data) {
     return data;
   }
 
   @Override
-  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(JdbcDatabase database, String schemaName, String srcTableName, String dstTableName) {
+  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     final StringBuilder appendedQueries = new StringBuilder();
     appendedQueries.append("BEGIN;\n");
-    for (String query : queries) {
+    for (final String query : queries) {
       appendedQueries.append(query);
     }
     appendedQueries.append("COMMIT;");
-    database.execute(appendedQueries.toString());
+    AirbyteSentry.executeWithTracing("ExecuteTransactions",
+        () -> database.execute(appendedQueries.toString()),
+        Map.of("queries", queries));
   }
 
   @Override
-  public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
-    database.execute(dropTableIfExistsQuery(schemaName, tableName));
+  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+    AirbyteSentry.executeWithTracing("DropTableIfExists",
+        () -> database.execute(dropTableIfExistsQuery(schemaName, tableName)),
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
   }
 
-  private String dropTableIfExistsQuery(String schemaName, String tableName) {
+  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
@@ -130,18 +124,22 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(JsonNode data) {
+  public boolean isValidData(final JsonNode data) {
     return true;
   }
 
   @Override
-  public final void insertRecords(JdbcDatabase database,
-                                  List<AirbyteRecordMessage> records,
-                                  String schemaName,
-                                  String tableName)
+  public final void insertRecords(final JdbcDatabase database,
+                                  final List<AirbyteRecordMessage> records,
+                                  final String schemaName,
+                                  final String tableName)
       throws Exception {
-    records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
-    insertRecordsInternal(database, records, schemaName, tableName);
+    AirbyteSentry.executeWithTracing("InsertRecords",
+        () -> {
+          dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
+          insertRecordsInternal(database, records, schemaName, tableName);
+        },
+        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName, "recordCount", records.size()));
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
@@ -149,9 +147,5 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
-
-  protected DataAdapter getDataAdapter() {
-    return new DataAdapter(j -> false, c -> c);
-  }
 
 }

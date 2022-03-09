@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
@@ -32,7 +12,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {
@@ -44,11 +24,11 @@ class NamespacingMapperTest {
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       STREAM_NAME,
       INPUT_NAMESPACE,
-      Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+      Field.of(FIELD_NAME, JsonSchemaType.STRING));
   private static final AirbyteMessage RECORD_MESSAGE = createRecordMessage();
 
   private static AirbyteMessage createRecordMessage() {
-    AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    final AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
     message.getRecord().withNamespace(INPUT_NAMESPACE);
     return message;
   }
@@ -61,7 +41,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         INPUT_NAMESPACE,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -86,7 +66,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(originalCatalog);
 
     assertEquals(expectedCatalog, actualCatalog);
@@ -110,7 +90,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -132,7 +112,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME, expectedNamespace,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -155,7 +135,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME, expectedNamespace,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -180,7 +160,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(originalCatalog);
 
     assertEquals(expectedCatalog, actualCatalog);
@@ -204,7 +184,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         INPUT_NAMESPACE,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);

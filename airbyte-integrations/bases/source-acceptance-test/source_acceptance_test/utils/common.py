@@ -1,31 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from collections import UserDict
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Union
 
 import pytest
 from yaml import load
@@ -85,3 +65,40 @@ class SecretDict(UserDict):
 
     def __repr__(self) -> str:
         return str(self)
+
+
+def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref") -> dict:
+    """Checking the incoming schema for the presence of a `$ref` object in it"""
+    if isinstance(schema_item, list):
+        for list_schema_item in schema_item:
+            item = find_key_inside_schema(list_schema_item, key)
+            if item is not None:
+                return item
+    elif isinstance(schema_item, dict):
+        if key in schema_item:
+            return schema_item
+        for schema_object_value in schema_item.values():
+            item = find_key_inside_schema(schema_object_value, key)
+            if item is not None:
+                return item
+
+
+def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
+    """Find at least one keyword in a schema, skip object properties"""
+
+    def _find_keyword(schema, key, _skip=False):
+        if isinstance(schema, list):
+            for v in schema:
+                _find_keyword(v, key)
+        elif isinstance(schema, dict):
+            for k, v in schema.items():
+                if k == key and not _skip:
+                    raise StopIteration
+                rec_skip = k == "properties" and schema.get("type") == "object"
+                _find_keyword(v, key, rec_skip)
+
+    try:
+        _find_keyword(schema, key)
+    except StopIteration:
+        return True
+    return False

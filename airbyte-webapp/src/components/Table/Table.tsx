@@ -11,10 +11,16 @@ import {
 
 import { Card } from "components";
 
+type PaddingProps = {
+  left?: number;
+  right?: number;
+};
+
 type IHeaderProps = {
   headerHighlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
 } & ColumnInstance;
 
 type ICellProps = {
@@ -25,13 +31,18 @@ type IThProps = {
   highlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
+  light?: boolean;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
-const TableView = styled(Card).attrs({ as: "table" })`
+const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   border-spacing: 0;
   width: 100%;
-  overflow: hidden;
   max-width: 100%;
+  border-radius: 10px;
+  box-shadow: ${({ light, theme }) =>
+    light ? "none" : `0 2px 4px ${theme.cardShadowColor}`};
+};
 `;
 
 const Tr = styled.tr<{
@@ -43,8 +54,13 @@ const Tr = styled.tr<{
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
 `;
 
-const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
-  padding: 16px 13px;
+const Td = styled.td<{
+  collapse?: boolean;
+  customWidth?: number;
+  customPadding?: PaddingProps;
+}>`
+  padding: ${({ customPadding }) =>
+    `16px ${customPadding?.right ?? 13}px 16px ${customPadding?.left ?? 13}px`};
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -58,29 +74,46 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 
   tr:last-child > & {
     border-bottom: none;
+
+    &:first-child {
+      border-radius: 0 0 0 10px;
+    }
+
+    &:last-child {
+      border-radius: 0 0 10px 0;
+    }
   }
 `;
 
 const Th = styled.th<IThProps>`
-  background: ${({ theme }) => theme.textColor};
-  padding: 9px 13px 10px;
+  background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
+  padding: ${({ customPadding }) =>
+    `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
-  font-size: 10px;
+  font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
   color: ${({ theme, highlighted }) =>
     highlighted ? theme.whiteColor : theme.lightTextColor};
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundColor};
+  border-bottom: ${({ theme, light }) =>
+    light ? "none" : ` 1px solid ${theme.backgroundColor}`};
   width: ${({ collapse, customWidth }) =>
     customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: ${({ light }) => (light ? 400 : 600)};
+  text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
 
   &:first-child {
+    padding-left: ${({ light }) => (light ? 13 : 45)}px;
+    border-radius: 10px 0 0;
+  }
+
+  &:last-child {
     padding-left: 45px;
+    border-radius: 0 10px 0 0;
   }
 `;
 
 type IProps = {
+  light?: boolean;
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +130,7 @@ const Table: React.FC<IProps> = ({
   onClickRow,
   erroredRows,
   sortBy,
+  light,
 }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
@@ -124,7 +158,7 @@ const Table: React.FC<IProps> = ({
   );
 
   return (
-    <TableView {...getTableProps()}>
+    <TableView {...getTableProps()} light={light}>
       <thead>
         {headerGroups.map((headerGroup, key) => (
           <tr
@@ -136,8 +170,10 @@ const Table: React.FC<IProps> = ({
                 {...column.getHeaderProps()}
                 highlighted={column.headerHighlighted}
                 collapse={column.collapse}
+                customPadding={column.customPadding}
                 customWidth={column.customWidth}
                 key={`table-column-${key}-${columnKey}`}
+                light={light}
               >
                 {column.render("Header")}
               </Th>
@@ -163,6 +199,7 @@ const Table: React.FC<IProps> = ({
                     <Td
                       {...cell.getCellProps()}
                       collapse={cell.column.collapse}
+                      customPadding={cell.column.customPadding}
                       customWidth={cell.column.customWidth}
                       key={`table-cell-${row.id}-${key}`}
                     >

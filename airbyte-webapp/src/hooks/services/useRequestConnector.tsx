@@ -1,4 +1,4 @@
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type Values = {
   connectorType: string;
@@ -10,7 +10,7 @@ type Values = {
 const useRequestConnector = (): {
   requestConnector: (conn: Values) => void;
 } => {
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const requestConnector = (values: Values) => {
     analyticsService.track("Request a Connector", {

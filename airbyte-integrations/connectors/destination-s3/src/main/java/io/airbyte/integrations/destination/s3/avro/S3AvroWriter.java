@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -27,11 +7,12 @@ package io.airbyte.integrations.destination.s3.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -44,8 +25,9 @@ import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class S3AvroWriter extends BaseS3Writer implements S3Writer {
+public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3AvroWriter.class);
 
@@ -53,28 +35,31 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
+  private final String objectKey;
+  private final String gcsFileLocation;
 
-  public S3AvroWriter(S3DestinationConfig config,
-                      AmazonS3 s3Client,
-                      ConfiguredAirbyteStream configuredStream,
-                      Timestamp uploadTimestamp,
-                      Schema schema,
-                      JsonFieldNameUpdater nameUpdater)
+  public S3AvroWriter(final S3DestinationConfig config,
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp,
+                      final Schema schema,
+                      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
+    objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
-        objectKey);
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
+        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
-    S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
@@ -83,7 +68,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
@@ -99,6 +84,27 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     dataFileWriter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.AVRO;
+  }
+
+  @Override
+  public void write(JsonNode formattedData) throws IOException {
+    final GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
+    dataFileWriter.append(record);
   }
 
 }

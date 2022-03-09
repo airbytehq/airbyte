@@ -9,8 +9,6 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";
-import { Source } from "./Source";
-import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
 import {
@@ -19,6 +17,7 @@ import {
   ScheduleProperties,
   Operation,
 } from "core/domain/connection";
+import { Destination, Source } from "core/domain/connector";
 
 export type { Connection, ScheduleProperties };
 
@@ -88,6 +87,31 @@ export default class ConnectionResource
         const result = await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/connections/update`,
+          body
+        );
+
+        if (result.status === "failure") {
+          throw new CommonRequestError(result, result.message);
+        }
+
+        return result;
+      },
+      schema: this,
+    };
+  }
+
+  static deleteShapeItem<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Connection>> {
+    return {
+      ...super.deleteShape(),
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Connection> => {
+        const result = await this.fetch(
+          "post",
+          `${super.rootUrl()}connections/delete`,
           body
         );
 

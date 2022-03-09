@@ -1,27 +1,9 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
@@ -33,6 +15,30 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
 from dateutil.parser import isoparse
+
+
+class PaypalHttpException(Exception):
+    """HTTPError Exception with detailed info"""
+
+    def __init__(self, error: requests.exceptions.HTTPError):
+        self.error = error
+
+    def __str__(self):
+        message = repr(self.error)
+
+        if self.error.response.content:
+            content = self.error.response.content.decode()
+            try:
+                details = json.loads(content)
+            except json.decoder.JSONDecodeError:
+                details = content
+
+            message = f"{message} Details: {details}"
+
+        return message
+
+    def __repr__(self):
+        return self.__str__()
 
 
 def get_endpoint(is_sandbox: bool = False) -> str:
@@ -89,7 +95,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         minimum_allowed_start_date = now - timedelta(**self.start_date_min)
         if start_date < minimum_allowed_start_date:
             self.logger.log(
-                "WARN",
+                logging.WARN,
                 f'Stream {self.name}: start_date "{start_date.isoformat()}" is too old. '
                 + f'Reset start_date to the minimum_allowed_start_date "{minimum_allowed_start_date.isoformat()}"',
             )
@@ -98,7 +104,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         self.maximum_allowed_start_date = min(now, self.end_date)
         if start_date > self.maximum_allowed_start_date:
             self.logger.log(
-                "WARN",
+                logging.WARN,
                 f'Stream {self.name}: start_date "{start_date.isoformat()}" is too recent. '
                 + f'Reset start_date to the maximum_allowed_start_date "{self.maximum_allowed_start_date.isoformat()}"',
             )
@@ -246,6 +252,12 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return slices
 
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        try:
+            return super()._send_request(request, request_kwargs)
+        except requests.exceptions.HTTPError as http_error:
+            raise PaypalHttpException(http_error)
+
 
 class Transactions(PaypalTransactionStream):
     """List Paypal Transactions on a specific date range
@@ -370,11 +382,25 @@ class SourcePaypalTransaction(AbstractSource):
 
         # Try to initiate a stream and validate input date params
         try:
+            # validate input date ranges
             Transactions(authenticator=authenticator, **config).validate_input_dates()
-        except Exception as e:
-            return False, e
 
-        return True, None
+            # validate if Paypal API is able to extract data for given start_data
+            start_date = isoparse(config["start_date"])
+            end_date = start_date + timedelta(days=1)
+            stream_slice = {
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+            }
+            records = Transactions(authenticator=authenticator, **config).read_records(sync_mode=None, stream_slice=stream_slice)
+            # Try to read one value from records iterator
+            next(records, None)
+            return True, None
+        except Exception as e:
+            if "Data for the given start date is not available" in repr(e):
+                return False, f"Data for the given start date ({config['start_date']}) is not available, please use more recent start date"
+            else:
+                return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """

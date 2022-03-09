@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.concurrency;
@@ -47,22 +27,22 @@ public class LifecycledCallable<T> implements Callable<T> {
       this.onFinish = () -> {};
     }
 
-    public Builder<T> setOnStart(VoidCallable onStart) {
+    public Builder<T> setOnStart(final VoidCallable onStart) {
       this.onStart = onStart;
       return this;
     }
 
-    public Builder<T> setOnSuccess(CheckedConsumer<T, Exception> onSuccess) {
+    public Builder<T> setOnSuccess(final CheckedConsumer<T, Exception> onSuccess) {
       this.onSuccess = onSuccess;
       return this;
     }
 
-    public Builder<T> setOnException(CheckedConsumer<Exception, Exception> onException) {
+    public Builder<T> setOnException(final CheckedConsumer<Exception, Exception> onException) {
       this.onException = onException;
       return this;
     }
 
-    public Builder<T> setOnFinish(VoidCallable onFinish) {
+    public Builder<T> setOnFinish(final VoidCallable onFinish) {
       this.onFinish = onFinish;
       return this;
     }
@@ -98,7 +78,7 @@ public class LifecycledCallable<T> implements Callable<T> {
       final T result = execute();
       onSuccess(result);
       return result;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       onException(e);
       throw e;
     } finally {
@@ -115,11 +95,11 @@ public class LifecycledCallable<T> implements Callable<T> {
 
   }
 
-  private void onSuccess(T value) throws Exception {
+  private void onSuccess(final T value) throws Exception {
     this.onSuccess.accept(value);
   }
 
-  private void onException(Exception e) throws Exception {
+  private void onException(final Exception e) throws Exception {
     this.onException.accept(e);
   }
 

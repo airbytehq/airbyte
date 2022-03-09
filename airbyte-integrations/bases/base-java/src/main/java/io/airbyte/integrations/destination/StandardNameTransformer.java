@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination;
@@ -38,21 +18,21 @@ public class StandardNameTransformer implements NamingConventionTransformer {
   private static final String NON_JSON_PATH_CHARACTERS_PATTERN = "['\"`]";
 
   @Override
-  public String getIdentifier(String name) {
+  public String getIdentifier(final String name) {
     return convertStreamName(name);
   }
 
   @Override
-  public String getRawTableName(String streamName) {
+  public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName);
   }
 
   @Override
-  public String getTmpTableName(String streamName) {
+  public String getTmpTableName(final String streamName) {
     return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
   }
 
-  protected String convertStreamName(String input) {
+  protected String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
   }
 
@@ -62,16 +42,16 @@ public class StandardNameTransformer implements NamingConventionTransformer {
    * their json extract functions have limitations on how such special characters are parsed. These
    * naming rules may be different to schema/table/column naming conventions.
    */
-  public static JsonNode formatJsonPath(JsonNode root) {
+  public static JsonNode formatJsonPath(final JsonNode root) {
     if (root.isObject()) {
       final Map<String, JsonNode> properties = new HashMap<>();
-      var keys = Jsons.keys(root);
-      for (var key : keys) {
+      final var keys = Jsons.keys(root);
+      for (final var key : keys) {
         final JsonNode property = root.get(key);
         // keep original key
         properties.put(key, formatJsonPath(property));
       }
-      for (var key : keys) {
+      for (final var key : keys) {
         final JsonNode property = root.get(key);
         final String formattedKey = key.replaceAll(NON_JSON_PATH_CHARACTERS_PATTERN, "_");
         if (!properties.containsKey(formattedKey)) {

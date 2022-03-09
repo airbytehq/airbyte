@@ -3,20 +3,56 @@ import { ComponentMeta, ComponentStory } from "@storybook/react";
 import ServiceForm from "./ServiceForm";
 import { ContentCard } from "components";
 
+const TempConnector = {
+  name: "Service",
+  documentationUrl: "",
+  sourceDefinitionId: "serviceId",
+  dockerRepository: "",
+  dockerImageTag: "",
+  latestDockerImageTag: "",
+  icon: "",
+};
+
 export default {
   title: "Views/ServiceForm",
   component: ServiceForm,
+  parameters: { actions: { argTypesRegex: "^on.*" } },
+  args: {
+    formType: "source",
+    formValues: {
+      serviceType: TempConnector.sourceDefinitionId,
+    },
+    onSubmit: (v) => console.log(v),
+    availableServices: [TempConnector],
+  },
 } as ComponentMeta<typeof ServiceForm>;
 
-const Template: ComponentStory<typeof ServiceForm> = (args) => (
-  <ContentCard title="Test">
-    <ServiceForm {...args} />
-  </ContentCard>
-);
+const Template: ComponentStory<typeof ServiceForm> = (args) => {
+  // Hack to allow devs to not specify sourceDefinitionId
+  if (
+    args.selectedConnector &&
+    !(args.selectedConnector as any).sourceDefinitionId
+  ) {
+    (args.selectedConnector as any).sourceDefinitionId =
+      TempConnector.sourceDefinitionId;
+  }
+
+  if (args.selectedConnector?.documentationUrl) {
+    args.selectedConnector.documentationUrl = "";
+  }
+
+  return (
+    <ContentCard title="Test">
+      <ServiceForm {...args} />
+    </ContentCard>
+  );
+};
 
 export const Common = Template.bind({});
 Common.args = {
-  specifications: JSON.parse(`{
+  selectedConnector: {
+    ...TempConnector,
+    connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
@@ -87,13 +123,14 @@ Common.args = {
       }
     }
   }`),
-  formType: "source",
-  availableServices: [],
+  },
 };
 
 export const Oneof = Template.bind({});
 Oneof.args = {
-  specifications: JSON.parse(`{
+  selectedConnector: {
+    ...TempConnector,
+    connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
@@ -157,6 +194,5 @@ Oneof.args = {
       }
     }
   }`),
-  formType: "source",
-  availableServices: [],
+  },
 };

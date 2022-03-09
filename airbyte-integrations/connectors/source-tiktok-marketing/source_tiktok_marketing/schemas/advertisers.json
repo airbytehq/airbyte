@@ -1,0 +1,68 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "contacter": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "industry": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "license_no": {
+      "type": ["null", "string"]
+    },
+    "license_url": {
+      "type": ["null", "string"]
+    },
+    "phonenumber": {
+      "type": ["null", "string"]
+    },
+    "promotion_area": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "timezone": {
+      "type": ["null", "string"]
+    },
+    "balance": {
+      "type": "number"
+    },
+    "create_time": {
+      "type": "integer"
+    }
+  }
+}

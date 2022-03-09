@@ -1,42 +1,23 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import argparse
 import io
+import logging
 import sys
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from pydantic import ValidationError
 
+logger = logging.getLogger("airbyte")
+
 
 class Destination(Connector, ABC):
-    logger = AirbyteLogger()
     VALID_CMDS = {"spec", "check", "write"}
 
     @abstractmethod
@@ -46,7 +27,7 @@ class Destination(Connector, ABC):
         """Implement to define how the connector writes data to the destination"""
 
     def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
-        check_result = self.check(self.logger, config)
+        check_result = self.check(logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
@@ -55,16 +36,16 @@ class Destination(Connector, ABC):
             try:
                 yield AirbyteMessage.parse_raw(line)
             except ValidationError:
-                self.logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
         self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper
     ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
-        self.logger.info("Begin writing to the destination...")
+        logger.info("Begin writing to the destination...")
         yield from self.write(config=config, configured_catalog=catalog, input_messages=input_messages)
-        self.logger.info("Writing complete.")
+        logger.info("Writing complete.")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         """
@@ -106,12 +87,13 @@ class Destination(Connector, ABC):
         if cmd not in self.VALID_CMDS:
             raise Exception(f"Unrecognized command: {cmd}")
 
-        spec = self.spec(self.logger)
+        spec = self.spec(logger)
         if cmd == "spec":
             yield AirbyteMessage(type=Type.SPEC, spec=spec)
             return
         config = self.read_config(config_path=parsed_args.config)
-        check_config_against_spec_or_exit(config, spec, self.logger)
+        if self.check_config_against_spec or cmd == "check":
+            check_config_against_spec_or_exit(config, spec)
 
         if cmd == "check":
             yield self._run_check(config=config)

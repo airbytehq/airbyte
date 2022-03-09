@@ -1,0 +1,76 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "admin",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "drive",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "logins",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "meet",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "mobile",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "oauth_tokens",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["time"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

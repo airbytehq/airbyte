@@ -3,5 +3,9 @@
   "name": "Appstore",
   "dockerRepository": "airbyte/source-appstore-singer",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-appstore-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-appstore-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/appstore",
+    "connectionSpecification": {}
+  }
 }

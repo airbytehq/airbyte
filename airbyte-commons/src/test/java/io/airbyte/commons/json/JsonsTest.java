@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -32,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -70,6 +51,11 @@ class JsonsTest {
         Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
             "test", "abc",
             "test2", "def"))));
+    // issue: 5878 add test for binary node serialization, binary data are serialized into base64
+    assertEquals(
+        "{\"test\":\"dGVzdA==\"}",
+        Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(
+            "test", new BinaryNode("test".getBytes())))));
   }
 
   @Test
@@ -88,6 +74,10 @@ class JsonsTest {
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
         Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString());
+    // issue: 5878 add test for binary node deserialization, for now should be base64 string
+    assertEquals(
+        "{\"test\":\"dGVzdA==\"}",
+        Jsons.deserialize("{\"test\":\"dGVzdA==\"}").toString());
   }
 
   @Test
@@ -142,6 +132,11 @@ class JsonsTest {
   @Test
   void testEmptyObject() {
     assertEquals(Jsons.deserialize("{}"), Jsons.emptyObject());
+  }
+
+  @Test
+  void testArrayNode() {
+    assertEquals(Jsons.deserialize("[]"), Jsons.arrayNode());
   }
 
   @Test

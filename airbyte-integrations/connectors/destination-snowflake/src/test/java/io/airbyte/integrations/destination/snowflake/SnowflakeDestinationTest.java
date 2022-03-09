@@ -1,34 +1,40 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,12 +45,12 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When given S3 credentials should use COPY")
   public void useS3CopyStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
     stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
     stubLoadingMethod.put("access_key_id", "test");
     stubLoadingMethod.put("secret_access_key", "test key");
 
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
     assertTrue(SnowflakeDestination.isS3Copy(stubConfig));
@@ -53,12 +59,12 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When given GCS credentials should use COPY")
   public void useGcsCopyStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
     stubLoadingMethod.put("project_id", "my-project");
     stubLoadingMethod.put("bucket_name", "my-bucket");
     stubLoadingMethod.put("credentials_json", "hunter2");
 
-    var stubConfig = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
     assertTrue(SnowflakeDestination.isGcsCopy(stubConfig));
@@ -67,10 +73,54 @@ public class SnowflakeDestinationTest {
   @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() {
-    var stubLoadingMethod = mapper.createObjectNode();
-    var stubConfig = mapper.createObjectNode();
+    final var stubLoadingMethod = mapper.createObjectNode();
+    final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
     assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
+  }
+
+  @Test
+  public void testCleanupStageOnFailure() throws Exception {
+
+    JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    SnowflakeStagingSqlOperations sqlOperations = mock(SnowflakeStagingSqlOperations.class);
+    final var testMessages = generateTestMessages();
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
+    AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
+        .create(Destination::defaultOutputRecordCollector, mockDb,
+            sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
+    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());
+
+    airbyteMessageConsumer.start();
+    for (AirbyteMessage m : testMessages) {
+      airbyteMessageConsumer.accept(m);
+    }
+    assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
+
+    verify(sqlOperations, times(1)).cleanUpStage(any(), anyString());
+  }
+
+  private List<AirbyteMessage> generateTestMessages() {
+    return IntStream.range(0, 3)
+        .boxed()
+        .map(i -> new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream("test")
+                .withNamespace("test_staging")
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
+        .collect(Collectors.toList());
+  }
+
+  ConfiguredAirbyteCatalog getCatalog() {
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createConfiguredAirbyteStream(
+            "test",
+            "test_staging",
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
 }

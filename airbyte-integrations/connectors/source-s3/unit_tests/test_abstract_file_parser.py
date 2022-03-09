@@ -1,26 +1,8 @@
 #
-# MIT License
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
+
+from typing import Any, Mapping, Tuple
 
 import pyarrow as pa
 import pytest
@@ -43,7 +25,7 @@ class TestAbstractFileParserStatics:
             ("null", pa.large_string()),
         ],
     )
-    def test_json_type_to_pyarrow_type(self, input_json_type, output_pyarrow_type):
+    def test_json_type_to_pyarrow_type(self, input_json_type: str, output_pyarrow_type: Any) -> None:
         # Json -> PyArrow direction
         LOGGER.info(f"asserting that JSON type '{input_json_type}' converts to PyArrow type '{output_pyarrow_type}'...")
         assert AbstractFileParser.json_type_to_pyarrow_type(input_json_type) == output_pyarrow_type
@@ -65,7 +47,7 @@ class TestAbstractFileParserStatics:
             ((pa.map_(pa.string(), pa.float32()), pa.dictionary(pa.int16(), pa.list_(pa.string()))), "string"),  # object types
         ],
     )
-    def test_json_type_to_pyarrow_type_reverse(self, input_pyarrow_types, output_json_type):
+    def test_json_type_to_pyarrow_type_reverse(self, input_pyarrow_types: Tuple[Any], output_json_type: str) -> None:
         # PyArrow -> Json direction (reverse=True)
         for typ in input_pyarrow_types:
             LOGGER.info(f"asserting that PyArrow type '{typ}' converts to JSON type '{output_json_type}'...")
@@ -92,7 +74,7 @@ class TestAbstractFileParserStatics:
             (["string", "object"], None),  # bad input type
         ],
     )
-    def test_json_schema_to_pyarrow_schema(self, json_schema, pyarrow_schema):
+    def test_json_schema_to_pyarrow_schema(self, json_schema: Mapping[str, Any], pyarrow_schema: Mapping[str, Any]) -> None:
         # Json -> PyArrow direction
         if pyarrow_schema is not None:
             assert AbstractFileParser.json_schema_to_pyarrow_schema(json_schema) == pyarrow_schema
@@ -121,7 +103,7 @@ class TestAbstractFileParserStatics:
             (["string", "object"], None),  # bad input type
         ],
     )
-    def test_json_schema_to_pyarrow_schema_reverse(self, pyarrow_schema, json_schema):
+    def test_json_schema_to_pyarrow_schema_reverse(self, pyarrow_schema: Mapping[str, Any], json_schema: Mapping[str, Any]) -> None:
         # PyArrow -> Json direction (reverse=True)
         if json_schema is not None:
             assert AbstractFileParser.json_schema_to_pyarrow_schema(pyarrow_schema, reverse=True) == json_schema

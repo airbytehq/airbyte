@@ -1,5 +1,0 @@
-{
-  "credentials_json": "{\"type\": \"service_account\",\n  \"project_id\": \"REDACTED\",\n  \"private_key_id\": \"REDACTED\",\n  \"private_key\": \"-----BEGIN PRIVATE KEY-----\\REDACTED\\n-----END PRIVATE KEY-----\\n\",\n  \"client_email\": \"REDACTED\",\n  \"client_id\": \"103293192021796062643\",\n  \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\n  \"token_uri\": \"https://oauth2.googleapis.com/token\",\n  \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\n  \"client_x509_cert_url\": \"REDACTED\"\n}",
-  "view_id": "123456789",
-  "start_date": "2020-05-01T00:00:00Z"
-}

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -41,15 +21,15 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   public final String fileName;
   public final Integer position;
 
-  public MySqlCdcTargetPosition(String fileName, Integer position) {
+  public MySqlCdcTargetPosition(final String fileName, final Integer position) {
     this.fileName = fileName;
     this.position = position;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj instanceof MySqlCdcTargetPosition) {
-      MySqlCdcTargetPosition cdcTargetPosition = (MySqlCdcTargetPosition) obj;
+      final MySqlCdcTargetPosition cdcTargetPosition = (MySqlCdcTargetPosition) obj;
       return fileName.equals(cdcTargetPosition.fileName) && cdcTargetPosition.position.equals(position);
     }
     return false;
@@ -65,34 +45,34 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
     return "FileName: " + fileName + ", Position : " + position;
   }
 
-  public static MySqlCdcTargetPosition targetPosition(JdbcDatabase database) {
+  public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try {
-      List<MySqlCdcTargetPosition> masterStatus = database.resultSetQuery(
+      final List<MySqlCdcTargetPosition> masterStatus = database.resultSetQuery(
           connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
           resultSet -> {
-            String file = resultSet.getString("File");
-            int position = resultSet.getInt("Position");
+            final String file = resultSet.getString("File");
+            final int position = resultSet.getInt("Position");
             if (file == null || position == 0) {
               return new MySqlCdcTargetPosition(null, null);
             }
             return new MySqlCdcTargetPosition(file, position);
           }).collect(Collectors.toList());
-      MySqlCdcTargetPosition targetPosition = masterStatus.get(0);
+      final MySqlCdcTargetPosition targetPosition = masterStatus.get(0);
       LOGGER.info("Target File position : " + targetPosition);
 
       return targetPosition;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
 
   }
 
   @Override
-  public boolean reachedTargetPosition(JsonNode valueAsJson) {
-    String eventFileName = valueAsJson.get("source").get("file").asText();
-    int eventPosition = valueAsJson.get("source").get("pos").asInt();
+  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
+    final String eventFileName = valueAsJson.get("source").get("file").asText();
+    final int eventPosition = valueAsJson.get("source").get("pos").asInt();
 
-    boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
+    final boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
         valueAsJson.get("source").get("snapshot").asText().toUpperCase());
 
     if (isSnapshot || fileName.compareTo(eventFileName) > 0

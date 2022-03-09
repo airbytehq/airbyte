@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -57,29 +37,29 @@ public class YamlListToStandardDefinitions {
       new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
       new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
 
-  public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) throws RuntimeException {
+  public static List<StandardSourceDefinition> toStandardSourceDefinitions(final String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
-  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(String yamlStr) throws RuntimeException {
+  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(final String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
-  public static JsonNode verifyAndConvertToJsonNode(String idName, String yamlStr) throws RuntimeException {
+  public static JsonNode verifyAndConvertToJsonNode(final String idName, final String yamlStr) throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return jsonNode;
   }
 
   @VisibleForTesting
-  static <T> List<T> verifyAndConvertToModelList(Class<T> klass, String yamlStr) throws RuntimeException {
+  static <T> List<T> verifyAndConvertToModelList(final Class<T> klass, final String yamlStr) throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     final var idName = classNameToIdName.get(klass.getCanonicalName());
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
-  private static void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize, String idName) throws RuntimeException {
+  private static void checkYamlIsPresentWithNoDuplicates(final JsonNode deserialize, final String idName) throws RuntimeException {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
     Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
@@ -110,11 +90,11 @@ public class YamlListToStandardDefinitions {
     }
   }
 
-  private static <T> List<T> toStandardXDefinitions(Iterator<JsonNode> iter, Class<T> c) throws RuntimeException {
-    Iterable<JsonNode> iterable = () -> iter;
-    var defList = new ArrayList<T>();
-    for (JsonNode n : iterable) {
-      var def = Jsons.object(n, c);
+  private static <T> List<T> toStandardXDefinitions(final Iterator<JsonNode> iter, final Class<T> c) throws RuntimeException {
+    final Iterable<JsonNode> iterable = () -> iter;
+    final var defList = new ArrayList<T>();
+    for (final JsonNode n : iterable) {
+      final var def = Jsons.object(n, c);
       defList.add(def);
     }
     return defList;

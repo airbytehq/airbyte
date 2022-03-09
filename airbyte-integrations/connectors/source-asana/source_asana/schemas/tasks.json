@@ -328,7 +328,7 @@
             "type": ["null", "string"]
           },
           "text_value": {
-            "type": ["null", "boolean"]
+            "type": ["null", "string"]
           },
           "type": {
             "type": ["null", "string"]

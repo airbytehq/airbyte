@@ -8,8 +8,7 @@
       "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]

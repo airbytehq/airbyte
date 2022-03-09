@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -35,10 +15,12 @@ import io.airbyte.api.model.NotificationRead.StatusEnum;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.WorkspaceUpdateName;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -91,6 +73,7 @@ public class WorkspacesHandler {
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
+    final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(uuidSupplier.get())
@@ -101,7 +84,7 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
-        .withDisplaySetupWizard(false)
+        .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
 
@@ -121,7 +104,7 @@ public class WorkspacesHandler {
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     // disable all destinations associated with this workspace
@@ -185,12 +168,28 @@ public class WorkspacesHandler {
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
 
+  public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID workspaceId = workspaceUpdateName.getWorkspaceId();
+
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
+
+    persistedWorkspace
+        .withName(workspaceUpdateName.getName())
+        .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
+
+    configRepository.writeStandardWorkspace(persistedWorkspace);
+
+    return buildWorkspaceReadFromId(workspaceId);
+  }
+
   public NotificationRead tryNotification(final Notification notification) {
     try {
       final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
-      final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
-          notification.getNotificationType());
-      if (notificationClient.notify(message)) {
+      final String messageFormat = "Hello World! This is a test from Airbyte to try %s notification settings for sync %s";
+      final boolean failureNotified = notificationClient.notifyFailure(String.format(messageFormat, notification.getNotificationType(), "failures"));
+      final boolean successNotified = notificationClient.notifySuccess(String.format(messageFormat, notification.getNotificationType(), "successes"));
+      if (failureNotified || successNotified) {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {
@@ -199,6 +198,11 @@ public class WorkspacesHandler {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
     return new NotificationRead().status(StatusEnum.FAILED);
+  }
+
+  public void setFeedbackDone(final WorkspaceGiveFeedback workspaceGiveFeedback)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    configRepository.setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {

@@ -1,32 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import re
-from copy import deepcopy
-from typing import Union
+from typing import Any, Dict, Union
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
@@ -85,15 +64,16 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
-        schema["properties"]["format"]["type"] = "object"
-        if "oneOf" in schema["properties"]["format"]:
-            return schema
-        schema["properties"]["format"]["oneOf"] = deepcopy(schema["properties"]["format"]["anyOf"])
-        del schema["properties"]["format"]["anyOf"]
+        props_to_change = ["format"]
+        for prop in props_to_change:
+            schema["properties"][prop]["type"] = "object"
+            if "oneOf" in schema["properties"][prop]:
+                continue
+            schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
         return schema
 
     @staticmethod
-    def check_provider_added(schema: dict) -> dict:
+    def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
             raise RuntimeError("You must add the 'provider' property in your child spec class")
 
@@ -104,14 +84,14 @@ class SourceFilesAbstractSpec(BaseModel):
         for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
             ref = json.loads(ref_block)["$ref"]
             str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
-        pyschema = json.loads(str_schema)
+        pyschema: dict = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema
 
     @classmethod
-    def schema(cls) -> dict:
-        """ we're overriding the schema classmethod to enable some post-processing """
-        schema = super().schema()
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """we're overriding the schema classmethod to enable some post-processing"""
+        schema = super().schema(*args, **kwargs)
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)

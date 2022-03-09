@@ -1,29 +1,9 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
-from source_hubspot.api import Stream
+from source_hubspot.streams import Stream
 
 
 @pytest.mark.parametrize(
@@ -37,7 +17,7 @@ from source_hubspot.api import Stream
         ("enumeration", {"type": ["null", "string"]}),
         ("object", {"type": ["null", "object"]}),
         ("array", {"type": ["null", "array"]}),
-        ("date", {"type": ["null", "string"], "format": "date-time"}),
+        ("date", {"type": ["null", "string"], "format": "date"}),
         ("date-time", {"type": ["null", "string"], "format": "date-time"}),
         ("datetime", {"type": ["null", "string"], "format": "date-time"}),
         ("json", {"type": ["null", "string"]}),
@@ -56,14 +36,15 @@ def test_field_type_format_converting(field_type, expected):
         (1, {"type": ["null", "string"]}),
     ],
 )
-def test_bad_field_type_converting(field_type, expected, capsys):
+def test_bad_field_type_converting(field_type, expected, caplog, capsys):
 
     assert Stream._get_field_props(field_type=field_type) == expected
 
-    logs = capsys.readouterr().out
+    logs = caplog.records
 
-    assert '"WARN"' in logs
-    assert f"Unsupported type {field_type} found" in logs
+    assert logs
+    assert logs[0].levelname == "WARNING"
+    assert logs[0].msg == f"Unsupported type {field_type} found"
 
 
 @pytest.mark.parametrize(
@@ -91,7 +72,7 @@ def test_bad_field_type_converting(field_type, expected, capsys):
         # Test casting fields with format specified
         (["null", "string"], "some_field", "", "date-time", None),
         (["string"], "some_field", "", "date-time", ""),
-        (["null", "string"], "some_field", "2020", "date-time", "2020"),
+        (["null", "string"], "some_field", "2020", "date-time", "2020-01-01 00:00:00"),
     ],
 )
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
@@ -101,3 +82,22 @@ def test_cast_type_if_needed(declared_field_types, field_name, field_value, form
         )
         == casted_value
     )
+
+
+@pytest.mark.parametrize(
+    "field_value, declared_format, expected_casted_value",
+    [
+        ("1653696000000", "date", "2022-05-28"),
+        ("1645608465000", "date-time", "2022-02-23 09:27:45"),
+        (1645608465000, "date-time", "2022-02-23 09:27:45"),
+        ("2022-05-28", "date", "2022-05-28"),
+        ("2022-02-23 09:27:45", "date-time", "2022-02-23 09:27:45"),
+        ("", "date", ""),
+        (None, "date", None),
+        ("2022-02-23 09:27:45", "date", "2022-02-23"),
+        ("2022-05-28", "date-time", "2022-05-28 00:00:00"),
+    ],
+)
+def test_cast_timestamp_to_date(field_value, declared_format, expected_casted_value):
+    casted_value = Stream._cast_datetime("hs_recurring_billing_end_date", field_value, declared_format=declared_format)
+    assert casted_value == expected_casted_value

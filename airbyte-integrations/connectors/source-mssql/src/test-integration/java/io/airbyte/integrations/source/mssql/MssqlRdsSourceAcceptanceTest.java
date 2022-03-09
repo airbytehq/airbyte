@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -40,9 +20,9 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
   private JsonNode baseConfig;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     baseConfig = getStaticConfig();
-    String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final Database database = getDatabase();
     database.query(ctx -> {
@@ -65,7 +45,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private Database getDatabase() {
     String additionalParameter = "";
-    JsonNode sslMethod = baseConfig.get("ssl_method");
+    final JsonNode sslMethod = baseConfig.get("ssl_method");
     switch (sslMethod.get("ssl_method").asText()) {
       case "unencrypted" -> additionalParameter = "encrypt=false;";
       case "encrypted_trust_server_certificate" -> additionalParameter = "encrypt=true;trustServerCertificate=true;";
@@ -82,8 +62,8 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    String database = config.get("database").asText();
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    final String database = config.get("database").asText();
     getDatabase().query(ctx -> {
       ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));
       ctx.fetch(String.format("DROP DATABASE %s;", database));

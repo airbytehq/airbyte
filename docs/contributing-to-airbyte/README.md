@@ -28,13 +28,13 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
 
-For sources, simply head over to our [Python CDK](../connector-development/cdk-python/README.md).
+For sources, simply head over to our [Python CDK](../connector-development/cdk-python/).
 
 {% hint style="info" %}
 The CDK currently does not support creating destinations, but it will very soon.
 {% endhint %}
 
-* See [Building new connectors](../connector-development/README.md) to get started.
+* See [Building new connectors](../connector-development/) to get started.
 * Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)
 * Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/source-acceptance-tests-reference.md)
 
@@ -72,7 +72,7 @@ First, a big thank you! A few things to keep in mind when contributing code:
 * If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
 * Rebase master with your branch before submitting a pull request.
 
-Here are some details about [our review process](#review-process).
+Here are some details about [our review process](./#review-process).
 
 ### **Upvoting issues, feature and connector requests**
 
@@ -87,15 +87,15 @@ To request new features, please create an issue on this project.
 
 If you would like to suggest a new feature, we ask that you please use our issue template. It contains a few essential questions that help us understand the problem you are looking to solve and how you think your recommendation will address it. We also tag incoming issues from this template with the "**community\_new**" label. This lets our teams quickly see what has been raised and better address the community recommendations.
 
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community_new).
+To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community).
 
 Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
 
 ### **Requesting new connectors**
 
-This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
+This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community**” and “**area/connectors**” labels.
 
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fintegration). Again, watch out for duplicates!
+To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fconnectors). Again, watch out for duplicates!
 
 ### **Reporting bugs**
 
@@ -120,3 +120,5 @@ As soon as you are done with your development, just put up a PR. You're also alw
 
 ‌Once your PR passes, we will merge it.
 
+## **Airbyte CI workflows**
+* [Testing by SonarQube](sonar-qube-workflow.md)

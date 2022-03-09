@@ -3,7 +3,11 @@
   "type": "object",
   "properties": {
     "dates": {
-      "type": "array"
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"],
+        "maxLength": 256
+      }
     }
   }
 }

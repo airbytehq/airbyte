@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -28,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -39,9 +19,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.List;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -65,7 +44,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
@@ -82,8 +61,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
                 String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -94,8 +73,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
                 String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -108,12 +87,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws InterruptedException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
     container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
@@ -171,12 +145,12 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // solving with a simple while retry loop
     boolean failingToStart = true;
     int retryNum = 0;
-    int maxRetries = 10;
+    final int maxRetries = 10;
     while (failingToStart) {
       try {
         // enabling CDC on each table
-        String[] tables = {STREAM_NAME, STREAM_NAME2};
-        for (String table : tables) {
+        final String[] tables = {STREAM_NAME, STREAM_NAME2};
+        for (final String table : tables) {
           executeQuery(String.format(
               "EXEC sys.sp_cdc_enable_table\n"
                   + "\t@source_schema = N'%s',\n"
@@ -186,7 +160,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
               SCHEMA_NAME, table, CDC_ROLE_NAME));
         }
         failingToStart = false;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (retryNum >= maxRetries) {
           throw e;
         } else {
@@ -203,18 +177,18 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
   }
 
-  private void executeQuery(String query) {
+  private void executeQuery(final String query) {
     try {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

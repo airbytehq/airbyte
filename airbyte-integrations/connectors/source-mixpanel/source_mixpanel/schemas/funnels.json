@@ -18,113 +18,92 @@
       "format": "date-time"
     },
     "steps": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "count": {
+            "type": ["null", "integer"]
+          },
+          "avg_time": {
+            "type": ["null", "number"],
+            "multipleOf": 1e-20
+          },
+          "avg_time_from_start": {
+            "type": ["null", "number"],
+            "multipleOf": 1e-20
+          },
+          "goal": {
+            "type": ["null", "string"]
+          },
+          "overall_conv_ratio": {
+            "type": ["null", "number"],
+            "multipleOf": 1e-20
+          },
+          "step_conv_ratio": {
+            "type": ["null", "number"],
+            "multipleOf": 1e-20
+          },
+          "event": {
+            "type": ["null", "string"]
+          },
+          "session_event": {
+            "type": ["null", "string"]
+          },
+          "step_label": {
+            "type": ["null", "string"]
+          },
+          "selector": {
+            "type": ["null", "string"]
+          },
+          "selector_params": {
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
-              "count": {
-                "type": ["null", "integer"]
-              },
-              "avg_time": {
-                "type": ["null", "number"],
-                "multipleOf": 1e-20
-              },
-              "avg_time_from_start": {
-                "type": ["null", "number"],
-                "multipleOf": 1e-20
-              },
-              "goal": {
-                "type": ["null", "string"]
-              },
-              "overall_conv_ratio": {
-                "type": ["null", "number"],
-                "multipleOf": 1e-20
-              },
-              "step_conv_ratio": {
-                "type": ["null", "number"],
-                "multipleOf": 1e-20
-              },
-              "event": {
-                "type": ["null", "string"]
-              },
-              "session_event": {
-                "type": ["null", "string"]
-              },
               "step_label": {
                 "type": ["null", "string"]
+              }
+            }
+          },
+          "time_buckets_from_start": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "lower": {
+                "type": ["null", "integer"]
               },
-              "selector": {
-                "type": ["null", "string"]
+              "higher": {
+                "type": ["null", "integer"]
               },
-              "selector_params": {
-                "type": ["null", "object"],
-                "additionalProperties": true,
-                "properties": {
-                  "step_label": {
-                    "type": ["null", "string"]
-                  }
+              "buckets": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": "integer"
                 }
+              }
+            }
+          },
+          "time_buckets_from_prev": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "lower": {
+                "type": ["null", "integer"]
               },
-              "time_buckets_from_start": {
-                "type": ["null", "object"],
-                "additionalProperties": false,
-                "properties": {
-                  "lower": {
-                    "type": ["null", "integer"]
-                  },
-                  "higher": {
-                    "type": ["null", "integer"]
-                  },
-                  "buckets": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "integer"
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
+              "higher": {
+                "type": ["null", "integer"]
               },
-              "time_buckets_from_prev": {
-                "type": ["null", "object"],
-                "additionalProperties": false,
-                "properties": {
-                  "lower": {
-                    "type": ["null", "integer"]
-                  },
-                  "higher": {
-                    "type": ["null", "integer"]
-                  },
-                  "buckets": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "integer"
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
+              "buckets": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": "integer"
                 }
               }
             }
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
     },
     "analysis": {
       "type": ["null", "object"],

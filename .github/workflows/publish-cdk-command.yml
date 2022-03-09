@@ -2,6 +2,14 @@ name: Publish CDK
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       dry-run:
         description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
         required: false
@@ -23,9 +31,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Build CDK Package
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
       - name: Add Failure Comment
@@ -56,6 +67,9 @@ jobs:
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:

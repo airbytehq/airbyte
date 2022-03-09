@@ -1,68 +1,7 @@
 {
   "properties": {
-    "table": {
+    "name": {
       "type": ["null", "string"]
-    },
-    "key": {
-      "type": ["null", "string"]
-    },
-    "size": {
-      "type": ["null", "integer"]
-    },
-    "lastModified": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "value": {
-      "type": ["null", "object"],
-      "properties": {
-        "inventory": {
-          "type": ["null", "integer"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "sku": {
-          "type": ["null", "string"]
-        },
-        "url": {
-          "type": ["null", "string"]
-        },
-        "description": {
-          "type": ["null", "string"]
-        },
-        "price": {
-          "type": ["null", "integer"]
-        },
-        "product_type": {
-          "type": ["null", "string"]
-        },
-        "compare_at_price": {
-          "type": ["null", "number"]
-        },
-        "id": {
-          "type": ["null", "string"]
-        },
-        "product_id": {
-          "type": ["null", "string"]
-        },
-        "categories": {
-          "type": ["null", "array"],
-          "items": {}
-        },
-        "vendor": {
-          "type": ["null", "string"]
-        },
-        "discount": {
-          "type": ["null", "integer"]
-        },
-        "imageUrl": {
-          "type": ["null", "string"]
-        },
-        "handle": {
-          "type": ["null", "string"]
-        }
-      }
     }
   },
   "type": ["null", "object"]

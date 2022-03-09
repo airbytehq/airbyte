@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -30,32 +10,29 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobRead;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.Pagination;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.JobCheckConnectionConfig;
-import io.airbyte.config.JobConfig;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.*;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.DestinationDefinitionHelpers;
+import io.airbyte.server.helpers.DestinationHelpers;
+import io.airbyte.server.helpers.SourceDefinitionHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +45,7 @@ public class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
   private static final long ATTEMPT_ID = 1002L;
-  private static final String JOB_CONFIG_ID = "123";
+  private static final String JOB_CONFIG_ID = "ef296385-6796-413f-ac1b-49c4caba3f2b";
   private static final JobStatus JOB_STATUS = JobStatus.SUCCEEDED;
   private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
   private static final JobConfigType CONFIG_TYPE_FOR_API = JobConfigType.CHECK_CONNECTION_SOURCE;
@@ -79,12 +56,23 @@ public class JobHistoryHandlerTest {
   private static final LogRead EMPTY_LOG_READ = new LogRead().logLines(new ArrayList<>());
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
+  private SourceRead sourceRead;
+  private ConnectionRead connectionRead;
+  private DestinationRead destinationRead;
+  private ConnectionsHandler connectionsHandler;
+  private SourceHandler sourceHandler;
+  private DestinationHandler destinationHandler;
+  private SourceDefinitionsHandler sourceDefinitionsHandler;
+  private DestinationDefinitionsHandler destinationDefinitionsHandler;
+  private StandardDestinationDefinition standardDestinationDefinition;
+  private StandardSourceDefinition standardSourceDefinition;
+  private AirbyteVersion airbyteVersion;
   private Job testJob;
   private Attempt testJobAttempt;
   private JobPersistence jobPersistence;
   private JobHistoryHandler jobHistoryHandler;
 
-  private static JobRead toJobInfo(Job job) {
+  private static JobRead toJobInfo(final Job job) {
     return new JobRead().id(job.getId())
         .configId(job.getScope())
         .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
@@ -94,14 +82,24 @@ public class JobHistoryHandlerTest {
 
   }
 
-  private static List<AttemptInfoRead> toAttemptInfoList(List<Attempt> attempts) {
+  private static JobDebugRead toDebugJobInfo(final Job job) {
+    return new JobDebugRead().id(job.getId())
+        .configId(job.getScope())
+        .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
+        .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.JobConfigType.class))
+        .sourceDefinition(null)
+        .destinationDefinition(null);
+
+  }
+
+  private static List<AttemptInfoRead> toAttemptInfoList(final List<Attempt> attempts) {
     final List<AttemptRead> attemptReads = attempts.stream().map(JobHistoryHandlerTest::toAttemptRead).collect(Collectors.toList());
 
     final Function<AttemptRead, AttemptInfoRead> toAttemptInfoRead = (AttemptRead a) -> new AttemptInfoRead().attempt(a).logs(EMPTY_LOG_READ);
     return attemptReads.stream().map(toAttemptInfoRead).collect(Collectors.toList());
   }
 
-  private static AttemptRead toAttemptRead(Attempt a) {
+  private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
         .id(a.getId())
         .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.AttemptStatus.class))
@@ -110,18 +108,25 @@ public class JobHistoryHandlerTest {
         .endedAt(a.getEndedAtInSecond().orElse(null));
   }
 
-  private static Attempt createSuccessfulAttempt(long jobId, long timestamps) {
-    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, timestamps, timestamps, timestamps);
+  private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
+    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
     testJobAttempt = createSuccessfulAttempt(JOB_ID, CREATED_AT);
     testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
         CREATED_AT);
 
+    connectionsHandler = mock(ConnectionsHandler.class);
+    sourceHandler = mock(SourceHandler.class);
+    sourceDefinitionsHandler = mock(SourceDefinitionsHandler.class);
+    destinationHandler = mock(DestinationHandler.class);
+    destinationDefinitionsHandler = mock(DestinationDefinitionsHandler.class);
+    airbyteVersion = mock(AirbyteVersion.class);
     jobPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfigs.EMPTY, connectionsHandler, sourceHandler,
+        sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
   }
 
   @Nested
@@ -213,6 +218,37 @@ public class JobHistoryHandlerTest {
     final JobInfoRead exp = new JobInfoRead().job(toJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
 
     assertEquals(exp, jobInfoActual);
+  }
+
+  @Test
+  @DisplayName("Should return the right info to debug this job")
+  public void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
+    standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+
+    standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
+
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    when(connectionsHandler.getConnection(UUID.fromString(testJob.getScope()))).thenReturn(connectionRead);
+
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
+    sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
+    when(sourceHandler.getSource(sourceIdRequestBody)).thenReturn(sourceRead);
+
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
+    destinationIdRequestBody.setDestinationId(connectionRead.getDestinationId());
+    when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(testJob);
+
+    final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
+    final JobDebugInfoRead jobDebugInfoActual = jobHistoryHandler.getJobDebugInfo(requestBody);
+    final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
+
+    assertEquals(exp, jobDebugInfoActual);
   }
 
   @Test

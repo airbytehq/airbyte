@@ -227,7 +227,7 @@ Let's create a class in `source.py` which extends `HttpStream`. You'll notice th
 We'll begin by creating a stream to represent the data that we're pulling from the Exchange Rates API: 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -320,7 +320,7 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
     
     def __init__(self, base: str, **kwargs):
         super().__init__()
@@ -396,13 +396,15 @@ There we have it - a stream which reads data in just a few lines of code!
 We theoretically _could_ stop here and call it a connector. But let's give adding incremental sync a shot.
 
 #### Adding incremental sync
+
 To add incremental sync, we'll do a few things: 
-1. Pass the `start_date` param input by the user into the stream.
-2. Declare the stream's `cursor_field`.
-3. Implement the `get_updated_state` method.
-4. Implement the `stream_slices` method.
-5. Update the `path` method to specify the date to pull exchange rates for.
-6. Update the configured catalog to use `incremental` sync when we're testing the stream.
+1. Pass the `start_date` param input by the user into the stream. 
+2. Declare the stream's `cursor_field`. 
+3. Declare the stream's property `_cursor_value` to hold the state value
+4. Add `IncrementalMixin` to the list of the ancestors of the stream and implement setter and getter of the `state`.
+5. Implement the `stream_slices` method. 
+6. Update the `path` method to specify the date to pull exchange rates for. 
+7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
 We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.io/architecture/connections/incremental-append). 
 
@@ -424,33 +426,47 @@ Let's also add this parameter to the constructor and declare the `cursor_field`:
 from datetime import datetime, timedelta
 
 
-class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+class ExchangeRates(HttpStream, IncrementalMixin):
+    url_base = "https://api.exchangeratesapi.io/"
     cursor_field = "date"
 
     def __init__(self, base: str, start_date: datetime, **kwargs):
         super().__init__()
         self.base = base
         self.start_date = start_date
+        self._cursor_value = None
 ```
 
 Declaring the `cursor_field` informs the framework that this stream now supports incremental sync. The next time you run `python main_dev.py discover --config sample_files/config.json` you'll find that the `supported_sync_modes` field now also contains `incremental`.
 
 But we're not quite done with supporting incremental, we have to actually emit state! We'll structure our state object very simply: it will be a `dict` whose single key is `'date'` and value is the date of the last day we synced data from. For example, `{'date': '2021-04-26'}` indicates the connector previously read data up until April 26th and therefore shouldn't re-read anything before April 26th.
 
-Let's do this by implementing the `get_updated_state` method inside the `ExchangeRates` class.
+Let's do this by implementing the getter and setter for the `state` inside the `ExchangeRates` class.
 
 ```python
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        if current_stream_state is not None and 'date' in current_stream_state:
-            current_parsed_date = datetime.strptime(current_stream_state['date'], '%Y-%m-%d')
-            latest_record_date = datetime.strptime(latest_record['date'], '%Y-%m-%d')
-            return {'date': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%d')}
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
         else:
-            return {'date': self.start_date.strftime('%Y-%m-%d')}
-```  
+            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+       self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
+```
+
+Update internal state `cursor_value` inside `read_records` method
+
+```python
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            if self._cursor_value:
+                latest_record_date = datetime.strptime(latest_record[self.cursor_field], '%Y-%m-%d')
+                self._cursor_value = max(self._cursor_value, latest_record_date)
+            yield record
+
+```
 
 This implementation compares the date from the latest record with the date in the current state and takes the maximum as the "new" state object.
 

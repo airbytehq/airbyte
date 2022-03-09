@@ -1,0 +1,12 @@
+{
+  "username": "charles",
+  "password1": {
+    "key1": "hunter1"
+  },
+  "password2": {
+    "key1": "hunter2"
+  },
+  "password3": {
+    "non-secret": 42
+  }
+}

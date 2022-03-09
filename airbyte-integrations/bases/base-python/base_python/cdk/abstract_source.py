@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -41,6 +21,7 @@ from airbyte_protocol import (
 )
 from airbyte_protocol import Type as MessageType
 from base_python.cdk.streams.core import Stream
+from base_python.cdk.utils.event_timing import create_timer
 from base_python.integration import Source
 from base_python.logger import AirbyteLogger
 
@@ -98,15 +79,24 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        for configured_stream in catalog.streams:
-            try:
-                stream_instance = stream_instances[configured_stream.stream.name]
-                yield from self._read_stream(
-                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
-                )
-            except Exception as e:
-                logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise e
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                try:
+                    stream_instance = stream_instances[configured_stream.stream.name]
+                    timer.start_event(configured_stream.stream.name)
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                    )
+                    timer.end_event()
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 

@@ -223,6 +223,10 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
+    "update_timestamp": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
     "triggered": {
       "type": ["null", "boolean"]
     },
@@ -280,6 +284,9 @@
     },
     "message": {
       "type": ["null", "string"]
+    },
+    "deleted": {
+      "type": ["null", "boolean"]
     },
     "zendesk_ticket_id": {
       "type": ["null", "integer"]
