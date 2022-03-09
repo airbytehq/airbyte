@@ -97,7 +97,7 @@ class ResourceState:
             ResourceState: state deserialized from YAML.
         """
         with open(file_path, "r") as f:
-            raw_state = yaml.load(f, yaml.FullLoader)
+            raw_state = yaml.safe_load(f)
         return ResourceState(
             raw_state["configuration_path"],
             raw_state["resource_id"],
@@ -443,7 +443,7 @@ def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configu
         Union[Source, Destination]: The resource object created from the YAML config.
     """
     with open(configuration_path, "r") as f:
-        local_configuration = yaml.load(f, yaml.FullLoader)
+        local_configuration = yaml.safe_load(f)
     if local_configuration["definition_type"] == "source":
         return Source(api_client, workspace_id, local_configuration, configuration_path)
     if local_configuration["definition_type"] == "destination":

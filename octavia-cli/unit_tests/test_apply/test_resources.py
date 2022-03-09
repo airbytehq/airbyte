@@ -57,7 +57,7 @@ class TestResourceState:
 
     def test_from_file(self, mocker):
         mocker.patch.object(resources, "yaml")
-        resources.yaml.load.return_value = {
+        resources.yaml.safe_load.return_value = {
             "configuration_path": "config_path",
             "resource_id": "resource_id",
             "generation_timestamp": 0,
@@ -65,7 +65,7 @@ class TestResourceState:
         }
         with patch("builtins.open", mock_open(read_data="data")) as mock_file:
             state = resources.ResourceState.from_file("state.yaml")
-        resources.yaml.load.assert_called_with(mock_file.return_value, resources.yaml.FullLoader)
+        resources.yaml.safe_load.assert_called_with(mock_file.return_value)
         assert isinstance(state, resources.ResourceState)
         assert state.configuration_path == "config_path"
         assert state.resource_id == "resource_id"
@@ -339,7 +339,7 @@ def test_factory(mocker, mock_api_client, local_configuration, resource_to_mock,
     mocker.patch.object(resources, "yaml")
     if resource_to_mock is not None:
         mocker.patch.object(resources, resource_to_mock)
-    resources.yaml.load.return_value = local_configuration
+    resources.yaml.safe_load.return_value = local_configuration
     with patch("builtins.open", mock_open(read_data="data")) as mock_file:
         if not expected_error:
             resource = resources.factory(mock_api_client, "workspace_id", "my_config.yaml")
