@@ -19,7 +19,7 @@ from psycopg2.pool import ThreadedConnectionPool
 
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
-from destination_redshift_py.s3_writer import S3Writer
+from destination_redshift_py.s3_objects_manager import S3ObjectsManager
 from destination_redshift_py.stream import Stream
 from destination_redshift_py.table import AIRBYTE_EMITTED_AT, AIRBYTE_ID_NAME
 
@@ -44,7 +44,7 @@ class DestinationRedshiftPy(Destination):
                 self._create_final_tables()
                 self._initialize_staging_schema()
                 self._initialize_csv_writers()
-                self._initialize_s3_writer(config=config)
+                self._initialize_s3_object_manager(config=config)
                 self._initialize_iam_role_arn(iam_role_arn=config.get("iam_role_arn"))
                 return super().run_cmd(parsed_args)
 
@@ -235,13 +235,18 @@ class DestinationRedshiftPy(Destination):
 
                 self.csv_writers[table.name] = csv_writer
 
-    def _initialize_s3_writer(self, config: Mapping[str, Any]):
+    def _initialize_s3_object_manager(self, config: Mapping[str, Any]):
         bucket = config.get("s3_bucket_name")
         s3_path = config.get("s3_bucket_path")
         access_key_id = config.get("access_key_id")
         secret_access_key = config.get("secret_access_key")
 
-        self.s3_writer = S3Writer(bucket=bucket, s3_path=s3_path, aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key)
+        self.s3_object_manager = S3ObjectsManager(
+            bucket=bucket,
+            s3_path=s3_path,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key
+        )
 
     def _initialize_iam_role_arn(self, iam_role_arn: str):
         self.iam_role_arn = iam_role_arn
@@ -256,7 +261,7 @@ class DestinationRedshiftPy(Destination):
                 temporary_gzip_file = csv_writer.flush_gzipped()
 
                 if temporary_gzip_file:
-                    s3_full_path = self.s3_writer.upload_file_to_s3(temporary_gzip_file.name)
+                    s3_full_path = self.s3_object_manager.upload_file_to_s3(temporary_gzip_file.name)
                     CSVWriter.delete_gzip_file(temporary_gzip_file)
 
                     if stream.destination_sync_mode in [DestinationSyncMode.append, DestinationSyncMode.overwrite]:
@@ -270,6 +275,8 @@ class DestinationRedshiftPy(Destination):
 
                         upsert_statements = final_table.upsert_statements(staging_table=staging_table)
                         cursor.execute(upsert_statements)
+
+                    self.s3_object_manager.delete_file_from_s3(s3_full_path)
 
                 connection.commit()
 
