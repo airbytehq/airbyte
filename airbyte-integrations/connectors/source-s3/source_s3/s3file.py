@@ -4,7 +4,7 @@
 
 
 from contextlib import contextmanager
-from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
+from typing import Any, BinaryIO, Iterator, TextIO, Union
 
 import smart_open
 from source_s3.s3_utils import make_s3_client
