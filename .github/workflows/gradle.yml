@@ -345,6 +345,31 @@ jobs:
           SLACK_FOOTER: ""
 
   # In case of self-hosted EC2 errors, remove this block.
+  stop-platform-new-scheduler-acceptance-runner:
+    name: Stop Acceptance Tests (Docker w/ Scheduler v2) Runner
+    timeout-minutes: 10
+    needs:
+      - start-platform-new-scheduler-acceptance-runner # required to get output from the start-runner job
+      - platform-new-scheduler-acceptance # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.3.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
+          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
+
+
+  # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
     timeout-minutes: 10
