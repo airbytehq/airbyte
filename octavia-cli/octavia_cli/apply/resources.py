@@ -3,7 +3,6 @@
 #
 
 import abc
-import copy
 import os
 import time
 from pathlib import Path
@@ -208,11 +207,19 @@ class BaseResource(abc.ABC):
 
     def _get_comparable_configuration(
         self,
-    ) -> dict:  # pragma: no cover
+    ) -> Union[SourceRead, DestinationRead, dict]:  # pragma: no cover
+        """Get the object to which local configuration will be compared to.
+
+        Raises:
+            NonExistingResourceError: Raised if the remote resource does not exists.
+
+        Returns:
+            Union[SourceRead, DestinationRead, dict]: The comparable configuration
+        """
         if not self.was_created:
             raise NonExistingResourceError("Can't find a comparable configuration as the remote resource does not exists.")
         else:
-            return copy.deepcopy(self.remote_resource)
+            return self.remote_resource
 
     @property
     def was_created(self):
@@ -372,11 +379,6 @@ class Source(BaseResource):
         )
 
     def _get_comparable_configuration(self):
-        """Get the object to which local configuration will be compared to.
-
-        Returns:
-            dict: Remote source configuration.
-        """
         comparable_configuration = super()._get_comparable_configuration()
         return comparable_configuration.connection_configuration
 
@@ -449,12 +451,7 @@ class Destination(BaseResource):
             name=self.resource_name,
         )
 
-    def _get_comparable_configuration(self):
-        """Get the object to which local configuration will be compared to.
-
-        Returns:
-            dict: Remote destination configuration.
-        """
+    def _get_comparable_configuration(self) -> DestinationRead:
         comparable_configuration = super()._get_comparable_configuration()
         return comparable_configuration.connection_configuration
 
@@ -528,15 +525,9 @@ class Connection(BaseResource):
         return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
 
     def _get_comparable_configuration(self) -> dict:
-        """Get the object to which local configuration will be compared to.
-
-        Returns:
-            dict: Remote connection configuration.
-        """
+        keys_to_filter_out = ["connectionId", "operationIds"]
         comparable_configuration = super()._get_comparable_configuration()
-        comparable_configuration.pop("connectionId")
-        comparable_configuration.pop("operationIds")
-        return comparable_configuration
+        return {k: v for k, v in comparable_configuration.items() if k not in keys_to_filter_out}
 
 
 def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str) -> Union[Source, Destination, Connection]:
