@@ -132,7 +132,6 @@ class SourceSmartsheets(Source):
 
                 for row in sheet["rows"]:
                     # convert all data to string as it is only expected format in schema
-                    values = tuple(str(i["value"]) if "value" in i else "" for i in row["cells"])
                     try:
                         id_name_map = {d['id']: d['title'] for d in sheet['columns']}
                         data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
