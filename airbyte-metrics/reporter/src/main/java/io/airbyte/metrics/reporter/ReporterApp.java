@@ -33,7 +33,7 @@ public class ReporterApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
 
-    final var pollers = Executors.newScheduledThreadPool(4);
+    final var pollers = Executors.newScheduledThreadPool(5);
 
     log.info("Starting pollers..");
     pollers.scheduleAtFixedRate(() -> {
@@ -64,6 +64,16 @@ public class ReporterApp {
       try {
         final var age = configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
         DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+      } catch (final SQLException e) {
+        e.printStackTrace();
+      }
+    }, 0, 15, TimeUnit.SECONDS);
+    pollers.scheduleAtFixedRate(() -> {
+      try {
+        final var age = configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
+        for (long count : age) {
+          DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+        }
       } catch (final SQLException e) {
         e.printStackTrace();
       }
