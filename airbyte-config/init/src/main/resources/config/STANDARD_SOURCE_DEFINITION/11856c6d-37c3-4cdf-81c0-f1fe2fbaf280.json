@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "11856c6d-37c3-4cdf-81c0-f1fe2fbaf280",
+  "name": "Infinicept",
+  "dockerRepository": "airbyte/source-infinicept",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/infinicept"
+}
