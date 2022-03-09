@@ -23,6 +23,17 @@ type IProps = {
   error?: { message?: string; status?: number } | null;
 };
 
+const hasSourceDefinitionId = (
+  state: unknown
+): state is { sourceDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId ===
+      "string"
+  );
+};
+
 const SourceForm: React.FC<IProps> = ({
   onSubmit,
   sourceDefinitions,
@@ -33,8 +44,10 @@ const SourceForm: React.FC<IProps> = ({
   const { location } = useRouter();
   const analyticsService = useAnalyticsService();
 
-  const [sourceDefinitionId, setSourceDefinitionId] = useState<string>(
-    location.state?.sourceDefinitionId || ""
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    hasSourceDefinitionId(location.state)
+      ? location.state.sourceDefinitionId
+      : null
   );
 
   const {

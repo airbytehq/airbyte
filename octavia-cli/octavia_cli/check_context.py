@@ -25,6 +25,10 @@ class WorkspaceIdError(click.ClickException):
     pass
 
 
+class ProjectNotInitializedError(click.ClickException):
+    pass
+
+
 def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
     """Check if the Airbyte API is network reachable and healthy.
 
@@ -76,3 +80,14 @@ def check_is_initialized(project_directory: str = ".") -> bool:
     """
     sub_directories = [f.name for f in os.scandir(project_directory) if f.is_dir()]
     return set(REQUIRED_PROJECT_DIRECTORIES).issubset(sub_directories)
+
+
+def requires_init(f):
+    def wrapper(ctx, **kwargs):
+        if not ctx.obj["PROJECT_IS_INITIALIZED"]:
+            raise ProjectNotInitializedError(
+                "Your octavia project is not initialized, please run 'octavia init' before running this command."
+            )
+        f(ctx, **kwargs)
+
+    return wrapper

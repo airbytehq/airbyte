@@ -11,7 +11,7 @@ import requests
 
 SCOPES_MAPPING = {
     "read_customers": ["Customers"],
-    "read_orders": ["Orders", "AbandonedCheckouts", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
+    "read_orders": ["Orders", "AbandonedCheckouts", "TenderTransactions", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
     "read_draft_orders": ["DraftOrders"],
     "read_products": ["Products", "CustomCollections", "Collects"],
     "read_content": ["Pages"],
@@ -138,6 +138,7 @@ class EagerlyCachedStreamState:
                 state_object[stream.name] = {
                     stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value)
                 }
+
         return state_object
 
     def cache_stream_state(func):

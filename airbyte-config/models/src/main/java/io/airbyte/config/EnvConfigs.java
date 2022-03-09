@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -64,6 +66,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
   public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
+  private static final String CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED = "CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -73,6 +76,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
   public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
@@ -83,7 +87,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
-  private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
@@ -92,6 +96,8 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
+  private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
+  private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -107,6 +113,12 @@ public class EnvConfigs implements Configs {
   public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
   public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
   public static final String ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS = "ACTIVITY_DELAY_IN_SECOND_BETWEEN_ATTEMPTS";
+
+  private static final String SHOULD_RUN_GET_SPEC_WORKFLOWS = "SHOULD_RUN_GET_SPEC_WORKFLOWS";
+  private static final String SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS = "SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS";
+  private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
+  private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
+  private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -157,6 +169,13 @@ public class EnvConfigs implements Configs {
   public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
 
   public static final String DEFAULT_NETWORK = "host";
+
+  public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
+      AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
+      AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
+
+  public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -378,6 +397,11 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public int getTemporalRetentionInDays() {
+    return getEnvOrDefault(TEMPORAL_HISTORY_RETENTION_IN_DAYS, DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS);
+  }
+
+  @Override
   public String getAirbyteApiHost() {
     return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
   }
@@ -401,6 +425,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getSyncJobMaxTimeoutDays() {
     return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_TIMEOUT_DAYS, "3"));
+  }
+
+  @Override
+  public boolean connectorSpecificResourceDefaultsEnabled() {
+    return getEnvOrDefault(CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED, false);
   }
 
   /**
@@ -610,11 +639,22 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
   }
 
+  /**
+   * There are two types of environment variables available to the job container:
+   * <ul>
+   * <li>Exclusive variables prefixed with JOB_DEFAULT_ENV_PREFIX</li>
+   * <li>Shared variables defined in JOB_SHARED_ENVS</li>
+   * </ul>
+   */
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
-    return getAllEnvKeys.get().stream()
+    final Map<String, String> jobPrefixedEnvMap = getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        entry -> Objects.requireNonNullElse(entry.getValue().apply(this), "")));
+    return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
   @Override
@@ -658,6 +698,16 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getDDAgentHost() {
+    return getEnvOrDefault(DD_AGENT_HOST, "");
+  }
+
+  @Override
+  public String getDDDogStatsDPort() {
+    return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
+  }
+
+  @Override
   public TrackingStrategy getTrackingStrategy() {
     return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
       try {
@@ -678,6 +728,31 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+  }
+
+  @Override
+  public boolean shouldRunGetSpecWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_GET_SPEC_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunCheckConnectionWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunDiscoverWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_DISCOVER_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunSyncWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_SYNC_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunConnectionManagerWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
   }
 
   @Override
@@ -770,6 +845,10 @@ public class EnvConfigs implements Configs {
 
   public long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
+  }
+
+  public int getEnvOrDefault(final String key, final int defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Integer::parseInt, false);
   }
 
   public boolean getEnvOrDefault(final String key, final boolean defaultValue) {

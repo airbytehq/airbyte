@@ -6,8 +6,8 @@ import {
 
 import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { useInitService } from "packages/cloud/services/useInitService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { isDefined } from "utils/common";
 

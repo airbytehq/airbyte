@@ -8,7 +8,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { DestinationDefinition } from "core/domain/connector";
-import { useGetDestinationDefinitionSpecificationAsync } from "../../../../../services/connector/DestinationDefinitionSpecificationService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -23,6 +23,17 @@ type IProps = {
   afterSelectConnector?: () => void;
 };
 
+const hasDestinationDefinitionId = (
+  state: unknown
+): state is { destinationDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationDefinitionId?: string })
+      .destinationDefinitionId === "string"
+  );
+};
+
 const DestinationForm: React.FC<IProps> = ({
   onSubmit,
   destinationDefinitions,
@@ -34,7 +45,9 @@ const DestinationForm: React.FC<IProps> = ({
   const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
-    location.state?.destinationDefinitionId || ""
+    hasDestinationDefinitionId(location.state)
+      ? location.state.destinationDefinitionId
+      : null
   );
   const {
     data: destinationDefinitionSpecification,

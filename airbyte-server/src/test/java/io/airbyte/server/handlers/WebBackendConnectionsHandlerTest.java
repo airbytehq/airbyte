@@ -65,6 +65,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -72,7 +73,6 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -99,7 +99,7 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
   private FeatureFlags featureFlags;
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private EventRunner eventRunner;
   private ConnectionHelper connectionHelper;
 
   @BeforeEach
@@ -111,10 +111,16 @@ class WebBackendConnectionsHandlerTest {
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     featureFlags = mock(FeatureFlags.class);
-    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
     connectionHelper = mock(ConnectionHelper.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
-        operationsHandler, featureFlags, temporalWorkerRunFactory, connectionHelper);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        featureFlags,
+        eventRunner);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -573,7 +579,7 @@ class WebBackendConnectionsHandlerTest {
         .status(expected.getStatus())
         .schedule(expected.getSchedule());
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
-    when(connectionHelper.buildConnectionRead(any())).thenReturn(connectionRead);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
     when(featureFlags.usesNewScheduler()).thenReturn(true);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
@@ -583,9 +589,10 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    InOrder orderVerifier = inOrder(temporalWorkerRunFactory);
-    orderVerifier.verify(temporalWorkerRunFactory, times(1)).synchronousResetConnection(connectionId.getConnectionId());
-    orderVerifier.verify(temporalWorkerRunFactory, times(1)).startNewManualSync(connectionId.getConnectionId());
+    verify(connectionsHandler, times(1)).updateConnection(any());
+    final InOrder orderVerifier = inOrder(eventRunner);
+    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test

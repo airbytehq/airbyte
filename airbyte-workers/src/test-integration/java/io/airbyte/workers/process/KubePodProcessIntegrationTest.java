@@ -25,6 +25,7 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ import org.junit.jupiter.api.Timeout;
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
-@Timeout(value = 5,
+@Timeout(value = 6,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
@@ -343,8 +344,9 @@ public class KubePodProcessIntegrationTest {
         files,
         entrypoint,
         DEFAULT_RESOURCE_REQUIREMENTS,
-        Map.of(),
-        Map.of());
+        Collections.emptyMap(),
+        Collections.emptyMap(),
+        Collections.emptyMap());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {
