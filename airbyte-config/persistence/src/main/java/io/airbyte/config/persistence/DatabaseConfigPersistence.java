@@ -4,16 +4,7 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
-import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
-import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
-import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.Tables.*;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -25,28 +16,9 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.Notification;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncState;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -786,6 +758,23 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  private void writeStandardNotification(final List<StandardNotification> configs) throws IOException {
+    database.transaction(ctx -> {
+      writeStandardNotification(configs, ctx);
+      return null;
+    });
+  }
+
+  private void writeStandardNotification(final List<StandardNotification> configs, final DSLContext ctx) {
+    configs.forEach((standardNotification) -> {
+      ctx.insertInto(NOTIFICATION_CONFIG)
+          .set(NOTIFICATION_CONFIG.ID, standardNotification.getNotificationId())
+          .set(NOTIFICATION_CONFIG.NAME, standardNotification.getName())
+          .set(NOTIFICATION_CONFIG.WEBHOOK, standardNotification.getWebhook())
+          .execute();
+    });
+  }
+
   private void writeStandardWorkspace(final List<StandardWorkspace> configs, final DSLContext ctx) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((standardWorkspace) -> {
@@ -1388,6 +1377,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(configs.values().stream().map(c -> (ActorCatalog) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(configs.values().stream().map(c -> (ActorCatalogFetchEvent) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.STANDARD_NOTIFICATION) {
+      writeStandardNotification(configs.values().stream().map(c -> (StandardNotification) c).collect(Collectors.toList()));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }

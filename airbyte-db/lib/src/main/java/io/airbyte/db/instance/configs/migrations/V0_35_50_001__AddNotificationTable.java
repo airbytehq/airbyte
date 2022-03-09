@@ -4,13 +4,8 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.StandardWorkspace;
+import java.util.UUID;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
@@ -38,7 +33,6 @@ public class V0_35_50_001__AddNotificationTable extends BaseJavaMigration {
 
   public static void createNotificationConfigTable(final DSLContext ctx) {
 
-
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
     final Field<String> webhook = DSL.field("webhook", SQLDataType.VARCHAR(516).nullable(false));
@@ -56,10 +50,9 @@ public class V0_35_50_001__AddNotificationTable extends BaseJavaMigration {
     final Field<Boolean> onSuccess = DSL.field("on_success", SQLDataType.BOOLEAN.nullable(false));
     final Field<Boolean> onFailure = DSL.field("on_failure", SQLDataType.BOOLEAN.nullable(false));
 
-
     ctx.createTableIfNotExists("notification_connection")
-            .columns(connectionId, notificationId, onSuccess, onFailure)
-            .execute();
+        .columns(connectionId, notificationId, onSuccess, onFailure)
+        .execute();
   }
 
 }

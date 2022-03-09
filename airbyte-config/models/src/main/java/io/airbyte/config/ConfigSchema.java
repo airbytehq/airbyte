@@ -17,6 +17,12 @@ public enum ConfigSchema implements AirbyteConfig {
       standardWorkspace -> standardWorkspace.getWorkspaceId().toString(),
       "workspaceId"),
 
+  // notification
+  STANDARD_NOTIFICATION("StandardNotification.yaml",
+      StandardNotification.class,
+      standardNotification -> standardNotification.getNotificationId().toString(),
+      "notificationId"),
+
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,

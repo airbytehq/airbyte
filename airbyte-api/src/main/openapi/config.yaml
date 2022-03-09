@@ -248,6 +248,28 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/notifications/create:
+    post:
+      tags:
+        - notifications
+      summary: >
+        Create a new Notification
+      operationId: createNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
   /v1/source_definitions/create:
     post:
       tags:
@@ -1986,6 +2008,16 @@ components:
             - succeeded
             - failed
         message:
+          type: string
+    NotificationCreate:
+      type: object
+      required:
+        - name
+        - webhook
+      properties:
+        name:
+          type: string
+        webhook:
           type: string
     WorkspaceIdRequestBody:
       type: object

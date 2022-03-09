@@ -7,20 +7,9 @@ package io.airbyte.server.handlers;
 import com.github.slugify.Slugify;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.Notification;
-import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.*;
 import io.airbyte.api.model.NotificationRead.StatusEnum;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceGiveFeedback;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
-import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.api.model.WorkspaceUpdateName;
+import io.airbyte.config.StandardNotification;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -181,6 +170,20 @@ public class WorkspacesHandler {
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
+  }
+
+  public NotificationRead createNotification(final NotificationCreate notification) throws JsonValidationException, IOException {
+    final String name = notification.getName();
+    final String webhook = notification.getWebhook();
+
+    final StandardNotification newNotification = new StandardNotification()
+        .withNotificationId(uuidSupplier.get())
+        .withName(name)
+        .withWebhook(webhook);
+
+    configRepository.writeStandardNotification(newNotification);
+
+    return new NotificationRead().status(StatusEnum.SUCCEEDED);
   }
 
   public NotificationRead tryNotification(final Notification notification) {

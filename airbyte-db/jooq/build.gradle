@@ -82,10 +82,10 @@ sourceSets {
 
 tasks.named('generateConfigsDatabaseJooq').configure {
     allInputsDeclared = true
-    outputs.cacheIf { true }
+    outputs.cacheIf { false }
 }
 
 tasks.named('generateJobsDatabaseJooq').configure {
     allInputsDeclared = true
-    outputs.cacheIf { true }
+    outputs.cacheIf { false }
 }
