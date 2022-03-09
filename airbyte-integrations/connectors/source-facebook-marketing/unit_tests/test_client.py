@@ -108,7 +108,7 @@ class TestBackoff:
         [
             {"json": {"error": {}}, "status_code": 500},
             {"json": {"error": {"code": 104}}},
-             {"json": {"error": {"code": 2}}, "status_code": 500},
+            {"json": {"error": {"code": 2}}, "status_code": 500},
         ],
         ids=["server_error", "connection_reset_error", "temporary_oauth_error"],
     )

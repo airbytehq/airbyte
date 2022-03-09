@@ -43,7 +43,15 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
             server_error = exc.http_status() == http.client.INTERNAL_SERVER_ERROR
             return any(
-                (exc.api_transient_error(), unknown_error, call_rate_limit_error, batch_timeout_error, connection_reset_error, server_error)
+                (
+                    exc.api_transient_error(),
+                    unknown_error,
+                    call_rate_limit_error,
+                    batch_timeout_error,
+                    connection_reset_error,
+                    temporary_oauth_error,
+                    server_error,
+                )
             )
         return True
 
