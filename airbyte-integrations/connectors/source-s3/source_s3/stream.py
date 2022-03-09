@@ -5,11 +5,6 @@
 
 from typing import Callable, Iterator
 
-<<<<<<< HEAD
-from airbyte_cdk.logger import AirbyteLogger
-import boto3
-=======
->>>>>>> ad20f004424688184150ce40870de832a53eba1f
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -60,13 +55,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             else:
                 for c in content:
                     key = c["Key"]
-<<<<<<< HEAD
-                    if accept_key(key) and client.get_object(Bucket=provider["bucket"], Key=key)["ContentLength"] != 0:
-                        yield key
-=======
                     if accept_key(key):
                         yield FileInfo(key=key, last_modified=c["LastModified"], size=c["Size"])
->>>>>>> ad20f004424688184150ce40870de832a53eba1f
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
@@ -84,12 +74,5 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         msg = f"Iterating S3 bucket '{self._provider['bucket']}'"
         self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
-<<<<<<< HEAD
-        for blob in IncrementalFileStreamS3._list_bucket(
-            provider=provider, accept_key=lambda k: not k.endswith("/") and '_sql' not in k  # filter out 'folders', we just want actual blobs
-        ):
-            yield blob
-=======
         # filter out 'folders', we just want actual blobs
         yield from self._list_bucket(accept_key=lambda k: not k.endswith("/"))
->>>>>>> ad20f004424688184150ce40870de832a53eba1f

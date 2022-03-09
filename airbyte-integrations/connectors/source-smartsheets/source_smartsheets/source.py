@@ -7,7 +7,6 @@ from curses import meta
 import json
 from datetime import datetime
 from typing import Any, Dict, Generator
-from xml.etree.ElementInclude import include
 
 import smartsheet
 from airbyte_cdk import AirbyteLogger

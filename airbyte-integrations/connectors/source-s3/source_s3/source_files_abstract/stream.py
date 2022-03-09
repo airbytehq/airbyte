@@ -230,11 +230,10 @@ class FileStream(Stream, ABC):
                             )
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
-                            pass
-                            # raise RuntimeError(
-                            #     f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                            #     + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
-                            # )
+                            raise RuntimeError(
+                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
+                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
+                            )
 
                 # missing columns in this_schema doesn't affect our master_schema so we don't check for it here
 
