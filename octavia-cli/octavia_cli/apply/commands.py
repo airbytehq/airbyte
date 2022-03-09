@@ -42,7 +42,7 @@ def get_resources_to_apply(
         List[BaseResource]: Resources sorted according to their apply priority.
     """
     all_resources = [resource_factory(api_client, workspace_id, path) for path in configuration_files]
-    return sorted(all_resources, key=lambda resource: resource.apply_priority)
+    return sorted(all_resources, key=lambda resource: resource.APPLY_PRIORITY)
 
 
 def apply_single_resource(resource: BaseResource, force: bool) -> None:

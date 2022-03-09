@@ -38,6 +38,7 @@ We welcome community contributions!
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
+| 2022-03-04 | Implement `octavia apply` for connections|
 | 2022-03-02 | Implement `octavia apply` (sources and destination only)|
 | 2022-02-06 | Implement `octavia generate` (sources and destination only)|
 | 2022-01-25 | Implement `octavia init` + some context checks|
