@@ -32,7 +32,8 @@ from airbyte_api_client.model.source_search import SourceSearch
 from airbyte_api_client.model.source_update import SourceUpdate
 from click import ClickException
 
-from .diff_helpers import compute_checksum, compute_diff
+from .diff_helpers import compute_diff, hash_config
+from .yaml_loaders import EnvVarLoader
 
 
 class DuplicateResourceError(ClickException):
@@ -48,27 +49,27 @@ class InvalidConfigurationError(ClickException):
 
 
 class ResourceState:
-    def __init__(self, configuration_path: str, resource_id: str, generation_timestamp: int, configuration_checksum: str):
+    def __init__(self, configuration_path: str, resource_id: str, generation_timestamp: int, configuration_hash: str):
         """This constructor is meant to be private. Construction shall be made with create or from_file class methods.
 
         Args:
-            configuration_path (str): Path to the configuration path the state relates to.
+            configuration_path (str): Path to the configuration this state relates to.
             resource_id (str): Id of the resource the state relates to.
             generation_timestamp (int): State generation timestamp.
-            configuration_checksum (str): Checksum of the configuration file.
+            configuration_hash (str): Checksum of the configuration file.
         """
         self.configuration_path = configuration_path
         self.resource_id = resource_id
         self.generation_timestamp = generation_timestamp
-        self.configuration_checksum = configuration_checksum
+        self.configuration_hash = configuration_hash
         self.path = os.path.join(os.path.dirname(self.configuration_path), "state.yaml")
 
     def as_dict(self):
         return {
-            "configuration_path": self.configuration_path,
             "resource_id": self.resource_id,
             "generation_timestamp": self.generation_timestamp,
-            "configuration_checksum": self.configuration_checksum,
+            "configuration_path": self.configuration_path,
+            "configuration_hash": self.configuration_hash,
         }
 
     def _save(self) -> None:
@@ -77,19 +78,20 @@ class ResourceState:
             yaml.dump(self.as_dict(), state_file)
 
     @classmethod
-    def create(cls, configuration_path: str, resource_id: str) -> "ResourceState":
+    def create(cls, configuration_path: str, configuration: dict, resource_id: str) -> "ResourceState":
         """Create a state for a resource configuration.
 
         Args:
             configuration_path (str): Path to the YAML file defining the resource.
+            configuration (dict): Configuration object that will be hashed.
             resource_id (str): UUID of the resource.
 
         Returns:
             ResourceState: state representing the resource.
         """
         generation_timestamp = int(time.time())
-        configuration_checksum = compute_checksum(configuration_path)
-        state = ResourceState(configuration_path, resource_id, generation_timestamp, configuration_checksum)
+        configuration_hash = hash_config(configuration)
+        state = ResourceState(configuration_path, resource_id, generation_timestamp, configuration_hash)
         state._save()
         return state
 
@@ -109,7 +111,7 @@ class ResourceState:
             raw_state["configuration_path"],
             raw_state["resource_id"],
             raw_state["generation_timestamp"],
-            raw_state["configuration_checksum"],
+            raw_state["configuration_hash"],
         )
 
 
@@ -198,9 +200,7 @@ class BaseResource(abc.ABC):
         self.configuration_path = configuration_path
         self.api_instance = self.api(api_client)
         self.state = self._get_state_from_file()
-        self.local_file_changed = (
-            True if self.state is None else compute_checksum(self.configuration_path) != self.state.configuration_checksum
-        )
+        self.local_file_changed = True if self.state is None else hash_config(self.local_configuration) != self.state.configuration_hash
 
     @property
     def remote_resource(self):
@@ -308,7 +308,7 @@ class BaseResource(abc.ABC):
         """
         try:
             result = operation_fn(self.api_instance, payload, _check_return_type=_check_return_type)
-            return result, ResourceState.create(self.configuration_path, result[self.resource_id_field])
+            return result, ResourceState.create(self.configuration_path, self.local_configuration, result[self.resource_id_field])
         except airbyte_api_client.ApiException as api_error:
             if api_error.status == 422:
                 # This  API response error is really verbose, but it embodies all the details about why the config is not valid.
@@ -554,7 +554,7 @@ def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configu
         Union[Source, Destination, Connection]: The resource object created from the YAML config.
     """
     with open(configuration_path, "r") as f:
-        local_configuration = yaml.safe_load(f)
+        local_configuration = yaml.load(f, EnvVarLoader)
     if local_configuration["definition_type"] == "source":
         return Source(api_client, workspace_id, local_configuration, configuration_path)
     if local_configuration["definition_type"] == "destination":
