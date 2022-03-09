@@ -208,7 +208,7 @@ class DestinationRedshiftPy(Destination):
 
                     stream.staging_tables[key] = staging_table
 
-                    cursor.execute(staging_table.create_statement())
+                    cursor.execute(staging_table.create_statement(staging=True))
 
     def _create_pool(self, config: Mapping[str, Any]):
         self.connection_pool = ThreadedConnectionPool(

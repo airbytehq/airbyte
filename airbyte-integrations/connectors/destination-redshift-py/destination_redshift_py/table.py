@@ -34,7 +34,7 @@ class Table:
     def field_names(self) -> List[str]:
         return list(map(lambda field: field.name, self.fields))
 
-    def create_statement(self) -> str:
+    def create_statement(self, staging: bool = False) -> str:
         primary_keys = f", PRIMARY KEY({', '.join(self.primary_keys)})"
 
         foreign_key = ""
@@ -52,6 +52,7 @@ class Table:
                 {fields}{primary_keys}{foreign_key},
                 UNIQUE({AIRBYTE_AB_ID.name})
             )
+            BACKUP {'NO' if staging else 'YES'}
             DISTKEY({AIRBYTE_ID_NAME})
             SORTKEY ({AIRBYTE_EMITTED_AT_NAME});
         """
