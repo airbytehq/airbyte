@@ -1,12 +1,12 @@
 # Profile Java Connector Memory Usage
 
-This tutorial demos how to profile the memory usage of a Java connector with Visual VM. Such profiling can be useful when debugging memory leaks, or optimizing the connector's memory footprint.
+This tutorial demos how to profile the memory usage of a Java connector with Visual VM. Such profiling can be useful when we want to debug memory leaks, or optimize the connector's memory footprint.
 
 The example focuses on docker deployment, because it is more straightforward. It is also possible to apply the same procedure to Kubernetes deployments.
 
 ## Prerequisite
-- [Docker](https://www.docker.com/products/personal)
-- [VisualVM](https://visualvm.github.io/)
+- [Docker](https://www.docker.com/products/personal) running locally.
+- [VisualVM](https://visualvm.github.io/) preinstalled.
 
 ## Step-by-Step
 1. Enable JMX in `airbyte-integrations/connectors/<connector-name>/build.gradle`, and expose it on port 6000. The port is chosen arbitrary, and can be port number that's available.
@@ -85,7 +85,8 @@ The example focuses on docker deployment, because it is more straightforward. It
 7. Create a connection using the connector to be profiled.
     - The `Replication frequency` of this connector should be `manual` so that we can control when it starts.
     - We can use the e2e test connectors as either the source or destination for convenience.
-    - For example, if we are profiling a source connector, create an e2e test destination, which requires no configuration at all.
+    - The e2e test connectors are usually very reliable, and requires little configuration.
+    - For example, if we are profiling a source connector, create an e2e test destination at the other end of the connection.
 
 8. Profile the connector in question.
     - Launch a data sync run.
