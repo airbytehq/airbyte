@@ -133,9 +133,15 @@ class JenkinsStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # If errors are turned off we might have 404 errors. They are HTML, don't try to parse them as JSON.
+        if 400 <= response.status_code < 600:
+            return
         yield from response.json()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # If we hit an error, stop paging.
+        if 400 <= response.status_code < 600:
+            return None
         # Only page if we got fewer than the expected number of results.
         if len(response.json()) < self.page_size:
             return None
