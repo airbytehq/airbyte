@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class AzureBlobStorageConfig {
 
-  public static final String DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME = "blob.core.windows.net";
+  private static final String DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME = "blob.core.windows.net";
 
   private final String endpointDomainName;
   private final String accountName;

@@ -55,15 +55,15 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   private final HashMap<String, AppendBlobClient> blobClients = new HashMap<>();
   private String currentFile;
 
-  public AzureBlobStorageStreamCopier(String stagingFolder,
-                                      DestinationSyncMode destSyncMode,
-                                      String schema,
-                                      String streamName,
-                                      SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                                      JdbcDatabase db,
-                                      AzureBlobStorageConfig azureBlobConfig,
-                                      ExtendedNameTransformer nameTransformer,
-                                      SqlOperations sqlOperations) {
+  public AzureBlobStorageStreamCopier(final String stagingFolder,
+                                      final DestinationSyncMode destSyncMode,
+                                      final String schema,
+                                      final String streamName,
+                                      final SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                                      final JdbcDatabase db,
+                                      final AzureBlobStorageConfig azureBlobConfig,
+                                      final ExtendedNameTransformer nameTransformer,
+                                      final SqlOperations sqlOperations) {
     this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;

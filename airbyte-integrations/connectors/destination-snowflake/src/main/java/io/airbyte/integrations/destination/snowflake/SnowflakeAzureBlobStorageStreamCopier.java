@@ -26,16 +26,16 @@ public class SnowflakeAzureBlobStorageStreamCopier extends AzureBlobStorageStrea
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAzureBlobStorageStreamCopier.class);
 
-  public SnowflakeAzureBlobStorageStreamCopier(String stagingFolder,
-                                               DestinationSyncMode destSyncMode,
-                                               String schema,
-                                               String streamName,
-                                               SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                                               JdbcDatabase db,
-                                               AzureBlobStorageConfig azureBlobConfig,
-                                               ExtendedNameTransformer nameTransformer,
-                                               SqlOperations sqlOperations,
-                                               StagingFilenameGenerator stagingFilenameGenerator) {
+  public SnowflakeAzureBlobStorageStreamCopier(final String stagingFolder,
+                                               final DestinationSyncMode destSyncMode,
+                                               final String schema,
+                                               final String streamName,
+                                               final SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                                               final JdbcDatabase db,
+                                               final AzureBlobStorageConfig azureBlobConfig,
+                                               final ExtendedNameTransformer nameTransformer,
+                                               final SqlOperations sqlOperations,
+                                               final StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, specializedBlobClientBuilder, db, azureBlobConfig, nameTransformer, sqlOperations);
     this.filenameGenerator = stagingFilenameGenerator;
   }

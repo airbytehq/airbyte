@@ -18,15 +18,15 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStorageStreamCopierFactory {
 
   @Override
-  public StreamCopier create(String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             String schema,
-                             String streamName,
-                             SpecializedBlobClientBuilder specializedBlobClientBuilder,
-                             JdbcDatabase db,
-                             AzureBlobStorageConfig azureBlobConfig,
-                             ExtendedNameTransformer nameTransformer,
-                             SqlOperations sqlOperations)
+  public StreamCopier create(final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final String schema,
+                             final String streamName,
+                             final SpecializedBlobClientBuilder specializedBlobClientBuilder,
+                             final JdbcDatabase db,
+                             final AzureBlobStorageConfig azureBlobConfig,
+                             final ExtendedNameTransformer nameTransformer,
+                             final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeAzureBlobStorageStreamCopier(stagingFolder,
         syncMode,
