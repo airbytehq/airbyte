@@ -212,7 +212,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (denormalize) {
     // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
     // table
-    return getNamingResolver().getIdentifier(streamName);
+    return namingResolver.getIdentifier(streamName);
     } else {
       return namingResolver.getRawTableName(streamName);
     }

@@ -16,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
+/**
+ * Wrap to use a destination as the basis for another destination.
+ * For example, using destination-bigquery for destination-bigquery-denormalized.
+ */
 public class WrappedDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WrappedDestination.class);
