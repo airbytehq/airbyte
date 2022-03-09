@@ -213,3 +213,32 @@ def test_stream_commits_incremental_read():
     records = read_incremental(stream, stream_state)
     assert [r["sha"] for r in records] == [4, 5]
     assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:10Z"}}}
+
+
+@responses.activate
+def test_stream_commits_state_upgrade():
+
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:02Z",
+    }
+
+    default_branches = {"organization/repository": "master"}
+    branches_to_pull = {"organization/repository": ["master"]}
+
+    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {"sha": 1, "commit": {"author": {"date": "2022-02-02T10:10:02Z"}}},
+            {"sha": 2, "commit": {"author": {"date": "2022-02-02T10:10:04Z"}}},
+        ],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:02Z", "sha": "master"}, strict_match=False)],
+    )
+
+    stream_state = {"organization/repository": {"created_at": "2022-02-02T10:10:02Z"}}
+    records = read_incremental(stream, stream_state)
+    assert stream_state == {'organization/repository': {'master': {'created_at': '2022-02-02T10:10:04Z'}}}
