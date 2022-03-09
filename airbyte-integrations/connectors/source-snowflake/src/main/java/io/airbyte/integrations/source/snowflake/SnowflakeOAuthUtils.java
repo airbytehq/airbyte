@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.snowflake;
 
 import static java.util.stream.Collectors.joining;
@@ -25,13 +29,16 @@ public class SnowflakeOAuthUtils {
       .connectTimeout(Duration.ofSeconds(10))
       .build();
 
-
-  public static String getAccessTokenUsingRefreshToken(final String hostName, final String clientId,
-      final String clientSecret,
-      final String refreshCode)
+  /**
+   * Method to make request for a new access token using refresh token and client credentials.
+   *
+   * @return access token
+   */
+  public static String getAccessTokenUsingRefreshToken(final String hostName,
+                                                       final String clientId,
+                                                       final String clientSecret,
+                                                       final String refreshCode)
       throws IOException {
-    System.out.println("----------------------------------------------------------");
-    System.out.println("getAccessTokenUsingRefreshToken");
     final var refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName);
     final Map<String, String> requestBody = new HashMap<>();
     requestBody.put("grant_type", "refresh_token");

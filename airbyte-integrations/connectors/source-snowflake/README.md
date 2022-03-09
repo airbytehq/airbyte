@@ -13,10 +13,28 @@
   "warehouse": "AIRBYTE_WAREHOUSE",
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
-  "username": "AIRBYTE_USER",
-  "password": "SOMEPASSWORD"
+  "credentails" {
+    "username": "AIRBYTE_USER",
+    "password": "SOMEPASSWORD"
+  }
 }
 ```
-
+3. Create a file at `secrets/config_auth.json` with the following format:
+```
+{
+  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
+  "role": "AIRBYTE_ROLE",
+  "warehouse": "AIRBYTE_WAREHOUSE",
+  "database": "AIRBYTE_DATABASE",
+  "schema": "AIRBYTE_SCHEMA",
+  "credentails" {
+    "auth_type": "Client",
+    "client_id": "client_id",
+    "access_token": "**********",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  }
+}
+```
 ## For Airbyte employees
 Put the contents of the `Snowflake Insert Test Creds` secret on Lastpass into `secrets/config.json` to be able to run integration tests locally.
