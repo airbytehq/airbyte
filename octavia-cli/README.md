@@ -10,23 +10,23 @@ It has the following features:
 
 The project is under development: readers can refer to our [tech spec deck](https://docs.google.com/presentation/d/10RjkCzBiVhCivnjSh63icYI7wG6S0N0ZIErEIsmXTqM/edit?usp=sharing) for an introduction to the tool.
 
-# Usage
-We encourage users to use the CLI with docker to avoid the hassle of setting up a Python installation. 
-The project is under development: we have not yet published any docker image to our Docker registry.
+# Install
 
-1. Build the project locally (from the root of the repo):
+## 1. Install and run Docker
+We are packaging this CLI as a Docker image to avoid dependency hell, **[please install and run Docker if you are not](https://docs.docker.com/get-docker/)**. 
+
+## 2.a If you are using ZSH / Bash:
 ```bash
-SUB_BUILD=OCTAVIA_CLI ./gradlew build #from the root of the repo
+curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
 ```
-2. Run the CLI from docker:
+
+This script:
+1. Pulls the [octavia-cli image](https://hub.docker.com/r/airbyte/octavia-cli/tags) from our Docker registry.
+2. Creates an `octavia` alias in your profile.
+
+## 2.b If you want to directly run the CLI without alias in your current directory:
 ```bash
-docker run airbyte/octavia-cli:dev 
-````
-3. Create an `octavia` alias in your `.bashrc` or `.zshrc`: 
-````bash
-echo 'alias octavia="docker run airbyte/octavia-cli:dev"'  >> ~/.zshrc
-source ~/.zshrc
-octavia
+docker run --rm -v ${PWD}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
 ````
 
 # Current development status
@@ -56,6 +56,11 @@ We welcome community contributions!
 6. Run the unittest suite: `pytest --cov=octavia_cli`
 7. Iterate: please check the [Contributing](#contributing) for instructions on contributing.
 
+## Build
+Build the project locally (from the root of the repo):
+```bash
+SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo
+```
 # Contributing
 1. Please sign up to [Airbyte's Slack workspace](https://slack.airbyte.io/) and join the `#octavia-cli`. We'll sync up community efforts in this channel.
 2. Read the [execution plan](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0) and find a task you'd like to work on.
