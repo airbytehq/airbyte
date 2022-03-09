@@ -11,12 +11,14 @@ from typing import Any, Callable, Optional, Union
 import airbyte_api_client
 import yaml
 from airbyte_api_client.api import destination_api, source_api
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.destination_create import DestinationCreate
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_read_list import DestinationReadList
 from airbyte_api_client.model.destination_search import DestinationSearch
 from airbyte_api_client.model.destination_update import DestinationUpdate
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
 from airbyte_api_client.model.source_read_list import SourceReadList
 from airbyte_api_client.model.source_search import SourceSearch
@@ -95,7 +97,7 @@ class ResourceState:
             ResourceState: state deserialized from YAML.
         """
         with open(file_path, "r") as f:
-            raw_state = yaml.load(f, yaml.FullLoader)
+            raw_state = yaml.safe_load(f)
         return ResourceState(
             raw_state["configuration_path"],
             raw_state["resource_id"],
@@ -355,6 +357,30 @@ class Source(BaseResource):
             name=self.resource_name,
         )
 
+    @property
+    def resource_id_request_body(self) -> SourceIdRequestBody:
+        """Creates SourceIdRequestBody from resource id.
+
+        Raises:
+            NonExistingResourceError: raised if the resource id is None.
+
+        Returns:
+            SourceIdRequestBody: The SourceIdRequestBody model instance.
+        """
+        if self.resource_id is None:
+            raise NonExistingResourceError("The resource id could not be retrieved, the remote resource is not existing.")
+        return SourceIdRequestBody(source_id=self.resource_id)
+
+    @property
+    def catalog(self) -> AirbyteCatalog:
+        """Retrieves the source's Airbyte catalog.
+
+        Returns:
+            AirbyteCatalog: The catalog issued by schema discovery.
+        """
+        schema = self.api_instance.discover_schema_for_source(self.resource_id_request_body, _check_return_type=False)
+        return schema.catalog
+
 
 class Destination(BaseResource):
 
@@ -417,7 +443,7 @@ def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configu
         Union[Source, Destination]: The resource object created from the YAML config.
     """
     with open(configuration_path, "r") as f:
-        local_configuration = yaml.load(f, yaml.FullLoader)
+        local_configuration = yaml.safe_load(f)
     if local_configuration["definition_type"] == "source":
         return Source(api_client, workspace_id, local_configuration, configuration_path)
     if local_configuration["definition_type"] == "destination":

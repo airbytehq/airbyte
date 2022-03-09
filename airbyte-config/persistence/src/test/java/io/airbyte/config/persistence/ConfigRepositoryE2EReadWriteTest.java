@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 
@@ -32,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -68,7 +70,9 @@ public class ConfigRepositoryE2EReadWriteTest {
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    configRepository.writeStandardWorkspace(MockData.standardWorkspace());
+    for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
+      configRepository.writeStandardWorkspace(workspace);
+    }
     for (final StandardSourceDefinition sourceDefinition : MockData.standardSourceDefinitions()) {
       configRepository.writeStandardSourceDefinition(sourceDefinition);
     }
@@ -99,16 +103,16 @@ public class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testWorkspaceCountConnections() throws IOException {
 
-    final UUID workspaceId = MockData.standardWorkspace().getWorkspaceId();
-    assertEquals(MockData.standardSyncs().size(), configRepository.countConnectionsForWorkspace(workspaceId));
-    assertEquals(MockData.destinationConnections().size(), configRepository.countDestinationsForWorkspace(workspaceId));
-    assertEquals(MockData.sourceConnections().size(), configRepository.countSourcesForWorkspace(workspaceId));
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    assertEquals(MockData.standardSyncs().size() - 1, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(MockData.destinationConnections().size() - 1, configRepository.countDestinationsForWorkspace(workspaceId));
+    assertEquals(MockData.sourceConnections().size() - 1, configRepository.countSourcesForWorkspace(workspaceId));
   }
 
   @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
 
-    final StandardWorkspace workspace = MockData.standardWorkspace();
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
@@ -153,6 +157,13 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
+  }
+
+  @Test
+  public void testListWorkspaceStandardSync() throws IOException {
+
+    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
+    assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
   }
 
 }
