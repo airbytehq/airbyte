@@ -158,8 +158,29 @@ class BaseRenderer(abc.ABC):
         return os.path.join(directory, "configuration.yaml")
 
     @abc.abstractmethod
-    def write_yaml(self, project_path: str) -> str:  # pragma: no cover
-        raise NotImplementedError()
+    def _render(self):  # pragma: no cover
+        """Runs the template rendering.
+
+        Raises:
+            NotImplementedError: Must be implemented on subclasses.
+        """
+        raise NotImplementedError
+
+    def write_yaml(self, project_path: str) -> str:
+        """Write rendered specification to a YAML file in local project path.
+
+        Args:
+            project_path (str): Path to directory hosting the octavia project.
+
+        Returns:
+            str: Path to the rendered specification.
+        """
+        output_path = self._get_output_path(project_path, self.definition.type)
+        rendered = self._render()
+
+        with open(output_path, "w") as f:
+            f.write(rendered)
+        return output_path
 
 
 class ConnectorSpecificationRenderer(BaseRenderer):
@@ -191,29 +212,17 @@ class ConnectorSpecificationRenderer(BaseRenderer):
             required_fields = schema.get("required", [])
             return [parse_fields(required_fields, schema["properties"])]
 
-    def write_yaml(self, project_path: str) -> str:
-        """Write rendered specification to a YAML file in local project path.
-
-        Args:
-            project_path (str): Path to directory hosting the octavia project.
-
-        Returns:
-            str: Path to the rendered specification.
-        """
-        output_path = self._get_output_path(project_path, self.definition.type)
+    def _render(self) -> str:
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
-        rendered = self.TEMPLATE.render(
+        return self.TEMPLATE.render(
             {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
         )
-
-        with open(output_path, "w") as f:
-            f.write(rendered)
-        return output_path
 
 
 class ConnectionRenderer(BaseRenderer):
 
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
+    definition = ConnectionDefinition
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor.
@@ -240,11 +249,9 @@ class ConnectionRenderer(BaseRenderer):
         """
         return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
 
-    def write_yaml(self, project_path: str) -> str:
-        output_path = self._get_output_path(project_path, ConnectionDefinition.type)
+    def _render(self) -> str:
         yaml_catalog = self.catalog_to_yaml(self.source.catalog)
-
-        rendered = self.TEMPLATE.render(
+        return self.TEMPLATE.render(
             {
                 "connection_name": self.resource_name,
                 "source_id": self.source.resource_id,
@@ -252,6 +259,3 @@ class ConnectionRenderer(BaseRenderer):
                 "catalog": yaml_catalog,
             }
         )
-        with open(output_path, "w") as f:
-            f.write(rendered)
-        return output_path

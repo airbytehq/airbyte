@@ -233,6 +233,21 @@ class TestConnectorSpecificationRenderer:
         )
         mock_file.assert_called_with(output_path, "w")
 
+    def test__render(self, mocker):
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_parse_connection_specification")
+        mocker.patch.object(renderers.ConnectorSpecificationRenderer, "TEMPLATE")
+        spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", mocker.Mock())
+        rendered = spec_renderer._render()
+        spec_renderer._parse_connection_specification.assert_called_with(spec_renderer.definition.specification.connection_specification)
+        spec_renderer.TEMPLATE.render.assert_called_with(
+            {
+                "resource_name": spec_renderer.resource_name,
+                "definition": spec_renderer.definition,
+                "configuration_fields": spec_renderer._parse_connection_specification.return_value,
+            }
+        )
+        assert rendered == spec_renderer.TEMPLATE.render.return_value
+
 
 class TestConnectionRenderer:
     @pytest.fixture
@@ -275,3 +290,19 @@ class TestConnectionRenderer:
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
             }
         )
+
+    def test__render(self, mocker):
+        mocker.patch.object(renderers.ConnectionRenderer, "catalog_to_yaml")
+        mocker.patch.object(renderers.ConnectionRenderer, "TEMPLATE")
+        connection_renderer = renderers.ConnectionRenderer("my_connection_name", mocker.Mock(), mocker.Mock())
+        rendered = connection_renderer._render()
+        connection_renderer.catalog_to_yaml.assert_called_with(connection_renderer.source.catalog)
+        connection_renderer.TEMPLATE.render.assert_called_with(
+            {
+                "connection_name": connection_renderer.resource_name,
+                "source_id": connection_renderer.source.resource_id,
+                "destination_id": connection_renderer.destination.resource_id,
+                "catalog": connection_renderer.catalog_to_yaml.return_value,
+            }
+        )
+        assert rendered == connection_renderer.TEMPLATE.render.return_value
