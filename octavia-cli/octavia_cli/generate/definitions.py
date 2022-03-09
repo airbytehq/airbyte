@@ -86,6 +86,10 @@ class BaseDefinition(abc.ABC):
         raise AttributeError(f"{self.__class__.__name__}.{name} is invalid.")
 
 
+class ConnectionDefinition(BaseDefinition):
+    type = "connection"
+
+
 class SourceDefinition(BaseDefinition):
     api = source_definition_api.SourceDefinitionApi
     type = "source"
