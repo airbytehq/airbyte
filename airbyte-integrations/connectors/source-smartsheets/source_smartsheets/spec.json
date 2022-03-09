@@ -19,8 +19,8 @@
         "type": "string"
       },
       "include_metadata": {
-        "title": "Smartsheet ID",
-        "description": "Include metadata in synced streams? (true / false)",
+        "title": "Include Metadata?",
+        "description": "Include Smartsheet row metadata in each synced row?",
         "type": "boolean"
       }
     }

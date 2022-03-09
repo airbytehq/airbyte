@@ -40,7 +40,8 @@ def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
     
     if include_metadata:
         metadata_fields = [i for i in sheet["rows"][0].keys() if i != 'cells']
-        metadata_schema = {i: get_prop(i) for i in metadata_fields}
+        # assume string for metadata fields for now
+        metadata_schema = {i: get_prop(i) for i in metadata_fields} 
         column_info.update(metadata_schema)
     
     json_schema = {
