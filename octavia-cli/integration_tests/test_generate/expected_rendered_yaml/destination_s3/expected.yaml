@@ -31,7 +31,7 @@ configuration:
       ## -------- Another valid structure for compression_codec: --------
       # codec: "zstandard" # REQUIRED | string
       # compression_level: 3 # REQUIRED | integer | Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.
-      # include_hash: # OPTIONAL | boolean | If true, include a hash with each data block.
+      # include_checksum: # OPTIONAL | boolean | If true, include a checksum with each data block.
       ## -------- Another valid structure for compression_codec: --------
       # codec: "snappy" # REQUIRED | string
     part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
