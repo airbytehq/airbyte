@@ -117,7 +117,6 @@ class SourceGoogleAds(AbstractSource):
             Campaigns(**incremental_stream_config),
             ClickView(**incremental_stream_config),
         ]
-
         custom_query_streams = [
             CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
             for single_query_config in config.get("custom_queries", [])
