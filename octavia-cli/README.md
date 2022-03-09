@@ -26,7 +26,7 @@ This script:
 
 ## 2.b If you want to directly run the CLI without alias in your current directory:
 ```bash
-mkdir my_octavia_project_directory
+mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
 docker run --rm -v ./my_octavia_project_directory:/home/octavia-project --network host -e AIRBYTE_URL="http://localhost:8000" airbyte/octavia-cli:dev
 ````
 
