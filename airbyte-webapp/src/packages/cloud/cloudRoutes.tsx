@@ -1,5 +1,6 @@
-import React, { Suspense, useEffect, useMemo } from "react";
+import React, { Suspense, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffectOnce } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -150,12 +151,9 @@ export const Routing: React.FC = () => {
 
   const { search } = useLocation();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     storeUtmFromQuery(search);
-    // We deliberately only want to store away the query parameters on page load,
-    // so we're not using `search` as a dependency here.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const analyticsContext = useMemo(
     () =>

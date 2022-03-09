@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
-import { useLocation } from "react-use";
+import { useEffectOnce } from "react-use";
+import { useLocation } from "react-router-dom";
 
 import { useConfig } from "config";
 
@@ -156,12 +157,9 @@ const RoutingWithWorkspace: React.FC = () => {
 export const Routing: React.FC = () => {
   const { search } = useLocation();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     storeUtmFromQuery(search);
-    // We deliberately only want to store away the query parameters on page load,
-    // so we're not using `search` as a dependency here.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
