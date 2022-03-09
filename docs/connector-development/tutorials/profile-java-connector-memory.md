@@ -80,7 +80,7 @@ The example focuses on docker deployment, because it is more straightforward. It
     ./gradlew :airbyte-integrations:connectors:<connector-name>:airbyteDocker
     ```
 
-6. Connect to the launched local Airbyte server at `localhost:8000`, go to the `Settings` page, and "upgrade" the connector to be profiled to the `dev` version we just built.
+6. Connect to the launched local Airbyte server at `localhost:8000`, go to the `Settings` page, and change the version of the connector to be profiled to `dev` which was just built in the previous step.
 
 7. Create a connection using the connector to be profiled.
     - The `Replication frequency` of this connector should be `manual` so that we can control when it starts.
