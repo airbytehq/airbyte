@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.DataSourceConnectionSupplier;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
@@ -23,8 +25,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     config = getStaticConfig();
     final DataSource dataSource = createDataSource(getStaticConfig());
     var db = new StreamingJdbcDatabase(dataSource,
-        new DefaultJdbcDatabase(new DataSourceConnectionSupplier(dataSource),
-            JdbcUtils.getDefaultSourceOperations()),
+        JdbcUtils.getDefaultSourceOperations(),
         new SnowflakeJdbcStreamingQueryConfiguration());
     System.out.println("config = createDatabase");
     return db;
@@ -78,7 +79,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
-//        .build();
+    // .build();
 
     dataSource.setDriverClassName("net.snowflake.client.jdbc.SnowflakeDriver");
     dataSource.setJdbcUrl(jdbcUrl.toString());

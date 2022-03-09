@@ -123,8 +123,8 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JdbcDatabase setupDataBase() {
     config = Jsons.clone(getStaticConfig());
     return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
         String.format("jdbc:snowflake://%s/",
             config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,

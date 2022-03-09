@@ -28,12 +28,15 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
   public static boolean isSourceAlive;
+  private final HikariDataSource dataSource;
+  private static SnowflakeAccessTokenLoader tokenLoader;
 
   public SnowflakeSource() {
     super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(),
         new SnowflakeSourceOperations());
+    dataSource = new HikariDataSource();
+    tokenLoader = new SnowflakeAccessTokenLoader(dataSource);
   }
-
 
   public static void main(final String[] args) throws Exception {
     final Source source = new SnowflakeSource();
@@ -41,6 +44,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     isSourceAlive = true;
     new IntegrationRunner(source).run(args);
     isSourceAlive = false;
+    tokenLoader.interrupt();
     LOGGER.info("completed source: {}", SnowflakeSource.class);
   }
 
@@ -54,8 +58,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   private HikariDataSource createDataSource(final JsonNode config) {
-    HikariDataSource dataSource = new HikariDataSource();
-
+    // dataSource.setDriverClassName(DRIVER_CLASS);
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
     jdbcUrl.append(String.format(
@@ -75,7 +78,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     var credentials = config.get("credentials");
     if (credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
       try {
-
         properties.setProperty("client_id", credentials.get("client_id").asText());
         properties.setProperty("client_secret", credentials.get("client_secret").asText());
         properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
@@ -87,7 +89,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
         properties.put("token", accessToken);
         properties.put("account", config.get("host").asText());
         dataSource.setDataSourceProperties(properties);
-        new SnowflakeAccessTokenLoader(dataSource).start();
+        tokenLoader.start();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -95,9 +97,6 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       dataSource.setUsername(credentials.get("username").asText());
       dataSource.setPassword(credentials.get("password").asText());
     }
-    properties.put("account", config.get("host").asText());
-    dataSource.setDataSourceProperties(properties);
-    dataSource.setDriverClassName(DRIVER_CLASS);
     dataSource.setJdbcUrl(jdbcUrl.toString());
 
     return dataSource;
