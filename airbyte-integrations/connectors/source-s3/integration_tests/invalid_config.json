@@ -4,10 +4,12 @@
     "storage": "S3",
     "bucket": "THIS BUCKET DOESN'T EXIST",
     "aws_access_key_id": "KEY ID",
-    "aws_secret_access_key": "KEY",
-    "path_prefix": ""
+    "aws_secret_access_key": "KEY"
   },
-  "format": { "filetype": "csv" },
-  "path_pattern": "**",
+  "format": {
+    "filetype": "csv"
+  },
+  "path_prefix": "{}",
+  "path_pattern": "{'test':'**'}",
   "schema": "{}"
 }

@@ -32,7 +32,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         client_config = None
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
+                aws_access_key_id=provider["aws_access_key_id"],
+                aws_secret_access_key=provider["aws_secret_access_key"],
             )
         else:
             session = boto3session.Session()
@@ -44,9 +45,9 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)  # type: ignore[unreachable]
+                kwargs = dict(Bucket=provider["bucket"], Prefix=self._path_prefix, ContinuationToken=ctoken)  # type: ignore[unreachable]
             else:
-                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
+                kwargs = dict(Bucket=provider["bucket"], Prefix=self._path_prefix)
             response = client.list_objects_v2(**kwargs)
             try:
                 content = response["Contents"]
@@ -56,7 +57,9 @@ class IncrementalFileStreamS3(IncrementalFileStream):
                 for c in content:
                     key = c["Key"]
                     if accept_key(key):
-                        yield FileInfo(key=key, last_modified=c["LastModified"], size=c["Size"])
+                        yield FileInfo(
+                            key=key, last_modified=c["LastModified"], size=c["Size"]
+                        )
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
@@ -67,7 +70,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
 
         :yield: url filepath to use in S3File()
         """
-        prefix = self._provider.get("path_prefix")
+        prefix = self._path_prefix
         if prefix is None:
             prefix = ""
 

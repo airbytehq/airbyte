@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -19,10 +18,10 @@ class ParquetFormat(BaseModel):
         default=0,
         description="Perform read buffering when deserializing individual column chunks. By default every group column will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
     )
-
-    columns: Optional[List[str]] = Field(
-        default=None,
-        description="If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
+    # here when pass format to the parquet_parser,we need to convert to List[str] format
+    columns: str = Field(
+        default="{}",
+        description='JSON string in format {"stream_name": ["column1", "column2"]}. For each stream, if you only want to sync a subset of the columns from the file(s), add the columns you want here. Default behaviour is to sync all columns.',
     )
 
     batch_size: int = Field(

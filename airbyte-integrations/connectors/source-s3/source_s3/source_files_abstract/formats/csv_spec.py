@@ -24,7 +24,8 @@ class CsvFormat(BaseModel):
         description="The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
     )
     quote_char: str = Field(
-        default='"', description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank."
+        default='"',
+        description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank.",
     )
     escape_char: Optional[str] = Field(
         default=None,
@@ -34,7 +35,10 @@ class CsvFormat(BaseModel):
         default="utf8",
         description='The character encoding of the CSV data. Leave blank to default to <strong>UTF-8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
     )
-    double_quote: bool = Field(default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.")
+    double_quote: bool = Field(
+        default=True,
+        description="Whether two quotes in a quoted CSV value denote a single quote in the data.",
+    )
     newlines_in_values: bool = Field(
         default=False,
         description="Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
@@ -52,8 +56,8 @@ class CsvFormat(BaseModel):
     )
     advanced_options: str = Field(
         default="{}",
-        description="Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
-        examples=['{"column_names": ["column1", "column2"]}'],
+        description="""JSON string in format {"stream_name": {"column_names": ["column1", "column2"]}}. For each stream, optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.""",
+        examples=['{"stream_name": {"column_names": ["column1", "column2"]}}'],
     )
     infer_datatypes: Optional[bool] = Field(
         default=True,

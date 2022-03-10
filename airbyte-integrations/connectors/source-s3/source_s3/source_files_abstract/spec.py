@@ -44,22 +44,32 @@ from .formats.parquet_spec import ParquetFormat
 class SourceFilesAbstractSpec(BaseModel):
 
     dataset: str = Field(
-        pattern=r"^([A-Za-z0-9-_]+)$",
-        description="This source creates one table per connection, this field is the name of that table. This should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
+        pattern=r"^[A-Za-z0-9-_]+(,[A-Za-z0-9-_]+)*$",
+        description="This source can create mulitple tables/streams per connection, this field is the comma-split table/stream names (duplication not allowed). The table name should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
+    )
+    # move path_prefix from provider to here
+    path_prefix: str = Field(
+        default="{}",
+        description='JSON string in format {"stream_name": "path_prefix"}. The stream name must be in the stream names defined in the dataset. By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit for each stream, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.',
     )
 
     path_pattern: str = Field(
-        description='Add at least 1 pattern here to match filepaths against. Use | to separate multiple patterns. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_blank">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.',
-        examples=["**", "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"],
+        description='JSON string in format {"stream_name": "pattern(s)"}. The stream name must be in the stream names defined in the dataset. Add at least 1 pattern for each stream to match filepaths against. Use | to separate multiple patterns for each stream name. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_blank">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.',
+        examples=[
+            '{"stream_1": "**"}',
+            '{"stream_1": "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"}',
+        ],
     )
 
     user_schema: str = Field(
         alias="schema",
         default="{}",
-        description='Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ "column" : "type" }</strong>, where types are valid <a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.',
-        examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
+        description='JSON string in format {"stream_name": schema}. Optionally provide a schema for each stream to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ "column" : "type" }</strong>, where types are valid <a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.',
+        examples=[
+            '{"stream_1": {"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}}'
+        ],
     )
-
+    # Here we enforce the same source format accross all dataset (except for the csv advanced options )
     format: Union[CsvFormat, ParquetFormat] = Field(default=CsvFormat.Config.title)
 
     @staticmethod
@@ -75,15 +85,21 @@ class SourceFilesAbstractSpec(BaseModel):
     @staticmethod
     def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
-            raise RuntimeError("You must add the 'provider' property in your child spec class")
+            raise RuntimeError(
+                "You must add the 'provider' property in your child spec class"
+            )
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
         json_schema_ref_resolver = RefResolver.from_schema(schema)
         str_schema = json.dumps(schema)
-        for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
+        for ref_block in re.findall(
+            r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema
+        ):
             ref = json.loads(ref_block)["$ref"]
-            str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
+            str_schema = str_schema.replace(
+                ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1])
+            )
         pyschema: dict = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema

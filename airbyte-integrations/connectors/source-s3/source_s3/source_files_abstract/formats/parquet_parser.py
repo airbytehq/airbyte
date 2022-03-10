@@ -4,6 +4,7 @@
 
 from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 
+
 import pyarrow.parquet as pq
 from pyarrow.parquet import ParquetFile
 
@@ -40,7 +41,13 @@ class ParquetParser(AbstractFileParser):
         for field_name, field in ParquetFormat.__fields__.items():
             if self._format.get(field_name) is not None:
                 continue
-            self._format[field_name] = field.default
+            if field_name == "columns":
+                # since default value for columns in ParquetFormat is for multi-stream
+                # here we need to set default columns value for single stream
+                _field_default = None
+            else:
+                _field_default = field.default
+            self._format[field_name] = _field_default
 
     def _select_options(self, *names: List[str]) -> dict:
         return {name: self._format[name] for name in names}
@@ -56,7 +63,9 @@ class ParquetParser(AbstractFileParser):
         return pq.ParquetFile(file, **options)
 
     @staticmethod
-    def parse_field_type(needed_logical_type: str, need_physical_type: str = None) -> Tuple[str, str]:
+    def parse_field_type(
+        needed_logical_type: str, need_physical_type: str = None
+    ) -> Tuple[str, str]:
         """Pyarrow can parse/support non-JSON types
         Docs: https://github.com/apache/arrow/blob/5aa2901beddf6ad7c0a786ead45fdb7843bfcccd/python/pyarrow/_parquet.pxd#L56
         """
@@ -69,10 +78,14 @@ class ParquetParser(AbstractFileParser):
         else:
             json_type, physical_types, _ = PARQUET_TYPES[needed_logical_type]
             if need_physical_type and need_physical_type not in physical_types:
-                raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+                raise TypeError(
+                    f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}"
+                )
             return json_type, needed_logical_type
 
-        raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+        raise TypeError(
+            f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}"
+        )
 
     @staticmethod
     def convert_field_data(logical_type: str, field_value: Any) -> Any:
@@ -92,14 +105,19 @@ class ParquetParser(AbstractFileParser):
         """
         reader = self._init_reader(file)
         schema_dict = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[0] for field in reader.schema
+            field.name: self.parse_field_type(
+                field.logical_type.type.lower(), field.physical_type
+            )[0]
+            for field in reader.schema
         }
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(
+        self, file: Union[TextIO, BinaryIO]
+    ) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file
@@ -108,7 +126,10 @@ class ParquetParser(AbstractFileParser):
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
         logical_types = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in reader.schema
+            field.name: self.parse_field_type(
+                field.logical_type.type.lower(), field.physical_type
+            )[1]
+            for field in reader.schema
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
@@ -116,7 +137,6 @@ class ParquetParser(AbstractFileParser):
 
         args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
         self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
-
         # load batches per page
         for num_row_group in range(reader.num_row_groups):
             args["row_groups"] = [num_row_group]
@@ -125,11 +145,15 @@ class ParquetParser(AbstractFileParser):
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
                 batch_columns = [col.name for col in batch.schema]
                 batch_dict = batch.to_pydict()
-                columnwise_record_values = [batch_dict[column] for column in batch_columns]
+                columnwise_record_values = [
+                    batch_dict[column] for column in batch_columns
+                ]
 
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):
                     yield {
-                        batch_columns[i]: self.convert_field_data(logical_types[batch_columns[i]], record_values[i])
+                        batch_columns[i]: self.convert_field_data(
+                            logical_types[batch_columns[i]], record_values[i]
+                        )
                         for i in range(len(batch_columns))
                     }

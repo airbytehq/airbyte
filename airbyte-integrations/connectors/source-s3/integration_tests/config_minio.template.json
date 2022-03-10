@@ -5,12 +5,12 @@
     "bucket": "test-bucket",
     "aws_access_key_id": "123456",
     "aws_secret_access_key": "123456key",
-    "path_prefix": "",
     "endpoint": "http://<local_ip>:9000"
   },
   "format": {
     "filetype": "csv"
   },
-  "path_pattern": "*.csv",
+  "path_prefix": "{}",
+  "path_pattern": "{'test':'*.csv'}",
   "schema": "{}"
 }
