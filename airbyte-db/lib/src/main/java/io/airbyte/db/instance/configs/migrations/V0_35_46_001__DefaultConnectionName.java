@@ -26,7 +26,7 @@ public class V0_35_46_001__DefaultConnectionName extends BaseJavaMigration {
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_46_001__DefaultConnectionName.class);
 
   public static void defaultConnectionName(final DSLContext ctx) {
-    LOGGER.info("updating connection name column");
+    LOGGER.info("Updating connection name column");
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
     List<Connection> connections = getConnections(ctx);
@@ -44,11 +44,14 @@ public class V0_35_46_001__DefaultConnectionName extends BaseJavaMigration {
   }
 
   static <T> List<Connection> getConnections(final DSLContext ctx) {
+    LOGGER.info("Get connections having name default");
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> sourceId = DSL.field("source_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> destinationId = DSL.field("destination_id", SQLDataType.UUID.nullable(false));
-    final Result<Record> results = ctx.select(asterisk()).from(table("connection")).fetch();
+
+    final Field<String> connectionName = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
+    final Result<Record> results = ctx.select(asterisk()).from(table("connection")).where(connectionName.eq("default")).fetch();
 
     return results.stream().map(record -> new Connection(
         record.get(name),
@@ -58,10 +61,11 @@ public class V0_35_46_001__DefaultConnectionName extends BaseJavaMigration {
         .collect(Collectors.toList());
   }
 
-  static <T> Actor getActor(final UUID actionDefinitionId, final DSLContext ctx) {
+  static <T> Actor getActor(final UUID actorDefinitionId, final DSLContext ctx) {
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
-    final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));
-    final Result<Record> results = ctx.select(asterisk()).from(DSL.table("actor")).where(actorDefinitionId.eq(actionDefinitionId)).fetch();
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+
+    final Result<Record> results = ctx.select(asterisk()).from(table("actor")).where(id.eq(actorDefinitionId)).fetch();
 
     return results.stream()
             .map(record -> new Actor(record.get(name))).toList().get(0);
