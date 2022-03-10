@@ -8,14 +8,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import requests
-from requests.auth import HTTPBasicAuth
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import SyncMode
-
-
+from requests.auth import HTTPBasicAuth
 
 
 # Basic full refresh stream
@@ -34,7 +32,7 @@ class ChargifyStream(HttpStream, ABC):
         return f"https://{self._domain}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        
+
         results = response.json()
 
         if results:
@@ -50,14 +48,14 @@ class ChargifyStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        
+
         if next_page_token is None:
-            return {'page': self.FIRST_PAGE, 'per_page': self.PER_PAGE}
+            return {"page": self.FIRST_PAGE, "per_page": self.PER_PAGE}
 
         return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        
+
         yield response.json()
 
 
@@ -69,7 +67,7 @@ class Customers(ChargifyStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-    
+
         return "customers.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -86,7 +84,7 @@ class Subscriptions(ChargifyStream):
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
-    
+
         return "subscriptions.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -102,16 +100,16 @@ class SourceChargify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             auth = HTTPBasicAuth(config["api_key"], "X")
-            converted_args = self.convert_config2stream_args(config)
-            customers_gen = Customers(authenticator=auth, **converted_args).read_records(sync_mode=SyncMode.full_refresh)
+            customers_gen = Customers(config["domain"], authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
             next(customers_gen)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Chargify API with the provided credentials - {repr(error)}"
 
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        
-        auth = HTTPBasicAuth(config["api_key"], "X")  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
+
+        auth = HTTPBasicAuth(
+            config["api_key"], "X"
+        )  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
 
         return [Customers(authenticator=auth, domain=config["domain"]), Subscriptions(authenticator=auth, domain=config["domain"])]
