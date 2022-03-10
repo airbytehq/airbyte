@@ -3454,7 +3454,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.9"
+- dockerImage: "airbyte/destination-s3:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
