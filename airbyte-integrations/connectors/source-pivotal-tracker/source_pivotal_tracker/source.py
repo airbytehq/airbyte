@@ -84,6 +84,10 @@ class Labels(ProjectBasedStream):
     subpath = "labels"
 
 
+class Releases(ProjectBasedStream):
+    subpath = "releases"
+
+
 # Custom token authenticator because no "Bearer"
 class PivotalAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
@@ -125,4 +129,4 @@ class SourcePivotalTracker(AbstractSource):
         auth = self._get_authenticator(config)
         project_ids = self._generate_project_ids(auth)
         project_args = {"project_ids": project_ids, "authenticator": auth}
-        return [Projects(authenticator=auth), Stories(**project_args), Labels(**project_args)]
+        return [Projects(authenticator=auth), Stories(**project_args), Labels(**project_args), Releases(**project_args)]
