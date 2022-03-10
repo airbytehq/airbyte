@@ -23,6 +23,19 @@
             },
             "sync_mode": "incremental",
             "destination_sync_mode": "append"
+        },
+        {
+            "stream": {
+                "name": "cash_balances",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-04/schema"
+                },
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": true,
+                "default_cursor_field": ["date"]
+            },
+            "sync_mode": "incremental",
+            "destination_sync_mode": "append"
         }
     ]
 }
