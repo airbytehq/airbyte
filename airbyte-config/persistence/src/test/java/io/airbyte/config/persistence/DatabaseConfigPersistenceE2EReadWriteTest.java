@@ -70,7 +70,9 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
 
   private void deletion() throws ConfigNotFoundException, IOException, JsonValidationException {
     // Deleting the workspace should delete everything except for definitions and catalogs
-    configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, MockData.standardWorkspace().getWorkspaceId().toString());
+    for (final StandardWorkspace standardWorkspace : MockData.standardWorkspaces()) {
+      configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString());
+    }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_STATE, StandardSyncState.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class).isEmpty());
@@ -258,16 +260,17 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   private void standardWorkspace() throws JsonValidationException, IOException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE,
-        MockData.standardWorkspace().getWorkspaceId().toString(),
-        MockData.standardWorkspace());
-    final StandardWorkspace standardWorkspace = configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE,
-        MockData.standardWorkspace().getWorkspaceId().toString(),
-        StandardWorkspace.class);
+    for (final StandardWorkspace standardWorkspace : MockData.standardWorkspaces()) {
+      configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE,
+          standardWorkspace.getWorkspaceId().toString(),
+          standardWorkspace);
+      final StandardWorkspace standardWorkspaceFromDb = configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE,
+          standardWorkspace.getWorkspaceId().toString(), StandardWorkspace.class);
+      assertEquals(standardWorkspace, standardWorkspaceFromDb);
+    }
     final List<StandardWorkspace> standardWorkspaces = configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
-    assertEquals(MockData.standardWorkspace(), standardWorkspace);
-    assertEquals(1, standardWorkspaces.size());
-    assertTrue(standardWorkspaces.contains(MockData.standardWorkspace()));
+    assertEquals(MockData.standardWorkspaces().size(), standardWorkspaces.size());
+    assertThat(MockData.standardWorkspaces()).hasSameElementsAs(standardWorkspaces);
   }
 
   public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
