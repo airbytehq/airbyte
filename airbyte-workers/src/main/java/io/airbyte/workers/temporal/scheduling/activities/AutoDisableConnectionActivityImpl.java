@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
@@ -20,22 +20,17 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
-  @VisibleForTesting
-  public static final int MAX_FAILURE_JOBS_IN_A_ROW = 100;
-  @VisibleForTesting
-  public static final int MAX_DAYS_OF_STRAIGHT_FAILURE = 14;
-
-  private final ConfigRepository configRepository;
+  private ConfigRepository configRepository;
   private JobPersistence jobPersistence;
   private FeatureFlags featureFlags;
+  private Configs configs;
 
   @Override
   public void autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     if (featureFlags.disablesFailingConnections()) {
-
       try {
         final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), ConfigType.SYNC,
-            input.getCurrTimestamp().minus(MAX_DAYS_OF_STRAIGHT_FAILURE, ChronoUnit.DAYS));
+            input.getCurrTimestamp().minus(configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS));
 
         if (jobStatuses.size() == 0)
           return;
@@ -47,7 +42,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         for (final JobStatus jobStatus : jobStatuses) {
           if (jobStatus == JobStatus.FAILED) {
             numFailures++;
-            if (numFailures == MAX_FAILURE_JOBS_IN_A_ROW)
+            if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable())
               break;
           } else if (jobStatus == JobStatus.SUCCEEDED) {
             shouldDisable = false;
