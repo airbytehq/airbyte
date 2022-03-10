@@ -27,7 +27,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
 
   @Override
   public void autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
-    if (featureFlags.disablesFailingConnections()) {
+    if (featureFlags.autoDisablesFailingConnections()) {
       try {
         final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), ConfigType.SYNC,
             input.getCurrTimestamp().minus(configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS));
