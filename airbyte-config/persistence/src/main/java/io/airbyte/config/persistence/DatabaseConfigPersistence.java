@@ -33,19 +33,15 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
@@ -54,7 +50,6 @@ import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -645,7 +640,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
-      final StandardSync standardSync = buildStandardSync(record);
+      final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
       standardSyncs.add(new ConfigWithMetadata<>(
           record.get(CONNECTION.ID).toString(),
           ConfigSchema.STANDARD_SYNC.name(),
@@ -654,26 +649,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardSync));
     }
     return standardSyncs;
-  }
-
-  private StandardSync buildStandardSync(final Record record) throws IOException {
-    return new StandardSync()
-        .withConnectionId(record.get(CONNECTION.ID))
-        .withNamespaceDefinition(
-            Enums.toEnum(record.get(CONNECTION.NAMESPACE_DEFINITION, String.class), NamespaceDefinitionType.class)
-                .orElseThrow())
-        .withNamespaceFormat(record.get(CONNECTION.NAMESPACE_FORMAT))
-        .withPrefix(record.get(CONNECTION.PREFIX))
-        .withSourceId(record.get(CONNECTION.SOURCE_ID))
-        .withDestinationId(record.get(CONNECTION.DESTINATION_ID))
-        .withName(record.get(CONNECTION.NAME))
-        .withCatalog(Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
-        .withStatus(
-            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
-        .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
-        .withManual(record.get(CONNECTION.MANUAL))
-        .withOperationIds(connectionOperationIds(record.get(CONNECTION.ID)))
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<StandardSyncState>> listStandardSyncStateWithMetadata() throws IOException {
@@ -1854,13 +1829,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       // Add new connector
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
         LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         newCount++;
         continue;
       }
@@ -1878,19 +1847,19 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
-        if (newFields.size() == 0) {
+        final String latestImageTag = latestDefinition.get("dockerImageTag").asText();
+        if (hasNewPatchVersion(connectorInfo.dockerImageTag, latestImageTag)) {
+          // Update connector to the latest patch version
+          LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
+          writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
+          updatedCount++;
+        } else if (newFields.size() == 0) {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
           final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
           LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-            writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-            writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-          } else {
-            throw new RuntimeException("Unknown config type " + configType);
-          }
+          writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
           updatedCount++;
         }
         continue;
@@ -1901,25 +1870,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         // Update connector to the latest version
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         updatedCount++;
       } else if (newFields.size() > 0) {
         // Add new fields to the connector definition
         final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
         LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
         updatedCount++;
       } else {
         LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
@@ -1927,6 +1884,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
 
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  private void writeOrUpdateStandardDefinition(final DSLContext ctx,
+                                               final AirbyteConfig configType,
+                                               final JsonNode definition) {
+    if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+      writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+    } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+      writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+    } else {
+      throw new IllegalArgumentException("Unknown config type " + configType);
+    }
   }
 
   @VisibleForTesting
@@ -1954,6 +1923,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
       return false;
     }
+  }
+
+  @VisibleForTesting
+  static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
+    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
   }
 
   static class ConnectorInfo {

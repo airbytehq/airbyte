@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -17,12 +16,10 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
@@ -36,7 +33,6 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
@@ -223,7 +219,17 @@ public class TemporalClient {
     final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, null, null, false, 1, null, false);
+    final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+        .connectionId(connectionId)
+        .jobId(null)
+        .attemptId(null)
+        .fromFailure(false)
+        .attemptNumber(1)
+        .workflowState(null)
+        .resetConnection(false)
+        .fromJobResetFailure(false)
+        .build();
+
     signalRequest.add(connectionManagerWorkflow::run, input);
 
     WorkflowClient.start(connectionManagerWorkflow::run, input);
@@ -234,13 +240,13 @@ public class TemporalClient {
           do {
             Thread.sleep(DELAY_BETWEEN_QUERY_MS);
           } while (!isWorkflowRunning(getConnectionManagerName(connectionId)));
-        } catch (InterruptedException e) {}
+        } catch (final InterruptedException e) {}
 
         return null;
       }).get(60, TimeUnit.SECONDS);
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (final InterruptedException | ExecutionException e) {
       log.error("Failed to create a new connection manager workflow", e);
-    } catch (TimeoutException e) {
+    } catch (final TimeoutException e) {
       log.error("Can't create a new connection manager workflow due to timeout", e);
     }
   }
@@ -251,8 +257,8 @@ public class TemporalClient {
     connectionManagerWorkflow.deleteConnection();
   }
 
-  public void update(final ConnectionUpdate connectionUpdate) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionUpdate.getConnectionId());
+  public void update(final UUID connectionId) {
+    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
 
     connectionManagerWorkflow.connectionUpdated();
   }
@@ -475,11 +481,11 @@ public class TemporalClient {
    */
   public boolean isWorkflowRunning(final String workflowName) {
     try {
-      ConnectionManagerWorkflow connectionManagerWorkflow = getExistingWorkflow(ConnectionManagerWorkflow.class, workflowName);
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getExistingWorkflow(ConnectionManagerWorkflow.class, workflowName);
       connectionManagerWorkflow.getState();
 
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
   }

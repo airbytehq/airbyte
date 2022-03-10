@@ -128,6 +128,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // resetConnection flag to the next run so that that run can execute the actual reset
       workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
+      workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
+
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
@@ -215,10 +217,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
 
+    if (workflowState.isResetConnection()) {
+      workflowState.setContinueAsReset(true);
+    }
+
     if (maxAttempt > attemptNumber) {
-      if (workflowState.isResetConnection()) {
-        workflowState.setContinueAsReset(true);
-      }
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
@@ -235,6 +238,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
       }
       resetNewConnectionInput(connectionUpdaterInput);
+      if (workflowState.isResetConnection()) {
+        connectionUpdaterInput.setFromJobResetFailure(true);
+      }
     }
   }
 
@@ -278,6 +284,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void resetConnection() {
     workflowState.setResetConnection(true);
+    workflowState.setResetWithScheduling(false);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
@@ -287,11 +294,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void retryFailedActivity() {
     workflowState.setRetryFailedActivity(true);
-  }
-
-  @Override
-  public void simulateFailure() {
-    workflowState.setFailed(true);
   }
 
   @Override
@@ -326,7 +328,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * delete
    */
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() || workflowState.isResetConnection();
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() ||
+        (!workflowState.isResetWithScheduling() && workflowState.isResetConnection());
   }
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -458,8 +461,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   /**
-   * <<<<<<< HEAD Start the child SyncWorkflow ======= Start the child {@link SyncWorkflow}. We are
-   * using a child workflow here for two main reason:
+   * Start the child {@link SyncWorkflow}. We are using a child workflow here for two main reason:
    * <p>
    * - Originally the Sync workflow was living by himself and was launch by the scheduler. In order to
    * limit the potential migration issues, we kept the {@link SyncWorkflow} as is and launch it as a
@@ -467,7 +469,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * <p>
    * - The {@link SyncWorkflow} has different requirements than the {@link ConnectionManagerWorkflow}
    * since the latter is a long running workflow, in the future, using a different Node pool would
-   * make sense. >>>>>>> 76e969f2e5e1b869648142c3565b7375b1892999
+   * make sense.
    */
   private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
     final int taskQueueChangeVersion =
@@ -508,10 +510,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return true;
     }
 
-    // For testing purpose we simulate a failure using a signal method to avoid having to do a static
-    // mock.
-    // We do override failure reason in this case.
-    return false || workflowState.isFailed();
+    return false;
   }
 
   /**

@@ -47,6 +47,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -54,7 +55,6 @@ import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.helper.CatalogConverter;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +90,7 @@ class ConnectionsHandlerTest {
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
-  private TemporalWorkerRunFactory temporalWorkflowHandler;
+  private EventRunner eventRunner;
   private SyncJobFactory jobFactory;
   private JobPersistence jobPersistence;
   private LogConfigs logConfigs;
@@ -153,7 +153,7 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
     featureFlags = mock(FeatureFlags.class);
-    temporalWorkflowHandler = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(deletedSourceId)).thenReturn(workspaceId);
@@ -173,7 +173,7 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          temporalWorkflowHandler,
+          eventRunner,
           featureFlags,
           workerConfigs);
     }
@@ -357,7 +357,7 @@ class ConnectionsHandlerTest {
       verify(configRepository).writeStandardSync(updatedStandardSync);
 
       if (useNewScheduler) {
-        verify(temporalWorkflowHandler).update(connectionUpdate);
+        verify(eventRunner).update(connectionUpdate.getConnectionId());
       }
     }
 
@@ -386,10 +386,8 @@ class ConnectionsHandlerTest {
 
     @Test
     void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-      when(configRepository.listStandardSyncs())
+      when(configRepository.listWorkspaceStandardSyncs(source.getWorkspaceId()))
           .thenReturn(Lists.newArrayList(standardSync, standardSyncDeleted));
-      when(configRepository.getSourceConnection(source.getSourceId()))
-          .thenReturn(source);
       when(configRepository.getStandardSync(standardSync.getConnectionId()))
           .thenReturn(standardSync);
 

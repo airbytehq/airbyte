@@ -46,9 +46,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       "allowLoadLocalInfile", "true");
 
   static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
-          "useSSL", "true",
-          "requireSSL", "true",
-          "verifyServerCertificate", "false"),
+      "useSSL", "true",
+      "requireSSL", "true",
+      "verifyServerCertificate", "false"),
       DEFAULT_JDBC_PARAMETERS);
 
   public static Destination sshWrappedDestination() {

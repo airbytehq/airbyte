@@ -115,6 +115,9 @@
     "meta_data": {
       "$ref": "meta_data.json"
     },
+    "shop_url": {
+      "type": ["null", "string"]
+    },
     "line_items": {
       "type": ["null", "array"],
       "items": {
@@ -133,7 +136,7 @@
             "type": ["null", "integer"]
           },
           "quantity": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           },
           "tax_class": {
             "type": ["null", "string"]
@@ -160,7 +163,7 @@
             "type": ["null", "string"]
           },
           "price": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           }
         }
       }

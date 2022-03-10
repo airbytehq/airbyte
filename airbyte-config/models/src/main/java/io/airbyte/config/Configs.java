@@ -212,6 +212,13 @@ public interface Configs {
   int getSyncJobMaxTimeoutDays();
 
   /**
+   * Defines whether job creation uses connector-specific resource requirements when spawning jobs.
+   * Works on both Docker and Kubernetes. Defaults to false for ease of use in OSS trials of Airbyte
+   * but recommended for production deployments.
+   */
+  boolean connectorSpecificResourceDefaultsEnabled();
+
+  /**
    * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending
    * on the deployment. Defaults to none.
    */

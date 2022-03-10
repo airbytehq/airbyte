@@ -1,4 +1,8 @@
 describe("Source main actions", () => {
+  beforeEach(() => {
+    cy.initialSetupCompleted();
+  });
+
   it("Create new source", () => {
     cy.createTestSource("Test source cypress");
 

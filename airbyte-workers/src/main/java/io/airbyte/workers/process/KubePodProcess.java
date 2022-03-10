@@ -113,6 +113,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   public static final String CONFIG_DIR = "/config";
+  public static final String TMP_DIR = "/tmp";
   private static final String TERMINATION_DIR = "/termination";
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
@@ -309,7 +310,7 @@ public class KubePodProcess extends Process implements KubePod {
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
     try {
       pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Init pod not found after 5 minutes");
       LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
           podDefinition.getMetadata().getNamespace(),
@@ -426,13 +427,24 @@ public class KubePodProcess extends Process implements KubePod {
         .withMountPath(TERMINATION_DIR)
         .build();
 
+    final Volume tmpVolume = new VolumeBuilder()
+        .withName("tmp")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    final VolumeMount tmpVolumeMount = new VolumeMountBuilder()
+        .withName("tmp")
+        .withMountPath(TMP_DIR)
+        .build();
+
     final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
         usesStdin,
         entrypointOverride,
-        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount, tmpVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
         envMap,
@@ -500,7 +512,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
-        .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .withVolumes(pipeVolume, configVolume, terminationVolume, tmpVolume)
         .endSpec()
         .build();
 
