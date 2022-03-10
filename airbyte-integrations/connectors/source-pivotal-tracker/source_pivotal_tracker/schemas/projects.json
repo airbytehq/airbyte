@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "allOf": [{ "$ref": "object.json" }],
+  "$ref": "object.json",
   "properties": {
     "account_id": {
       "type": ["null", "integer"]

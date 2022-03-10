@@ -1,5 +1,5 @@
 {
-  "allOf": [{ "$ref": "project.json" }],
+  "$ref": "project.json",
   "properties": {
     "name": {
       "type": ["null", "string"]

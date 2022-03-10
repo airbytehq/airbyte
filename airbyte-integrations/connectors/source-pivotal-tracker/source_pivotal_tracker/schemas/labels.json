@@ -1,9 +1,4 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "allOf": [{ "$ref": "project.json" }],
-  "properties": {
-    "name": {
-      "type": ["null", "string"]
-    }
-  }
+  "$ref": "label.json"
 }
