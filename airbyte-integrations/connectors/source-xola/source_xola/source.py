@@ -1,4 +1,3 @@
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -6,8 +5,8 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-import json
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 
 # Basic full refresh stream
@@ -31,7 +30,26 @@ class XolaStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        paging_info = None
+
+        if "paging" in response.json().keys():
+            next_url = response.json()["paging"]["next"]
+            parsed_url = urlparse(next_url)
+            paging_info = {}
+            if 'skip' in parse_qs(parsed_url.query).keys():
+                skip = parse_qs(parsed_url.query)['skip'][0]
+                paging_info['skip'] = skip
+            if 'sort' in parse_qs(parsed_url.query).keys():
+                sort = parse_qs(parsed_url.query)['sort'][0]
+                paging_info['sort'] = sort
+            if 'id[lt]' in parse_qs(parsed_url.query).keys():
+                lt_id_key = parse_qs(parsed_url.query)['id[lt]'][0]
+                paging_info['id[lt]'] = lt_id_key
+            if 'limit' in parse_qs(parsed_url.query).keys():
+                limit = parse_qs(parsed_url.query)['limit'][0]
+                paging_info['limit'] = limit
+
+        return paging_info
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -54,12 +72,14 @@ class XolaStream(HttpStream, ABC):
         headers: Dict[str, str] = {
             "Accept": "application/json",
             "X-API-VERSION": "2017-06-10",
-            "X-API-KEY": self.x_api_key}
+            "X-API-KEY": self.x_api_key,
+            "sort": "-id"
+        }
         return headers
 
 
 class Orders(XolaStream):
-    primary_key = "id"
+    primary_key = "order_id"
     seller_id = None
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
@@ -82,7 +102,12 @@ class Orders(XolaStream):
         """
         seller id is returned as a form of parameters
         """
-        return {'seller': self.seller_id}
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        params['seller'] = self.seller_id
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -92,29 +117,26 @@ class Orders(XolaStream):
         raw_response = response.json()["data"]
         modified_response = []
         for data in raw_response:
-            # Tags._id
-            resp = {"tags": []}
-            for tag in data["tags"]:
-                resp["tags"].append({"id": tag["id"]})
-            # customerName
-            resp["customerName"] = data["customerName"]
-            # customerEmail
-            resp["customerEmail"] = data["customerEmail"]
-            # traverlers
-            resp["travelers"] = data["travelers"]
-            # source
-            resp["source"] = data["source"]
-            # createdBy
-            resp["createdBy"] = data["createdBy"]["id"]
-            # arrivalTime
-            resp["arrivalTime"] = data["arrivalTime"]
-            # quantity
-            resp["quantity"] = data["quantity"]
-            # event
-            resp["event"] = data["event"]["id"]
-            # price
-            resp["amount"] = data["amount"]
-            modified_response.append(resp)
+            try:
+                # Tags._id
+                resp = {"tags": []}
+                for tag in data["tags"]:
+                    resp["tags"].append({"id": tag["id"]})
+
+                resp["order_id"] = data["id"]
+
+                if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
+                if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
+                if "customerEmail" in data.keys():resp["customerEmail"] = data["customerEmail"]
+                if "travelers" in data.keys(): resp["travelers"] = data["travelers"]
+                if "source" in data.keys(): resp["source"] = data["source"]
+                if "createdBy" in data.keys(): resp["createdBy"] = data["createdBy"]
+                if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
+                if "event" in data.keys(): resp["event"] = data["event"]
+                if "amount" in data.keys(): resp["amount"] = data["amount"]
+                modified_response.append(resp)
+            except:
+                pass
         return modified_response
 
 
@@ -142,7 +164,12 @@ class Transactions(XolaStream):
         """
         seller id is returned as a form of parameters
         """
-        return {'seller': self.seller_id}
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        params['seller'] = self.seller_id
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -153,10 +180,15 @@ class Transactions(XolaStream):
         modified_response = []
         for data in raw_response:
 
-            resp = {"id": data["id"], "amount": data["amount"], "balance": data["balance"],
-                    "createdAt": data["createdAt"], "currency": data["currency"],
-                    "method": data["method"], "source": data["source"],
-                    "type": data["type"]}
+            resp = {"id": data["id"]}
+
+            if "amount" in data.keys(): resp["amount"] = data["amount"]
+            if "balance" in data.keys(): resp["amount"] = data["balance"]
+            if "createdAt" in data.keys(): resp["amount"] = data["createdAt"]
+            if "currency" in data.keys(): resp["amount"] = data["currency"]
+            if "method" in data.keys(): resp["amount"] = data["method"]
+            if "source" in data.keys(): resp["amount"] = data["source"]
+            if "type" in data.keys(): resp["amount"] = data["type"]
 
             if "order" in data.keys():
                 if isinstance(data["order"], dict):
@@ -184,6 +216,7 @@ class Transactions(XolaStream):
 
             modified_response.append(resp)
         return modified_response
+
 
 # Basic incremental stream
 
