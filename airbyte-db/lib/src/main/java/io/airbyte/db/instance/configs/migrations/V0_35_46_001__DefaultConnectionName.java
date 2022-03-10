@@ -5,6 +5,7 @@
 package io.airbyte.db.instance.configs.migrations;
 
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.table;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +48,7 @@ public class V0_35_46_001__DefaultConnectionName extends BaseJavaMigration {
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> sourceId = DSL.field("source_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> destinationId = DSL.field("destination_id", SQLDataType.UUID.nullable(false));
-    final Result<Record> results = ctx.select(asterisk()).from(DSL.table("connection")).fetch();
+    final Result<Record> results = ctx.select(asterisk()).from(table("connection")).fetch();
 
     return results.stream().map(record -> new Connection(
         record.get(name),
@@ -62,8 +63,8 @@ public class V0_35_46_001__DefaultConnectionName extends BaseJavaMigration {
     final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));
     final Result<Record> results = ctx.select(asterisk()).from(DSL.table("actor")).where(actorDefinitionId.eq(actionDefinitionId)).fetch();
 
-    return results.stream().map(record -> new Actor(
-        record.get(name))).toList().get(0);
+    return results.stream()
+            .map(record -> new Actor(record.get(name))).toList().get(0);
   }
 
   @Override
