@@ -124,7 +124,7 @@ class CashFlows(IncrementalKyribaStream):
 # Source
 class SourceKyriba(AbstractSource):
     def gateway_url(self, config: Mapping[str, Any]) -> str:
-        return f"https://{config['subdomain']}.kyriba.com/gateway"
+        return f"https://{config['domain']}/gateway"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         client = KyribaClient(config["username"], config["password"], self.gateway_url(config))
