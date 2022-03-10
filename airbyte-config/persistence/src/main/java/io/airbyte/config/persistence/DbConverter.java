@@ -18,6 +18,7 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.jooq.Record;
@@ -45,7 +46,12 @@ public class DbConverter {
         .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class));
   }
 
-  public static StandardWorkspace buildStandardWorkspace(final Record record, final List<Notification> notificationList) {
+  public static StandardWorkspace buildStandardWorkspace(final Record record) {
+    final List<Notification> notificationList = new ArrayList<>();
+    final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
+    for (final Object notification : fetchedNotifications) {
+      notificationList.add(Jsons.convertValue(notification, Notification.class));
+    }
     return new StandardWorkspace()
         .withWorkspaceId(record.get(WORKSPACE.ID))
         .withName(record.get(WORKSPACE.NAME))
