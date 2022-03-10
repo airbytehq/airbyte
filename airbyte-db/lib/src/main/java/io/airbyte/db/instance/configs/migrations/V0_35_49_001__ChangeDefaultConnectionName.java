@@ -39,7 +39,7 @@ public class V0_35_49_001__ChangeDefaultConnectionName extends BaseJavaMigration
       ctx.update(DSL.table("connection"))
           .set(name, connectionName)
           .where(id.eq(connection.getConnectionId()))
-          .execute();q
+          .execute();
     }
   }
 
