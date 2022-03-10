@@ -1315,50 +1315,55 @@ class DefaultJobPersistenceTest {
 
   }
 
-   @Test
-   @DisplayName("Should list all job statuses at different stages, as well as ones filtered by timestamp")
-   public void listJobStatusWithConnection() throws IOException {
-     final Instant now = Instant.parse("2021-01-01T00:00:00Z");
-     final Supplier<Instant> timeSupplier = incrementingSecondSupplier(now);
+  @Test
+  @DisplayName("Should list all job statuses at different stages, filtered by timestamps and connection id")
 
-     jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
-     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
-     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
-     final Path syncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
-     final int syncJobAttemptNumber1 = jobPersistence.createAttempt(syncJobId, syncJobSecondAttemptLogPath);
-     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber1);
+  public void listJobStatusWithConnection() throws IOException {
+    jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
 
-     final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.EPOCH);
-     assertEquals(jobStatuses.size(), 1);
-     assertEquals(JobStatus.INCOMPLETE, jobStatuses.get(0));
+    final long wrongConnectionSyncJobId = jobPersistence.enqueueJob(UUID.randomUUID().toString(), SYNC_JOB_CONFIG).orElseThrow();
+    final int wrongSyncJobAttemptNumber0 = jobPersistence.createAttempt(wrongConnectionSyncJobId, LOG_PATH);
+    jobPersistence.failAttempt(wrongConnectionSyncJobId, wrongSyncJobAttemptNumber0);
+    assertEquals(0, jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, NOW).size());
 
-     final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
-     final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
-     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber2);
-     jobPersistence.failJob(syncJobId);
+    final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
+    final Path syncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int syncJobAttemptNumber1 = jobPersistence.createAttempt(syncJobId, syncJobSecondAttemptLogPath);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber1);
 
-     final long newSyncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-     final int newSyncJobAttemptNumber0 = jobPersistence.createAttempt(newSyncJobId, LOG_PATH);
-     jobPersistence.failAttempt(newSyncJobId, newSyncJobAttemptNumber0);
-     final Path newSyncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
-     final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
-     jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
+    final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.EPOCH);
+    assertEquals(jobStatuses.size(), 1);
+    assertEquals(JobStatus.INCOMPLETE, jobStatuses.get(0));
 
-     final List<JobStatus> allQueryJobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.EPOCH);
-     assertEquals(2, allQueryJobStatuses.size());
-     assertEquals(JobStatus.FAILED, allQueryJobStatuses.get(0));
-     assertEquals(JobStatus.SUCCEEDED, allQueryJobStatuses.get(1));
+    final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
+    final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
+    jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber2);
+    jobPersistence.failJob(syncJobId);
 
-     final List<Job> jobs = jobPersistence.listJobs(ConfigType.SYNC, Instant.EPOCH);
-     final Long maxCreatedAtTimestamp = jobs.get(1).getCreatedAtInSecond();
+    final Instant timeAfterFirstJob = NOW.plusSeconds(60);
+    when(timeSupplier.get()).thenReturn(timeAfterFirstJob);
 
-     // todo: look into why the older job isn't being filtered out
-     final List<JobStatus> secondQueryJobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.ofEpochSecond(maxCreatedAtTimestamp));
-     assertEquals(1, secondQueryJobStatuses.size());
-     assertEquals(JobStatus.SUCCEEDED, secondQueryJobStatuses.get(0));
+    final long newSyncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+    final int newSyncJobAttemptNumber0 = jobPersistence.createAttempt(newSyncJobId, LOG_PATH);
+    jobPersistence.failAttempt(newSyncJobId, newSyncJobAttemptNumber0);
+    final Path newSyncJobSecondAttemptLogPath = LOG_PATH.resolve("2");
+    final int newSyncJobAttemptNumber1 = jobPersistence.createAttempt(newSyncJobId, newSyncJobSecondAttemptLogPath);
+    jobPersistence.succeedAttempt(newSyncJobId, newSyncJobAttemptNumber1);
 
-     assertEquals(0, jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.ofEpochSecond(maxCreatedAtTimestamp + 1)).size());
-   }
+    final List<JobStatus> allQueryJobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, Instant.EPOCH);
+    assertEquals(2, allQueryJobStatuses.size());
+    // expect list to be in desc order
+    assertEquals(JobStatus.SUCCEEDED, allQueryJobStatuses.get(0));
+    assertEquals(JobStatus.FAILED, allQueryJobStatuses.get(1));
+
+    final List<JobStatus> secondQueryJobStatuses = jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, timeAfterFirstJob);
+    assertEquals(1, secondQueryJobStatuses.size());
+    assertEquals(JobStatus.SUCCEEDED, secondQueryJobStatuses.get(0));
+
+    final Instant timeAfterSecondJob = timeAfterFirstJob.plusSeconds(60);
+    assertEquals(0, jobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC, timeAfterSecondJob).size());
+  }
 
 }

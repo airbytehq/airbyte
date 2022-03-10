@@ -5,7 +5,6 @@
 package io.airbyte.scheduler.persistence;
 
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
-import static io.airbyte.db.instance.jobs.jooq.tables.Jobs.JOBS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -27,7 +26,6 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
-import io.airbyte.db.instance.jobs.jooq.enums.JobConfigType;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -390,15 +388,18 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final ConfigType configType, final Instant jobCreatedAtTimestamp)
       throws IOException {
-    return jobDatabase.query(ctx -> ctx.select(JOBS.STATUS)
-        .from(JOBS)
-        .where(JOBS.SCOPE.eq(connectionId.toString()))
-        .and(JOBS.CONFIG_TYPE.eq(JobConfigType.sync)) // todo: can i change this to use configType?
-        .and(JOBS.CREATED_AT.greaterOrEqual(OffsetDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC)))
-        .fetch()
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
+
+    final String JobStatusSelect = "SELECT status FROM jobs ";
+    return jobDatabase.query(ctx -> ctx
+        .fetch(JobStatusSelect + "WHERE " +
+            "CAST(scope AS VARCHAR) = ? AND " +
+            "CAST(config_type AS VARCHAR) =  ? AND " +
+            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(),
+            Sqls.toSqlName(configType), timeConvertedIntoLocalDateTime))
         .stream()
-        .flatMap(row -> Stream.of(JobStatus.valueOf(row.value1().getLiteral().toUpperCase())))
-        .collect(Collectors.toList()));
+        .flatMap(r -> Stream.of(JobStatus.valueOf(r.get("status", String.class).toUpperCase())))
+        .collect(Collectors.toList());
   }
 
   @Override
