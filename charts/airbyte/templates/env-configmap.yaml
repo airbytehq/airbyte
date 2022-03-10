@@ -28,7 +28,7 @@ data:
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
-  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket }}
+  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket | quote }}
   S3_LOG_BUCKET_REGION: {{ .Values.logs.s3.bucketRegion | quote }}
   S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
   S3_PATH_STYLE_ACCESS: {{ include "airbyte.s3PathStyleAccess" . | quote }}
