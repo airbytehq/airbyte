@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.NotImplementedException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,17 +41,39 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   private static final int DEFAULT_PART_SIZE = 10;
   private static final int UPLOAD_RETRY_LIMIT = 3;
 
+  private final NamingConventionTransformer nameTransformer;
   private final S3DestinationConfig s3Config;
   private AmazonS3 s3Client;
 
-  public SnowflakeS3StagingSqlOperations(final AmazonS3 s3Client,
+  public SnowflakeS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
+                                         final AmazonS3 s3Client,
                                          final S3DestinationConfig s3Config) {
+    this.nameTransformer = nameTransformer;
     this.s3Client = s3Client;
     this.s3Config = s3Config;
   }
 
   @Override
-  public void uploadRecordsToStage(JdbcDatabase database, File dataFile, String schemaName, String path) throws Exception {
+  public String getStageName(final String namespace, final String streamName) {
+    return nameTransformer.applyDefaultCase(String.join("_",
+        nameTransformer.convertStreamName(namespace),
+        nameTransformer.convertStreamName(streamName)));
+  }
+
+  @Override
+  public String getStagingPath(final String connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+    // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
+    return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
+        connectionId,
+        getStageName(namespace, streamName),
+        writeDatetime.year().get(),
+        writeDatetime.monthOfYear().get(),
+        writeDatetime.dayOfMonth().get(),
+        writeDatetime.hourOfDay().get()));
+  }
+
+  @Override
+  public void uploadRecordsToStage(final JdbcDatabase database, final File dataFile, final String schemaName, final String path) throws Exception {
     throw new NotImplementedException("placeholder function is not implemented yet");
   }
 
@@ -91,8 +115,8 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     boolean hasFailed = false;
     try {
       final List<MultiPartOutputStream> outputStreams = uploadManager.getMultiPartOutputStreams();
-      try (MultiPartOutputStream outputStream = outputStreams.get(0)) {
-        try (outputStream; CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
+      try (final MultiPartOutputStream outputStream = outputStreams.get(0)) {
+        try (outputStream; final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
           final CsvSheetGenerator csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
           createStageIfNotExists(database, stage);
           for (final AirbyteRecordMessage recordMessage : records) {
@@ -101,7 +125,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
           }
         }
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to load data into stage {}", stage, e);
       hasFailed = true;
       throw new RuntimeException(e);

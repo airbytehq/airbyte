@@ -7,8 +7,13 @@ package io.airbyte.integrations.destination.staging;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import java.io.File;
+import org.joda.time.DateTime;
 
 public interface StagingOperations extends SqlOperations {
+
+  String getStageName(String schemaName, String tableName);
+
+  String getStagingPath(String connectionId, String schemaName, String tableName, DateTime writeDatetime);
 
   /**
    * Create a staging folder where to upload temporary files before loading into the final destination

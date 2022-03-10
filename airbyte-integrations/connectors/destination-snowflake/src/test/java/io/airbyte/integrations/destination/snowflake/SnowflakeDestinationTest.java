@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,17 +84,19 @@ public class SnowflakeDestinationTest {
   @Test
   public void testCleanupStageOnFailure() throws Exception {
 
-    JdbcDatabase mockDb = mock(JdbcDatabase.class);
-    SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    final SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
+    when(sqlOperations.getStageName(anyString(), anyString())).thenReturn("stage_name");
+    when(sqlOperations.getStagingPath(anyString(), anyString(), anyString(), any())).thenReturn("staging_path");
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-    AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
+    final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
-    for (AirbyteMessage m : testMessages) {
+    for (final AirbyteMessage m : testMessages) {
       airbyteMessageConsumer.accept(m);
     }
     assertThrows(RuntimeException.class, airbyteMessageConsumer::close);

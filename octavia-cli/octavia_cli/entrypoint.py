@@ -62,12 +62,12 @@ def add_commands_to_octavia():
         octavia.add_command(command)
 
 
-@octavia.command(name="import", help="Import an existing resources from the Airbyte instance.")
+@octavia.command(name="import", help="[NOT IMPLEMENTED]  Import an existing resources from the Airbyte instance.")
 def _import() -> None:
     raise click.ClickException("The import command is not yet implemented.")
 
 
-@octavia.command(help="Delete resources")
+@octavia.command(help="[NOT IMPLEMENTED] Delete resources")
 def delete() -> None:
     raise click.ClickException("The delete command is not yet implemented.")
 

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination;
 
-import org.joda.time.DateTime;
-
 /**
  * Destination have their own Naming conventions (which characters are valid or rejected in
  * identifiers names) This class transform a random string used to a valid identifier names for each
@@ -47,8 +45,8 @@ public interface NamingConventionTransformer {
   @Deprecated
   String getTmpTableName(String name);
 
-  String getStageName(String schemaName, String tableName);
+  String convertStreamName(final String input);
 
-  String getStagingPath(String connectionId, String schemaName, String tableName, DateTime writeDatetime);
+  String applyDefaultCase(final String input);
 
 }

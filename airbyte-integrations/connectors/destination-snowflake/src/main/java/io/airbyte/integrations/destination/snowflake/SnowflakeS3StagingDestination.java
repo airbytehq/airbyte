@@ -10,7 +10,9 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -28,14 +30,18 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StagingDestination.class);
 
   public SnowflakeS3StagingDestination() {
-    super("", new SnowflakeSQLNameTransformer(), new SnowflakeSqlOperations());
+    this(new SnowflakeSQLNameTransformer());
+  }
+
+  public SnowflakeS3StagingDestination(final SnowflakeSQLNameTransformer nameTransformer) {
+    super("", nameTransformer, new SnowflakeSqlOperations());
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
-    final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
-    final SnowflakeS3StagingSqlOperations SnowflakeS3StagingSqlOperations = new SnowflakeS3StagingSqlOperations(s3Config.getS3Client(), s3Config);
+    final NamingConventionTransformer nameTransformer = getNamingResolver();
+    final SnowflakeS3StagingSqlOperations SnowflakeS3StagingSqlOperations = new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config);
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
@@ -53,13 +59,13 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
 
   private static void attemptSQLCreateAndDropStages(final String outputSchema,
                                                     final JdbcDatabase database,
-                                                    final SnowflakeSQLNameTransformer namingResolver,
+                                                    final NamingConventionTransformer namingResolver,
                                                     final SnowflakeS3StagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    final String stageName = namingResolver.getStageName(outputSchema, outputTableName);
+    final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
     sqlOperations.dropStageIfExists(database, stageName);
   }
@@ -88,8 +94,10 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(config),
-        new SnowflakeS3StagingSqlOperations(s3Config.getS3Client(), s3Config),
-        new SnowflakeSQLNameTransformer(), config, catalog);
+        new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
+        getNamingResolver(),
+        config,
+        catalog);
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
