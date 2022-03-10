@@ -322,7 +322,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       for (final Object notification : fetchedNotifications) {
         notificationList.add(Jsons.convertValue(notification, Notification.class));
       }
-      final StandardWorkspace workspace = buildStandardWorkspace(record, notificationList);
+      final StandardWorkspace workspace = DbConverter.buildStandardWorkspace(record, notificationList);
       standardWorkspaces.add(new ConfigWithMetadata<>(
           record.get(WORKSPACE.ID).toString(),
           ConfigSchema.STANDARD_WORKSPACE.name(),
@@ -331,24 +331,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           workspace));
     }
     return standardWorkspaces;
-  }
-
-  private StandardWorkspace buildStandardWorkspace(final Record record, final List<Notification> notificationList) {
-    return new StandardWorkspace()
-        .withWorkspaceId(record.get(WORKSPACE.ID))
-        .withName(record.get(WORKSPACE.NAME))
-        .withSlug(record.get(WORKSPACE.SLUG))
-        .withInitialSetupComplete(record.get(WORKSPACE.INITIAL_SETUP_COMPLETE))
-        .withCustomerId(record.get(WORKSPACE.CUSTOMER_ID))
-        .withEmail(record.get(WORKSPACE.EMAIL))
-        .withAnonymousDataCollection(record.get(WORKSPACE.ANONYMOUS_DATA_COLLECTION))
-        .withNews(record.get(WORKSPACE.SEND_NEWSLETTER))
-        .withSecurityUpdates(record.get(WORKSPACE.SEND_SECURITY_UPDATES))
-        .withDisplaySetupWizard(record.get(WORKSPACE.DISPLAY_SETUP_WIZARD))
-        .withTombstone(record.get(WORKSPACE.TOMBSTONE))
-        .withNotifications(notificationList)
-        .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
   }
 
   private List<ConfigWithMetadata<StandardSourceDefinition>> listStandardSourceDefinitionWithMetadata() throws IOException {
