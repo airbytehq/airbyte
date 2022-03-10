@@ -886,7 +886,7 @@ class ProjectColumns(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"], "project_id": str(record["id"])}
+                yield {"repository": record["repository"], "project_id": record["id"]}
 
     def read_records(
         self,
@@ -905,7 +905,7 @@ class ProjectColumns(GithubStream):
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             repository = stream_slice["repository"]
-            project_id = stream_slice["project_id"]
+            project_id = str(stream_slice["project_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
@@ -913,7 +913,7 @@ class ProjectColumns(GithubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
-        project_id = latest_record["project_id"]
+        project_id = str(latest_record["project_id"])
         updated_state = latest_record[self.cursor_field]
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
         if stream_state_value:
@@ -924,4 +924,76 @@ class ProjectColumns(GithubStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
         record["project_id"] = stream_slice["project_id"]
+        return record
+
+
+class ProjectCards(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/projects#list-project-cards
+    """
+
+    cursor_field = "updated_at"
+
+    def __init__(self, parent: HttpStream, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+        self._start_date = start_date
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/columns/{stream_slice['column_id']}/cards"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record[self.cursor_field] > starting_point:
+                yield record
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            repository = stream_slice["repository"]
+            project_id = str(stream_slice["project_id"])
+            column_id = str(stream_slice["column_id"])
+            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
+        return self._start_date
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        project_id = str(latest_record["project_id"])
+        column_id = str(latest_record["column_id"])
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[
+            self.cursor_field
+        ] = updated_state
+        return current_stream_state
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["project_id"] = stream_slice["project_id"]
+        record["column_id"] = stream_slice["column_id"]
         return record
