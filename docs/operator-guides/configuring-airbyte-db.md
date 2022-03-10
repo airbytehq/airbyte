@@ -24,7 +24,7 @@ If you need to interact with it, for example, to make back-ups or perform some c
 Let's walk through what is required to use a Postgres instance that is not managed by Airbyte. First, for the sake of the tutorial, we will run a new instance of Postgres in its own docker container with the command below. If you already have Postgres running elsewhere, you can skip this step and use the credentials for that in future steps.
 
 ```bash
-docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
+docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:5432 -d marcosmarxm/postgres-ssl:dev -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
 ```
 
 In order to configure Airbyte services with this new database, we need to edit the following environment variables declared in the `.env` file \(used by the docker-compose command afterward\):
