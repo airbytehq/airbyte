@@ -23,106 +23,106 @@ import org.slf4j.LoggerFactory;
 
 public class V0_35_49_001__ChangeDefaultConnectionName extends BaseJavaMigration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_49_001__ChangeDefaultConnectionName.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_49_001__ChangeDefaultConnectionName.class);
 
-    public static void defaultConnectionName(final DSLContext ctx) {
-        LOGGER.info("Updating connection name column");
-        final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
-        final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
-        List<Connection> connections = getConnections(ctx);
+  public static void defaultConnectionName(final DSLContext ctx) {
+    LOGGER.info("Updating connection name column");
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
+    List<Connection> connections = getConnections(ctx);
 
-        for (final Connection connection : connections) {
-            final Actor sourceActor = getActor(connection.getSourceId(), ctx);
-            final Actor destinationActor = getActor(connection.getDestinationId(), ctx);
-            final String connectionName = sourceActor.getName() + " -> " + destinationActor.getName();
+    for (final Connection connection : connections) {
+      final Actor sourceActor = getActor(connection.getSourceId(), ctx);
+      final Actor destinationActor = getActor(connection.getDestinationId(), ctx);
+      final String connectionName = sourceActor.getName() + " -> " + destinationActor.getName();
 
-            ctx.update(DSL.table("connection"))
-                    .set(name, connectionName)
-                    .where(id.eq(connection.getConnectionId()))
-                    .execute();
-        }
+      ctx.update(DSL.table("connection"))
+          .set(name, connectionName)
+          .where(id.eq(connection.getConnectionId()))
+          .execute();q
+    }
+  }
+
+  static <T> List<Connection> getConnections(final DSLContext ctx) {
+    LOGGER.info("Get connections having name default");
+    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> sourceId = DSL.field("source_id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> destinationId = DSL.field("destination_id", SQLDataType.UUID.nullable(false));
+
+    final Field<String> connectionName = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
+    final Result<Record> results = ctx.select(asterisk()).from(table("connection")).where(connectionName.eq("default")).fetch();
+
+    return results.stream().map(record -> new Connection(
+        record.get(name),
+        record.get(id),
+        record.get(sourceId),
+        record.get(destinationId)))
+        .collect(Collectors.toList());
+  }
+
+  static <T> Actor getActor(final UUID actorDefinitionId, final DSLContext ctx) {
+    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
+    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+
+    final Result<Record> results = ctx.select(asterisk()).from(table("actor")).where(id.eq(actorDefinitionId)).fetch();
+
+    return results.stream()
+        .map(record -> new Actor(record.get(name))).toList().get(0);
+  }
+
+  @Override
+  public void migrate(final Context context) throws Exception {
+    LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
+
+    final DSLContext ctx = DSL.using(context.getConnection());
+    defaultConnectionName(ctx);
+  }
+
+  public static class Actor {
+
+    private final String name;
+
+    public <T> Actor(String name) {
+      this.name = name;
     }
 
-    static <T> List<Connection> getConnections(final DSLContext ctx) {
-        LOGGER.info("Get connections having name default");
-        final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
-        final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
-        final Field<UUID> sourceId = DSL.field("source_id", SQLDataType.UUID.nullable(false));
-        final Field<UUID> destinationId = DSL.field("destination_id", SQLDataType.UUID.nullable(false));
-
-        final Field<String> connectionName = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
-        final Result<Record> results = ctx.select(asterisk()).from(table("connection")).where(connectionName.eq("default")).fetch();
-
-        return results.stream().map(record -> new Connection(
-                        record.get(name),
-                        record.get(id),
-                        record.get(sourceId),
-                        record.get(destinationId)))
-                .collect(Collectors.toList());
+    public String getName() {
+      return this.name;
     }
 
-    static <T> Actor getActor(final UUID actorDefinitionId, final DSLContext ctx) {
-        final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
-        final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+  }
 
-        final Result<Record> results = ctx.select(asterisk()).from(table("actor")).where(id.eq(actorDefinitionId)).fetch();
+  public static class Connection {
 
-        return results.stream()
-                .map(record -> new Actor(record.get(name))).toList().get(0);
+    private final String name;
+    private final UUID connectionId;
+    private final UUID sourceId;
+    private final UUID destinationId;
+
+    public <T> Connection(String name, UUID id, UUID sourceId, UUID destinationId) {
+      this.name = name;
+      this.connectionId = id;
+      this.sourceId = sourceId;
+      this.destinationId = destinationId;
     }
 
-    @Override
-    public void migrate(final Context context) throws Exception {
-        LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-
-        final DSLContext ctx = DSL.using(context.getConnection());
-        defaultConnectionName(ctx);
+    public String getName() {
+      return this.name;
     }
 
-    public static class Actor {
-
-        private final String name;
-
-        public <T> Actor(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
+    public UUID getSourceId() {
+      return this.sourceId;
     }
 
-    public static class Connection {
-
-        private final String name;
-        private final UUID connectionId;
-        private final UUID sourceId;
-        private final UUID destinationId;
-
-        public <T> Connection(String name, UUID id, UUID sourceId, UUID destinationId) {
-            this.name = name;
-            this.connectionId = id;
-            this.sourceId = sourceId;
-            this.destinationId = destinationId;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public UUID getSourceId() {
-            return this.sourceId;
-        }
-
-        public UUID getDestinationId() {
-            return this.destinationId;
-        }
-
-        public UUID getConnectionId() {
-            return this.connectionId;
-        }
-
+    public UUID getDestinationId() {
+      return this.destinationId;
     }
+
+    public UUID getConnectionId() {
+      return this.connectionId;
+    }
+
+  }
 
 }
