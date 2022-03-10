@@ -100,7 +100,13 @@ class GithubStream(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if e.response.status_code == requests.codes.FORBIDDEN:
+            if e.response.status_code == requests.codes.NOT_FOUND:
+                # All streams are not available for repositories owned by a user instead of an organization.
+                if isinstance(self, Organizations):
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+                else:
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.FORBIDDEN:
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -120,9 +126,6 @@ class GithubStream(HttpStream, ABC):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
                 error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.NOT_FOUND and isinstance(self, Organizations):
-                # All Organizations based streams are not available for repositories owned by a user instead of an organization.
-                error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
