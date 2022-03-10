@@ -271,7 +271,7 @@ class StripeSubStream(StripeStream, ABC):
 
             items = items_obj.get("data", [])
 
-            # filter out 'bank_account' source items only
+            # non-generic filter, mainly for BankAccounts stream only
             if self.filter:
                 items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
 
