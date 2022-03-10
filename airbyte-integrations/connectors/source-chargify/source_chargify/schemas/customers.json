@@ -35,7 +35,7 @@
         "type":"string"
      },
      "portal_invite_last_sent_at":{
-        "type":"null"
+        "type":"string"
      },
      "vat_number":{
         "type":"string"
@@ -47,7 +47,7 @@
         "type":"string"
      },
      "zip":{
-        "type":"null"
+        "type":"string"
      },
      "first_name":{
         "type":"string"
@@ -56,7 +56,7 @@
         "type":"string"
      },
      "state":{
-        "type":"null"
+        "type":"string"
      },
      "city":{
         "type":"string"
@@ -68,16 +68,16 @@
         "type":"string"
      },
      "portal_customer_created_at":{
-        "type":"null"
+        "type":"string"
      },
      "updated_at":{
         "type":"string"
      },
      "country":{
-        "type":"null"
+        "type":"string"
      },
      "portal_invite_last_accepted_at":{
-        "type":"null"
+        "type":"string"
      },
      "tax_exempt":{
         "type":"boolean"
@@ -104,10 +104,10 @@
         "type":"string"
      },
      "verified":{
-        "type":"null"
+        "type":"string"
      },
      "cc_emails":{
-        "type":"null"
+        "type":"string"
      },
      "state_name":{
         "type":"string"
