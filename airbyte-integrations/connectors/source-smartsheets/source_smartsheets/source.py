@@ -25,6 +25,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source
 
 
+metadata_fields =  ("parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt")
+
 def get_prop(col_type: str) -> Dict[str, any]:
     props = {
         "TEXT_NUMBER": {"type": "string"},
@@ -38,7 +40,6 @@ def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
     column_info = {i["title"]: get_prop(i["type"]) for i in sheet["columns"]}
     
     if include_metadata:
-        metadata_fields = [i for i in sheet["rows"][0].keys() if i != 'cells']
         # assume string for metadata fields for now
         metadata_schema = {i: get_prop(i) for i in metadata_fields} 
         column_info.update(metadata_schema)
@@ -136,7 +137,7 @@ class SourceSmartsheets(Source):
                         data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
 
                         if include_metadata:
-                            metadata = {i: row[i] for i in row.keys() if i != 'cells'}
+                            metadata = {i: row[i] if i in row else None for i in metadata_fields}
                             data.update(metadata)
                             
                         yield AirbyteMessage(
