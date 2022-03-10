@@ -25,9 +25,6 @@ import io.airbyte.integrations.destination.bigquery.denormalize.JsonSchemaFormat
 import io.airbyte.integrations.destination.bigquery.denormalize.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -36,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryRecordFormatter {
 

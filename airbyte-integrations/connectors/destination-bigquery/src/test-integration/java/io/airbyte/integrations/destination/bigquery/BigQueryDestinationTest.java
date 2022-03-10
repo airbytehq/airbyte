@@ -263,7 +263,8 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination(false).getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
+    final AirbyteMessageConsumer consumer =
+        spy(new BigQueryDestination(false).getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

@@ -4,19 +4,18 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.protocol.models.DestinationSyncMode.APPEND;
+import static io.airbyte.protocol.models.DestinationSyncMode.OVERWRITE;
+import static java.util.Arrays.asList;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
-
 import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.protocol.models.DestinationSyncMode.APPEND;
-import static io.airbyte.protocol.models.DestinationSyncMode.OVERWRITE;
-import static java.util.Arrays.asList;
 
 public class BigQueryDenormalizedDestination extends SpecModifyingDestination implements Destination {
 
