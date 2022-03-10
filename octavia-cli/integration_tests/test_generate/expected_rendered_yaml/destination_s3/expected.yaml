@@ -12,8 +12,8 @@ configuration:
   s3_bucket_name: # REQUIRED | string | The name of the S3 bucket. | Example: airbyte_sync
   s3_bucket_path: # REQUIRED | string | Directory under the S3 bucket where data will be written. | Example: data_sync/test
   s3_bucket_region: # REQUIRED | string | The region of the S3 bucket.
-  access_key_id: # SECRET | OPTIONAL | string | The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile. | Example: A012345678910EXAMPLE
-  secret_access_key: # SECRET | OPTIONAL | string | The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided | Example: a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY
+  access_key_id: ${ACCESS_KEY_ID} # SECRET (please store in environment variables) | OPTIONAL | string | The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile. | Example: A012345678910EXAMPLE
+  secret_access_key: ${SECRET_ACCESS_KEY} # SECRET (please store in environment variables) | OPTIONAL | string | The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided | Example: a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY
   format:
     ## -------- Pick one valid structure among the examples below: --------
     format_type: "Avro" # REQUIRED | string}
