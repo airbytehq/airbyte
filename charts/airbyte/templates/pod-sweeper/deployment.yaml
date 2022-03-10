@@ -5,6 +5,8 @@ metadata:
   name: {{ include "airbyte.fullname" . }}-pod-sweeper
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/pod-sweeper/configmap.yaml") . | sha256sum }}
 spec:
   replicas: 1
   selector:
