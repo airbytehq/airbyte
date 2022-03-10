@@ -7,7 +7,7 @@ import os
 
 import pytest
 import yaml
-from octavia_cli.generate.renderer import ConnectionSpecificationRenderer
+from octavia_cli.generate.renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
 SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
@@ -26,7 +26,7 @@ def get_all_specs_params():
 
 @pytest.mark.parametrize("spec_type, spec", get_all_specs_params())
 def test_render_spec(spec_type, spec, octavia_project_directory, mocker):
-    renderer = ConnectionSpecificationRenderer(
+    renderer = ConnectorSpecificationRenderer(
         resource_name=f"resource-{spec['dockerImage']}",
         definition=mocker.Mock(
             type=spec_type,
@@ -66,10 +66,12 @@ EXPECTED_RENDERED_YAML_PATH = f"{os.path.dirname(__file__)}/expected_rendered_ya
         ("my_s3_destination", "destination", "destination_s3/input_spec.yaml", "destination_s3/expected.yaml"),
     ],
 )
-def test_expected_output(resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker):
+def test_expected_output_connector_specification_renderer(
+    resource_name, spec_type, input_spec_path, expected_yaml_path, octavia_project_directory, mocker
+):
     with open(os.path.join(EXPECTED_RENDERED_YAML_PATH, input_spec_path), "r") as f:
         input_spec = yaml.safe_load(f)
-    renderer = ConnectionSpecificationRenderer(
+    renderer = ConnectorSpecificationRenderer(
         resource_name=resource_name,
         definition=mocker.Mock(
             type=spec_type,
@@ -82,4 +84,72 @@ def test_expected_output(resource_name, spec_type, input_spec_path, expected_yam
     )
     output_path = renderer.write_yaml(octavia_project_directory)
     expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
+    assert filecmp.cmp(output_path, expect_output_path)
+
+
+def test_expected_output_connection_renderer(octavia_project_directory, mocker):
+    mock_source = mocker.Mock(
+        resource_id="my_source_id",
+        catalog={
+            "streams": [
+                {
+                    "stream": {
+                        "name": "stream_1",
+                        "jsonSchema": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "properties": {
+                                "foo": {
+                                    "type": "number",
+                                }
+                            },
+                        },
+                        "supportedSyncModes": ["full_refresh"],
+                        "sourceDefinedCursor": None,
+                        "defaultCursorField": ["foo"],
+                        "sourceDefinedPrimaryKey": [],
+                        "namespace": None,
+                    },
+                    "config": {
+                        "syncMode": "full_refresh",
+                        "cursorField": [],
+                        "destinationSyncMode": "append",
+                        "primaryKey": [],
+                        "aliasName": "aliasMock",
+                        "selected": True,
+                    },
+                },
+                {
+                    "stream": {
+                        "name": "stream_2",
+                        "jsonSchema": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "properties": {
+                                "bar": {
+                                    "type": "number",
+                                }
+                            },
+                        },
+                        "supportedSyncModes": ["full_refresh", "incremental"],
+                        "sourceDefinedCursor": None,
+                        "defaultCursorField": [],
+                        "sourceDefinedPrimaryKey": [],
+                        "namespace": None,
+                    },
+                    "config": {
+                        "syncMode": "full_refresh",
+                        "cursorField": [],
+                        "destinationSyncMode": "append",
+                        "primaryKey": [],
+                        "aliasName": "aliasMock",
+                        "selected": True,
+                    },
+                },
+            ]
+        },
+    )
+    mock_destination = mocker.Mock(resource_id="my_destination_id")
+
+    renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)
+    output_path = renderer.write_yaml(octavia_project_directory)
+    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/expected.yaml")
     assert filecmp.cmp(output_path, expect_output_path)

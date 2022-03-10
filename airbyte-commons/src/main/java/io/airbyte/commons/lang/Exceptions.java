@@ -71,4 +71,12 @@ public class Exceptions {
 
   }
 
+  public static <T> T swallowWithDefault(final Callable<T> procedure, final T defaultValue) {
+    try {
+      return procedure.call();
+    } catch (Exception e) {
+      return defaultValue;
+    }
+  }
+
 }
