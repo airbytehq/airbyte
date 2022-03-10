@@ -155,8 +155,10 @@ public class StagingConsumerFactory {
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String tableName = writeConfig.getOutputTableName();
+      final String stage = stagingOperations.getStageName(schemaName, tableName);
       final String path = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, tableName, CURRENT_SYNC_PATH);
 
+      stagingOperations.createStageIfNotExists(database, stage);
       stagingOperations.insertRecords(database, records, schemaName, path);
     };
   }
