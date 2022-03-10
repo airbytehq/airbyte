@@ -130,6 +130,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           resourceRequirements,
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
           Collections.emptyMap(),
+          Collections.emptyMap(),
           args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
