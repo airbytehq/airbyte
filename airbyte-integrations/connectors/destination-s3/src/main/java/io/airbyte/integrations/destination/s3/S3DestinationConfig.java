@@ -14,7 +14,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,8 @@ public class S3DestinationConfig {
   private final Integer partSize;
   private final S3FormatConfig formatConfig;
 
-  private final AtomicReference<AmazonS3> s3Client = new AtomicReference<>(null);
+  private final Object lock = new Object();
+  private AmazonS3 s3Client = null;
 
   /**
    * The part size should not matter in any use case that depends on this constructor. So the default
@@ -133,22 +133,26 @@ public class S3DestinationConfig {
     return formatConfig;
   }
 
-  public synchronized AmazonS3 getS3Client() {
-    if (s3Client.get() == null) {
-      return resetS3Client();
+  public AmazonS3 getS3Client() {
+    synchronized (lock) {
+      if (s3Client == null) {
+        return resetS3Client();
+      }
+      return s3Client;
     }
-    return s3Client.get();
   }
 
-  public synchronized AmazonS3 resetS3Client() {
-    if (s3Client.get() != null) {
-      s3Client.get().shutdown();
+  public AmazonS3 resetS3Client() {
+    synchronized (lock) {
+      if (s3Client != null) {
+        s3Client.shutdown();
+      }
+      s3Client = createS3Client();
+      return s3Client;
     }
-    s3Client.set(createS3Client());
-    return s3Client.get();
   }
 
-  public AmazonS3 createS3Client() {
+  protected AmazonS3 createS3Client() {
     LOGGER.info("Creating S3 client...");
 
     final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
