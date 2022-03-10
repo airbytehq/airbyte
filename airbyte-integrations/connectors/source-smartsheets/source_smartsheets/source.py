@@ -25,7 +25,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source
 
 
-metadata_fields =  ("parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt")
+metadata_fields =  ("id", "parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt")
 
 def get_prop(col_type: str) -> Dict[str, any]:
     props = {
