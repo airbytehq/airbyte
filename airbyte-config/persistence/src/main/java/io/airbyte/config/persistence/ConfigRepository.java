@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +25,8 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Notification;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -107,13 +110,27 @@ public class ConfigRepository {
   }
 
   public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone)
-      throws JsonValidationException, IOException {
-    for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
-      if (workspace.getSlug().equals(slug)) {
-        return Optional.of(workspace);
-      }
+      throws IOException {
+    final Result<Record> result;
+    if (includeTombstone) {
+      result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .where(WORKSPACE.SLUG.eq(slug))
+      ).fetch();
+    } else {
+      result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
-    return Optional.empty();
+
+    if (result.size() == 0) {
+      return Optional.empty();
+    }
+    final Record record = result.get(0);
+    final List<Notification> notifications = new ArrayList<>();
+    final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
+    for (final Object notification : fetchedNotifications) {
+      notifications.add(Jsons.convertValue(notification, Notification.class));
+    }
+    return Optional.of(DbConverter.buildStandardWorkspace(record, notifications));
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
