@@ -63,7 +63,7 @@ class AutoDisableConnectionActivityTest {
   @BeforeEach
   void setUp() {
     standardSync.setStatus(Status.ACTIVE);
-    Mockito.when(mFeatureFlags.disablesFailingConnections()).thenReturn(true);
+    Mockito.when(mFeatureFlags.autoDisablesFailingConnections()).thenReturn(true);
   }
 
   @Nested
