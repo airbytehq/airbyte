@@ -30,7 +30,6 @@ class SourceMagento(AbstractSource):
 
 
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        bearer = config['magento_bearer']
 
         headers_dict = {"Authorization": f"Bearer {config['magento_bearer']}"}
         params = {
@@ -58,11 +57,6 @@ class SourceMagento(AbstractSource):
             404: f'Route not found. Please check your base URL or submit a bug request: {res}',
             405: f'Method not allowed. Please contact your developer. Airbyte needs at least the permission to make GET requests: {res}',
         }
-
-        
-
-        
-
 
         if(req.status_code > 299):
             if req.status_code in errors:
@@ -101,7 +95,7 @@ class MagentoStream(HttpStream, ABC):
 
     primary_key = 'increment_id'
 
-    def __init__(self, start_date: str, end_date: str, page_size: str, base_url: str, cursor_field_value: str,  **kwargs):
+    def __init__(self, start_date, end_date, page_size: str, base_url: str, cursor_field_value: str,  **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.end_date = end_date
@@ -114,6 +108,10 @@ class MagentoStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.base_url
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return int(self.page_size)
 
     @property
     def cursor_field(self):
@@ -135,8 +133,8 @@ class MagentoStream(HttpStream, ABC):
     # Request params are the same for every api call.
     def request_params(self,
                        stream_state: Mapping[str, Any],
-                       stream_slice: Mapping[str, Any] = None,
-                       next_page_token: Mapping[str, Any] = None
+                       next_page_token: Mapping[str, Any] = None,
+                       **kwargs
                        ) -> MutableMapping[str, Any]:
 
         if next_page_token == None:
@@ -146,10 +144,12 @@ class MagentoStream(HttpStream, ABC):
 
         params = {
             'searchCriteria[filter_groups][0][filters][0][field]': self.cursor_field,
-            'searchCriteria[filter_groups][0][filters][0][value]': stream_slice[self.cursor_field],
+            'searchCriteria[filter_groups][0][filters][0][value]': self.start_date,
             'searchCriteria[filter_groups][0][filters][0][condition_type]': 'gteq',
             'searchCriteria[pageSize]': self.page_size,
-            'searchCriteria[currentPage]': page
+            'searchCriteria[currentPage]': page,
+            'searchCriteria[sortOrders][0][field]':self.cursor_field,
+            'searchCriteria[sortOrders][0][direction]':'asc'
         }
         if self.end_date:
             params = {
@@ -158,10 +158,11 @@ class MagentoStream(HttpStream, ABC):
                 'searchCriteria[filter_groups][1][filters][0][value]': self.end_date,
                 'searchCriteria[filter_groups][1][filters][0][condition_type]': 'lt',
             }
+
         return params
 
     # Parse the repsonse and just returns items
-    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> List:
+    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> List:
         res = response.json()
         return res['items']
 
@@ -190,22 +191,6 @@ class IncrementalMagentoStream(MagentoStream, IncrementalMixin):
             else:
                 self._cursor_value = latest_record_date
             yield record
-
-    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
-        """
-        Returns a list of each day between the start date and now.
-        The return value is a list of dicts {'date': date_string}.
-        """
-        dates = []
-        while start_date < datetime.now():
-            dates.append(
-                {self.cursor_field: start_date.strftime('%Y-%m-%d %H:%M:%S')})
-            start_date += timedelta(days=1)
-        return dates
-
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S') if stream_state and self.cursor_field in stream_state else self.start_date
-        return self._chunk_date_range(start_date)
 
 
 class SalesOrders(IncrementalMagentoStream):
