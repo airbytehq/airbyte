@@ -14,7 +14,7 @@
       },
       "domain": {
         "type": "string",
-        "description": "Chargify Subdomain. Normally this domain follows the following format companyname.chargify.com",
+        "description": "Chargify domain. Normally this domain follows the following format companyname.chargify.com"
       }
     }
   }

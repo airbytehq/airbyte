@@ -36,14 +36,16 @@ class ChargifyStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         
         results = response.json()
-        if results:
-            url_query = urlparse(response.url).query
-            query_params = parse_qs(url_query)
 
-            new_params = {param_name: param_value[0] for param_name, param_value in query_params.items()}
-            if "page" in new_params:
-              new_params["page"] = int(new_params["page"]) + 1
-            return new_params
+        if results:
+            if len(results) == self.PER_PAGE:
+                url_query = urlparse(response.url).query
+                query_params = parse_qs(url_query)
+
+                new_params = {param_name: param_value[0] for param_name, param_value in query_params.items()}
+                if "page" in new_params:
+                    new_params["page"] = int(new_params["page"]) + 1
+                return new_params
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
