@@ -46,6 +46,7 @@ class PivotalTrackerStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # print(response.json())
         for record in response.json():  # everything is in a list
             yield record
 
@@ -55,6 +56,34 @@ class Projects(PivotalTrackerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "projects"
+
+
+class ProjectBasedStream(PivotalTrackerStream):
+    @property
+    @abstractmethod
+    def subpath(self) -> str:
+        """
+        Within the project. For example, "stories" producing:
+        https://www.pivotaltracker.com/services/v5/projects/{project_id}/stories
+        """
+
+    def __init__(self, project_ids: List[str], **kwargs):
+        super().__init__(**kwargs)
+        self.project_ids = project_ids
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/{stream_slice['project_id']}/{self.subpath}"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for project_id in self.project_ids:
+            yield {"project_id": project_id}
+
+
+class Stories(ProjectBasedStream):
+
+    # TODO: cursor_field = "updated_at"
+    # TODO: get_updated_state
+    subpath = "stories"
 
 
 # Custom token authenticator because no "Bearer"
@@ -96,4 +125,5 @@ class SourcePivotalTracker(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
-        return [Projects(authenticator=auth)]
+        project_ids = self._generate_project_ids(auth)
+        return [Projects(authenticator=auth), Stories(project_ids, authenticator=auth)]
