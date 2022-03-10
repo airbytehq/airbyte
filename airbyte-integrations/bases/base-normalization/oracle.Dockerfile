@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.19.1
+FROM fishtownanalytics/dbt:1.0.0
 
 USER root
 WORKDIR /tmp
