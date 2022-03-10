@@ -72,9 +72,9 @@ class SourceDV360(AbstractSource):
         args= dict(
             credentials=self.get_credentials(config),
             partner_id = config.get('partner_id'), 
-            start_date = config.get("start_date"), 
-            end_date = config.get("end_date"),
-            filters = config.get("filters")
+            start_date = config.get('start_date'), 
+            end_date = config.get('end_date'),
+            filters = config.get('filters')
         ) 
 
         streams = [
@@ -117,12 +117,12 @@ class SourceDV360(AbstractSource):
                     f" Available streams: {stream_instances.keys()}"
                 )
             try:
-                logger.info(f"Syncing {stream_name} stream")
+                #logger.info(f"Syncing {stream_name} stream")
                 data = stream_instance.read_records(catalog_fields=configured_stream.stream.json_schema.get('properties').keys())
                 for row in data:
                     yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000))
-                logger.info(f"Finished syncing {stream_name} stream")
+                #logger.info(f"Finished syncing {stream_name} stream")
             except Exception as e:
                 logger.error('Failed to read the data: '+ repr(e))

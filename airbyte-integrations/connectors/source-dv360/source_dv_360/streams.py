@@ -3,7 +3,6 @@ from abc import ABC
 from typing import Any, Iterable, Mapping
 from xmlrpc.client import Boolean
 
-import pendulum
 from airbyte_cdk.sources.streams import Stream
 import json
 from typing import  Mapping, Any, List
@@ -124,7 +123,7 @@ class DBM:
       report_name = report_name,
       dimensions = self.get_dimensions_from_fields(fields),
       metrics = self.get_metrics_from_fields(fields),
-      start_date_ms = str(int(start_date.timestamp() * 1000)),   ##TODO Convert dates to ms --> check for timezone
+      start_date_ms = str(int(start_date.timestamp() * 1000)),
       end_date_ms = str(int(end_date.timestamp() * 1000)),
       filters = filters,
     )

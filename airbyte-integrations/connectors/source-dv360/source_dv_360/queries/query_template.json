@@ -28,5 +28,6 @@
     "frequency": "ONE_TIME"
   },
   "reportDataStartTimeMs": "",
-  "reportDataEndTimeMs": ""
+  "reportDataEndTimeMs": "",
+  "timezoneCode": "UTC"
 }

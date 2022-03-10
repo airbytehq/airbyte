@@ -3,7 +3,7 @@
 connector_image: airbyte/source-dv360:dev
 tests:
   spec:
-    - spec_path: "source_dv360/spec.json"
+    - spec_path: "source_dv_360/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
