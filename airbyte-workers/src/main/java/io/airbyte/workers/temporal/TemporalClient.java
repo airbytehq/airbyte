@@ -476,7 +476,8 @@ public class TemporalClient {
   }
 
   /**
-   * Check if a workflow is reachable for signal calls by attempting to query for current state. If the query succeeds, the workflow is reachable.
+   * Check if a workflow is reachable for signal calls by attempting to query for current state. If
+   * the query succeeds, the workflow is reachable.
    */
   @VisibleForTesting
   boolean isWorkflowReachable(final String workflowName) {
