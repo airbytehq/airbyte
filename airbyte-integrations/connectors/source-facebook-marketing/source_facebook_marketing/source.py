@@ -10,8 +10,9 @@ from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, Destin
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, InsightConfig
 from source_facebook_marketing.streams import (
+    Activities,
     AdAccount,
     AdCreatives,
     Ads,
@@ -61,7 +62,6 @@ class SourceFacebookMarketing(AbstractSource):
             start_date=config.start_date,
             end_date=config.end_date,
         )
-
         streams = [
             AdAccount(api=api),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
@@ -77,9 +77,10 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Images(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
+            Activities(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
-        return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
+        return self._update_insights_streams(insights=config.custom_insights, default_args=insights_args, streams=streams)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration.
@@ -100,7 +101,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         )
 
-    def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
+    def _update_insights_streams(self, insights: List[InsightConfig], default_args, streams) -> List[Type[Stream]]:
         """Update method, if insights have values returns streams replacing the
         default insights streams else returns streams
         """
@@ -110,10 +111,16 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args["name"] = f"Custom{insight.name}"
-            args["fields"] = list(set(insight.fields))
-            args["breakdowns"] = list(set(insight.breakdowns))
-            args["action_breakdowns"] = list(set(insight.action_breakdowns))
+            args = dict(
+                api=default_args["api"],
+                name=f"Custom{insight.name}",
+                fields=list(set(insight.fields)),
+                breakdowns=list(set(insight.breakdowns)),
+                action_breakdowns=list(set(insight.action_breakdowns)),
+                time_increment=insight.time_increment,
+                start_date=insight.start_date or default_args["start_date"],
+                end_date=insight.end_date or default_args["end_date"],
+            )
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 

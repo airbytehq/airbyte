@@ -112,6 +112,8 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.45  | 2022-03-04 | [10707](https://github.com/airbytehq/airbyte/pull/10707) | Remove stage history from deals stream to increase efficiency |
+| 0.1.44  | 2022-02-24 | [9027](https://github.com/airbytehq/airbyte/pull/9027) | Add associations companies to deals, ticket and contact stream |
 | 0.1.43  | 2022-02-24 | [10576](https://github.com/airbytehq/airbyte/pull/10576) | Cast timestamp to date/datetime|
 | 0.1.42  | 2022-02-22 | [10492](https://github.com/airbytehq/airbyte/pull/10492) | Add `date-time` format to datetime fields|
 | 0.1.41  | 2022-02-21 | [10177](https://github.com/airbytehq/airbyte/pull/10177) | Migrate to CDK |

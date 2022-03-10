@@ -74,7 +74,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api):
         streams = SourceFacebookMarketing().streams(config)
 
-        assert len(streams) == 14
+        assert len(streams) == 15
 
     def test_spec(self):
         spec = SourceFacebookMarketing().spec()
@@ -92,4 +92,6 @@ class TestSourceFacebookMarketing:
             start_date=config.start_date,
             end_date=config.end_date,
         )
-        assert SourceFacebookMarketing()._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
+        assert SourceFacebookMarketing()._update_insights_streams(
+            insights=config.custom_insights, default_args=insights_args, streams=streams
+        )

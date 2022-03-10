@@ -39,12 +39,14 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -61,6 +63,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -78,7 +81,6 @@ import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
@@ -132,7 +134,7 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private EventRunner eventRunner;
   private FeatureFlags featureFlags;
   private JobConverter jobConverter;
 
@@ -151,7 +153,7 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     final JobNotifier jobNotifier = mock(JobNotifier.class);
-    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
 
     featureFlags = mock(FeatureFlags.class);
     when(featureFlags.usesNewScheduler()).thenReturn(false);
@@ -170,7 +172,7 @@ class SchedulerHandlerTest {
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         jobConverter);
   }
@@ -500,16 +502,22 @@ class SchedulerHandlerTest {
     final UUID operationId = standardSync.getOperationIds().get(0);
     final List<StandardSyncOperation> operations = getOperations(standardSync);
 
+    final ActorDefinitionResourceRequirements sourceResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("1"));
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withResourceRequirements(sourceResourceReqs));
+    final ActorDefinitionResourceRequirements destResourceReqs =
+        new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2"));
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(new StandardDestinationDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+            .withResourceRequirements(destResourceReqs));
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
@@ -520,7 +528,9 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations))
+        operations,
+        sourceResourceReqs,
+        destResourceReqs))
             .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
@@ -539,7 +549,9 @@ class SchedulerHandlerTest {
         standardSync,
         SOURCE_DOCKER_IMAGE,
         DESTINATION_DOCKER_IMAGE,
-        operations);
+        operations,
+        sourceResourceReqs,
+        destResourceReqs);
   }
 
   @Test
@@ -619,7 +631,7 @@ class SchedulerHandlerTest {
         .jobId(Optional.of(jobId))
         .build();
 
-    when(temporalWorkerRunFactory.startNewManualSync(connectionId))
+    when(eventRunner.startNewManualSync(connectionId))
         .thenReturn(manualSyncSubmissionResult);
 
     doReturn(new JobInfoRead())
@@ -627,7 +639,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(temporalWorkerRunFactory).startNewManualSync(connectionId);
+    verify(eventRunner).startNewManualSync(connectionId);
   }
 
   private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {
