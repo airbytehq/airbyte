@@ -124,13 +124,7 @@ public class ConfigRepository {
     if (result.size() == 0) {
       return Optional.empty();
     }
-    final Record record = result.get(0);
-    final List<Notification> notifications = new ArrayList<>();
-    final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
-    for (final Object notification : fetchedNotifications) {
-      notifications.add(Jsons.convertValue(notification, Notification.class));
-    }
-    return Optional.of(DbConverter.buildStandardWorkspace(record, notifications));
+    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)

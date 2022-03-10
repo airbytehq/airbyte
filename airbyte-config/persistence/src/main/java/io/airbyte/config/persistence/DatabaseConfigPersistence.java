@@ -317,12 +317,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaces = new ArrayList<>();
     for (final Record record : result) {
-      final List<Notification> notificationList = new ArrayList<>();
-      final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
-      for (final Object notification : fetchedNotifications) {
-        notificationList.add(Jsons.convertValue(notification, Notification.class));
-      }
-      final StandardWorkspace workspace = DbConverter.buildStandardWorkspace(record, notificationList);
+      final StandardWorkspace workspace = DbConverter.buildStandardWorkspace(record);
       standardWorkspaces.add(new ConfigWithMetadata<>(
           record.get(WORKSPACE.ID).toString(),
           ConfigSchema.STANDARD_WORKSPACE.name(),
