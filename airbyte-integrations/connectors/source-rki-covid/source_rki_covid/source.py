@@ -89,7 +89,7 @@ class RkiCovidStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        yield response.json()
 
 
 class Germany(RkiCovidStream):
@@ -98,7 +98,7 @@ class Germany(RkiCovidStream):
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -107,7 +107,7 @@ class Germany(RkiCovidStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
+        return "germany"
 
 
 # Basic incremental stream
@@ -138,6 +138,47 @@ class IncrementalRkiCovidStream(RkiCovidStream, ABC):
         """
         return {}
 
+class GermanyHistoryCases(IncrementalRkiCovidStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = None
+
+    def __init__(self, config, **kwargs):
+        super().__init__(**kwargs)
+        self.config = config
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        TODO
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return "date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_state = latest_record.get(self.cursor_field)
+        current_state = current_stream_state.get(self.cursor_field) or latest_state
+        return {self.cursor_field: max(latest_state, current_state)}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json().get("data")
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        if self.config.get('history_in_days'):
+            return "germany/history/cases/"+str(self.config.get('history_in_days'))
+        return "germany/history/cases/"
 
 class Employees(IncrementalRkiCovidStream):
     """
@@ -145,7 +186,7 @@ class Employees(IncrementalRkiCovidStream):
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = "date"
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "employee_id"
@@ -206,4 +247,5 @@ class SourceRkiCovid(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        return [Germany()]
+
+        return [Germany(), GermanyHistoryCases(config=config)]
