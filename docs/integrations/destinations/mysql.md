@@ -38,7 +38,7 @@ To use the MySQL destination, you'll need:
 
 #### Troubleshooting
 
-Some users reported they could not connect to Amazon AWS RDS MySQL or MariaDB. When creating the new connector they receive a `Cannot create a PoolableConnectionFactory`.
+Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
 To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 
 #### Network Access

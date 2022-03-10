@@ -19,7 +19,7 @@ The MySQL source does not alter the schema present in your database. Depending o
 
 There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 
-Some users reported they could not connect to Amazon AWS RDS MySQL or MariaDB. When creating the new connector they receive a `Cannot create a PoolableConnectionFactory`.
+Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
 To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 
 ## Getting Started \(Airbyte Cloud\)
