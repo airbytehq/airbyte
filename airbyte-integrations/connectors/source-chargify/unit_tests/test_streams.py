@@ -18,9 +18,7 @@ def ChargifyStreamInstance(mocker) -> ChargifyStream:
 
     return ChargifyStream(
         authenticator=MagicMock(),
-        subdomain="test",
-        per_page=200,
-        page=1
+        domain="test",
     )
 
 
@@ -33,9 +31,7 @@ def CustomerStreamInstance(mocker) -> Customers:
 
     return Customers(
         authenticator=MagicMock(),
-        subdomain="test",
-        per_page=200,
-        page=1
+        domain="test"
     )
 
 @pytest.fixture()
@@ -47,40 +43,29 @@ def SubscriptionsStreamInstance(mocker) -> Subscriptions:
 
     return Subscriptions(
         authenticator=MagicMock(),
-        subdomain="test",
-        per_page=200,
-        page=1
+        domain="test",
     )
 
-@pytest.mark.parametrize("subdomain, page, per_page", [('test', 1, 200),('test1',2,200),('test2', 3,200)])
-def test_stream_config(subdomain, page, per_page, mocker):
+@pytest.mark.parametrize("domain", [('test'),('test1'),('test2')])
+def test_stream_config(domain,mocker):
 
     mocker.patch.object(ChargifyStream, "path", "v0/example_endpoint")
     mocker.patch.object(ChargifyStream, "primary_key", "test_primary_key")
     mocker.patch.object(ChargifyStream, "__abstractmethods__", set())
     
     stream: ChargifyStream = ChargifyStream(
-        subdomain=subdomain,
-        per_page=per_page,
-        page=page
+        domain=domain,
     )
-    assert stream._subdomain == subdomain
-    assert stream._page == page
-    assert stream._per_page == per_page
-    assert stream.url_base == f'https://{subdomain}.chargify.com'
-    assert stream.is_first_requests == True
+    assert stream._domain == domain
 
-    customers_stream: Customers = Customers(subdomain=subdomain, page=page, per_page=per_page)
+    customers_stream: Customers = Customers(domain=domain)
     assert customers_stream.path() == f'customers.json'
     assert customers_stream.primary_key == 'id'
-    assert stream.url_base == f'https://{subdomain}.chargify.com'
-    assert stream.is_first_requests == True
 
-    subscriptions_stream: Subscriptions = Subscriptions(subdomain=subdomain, page=page, per_page=per_page)
+
+    subscriptions_stream: Subscriptions = Subscriptions(domain=domain)
     assert subscriptions_stream.path() == f'subscriptions.json'
     assert subscriptions_stream.primary_key == 'id'
-    assert stream.url_base == f'https://{subdomain}.chargify.com'
-    assert stream.is_first_requests == True
 
 def test_next_page_token(ChargifyStreamInstance: ChargifyStream):
     response = requests.Response()
@@ -107,12 +92,6 @@ def test_requests_params(ChargifyStreamInstance: ChargifyStream):
     params = ChargifyStreamInstance.request_params(stream_state={},next_page_token=None)
 
     assert params == {'page': 1, 'per_page': 200}
-
-    setattr(ChargifyStreamInstance.__class__, 'is_first_requests', False)
-    
-    params = ChargifyStreamInstance.request_params(stream_state={}, next_page_token=None)
-
-    assert params == None
 
     params = ChargifyStreamInstance.request_params(stream_state={}, next_page_token={'page': 2, 'per_page': 200})
 

@@ -1,93 +1,116 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "first_name": {
-      "type": ["string"]
-    },
-    "last_name": {
-      "type": ["string"]
-    },
-    "email": {
-      "type": ["string"],
-      "format": "date-time"
-    },
-    "cc_emails": {
-      "type": ["null", "string"]
-    },
-    "organization": {
-      "type": ["null", "string"]
-    },
-    "reference": {
-      "type": ["null", "string"]
-    },
-    "id": {
-      "type": ["integer"]
-    },
-    "created_at": {
-      "type": ["string"],
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": ["string"],
-      "format": "date-time"
-    },
-    "address": {
-      "type": ["null", "string"]
-    },
-    "address_2": {
-      "type": ["null", "string"]
-    },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "state": {
-      "type": ["null", "string"]
-    },
-    "state_name": {
-      "type": ["null", "string"]
-    },
-    "zip": {
-      "type": ["null", "string"]
-    },
-    "country": {
-      "type": ["null", "string"]
-    },
-    "country_name": {
-      "type": ["null", "string"]
-    },
-    "phone": {
-      "type": ["null", "string"]
-    },
-    "verified": {
-      "type": ["null", "string"]
-    },
-    "portal_customer_created_at": {
-      "type": ["null","string"],
-      "format": "date-time"
-    },
-    "portal_invite_last_sent_at": {
-      "type": ["null","string"],
-      "format": "date-time"
-    },
-    "portal_invite_last_accepted_at": {
-      "type": ["null","string"],
-      "format": "date-time"
-    },
-    "tax_exempt": {
-      "type": ["boolean"]
-    },
-    "vat_number": {
-      "type": ["null", "string"]
-    },
-    "parent_id": {
-      "type": ["null", "integer"]
-    },
-    "locale": {
-      "type": ["null", "string"]
-    },
-    "default_subscription_group_uid": {
-      "type": ["null", "integer"]
-    }
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "type":"object",
+  "required":[
+     "default_subscription_group_uid",
+     "portal_invite_last_sent_at",
+     "vat_number",
+     "email",
+     "created_at",
+     "zip",
+     "first_name",
+     "country_name",
+     "state",
+     "city",
+     "parent_id",
+     "locale",
+     "portal_customer_created_at",
+     "updated_at",
+     "country",
+     "portal_invite_last_accepted_at",
+     "tax_exempt",
+     "id",
+     "reference",
+     "last_name",
+     "address_2",
+     "phone",
+     "organization",
+     "address",
+     "verified",
+     "cc_emails",
+     "state_name"
+  ],
+  "properties":{
+     "default_subscription_group_uid":{
+        "type":"string"
+     },
+     "portal_invite_last_sent_at":{
+        "type":"null"
+     },
+     "vat_number":{
+        "type":"string"
+     },
+     "email":{
+        "type":"string"
+     },
+     "created_at":{
+        "type":"string"
+     },
+     "zip":{
+        "type":"null"
+     },
+     "first_name":{
+        "type":"string"
+     },
+     "country_name":{
+        "type":"string"
+     },
+     "state":{
+        "type":"null"
+     },
+     "city":{
+        "type":"string"
+     },
+     "parent_id":{
+        "type":"integer"
+     },
+     "locale":{
+        "type":"string"
+     },
+     "portal_customer_created_at":{
+        "type":"null"
+     },
+     "updated_at":{
+        "type":"string"
+     },
+     "country":{
+        "type":"null"
+     },
+     "portal_invite_last_accepted_at":{
+        "type":"null"
+     },
+     "tax_exempt":{
+        "type":"boolean"
+     },
+     "id":{
+        "type":"integer"
+     },
+     "reference":{
+        "type":"string"
+     },
+     "last_name":{
+        "type":"string"
+     },
+     "address_2":{
+        "type":"string"
+     },
+     "phone":{
+        "type":"string"
+     },
+     "organization":{
+        "type":"string"
+     },
+     "address":{
+        "type":"string"
+     },
+     "verified":{
+        "type":"null"
+     },
+     "cc_emails":{
+        "type":"null"
+     },
+     "state_name":{
+        "type":"string"
+     }
   }
 }

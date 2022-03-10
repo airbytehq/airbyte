@@ -16,6 +16,6 @@ def test_streams(mocker):
 
 def test_streams_config(mocker):
     source = SourceChargify()
-    config_mock = {"subdomain": "tst", "page": 1, "per_page": 200}
+    config_mock = {"domain": "tst"}
     streams_config = source.convert_config2stream_args(config_mock)
-    assert streams_config == {"subdomain":"tst", "page": 1, "per_page": 200}
+    assert streams_config == {"domain":"tst"}

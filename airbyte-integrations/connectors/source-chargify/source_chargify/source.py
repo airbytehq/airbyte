@@ -21,20 +21,17 @@ from airbyte_cdk.models import SyncMode
 # Basic full refresh stream
 class ChargifyStream(HttpStream, ABC):
 
-    def __init__(self, subdomain: str, per_page: int, page: str, *args, **kwargs):
+    PER_PAGE = 200
+    FIRST_PAGE = 1
+
+    def __init__(self, domain: str, *args, **kwargs):
         super().__init__(**kwargs)
 
-        self._subdomain = subdomain
-        self._per_page = per_page
-        self._page = page
-    
-    @property
-    def url_base(self):
-        return f"https://{self._subdomain}.chargify.com"
+        self._domain = domain
 
     @property
-    def is_first_requests(self)-> bool:
-        return True
+    def url_base(self):
+        return f"https://{self._domain}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         
@@ -43,32 +40,23 @@ class ChargifyStream(HttpStream, ABC):
             url_query = urlparse(response.url).query
             query_params = parse_qs(url_query)
 
-            new_params = {}
-            for param in query_params:
-                if param == "page":
-                    new_params[param] = int(query_params[param][0]) + 1
-                else:
-                    new_params[param] = query_params[param][0]
-
+            new_params = {param_name: param_value[0] for param_name, param_value in query_params.items()}
+            if "page" in new_params:
+              new_params["page"] = int(new_params["page"]) + 1
             return new_params
-        return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        if next_page_token is None and self.is_first_requests is True:
-            self.is_first_requests == False
-            return {"page": self._page, "per_page": self._per_page}
+        if next_page_token is None:
+            return {'page': self.FIRST_PAGE, 'per_page': self.PER_PAGE}
 
         return next_page_token
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
+        
+        yield response.json()
 
 
 class Customers(ChargifyStream):
@@ -124,7 +112,7 @@ class SourceChargify(AbstractSource):
         """Convert the input config to streams
         """
 
-        return {"subdomain": config["subdomain"], "page": 1, "per_page": 200}
+        return {"domain": config["domain"]}
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         
