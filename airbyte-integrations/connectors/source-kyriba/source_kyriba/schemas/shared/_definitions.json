@@ -1,1483 +1,921 @@
 {
   "definitions": {
-    "Account": {
+    "AggregatedGroupDto": {
       "type": "object",
       "required": [
-        "address",
-        "bankAccountID",
-        "branch",
-        "calendar",
-        "code",
-        "company",
-        "currency",
-        "timeZone",
-        "uuid"
+        "aggregation"
       ],
       "properties": {
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "UUID of the account."
+        "entity": {
+          "description": "Entity",
+          "$ref": "#/definitions/ReferenceModel"
         },
-        "code": {
-          "type": "string",
-          "example": "ACCOUNT001",
-          "description": "Code that represents the account.",
-          "minLength": 1,
-          "maxLength": 12
-        },
-        "description": {
-          "type": "string",
-          "example": "Account description",
-          "description": "Name of the account.",
-          "minLength": 0,
-          "maxLength": 150
-        },
-        "description2": {
-          "type": "string",
-          "example": "Account description2",
-          "description": "Other name of the account.",
-          "minLength": 0,
-          "maxLength": 150
-        },
-        "accountType": {
-          "type": "string",
-          "example": "OTHER_ACCOUNT",
-          "description": "Type of the account. Default = BANK_ACCOUNT",
-          "enum": [
-            "BANK_ACCOUNT",
-            "INTERCOMPANY_ACCOUNT",
-            "OTHER_ACCOUNT",
-            "SHARED_ACCOUNT"
-          ]
-        },
-        "closedAccount": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account is opened (false) or closed (true). Default = false."
-        },
-        "closingDate": {
+        "date": {
           "type": "string",
           "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account is closed. Default: system date."
-        },
-        "hidden": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the data shall be hidden in all lists. Default = false."
-        },
-        "openingDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date when the account was opened. Default: system date."
-        },
-        "nonResident": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is a non resident account (true) or a resident account (false). Default = false."
-        },
-        "currency": {
-          "description": "Currency of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "company": {
-          "description": "Company of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "branch": {
-          "description": "Bank branch that holds the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "defaultGroup": {
-          "description": "Account group of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "bankStatementLayout": {
-          "type": "string",
-          "example": "FINSTA",
-          "description": "Bank statement layout of the account.",
-          "enum": [
-            "AFB_120",
-            "MT940_STANDARD",
-            "MT940_GERMANY",
-            "CBI_120",
-            "BAI",
-            "AEB_43",
-            "FINSTA"
-          ]
-        },
-        "bankAccountID": {
-          "description": "Account code according to the international banking standards (BAN).",
-          "$ref": "#/definitions/AccountIdModel"
-        },
-        "bankAccountIDs": {
-          "type": "array",
-          "description": "Additional BANs for the same account.",
-          "items": {
-            "$ref": "#/definitions/AccountIdModel"
-          }
-        },
-        "address": {
-          "description": "Account's address.",
-          "$ref": "#/definitions/AddressModel."
-        },
-        "contact": {
-          "description": "Account's contact.",
-          "$ref": "#/definitions/ContactModel"
-        },
-        "calendar": {
-          "description": "Account's calendar.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "zbaGenerator": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account can generate ZBA interco cash flows (true) or no (false). Default = false."
-        },
-        "zbaIdentifier": {
-          "type": "string",
-          "example": "ZBA_IDENTIFIER",
-          "description": "Code that used by the bank to identify this account in bank statements.",
-          "minLength": 0,
-          "maxLength": 16
-        },
-        "generateZBAFlow": {
-          "type": "string",
-          "example": "ONLY_WHEN_ZBA_GENERATOR",
-          "description": "Defines how many flows shall be generated for each ZBA actual.",
-          "enum": [
-            "ONLY_WHEN_ZBA_GENERATOR",
-            "ALSO_WHEN_COUNTERPARTY"
-          ]
-        },
-        "settlementAccount": {
-          "description": "Settlement account  of account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "counterpartySettlementAccount": {
-          "description": "Counterparty settlement account  of account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "chartOfAccounts": {
-          "description": "Chart of accounts.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "glAccount": {
-          "description": "GL account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "internalAccountCode": {
-          "type": "string",
-          "example": "GLACCOUNT",
-          "description": "Code that represents the current account in the internal chart of GL accounts.",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "includeInGLReconciliation": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the current account should be considered in module GR (true) or no (false). Default = false."
-        },
-        "considerBankStatementsFrom": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which bank statements should be considered in the GL reconciliation process."
-        },
-        "initialAccountingBalance": {
-          "description": "Initial balance of the account as calculated by the Accounting system on Initial accounting balance date.",
-          "$ref": "#/definitions/AmountModel."
-        },
-        "initialAccountingBalanceDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of the Initial accounting balance."
-        },
-        "userZone": {
-          "description": "User zone section.",
-          "$ref": "#/definitions/UserZones"
-        },
-        "considerOneDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cone day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false). Default = false."
-        },
-        "considerTwoDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201ctwo day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false). Default = false."
-        },
-        "considerThreeDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cthree day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false). Default = false."
-        },
-        "considerInvestmentPositionTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cinvestment position\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false). Default = false."
-        },
-        "integrateEndOfDayStatements": {
-          "type": "boolean",
-          "example": true,
-          "description": "Flag to show if End-of-day bank statements should be integrated (true) or no (false). Default = true."
-        },
-        "integrateIntradayStatements": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if Intraday bank statements should be integrated (true) or no (false). Default = false."
-        },
-        "timeZone": {
-          "type": "string",
-          "example": "GMT",
-          "description": "Account's time zone.",
-          "minLength": 1,
-          "maxLength": 2147483647
-        },
-        "cutOffTime": {
-          "type": "string",
-          "example": "20:00:00",
-          "description": "Time until which the intraday bank statements should be considered."
-        },
-        "accountCategory1": {
-          "description": "Account category 1.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory2": {
-          "description": "Account category 2.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory3": {
-          "description": "Account category 3.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory4": {
-          "description": "Account category 4.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory5": {
-          "description": "Account category 5.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory6": {
-          "description": "Account category 6.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory7": {
-          "description": "Account category 7.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory8": {
-          "description": "Account category 8.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory9": {
-          "description": "Account category 9.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory10": {
-          "description": "Account category 10.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "memo": {
-          "type": "string",
-          "description": "Account's memo",
-          "minLength": 0,
-          "maxLength": 1000
-        },
-        "interestBearing": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is interest bearing (true) or no (false). Default = false."
-        },
-        "centrallyManaged": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is managed by Central Treasury (true) or no (false). Default = false."
-        },
-        "ownerName": {
-          "type": "string",
-          "description": "Name of the account owner",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "reconcilerName": {
-          "type": "string",
-          "description": "Name of the user in charge of the account reconciliation",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText1": {
-          "type": "string",
-          "description": "Free zone 1",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText2": {
-          "type": "string",
-          "description": "Free zone 2",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText3": {
-          "type": "string",
-          "description": "Free zone 3",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeAmount1": {
-          "type": "number",
-          "example": 1.123,
-          "description": "Free amount 1."
-        },
-        "freeAmount2": {
-          "type": "number",
-          "example": 1.123,
-          "description": "Free amount 2."
-        },
-        "freeAmount3": {
-          "type": "number",
-          "example": 1.123,
-          "description": "Free amount 3."
-        },
-        "signatoryUsers": {
-          "type": "array",
-          "description": "List of users who have authority over the account.",
-          "items": {
-            "$ref": "#/definitions/ReferenceModel"
-          }
-        },
-        "establishments": {
-          "type": "array",
-          "description": "List of the multiple establishments to which the current account belongs.",
-          "items": {
-            "$ref": "#/definitions/EstablishmentModel"
-          }
-        },
-        "domesticTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for Domestic transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "internationalTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for International transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "maturityTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for Maturity transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "domesticDirectDebit": {
-          "type": "string",
-          "description": "Issuer number to be used for Domestic direct debit",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "internationalDirectDebit": {
-          "type": "string",
-          "description": "Issuer number to be used for International direct debit",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "payablesDrafts": {
-          "type": "string",
-          "description": "Issuer number to be used for Payables drafts",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "receivablesDrafts": {
-          "type": "string",
-          "description": "Issuer number to be used for Receivables drafts",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "accountAvailableForPayments": {
-          "type": "boolean",
-          "example": true,
-          "description": "Flag to show if account is available for payments (true) or no (false). Default = true."
-        },
-        "paymentReconciliationOptions": {
-          "description": "Check payments info.",
-          "$ref": "#/definitions/PaymentReconciliationOptionsModel"
-        },
-        "accountPaymentInstructions": {
-          "description": "Correspondent info.",
-          "$ref": "#/definitions/AccountPaymentInstructions"
+          "description": "Date"
+        },
+        "aggregation": {
+          "description": "Calculated aggregation of the cash flows",
+          "$ref": "#/definitions/AggregationDto"
+        },
+        "aggregationLevel": {
+          "description": "The next aggregation level",
+          "$ref": "#/definitions/AggregationLevelDto"
         }
       },
-      "title": "Account",
-      "description": "Account."
+      "title": "AggregatedGroupDto"
     },
-    "AccountCorrespondent": {
-      "type": "object",
-      "properties": {
-        "oneTime": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account has One-time correspondent (true) or no (false)."
-        },
-        "correspondentDescription": {
-          "type": "string",
-          "example": "One-time correspondent description",
-          "description": "One-time correspondent description.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "correspondentBIC": {
-          "type": "string",
-          "example": "BATMFRXX",
-          "description": "BIC value of the One-time correspondent.",
-          "minLength": 0,
-          "maxLength": 11
-        },
-        "country": {
-          "description": "Country of the One-time correspondent.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "correspondentOtherIdentifier": {
-          "description": "Other identifier of the One-time correspondent.",
-          "$ref": "#/definitions/OtherIdentifierCommonModel"
-        },
-        "account": {
-          "type": "string",
-          "example": "Account",
-          "description": "Account of the One-time correspondent.",
-          "minLength": 0,
-          "maxLength": 50
-        }
-      },
-      "title": "AccountCorrespondent",
-      "description": "Account correspondent."
-    },
-    "AccountDetailsDto": {
+    "AggregationDto": {
       "type": "object",
       "required": [
-        "address",
-        "bankAccountID",
-        "branch",
-        "calendar",
-        "code",
-        "company",
-        "currency",
-        "paymentReconciliationOptions",
-        "timeZone",
-        "uuid"
+        "amount"
       ],
       "properties": {
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "UUID of the account."
-        },
-        "code": {
-          "type": "string",
-          "example": "ACCOUNT001",
-          "description": "Code that represents the account.",
-          "minLength": 1,
-          "maxLength": 12
-        },
-        "description": {
-          "type": "string",
-          "example": "Account description",
-          "description": "Name of the account.",
-          "minLength": 0,
-          "maxLength": 150
-        },
-        "description2": {
-          "type": "string",
-          "example": "Account description2",
-          "description": "Other name of the account.",
-          "minLength": 0,
-          "maxLength": 150
-        },
-        "accountType": {
-          "type": "string",
-          "example": "OTHER_ACCOUNT",
-          "description": "Type of the account. Default = BANK_ACCOUNT",
-          "enum": [
-            "BANK_ACCOUNT",
-            "INTERCOMPANY_ACCOUNT",
-            "OTHER_ACCOUNT",
-            "SHARED_ACCOUNT"
-          ]
-        },
-        "status": {
-          "type": "string",
-          "example": "CREATION_TO_VALIDATE",
-          "description": "Status of the account. Default = STANDARD. Display only.",
-          "enum": [
-            "STANDARD",
-            "CREATION_TO_VALIDATE",
-            "CREATION_VALIDATED",
-            "AVAILABLE_FOR_BANK_INTEGRATION",
-            "CLOSURE_REQUESTED",
-            "CLOSURE_VALIDATE",
-            "BANK_CONTRACT_TO_INACTIVATE",
-            "CLOSED"
-          ]
-        },
-        "closedAccount": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account is opened (false) or closed (true)."
-        },
-        "closingDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account is closed. Default: system date."
-        },
-        "hidden": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the data shall be hidden in all lists."
-        },
-        "openingDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date when the account was opened. Default: system date."
-        },
-        "nonResident": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is a non resident account (true) or a resident account (false)."
-        },
-        "currency": {
-          "description": "Currency of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "company": {
-          "description": "Company of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "branch": {
-          "description": "Bank branch that holds the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "defaultGroup": {
-          "description": "Account group of the account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "bankStatementLayout": {
-          "type": "string",
-          "example": "FINSTA",
-          "description": "Bank statement layout of the account.",
-          "enum": [
-            "AFB_120",
-            "MT940_STANDARD",
-            "MT940_GERMANY",
-            "CBI_120",
-            "BAI",
-            "AEB_43",
-            "FINSTA"
-          ]
-        },
-        "bankAccountID": {
-          "description": "Account code according to the international banking standards (BAN).",
-          "$ref": "#/definitions/AccountIdModel"
-        },
-        "bankAccountIDs": {
-          "type": "array",
-          "description": "Additional BANs for the same account.",
-          "items": {
-            "$ref": "#/definitions/AccountIdModel"
-          }
-        },
-        "address": {
-          "description": "Account's address.",
-          "$ref": "#/definitions/AddressModel."
-        },
-        "contact": {
-          "description": "Account's contact.",
-          "$ref": "#/definitions/ContactModel"
-        },
-        "calendar": {
-          "description": "Account's calendar.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "zbaGenerator": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account can generate ZBA interco cash flows (true) or no (false)."
-        },
-        "zbaIdentifier": {
-          "type": "string",
-          "example": "ZBA_IDENTIFIER",
-          "description": "Code that used by the bank to identify this account in bank statements.",
-          "minLength": 0,
-          "maxLength": 16
-        },
-        "generateZBAFlow": {
-          "type": "string",
-          "example": "ONLY_WHEN_ZBA_GENERATOR",
-          "description": "Defines how many flows shall be generated for each ZBA actual.",
-          "enum": [
-            "ONLY_WHEN_ZBA_GENERATOR",
-            "ALSO_WHEN_COUNTERPARTY"
-          ]
-        },
-        "settlementAccount": {
-          "description": "Settlement account  of account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "counterpartySettlementAccount": {
-          "description": "Counterparty settlement account  of account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "chartOfAccounts": {
-          "description": "Chart of accounts.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "glAccount": {
-          "description": "GL account.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "internalAccountCode": {
-          "type": "string",
-          "example": "GLACCOUNT",
-          "description": "Code that represents the current account in the internal chart of GL accounts.",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "includeInGLReconciliation": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the current account should be considered in module GR (true) or no (false)."
-        },
-        "considerBankStatementsFrom": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which bank statements should be considered in the GL reconciliation process."
-        },
-        "initialAccountingBalance": {
-          "description": "Initial balance of the account as calculated by the Accounting system on Initial accounting balance date.",
-          "$ref": "#/definitions/AmountModel."
-        },
-        "initialAccountingBalanceDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of the Initial accounting balance."
-        },
-        "userZone": {
-          "description": "User zone section.",
-          "$ref": "#/definitions/UserZones"
-        },
-        "considerOneDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cone day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
-        },
-        "considerTwoDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201ctwo day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
-        },
-        "considerThreeDayFloatTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cthree day float\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
-        },
-        "considerInvestmentPositionTransactions": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if \u201cinvestment position\u201d bank transactions should be considered when calculating the account initial balance (true) or no (false)."
-        },
-        "integrateEndOfDayStatements": {
-          "type": "boolean",
-          "example": true,
-          "description": "Flag to show if End-of-day bank statements should be integrated (true) or no (false)."
-        },
-        "integrateIntradayStatements": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if Intraday bank statements should be integrated (true) or no (false)."
-        },
-        "timeZone": {
-          "type": "string",
-          "example": "GMT",
-          "description": "Account's time zone.",
-          "minLength": 1,
-          "maxLength": 2147483647
-        },
-        "cutOffTime": {
-          "type": "string",
-          "example": "20:00:00",
-          "description": "Time until which the intraday bank statements should be considered."
-        },
-        "accountCategory1": {
-          "description": "Account category 1.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory2": {
-          "description": "Account category 2.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory3": {
-          "description": "Account category 3.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory4": {
-          "description": "Account category 4.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory5": {
-          "description": "Account category 5.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory6": {
-          "description": "Account category 6.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory7": {
-          "description": "Account category 7.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory8": {
-          "description": "Account category 8.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory9": {
-          "description": "Account category 9.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory10": {
-          "description": "Account category 10.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "memo": {
-          "type": "string",
-          "description": "Account's memo",
-          "minLength": 0,
-          "maxLength": 1000
-        },
-        "interestBearing": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is interest bearing (true) or no (false)."
-        },
-        "centrallyManaged": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if the account is managed by Central Treasury (true) or no (false)."
-        },
-        "ownerName": {
-          "type": "string",
-          "description": "Name of the account owner",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "reconcilerName": {
-          "type": "string",
-          "description": "Name of the user in charge of the account reconciliation",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText1": {
-          "type": "string",
-          "description": "Free zone 1",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText2": {
-          "type": "string",
-          "description": "Free zone 2",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeText3": {
-          "type": "string",
-          "description": "Free zone 3",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "freeAmount1": {
+        "amount": {
           "type": "number",
-          "example": 1.123,
-          "description": "Free amount 1."
+          "example": 10580.123,
+          "description": "Calculated aggregation amount of the cash flows expressed in conversion currency"
         },
-        "freeAmount2": {
-          "type": "number",
-          "example": 1.123,
-          "description": "Free amount 2."
-        },
-        "freeAmount3": {
-          "type": "number",
-          "example": 1.123,
-          "description": "Free amount 3."
-        },
-        "signatoryUsers": {
-          "type": "array",
-          "description": "List of users who have authority over the account.",
-          "items": {
-            "$ref": "#/definitions/ReferenceModel"
-          }
-        },
-        "includeInElectronicBank": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account was included in electronic banking contract (true) or note (false). Display only"
-        },
-        "includeInElectronicBankDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account was included in electronic banking contract. Display only"
-        },
-        "excludeFromElectronicBank": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account was excluded from electronic banking contract (true) or note (false). Display only"
-        },
-        "excludeFromElectronicBankDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account was excluded from electronic banking contract. Display only"
-        },
-        "confirmAccountList": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account was confirmed (true) or note (false). Display only"
-        },
-        "confirmAccountListDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account was confirmed. Display only"
-        },
-        "confirmAccountBalances": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account balances were confirmed (true) or note (false). Display only"
-        },
-        "confirmAccountBalancesDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account balances were confirmed. Display only"
-        },
-        "confirmAccountSignatories": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account signatories were confirmed (true) or note (false). Display only"
-        },
-        "confirmAccountSignatoriesDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account signatories were confirmed. Display only"
-        },
-        "accountOpeningRequested": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account opening was requested (true) or note (false). Display only"
-        },
-        "accountOpeningRequestDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account opening was requested. Display only"
-        },
-        "accountClosureRequested": {
-          "type": "boolean",
-          "example": false,
-          "description": "Flag to show if account closure was requested (true) or note (false). Display only"
-        },
-        "accountClosureRequestDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date as of which the account closure was requested. Display only"
-        },
-        "establishments": {
-          "type": "array",
-          "description": "List of the multiple establishments to which the current account belongs.",
-          "items": {
-            "$ref": "#/definitions/EstablishmentModel"
-          }
-        },
-        "domesticTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for Domestic transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "internationalTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for International transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "maturityTransfer": {
-          "type": "string",
-          "description": "Issuer number to be used for Maturity transfer",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "domesticDirectDebit": {
-          "type": "string",
-          "description": "Issuer number to be used for Domestic direct debit",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "internationalDirectDebit": {
-          "type": "string",
-          "description": "Issuer number to be used for International direct debit",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "payablesDrafts": {
-          "type": "string",
-          "description": "Issuer number to be used for Payables drafts",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "receivablesDrafts": {
-          "type": "string",
-          "description": "Issuer number to be used for Receivables drafts",
-          "minLength": 0,
-          "maxLength": 10
-        },
-        "accountAvailableForPayments": {
-          "type": "boolean",
-          "example": true,
-          "description": "Flag to show if account is available for payments (true) or no (false)."
-        },
-        "paymentReconciliationOptions": {
-          "description": "Check payments info.",
-          "$ref": "#/definitions/PaymentReconciliationOptionsModel"
-        },
-        "accountPaymentInstructions": {
-          "description": "Correspondent info.",
-          "$ref": "#/definitions/AccountPaymentInstructions"
-        }
-      },
-      "title": "AccountDetailsDto"
-    },
-    "AccountIdModel": {
-      "type": "object",
-      "required": [
-        "value"
-      ],
-      "properties": {
-        "banStructure": {
-          "type": "string",
-          "example": "BBAN_STRUCTURE",
-          "description": "Type of the BAN. Default = LBAN_1_STRUCTURE",
-          "enum": [
-            "BBAN_STRUCTURE",
-            "IBAN_STRUCTURE",
-            "LBAN_0_STRUCTURE",
-            "LBAN_1_STRUCTURE",
-            "LBAN_2_STRUCTURE",
-            "LBAN_3_STRUCTURE",
-            "LBAN_4_STRUCTURE",
-            "LBAN_5_STRUCTURE",
-            "LBAN_6_STRUCTURE",
-            "LBAN_7_STRUCTURE",
-            "LBAN_8_STRUCTURE",
-            "LBAN_9_STRUCTURE"
-          ]
-        },
-        "value": {
-          "type": "string",
-          "example": "BF1030134020015400945000643",
-          "description": "Account Id value. Account Id length depends on country. IBAN value should include country code and control key."
-        },
-        "accountNature": {
-          "type": "string",
-          "example": "CURRENT_ACCOUNT",
-          "description": "Account nature. Default = CURRENT_ACCOUNT",
-          "enum": [
-            "CURRENT_ACCOUNT",
-            "SAVINGS_ACCOUNT",
-            "INVESTMENT_ACCOUNT",
-            "CUSTODY_ACCOUNT",
-            "OTHER"
-          ]
-        },
-        "statementIdentifier": {
-          "type": "string",
-          "example": "Statement identifier",
-          "description": "Statement identifier.",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "feeStatementIdentifier": {
-          "type": "string",
-          "example": "Fee statement identifier",
-          "description": "Fee statement identifier.",
-          "minLength": 0,
-          "maxLength": 50
-        },
-        "description": {
-          "type": "string",
-          "example": "Account Id description",
-          "description": "Account Id description.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "reportingFilterType": {
-          "type": "string",
-          "example": "KEY_1",
-          "description": "Reporting filter type. Default = KEY_1",
-          "enum": [
-            "KEY_1",
-            "KEY_2",
-            "KEY_3",
-            "KEY_4",
-            "KEY_5"
-          ]
-        },
-        "establishment": {
-          "description": "Establishment.",
-          "$ref": "#/definitions/ReferenceModel"
-        }
-      },
-      "title": "AccountIdModel",
-      "description": "Account Id."
-    },
-    "AccountPaymentInstructions": {
-      "type": "object",
-      "properties": {
-        "mainCorrespondentBankBranch": {
-          "description": "Main correspondent branch.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "mainOneTimeCorrespondent": {
-          "description": "Main One time correspondent.",
-          "$ref": "#/definitions/AccountCorrespondent"
-        },
-        "additionalCorrespondentBankBranch": {
-          "description": "Additional correspondent branch.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "additionalOneTimeCorrespondent": {
-          "description": "Additional One time correspondent.",
-          "$ref": "#/definitions/AccountCorrespondent"
-        },
-        "defaultReason1": {
-          "type": "string",
-          "description": "Default Payment Reason instructions 1.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "defaultReason2": {
-          "type": "string",
-          "description": "Default Payment Reason instructions 2.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "defaultReason3": {
-          "type": "string",
-          "description": "Default Payment Reason instructions 3.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "defaultReason4": {
-          "type": "string",
-          "description": "Default Payment Reason instructions 4.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "ffc1": {
-          "type": "string",
-          "description": "For further credit instructions 1.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "ffc2": {
-          "type": "string",
-          "description": "For further credit instructions 2.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "ffc3": {
-          "type": "string",
-          "description": "For further credit instructions 3.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "ffc4": {
-          "type": "string",
-          "description": "For further credit instructions 4.",
-          "minLength": 0,
-          "maxLength": 35
-        }
-      },
-      "title": "AccountPaymentInstructions",
-      "description": "Account payment instructions."
-    },
-    "AccountSearchModel": {
-      "type": "object",
-      "required": [
-        "bank",
-        "branch",
-        "calendar",
-        "code",
-        "company",
-        "countryCode",
-        "currency",
-        "uuid"
-      ],
-      "properties": {
-        "accountCategory1": {
-          "description": "Account category1.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory2": {
-          "description": "Account category2.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory3": {
-          "description": "Account category3.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory4": {
-          "description": "Account category4.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory5": {
-          "description": "Account category5.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory6": {
-          "description": "Account category6.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory7": {
-          "description": "Account category7.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory8": {
-          "description": "Account category8.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory9": {
-          "description": "Account category9.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountCategory10": {
-          "description": "Account category10.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "accountAvailableForPayments": {
-          "type": "boolean",
-          "example": true,
-          "description": "Flag to show if account is available for payments (true) or no (false)."
-        },
-        "accountType": {
-          "type": "string",
-          "example": "BANK_ACCOUNT",
-          "description": "Account type",
-          "enum": [
-            "BANK_ACCOUNT",
-            "INTERCOMPANY_ACCOUNT",
-            "OTHER_ACCOUNT",
-            "SHARED_ACCOUNT"
-          ]
-        },
-        "activeStatus": {
-          "type": "string",
-          "example": "OPENED",
-          "description": "Account status.",
-          "enum": [
-            "OPENED",
-            "CLOSED"
-          ]
-        },
-        "attachments": {
-          "type": "boolean",
-          "description": "Attachments"
-        },
-        "banCode": {
-          "type": "string",
-          "description": "Account BAN code"
-        },
-        "bank": {
-          "description": "Account bank",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "branch": {
-          "description": "Account branch",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "branchDescription": {
-          "type": "string",
-          "description": "Account branch description"
-        },
-        "calendar": {
-          "description": "Account calendar",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "closedAccount": {
-          "type": "boolean",
-          "example": false,
-          "description": "Is account closed. Default value false"
-        },
-        "closingDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2020-06-23",
-          "description": "Closing date"
-        },
-        "code": {
-          "type": "string",
-          "example": "COMPANYCODE",
-          "description": "Account code."
-        },
-        "company": {
-          "description": "Account company",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "countryCode": {
-          "type": "string",
-          "description": "Account country code"
-        },
-        "creationDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2020-06-21",
-          "description": "Creation date"
-        },
-        "currency": {
-          "description": "Account currency",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "defaultGroup": {
-          "description": "Default group.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "description": {
-          "type": "string",
-          "example": "Some description",
-          "description": "Account description."
-        },
-        "description2": {
-          "type": "string",
-          "example": "Some description2",
-          "description": "Account description2."
-        },
-        "documents": {
-          "type": "boolean",
-          "description": "Documents."
-        },
-        "glAccount": {
-          "description": "Account GL",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "ibanCode": {
-          "type": "string",
-          "description": "Account IBAN code"
-        },
-        "internalAccountCode": {
-          "type": "string",
-          "description": "Internal account code"
-        },
-        "marker1": {
-          "type": "boolean",
-          "example": false,
-          "description": "Marker1."
-        },
-        "marker2": {
-          "type": "boolean",
-          "example": false,
-          "description": "Marker2."
-        },
-        "marker3": {
-          "type": "boolean",
-          "example": false,
-          "description": "Marker3."
-        },
-        "signatoryUsers": {
+        "count": {
           "type": "integer",
-          "format": "int64",
-          "description": "Signatory users."
-        },
-        "statementIdentifier": {
-          "type": "string",
-          "description": "Account statement identifier"
-        },
-        "status": {
-          "type": "string",
-          "example": "CREATION_TO_VALIDATE",
-          "description": "Account status",
-          "enum": [
-            "STANDARD",
-            "CREATION_TO_VALIDATE",
-            "CREATION_VALIDATED",
-            "AVAILABLE_FOR_BANK_INTEGRATION",
-            "CLOSURE_REQUESTED",
-            "CLOSURE_VALIDATE",
-            "BANK_CONTRACT_TO_INACTIVATE",
-            "CLOSED"
-          ]
-        },
-        "updateDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2020-06-22",
-          "description": "Update date"
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "UUID of the account."
-        },
-        "zbaIdentifier": {
-          "type": "string",
-          "description": "Account ZBA identifier"
+          "format": "int32",
+          "description": "Count of the aggregated cash flows."
         }
       },
-      "title": "AccountSearchModel",
-      "description": "Account search"
+      "title": "AggregationDto"
     },
-    "AddressModel.": {
+    "AggregationLevelDto": {
       "type": "object",
       "required": [
-        "country"
+        "groupingCriterion",
+        "groups",
+        "level"
       ],
       "properties": {
-        "city": {
-          "type": "string",
-          "example": "San Diego",
-          "description": "City.",
-          "minLength": 0,
-          "maxLength": 35
+        "level": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "The level of the aggregation",
+          "enum": [
+            1,
+            2,
+            3
+          ]
         },
-        "country": {
-          "description": "Country. Passed as either a UUID or Code.",
-          "$ref": "#/definitions/ReferenceModel"
-        },
-        "homepage": {
+        "groupingCriterion": {
           "type": "string",
-          "example": "www.mycompany.com",
-          "description": "Web site.",
-          "minLength": 0,
-          "maxLength": 250
+          "example": "BANK",
+          "description": "The grouping criterion for this level",
+          "enum": [
+            "ACCOUNT",
+            "ACCOUNT_GROUP",
+            "BANK",
+            "BANK_GROUP",
+            "COMPANY",
+            "COMPANY_GROUP",
+            "CURRENCY",
+            "COUNTRY",
+            "COUNTRY_GROUP",
+            "FLOW_CODE",
+            "BUDGET_CODE",
+            "TRANSACTION_DATE",
+            "VALUE_DATE",
+            "ACCOUNTING_DATE"
+          ]
         },
-        "state": {
-          "type": "string",
-          "example": "CA",
-          "description": "State.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "street1": {
-          "type": "string",
-          "example": "4435 Eastgate Mall",
-          "description": "Street 1.",
-          "minLength": 0,
-          "maxLength": 100
-        },
-        "street2": {
-          "type": "string",
-          "example": "Suite 200",
-          "description": "Street 2.",
-          "minLength": 0,
-          "maxLength": 100
-        },
-        "zipCode": {
-          "type": "string",
-          "example": 92121,
-          "description": "ZIP code. Note: the max field length depends on the Country setup. The default value is 10c but a smaller value may be defined in your Country setup.",
-          "minLength": 0,
-          "maxLength": 10
+        "groups": {
+          "type": "array",
+          "description": "List of aggregated groups",
+          "items": {
+            "$ref": "#/definitions/AggregatedGroupDto"
+          }
         }
       },
-      "title": "AddressModel."
+      "title": "AggregationLevelDto"
     },
-    "AmountModel.": {
+    "AmountModel": {
       "type": "object",
       "properties": {
         "currency": {
           "example": "USD",
-          "description": "Amount currency.",
+          "description": "Amount currency",
           "$ref": "#/definitions/ReferenceModel"
         },
-        "value": {
+        "amount": {
           "type": "number",
-          "example": 1.123456,
-          "description": "Amount value.",
-          "minimum": 0,
-          "exclusiveMinimum": false
+          "format": "double",
+          "example": 10580.123,
+          "description": "Amount value"
         }
       },
-      "title": "AmountModel."
+      "title": "AmountModel"
     },
-    "ContactModel": {
+    "AmountResponseDTO": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string",
-          "example": "Swiss Bankers Association",
-          "description": "Contact name",
-          "minLength": 0,
-          "maxLength": 35
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Amount"
         },
-        "department": {
-          "type": "string",
-          "example": "Cash",
-          "description": "Contact department.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "phoneNumber": {
-          "type": "string",
-          "example": "+41 (0) 61 295 93 93",
-          "description": "Contact phone.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "faxNumber": {
-          "type": "string",
-          "example": "+41 (0) 56 496 93 88",
-          "description": "Contact fax.",
-          "minLength": 0,
-          "maxLength": 35
-        },
-        "email": {
-          "type": "string",
-          "example": "office@sba.ch",
-          "description": "Contact e-mail.",
-          "minLength": 0,
-          "maxLength": 70
+        "currency": {
+          "example": "USD",
+          "description": "Amount currency",
+          "$ref": "#/definitions/ReferenceModel"
         }
       },
-      "title": "ContactModel",
-      "description": "Full contact."
+      "title": "AmountResponseDTO"
     },
-    "EstablishmentModel": {
+    "CashAmountModel": {
+      "type": "object",
+      "properties": {
+        "accountAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Account amount"
+        },
+        "feeAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Fee amount"
+        },
+        "interestAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Interest amount"
+        },
+        "commissionAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Commission amount"
+        }
+      },
+      "title": "CashAmountModel"
+    },
+    "CashAmountResponseDTO": {
       "type": "object",
       "required": [
-        "establishment"
+        "account",
+        "accountAmount",
+        "date",
+        "flowAmount",
+        "flowCode",
+        "number",
+        "status"
       ],
       "properties": {
-        "establishment": {
-          "description": "Establishment.",
+        "account": {
+          "description": "Bank account",
           "$ref": "#/definitions/ReferenceModel"
         },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "description": {
+          "type": "string",
+          "description": "Cash flow's description",
+          "minLength": 0,
+          "maxLength": 2500
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "status": {
+          "type": "string",
+          "example": "CONFIRMED",
+          "description": "Cash flow status",
+          "minLength": 0,
+          "maxLength": 2500
+        },
+        "reference": {
+          "type": "string",
+          "description": "Cash flow's reference",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "origin": {
+          "type": "string",
+          "description": "Cash flow's origin",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "number": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Cash flow's number"
+        },
+        "glStatus": {
+          "type": "string",
+          "description": "Cash flow's GL status",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        },
+        "actualMode": {
+          "type": "string",
+          "example": "Manual",
+          "description": "Cash flow actual mode"
+        }
+      },
+      "title": "CashAmountResponseDTO"
+    },
+    "CashFlowAggregationFilteringDto": {
+      "type": "object",
+      "required": [
+        "entityFilters"
+      ],
+      "properties": {
+        "entityFilters": {
+          "type": "array",
+          "description": "The list of the filters by entities",
+          "items": {
+            "$ref": "#/definitions/EntityFilterDto"
+          }
+        },
+        "accountType": {
+          "type": "string",
+          "description": "The account type selected to filter cash flows",
+          "enum": [
+            "ALL",
+            "BANK",
+            "INTERCO"
+          ]
+        },
+        "period": {
+          "description": "The period used to filter cash flows",
+          "$ref": "#/definitions/FilteringPeriodDto"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "origin": {
+          "type": "string",
+          "description": "Origin of a cash flow",
+          "enum": [
+            "BANK",
+            "BANK_FLOAT",
+            "BANK_INTRADAY",
+            "BANK_SHARE",
+            "CASH_FLOW",
+            "CASH_INTEGRATION",
+            "CASH_LAW",
+            "CASH_COPY",
+            "CASH_FEE",
+            "CASH_INTEREST",
+            "CASH_BALANCE",
+            "CASH_SCENARIO",
+            "CASH_SERIES",
+            "BALANCING",
+            "BORROWING",
+            "FX",
+            "PAYMENT",
+            "PAYMENT_CAMT054",
+            "PAYMENT_ERP",
+            "PAYABLE_DRAFTS",
+            "RECEIVABLE_DRAFTS"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the cash flow",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "reference": {
+          "type": "string",
+          "example": "123-ABC",
+          "description": "Reference of the cash flow",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of a cash flow",
+          "enum": [
+            "ESTIMATED",
+            "CONFIRMED",
+            "ACTUAL",
+            "INTRADAY"
+          ]
+        },
+        "actualMode": {
+          "type": "string",
+          "description": "Select the actual mode to filter the cash flows",
+          "enum": [
+            "ALL",
+            "CASHREC",
+            "MANUAL"
+          ]
+        },
+        "glStatus": {
+          "type": "string",
+          "description": "GL status",
+          "enum": [
+            "EMPTY",
+            "NOT_BALANCED",
+            "NOT_SENT_TO_GL",
+            "SENT_TO_GL"
+          ]
+        }
+      },
+      "title": "CashFlowAggregationFilteringDto"
+    },
+    "CashFlowAggregationLevelsDto": {
+      "type": "object",
+      "properties": {
+        "level1": {
+          "type": "string",
+          "description": "The first level of aggregation by the grouping criterion",
+          "enum": [
+            "ACCOUNT",
+            "ACCOUNT_GROUP",
+            "BANK",
+            "BANK_GROUP",
+            "COMPANY",
+            "COMPANY_GROUP",
+            "CURRENCY",
+            "COUNTRY",
+            "COUNTRY_GROUP",
+            "FLOW_CODE",
+            "BUDGET_CODE",
+            "TRANSACTION_DATE",
+            "VALUE_DATE",
+            "ACCOUNTING_DATE"
+          ]
+        },
+        "level2": {
+          "type": "string",
+          "description": "The second level of aggregation by the grouping criterion",
+          "enum": [
+            "ACCOUNT",
+            "ACCOUNT_GROUP",
+            "BANK",
+            "BANK_GROUP",
+            "COMPANY",
+            "COMPANY_GROUP",
+            "CURRENCY",
+            "COUNTRY",
+            "COUNTRY_GROUP",
+            "FLOW_CODE",
+            "BUDGET_CODE",
+            "TRANSACTION_DATE",
+            "VALUE_DATE",
+            "ACCOUNTING_DATE"
+          ]
+        },
+        "level3": {
+          "type": "string",
+          "description": "The third level of aggregation by the grouping criterion",
+          "enum": [
+            "ACCOUNT",
+            "ACCOUNT_GROUP",
+            "BANK",
+            "BANK_GROUP",
+            "COMPANY",
+            "COMPANY_GROUP",
+            "CURRENCY",
+            "COUNTRY",
+            "COUNTRY_GROUP",
+            "FLOW_CODE",
+            "BUDGET_CODE",
+            "TRANSACTION_DATE",
+            "VALUE_DATE",
+            "ACCOUNTING_DATE"
+          ]
+        }
+      },
+      "title": "CashFlowAggregationLevelsDto"
+    },
+    "CashFlowAggregationRequestDto": {
+      "type": "object",
+      "required": [
+        "currencyConversion",
+        "filtering"
+      ],
+      "properties": {
+        "filtering": {
+          "description": "Filtering",
+          "$ref": "#/definitions/CashFlowAggregationFilteringDto"
+        },
+        "currencyConversion": {
+          "description": "Currency conversion",
+          "$ref": "#/definitions/CurrencyConversionDto"
+        },
+        "aggregation": {
+          "description": "Aggregation levels",
+          "$ref": "#/definitions/CashFlowAggregationLevelsDto"
+        }
+      },
+      "title": "CashFlowAggregationRequestDto"
+    },
+    "CashFlowAggregationResponseDto": {
+      "type": "object",
+      "required": [
+        "accountAmountAggregationTotal",
+        "currency"
+      ],
+      "properties": {
+        "accountAmountAggregationTotal": {
+          "description": "Calculated aggregation total of the cash flows",
+          "$ref": "#/definitions/AggregationDto"
+        },
+        "currency": {
+          "description": "The selected currency for conversion",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "aggregationLevel": {
+          "description": "The aggregation level",
+          "$ref": "#/definitions/AggregationLevelDto"
+        }
+      },
+      "title": "CashFlowAggregationResponseDto"
+    },
+    "CashFlowDateModel": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2021-04-01",
+          "description": "Transaction date"
+        },
+        "valueDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2021-04-02",
+          "description": "Value date"
+        },
+        "accountingDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2021-04-03",
+          "description": "Accounting date"
+        },
+        "updateDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2020-01-02T13:04:35Z",
+          "description": "Update date time"
+        }
+      },
+      "title": "CashFlowDateModel"
+    },
+    "CashFlowModel": {
+      "type": "object",
+      "required": [
+        "account",
+        "date",
+        "flowAmount",
+        "flowCode",
+        "status"
+      ],
+      "properties": {
         "account": {
-          "description": "Account.",
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "status": {
+          "type": "string",
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/CashAmountModel"
+        },
+        "description": {
+          "type": "string",
+          "description": "Cash flow's description",
+          "minLength": 0,
+          "maxLength": 2500
+        },
+        "reference": {
+          "type": "string",
+          "description": "Cash flow's reference",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        }
+      },
+      "title": "CashFlowModel"
+    },
+    "CashFlowResponseDetailed": {
+      "type": "object",
+      "required": [
+        "account",
+        "bank",
+        "branch",
+        "company",
+        "companyGlAmount",
+        "counterpartyFlow",
+        "flowCode",
+        "forecastGlCountervalue"
+      ],
+      "properties": {
+        "currency": {
+          "example": "USD",
+          "description": "Amount currency",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "feeAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Fee amount"
+        },
+        "interestAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Interest amount"
+        },
+        "commissionAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 10580.123,
+          "description": "Commission amount"
+        },
+        "updateDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2021-04-02T12:12:12Z",
+          "description": "Last update date of the cash flow."
+        },
+        "flowID": {
+          "type": "string",
+          "description": "Flow ID",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "companyConsolidationCode": {
+          "type": "string",
+          "description": "Company consolidation code",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "company": {
+          "description": "Company",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "bank": {
+          "description": "Bank",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "branch": {
+          "description": "Branch",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "forecastGlCountervalue": {
+          "description": "Forecast GL Countervalue",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "companyGlAmount": {
+          "description": "Company GL amount",
+          "$ref": "#/definitions/AmountResponseDTO"
+        },
+        "debitCreditType": {
+          "type": "string",
+          "description": "Type of GL",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "counterpartyFlow": {
+          "description": "Counterparty flow",
+          "$ref": "#/definitions/CounterpartyFlowModel"
+        },
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
           "$ref": "#/definitions/ReferenceModel"
         }
       },
-      "title": "EstablishmentModel",
-      "description": "Establishment."
+      "title": "CashFlowResponseDetailed"
+    },
+    "CashFlowSearchModel": {
+      "type": "object",
+      "required": [
+        "account",
+        "date",
+        "flowAmount",
+        "flowCode",
+        "status"
+      ],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "status": {
+          "type": "string",
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "description": {
+          "type": "string",
+          "description": "Cash flow's description",
+          "minLength": 0,
+          "maxLength": 2500
+        },
+        "reference": {
+          "type": "string",
+          "description": "Cash flow's reference",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "origin": {
+          "type": "string",
+          "description": "Cash flow's origin",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "number": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Cash flow's number",
+          "minimum": 0,
+          "maximum": 250,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false
+        },
+        "glStatus": {
+          "type": "string",
+          "example": "BALANCED",
+          "description": "Cash flow GL status"
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        },
+        "actualMode": {
+          "type": "string",
+          "example": "Manual",
+          "description": "Cash flow actual mode"
+        }
+      },
+      "title": "CashFlowSearchModel"
+    },
+    "CashFlowUpdateModel": {
+      "type": "object",
+      "required": [
+        "account",
+        "date",
+        "flowAmount",
+        "flowCode",
+        "status"
+      ],
+      "properties": {
+        "account": {
+          "description": "Bank account",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "flowCode": {
+          "description": "Flow code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "budgetCode": {
+          "description": "Budget code",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "status": {
+          "type": "string",
+          "example": "CONFIRMED",
+          "description": "Cash flow status"
+        },
+        "date": {
+          "description": "Cash flow dates",
+          "$ref": "#/definitions/CashFlowDateModel"
+        },
+        "flowAmount": {
+          "description": "Flow amount",
+          "$ref": "#/definitions/AmountModel"
+        },
+        "accountAmount": {
+          "description": "Account amount",
+          "$ref": "#/definitions/CashAmountModel"
+        },
+        "description": {
+          "type": "string",
+          "description": "Cash flow's description",
+          "minLength": 0,
+          "maxLength": 2500
+        },
+        "reference": {
+          "type": "string",
+          "description": "Cash flow's reference",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "userZones": {
+          "description": "User zones of the cash flow",
+          "$ref": "#/definitions/UserZonesModel"
+        }
+      },
+      "title": "CashFlowUpdateModel"
+    },
+    "CounterpartyFlowModel": {
+      "type": "object",
+      "required": [
+        "company",
+        "consolidationCode"
+      ],
+      "properties": {
+        "company": {
+          "description": "Company",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "consolidationCode": {
+          "type": "string",
+          "description": "Consolidation code"
+        }
+      },
+      "title": "CounterpartyFlowModel"
+    },
+    "CurrencyConversionDto": {
+      "type": "object",
+      "required": [
+        "currency",
+        "currencyRate"
+      ],
+      "properties": {
+        "currency": {
+          "description": "Currency used for conversion",
+          "$ref": "#/definitions/ReferenceModel"
+        },
+        "currencyRate": {
+          "description": "Currency rate to use for currency conversion",
+          "$ref": "#/definitions/CurrencyConversionRateDto"
+        }
+      },
+      "title": "CurrencyConversionDto"
+    },
+    "CurrencyConversionRateDto": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "description": "Currency rate mode to use for currency conversion",
+          "enum": [
+            "FIXING",
+            "HISTORICAL"
+          ]
+        },
+        "fixingDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2020-02-01",
+          "description": "The date of the currency rate to be used if selected mode is FIXING."
+        },
+        "historicalDateType": {
+          "type": "string",
+          "description": "The dates of that type of the cash flows will be used as the currency rate datesif selected mode is HISTORICAL.",
+          "enum": [
+            "TRANSACTION",
+            "VALUE",
+            "ACCOUNTING"
+          ]
+        },
+        "type": {
+          "description": "Currency rate type",
+          "$ref": "#/definitions/ReferenceModel"
+        }
+      },
+      "title": "CurrencyConversionRateDto"
+    },
+    "EntityFilterDto": {
+      "type": "object",
+      "required": [
+        "entities",
+        "entityType"
+      ],
+      "properties": {
+        "entityType": {
+          "type": "string",
+          "description": "The entity type to filter cash flows",
+          "enum": [
+            "ACCOUNT",
+            "ACCOUNT_GROUP",
+            "BANK",
+            "BANK_GROUP",
+            "COMPANY",
+            "COMPANY_GROUP",
+            "CURRENCY",
+            "COUNTRY",
+            "COUNTRY_GROUP"
+          ]
+        },
+        "entities": {
+          "type": "array",
+          "description": "The entities to filter cash flows of the specified type",
+          "items": {
+            "$ref": "#/definitions/ReferenceModel"
+          }
+        }
+      },
+      "title": "EntityFilterDto"
+    },
+    "FilteringPeriodDto": {
+      "type": "object",
+      "properties": {
+        "dateType": {
+          "type": "string",
+          "example": "TRANSACTION",
+          "description": "The date type based on which the period is defined",
+          "enum": [
+            "TRANSACTION",
+            "VALUE",
+            "ACCOUNTING",
+            "UPDATE",
+            "CREATION"
+          ]
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2021-04-02",
+          "description": "The start date of the filtering period"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2021-04-03",
+          "description": "The end date of the filtering period"
+        }
+      },
+      "title": "FilteringPeriodDto"
     },
     "InnerError": {
       "type": "object",
@@ -1494,51 +932,6 @@
       },
       "title": "InnerError",
       "description": "An object containing more specific information than the current object about the error."
-    },
-    "OtherIdentifierCommonModel": {
-      "type": "object",
-      "required": [
-        "otherIdentifierType"
-      ],
-      "properties": {
-        "otherIdentifierType": {
-          "type": "integer",
-          "format": "int64",
-          "example": 1,
-          "description": "Id assigned by another institution."
-        },
-        "otherIdentifierValue": {
-          "type": "string",
-          "example": "20-1234567",
-          "description": "Value of the identifier that corresponds to the selected otherIdentifierType.",
-          "minLength": 0,
-          "maxLength": 35
-        }
-      },
-      "title": "OtherIdentifierCommonModel"
-    },
-    "PaymentReconciliationOptionsModel": {
-      "type": "object",
-      "required": [
-        "separateReportingAccount"
-      ],
-      "properties": {
-        "bankReportingPolicy": {
-          "type": "string",
-          "example": "CURRENT_ACCOUNT",
-          "description": "Real Bank account used for Checks. Default = CURRENT_ACCOUNT",
-          "enum": [
-            "CURRENT_ACCOUNT",
-            "SEPARATE_ACCOUNT"
-          ]
-        },
-        "separateReportingAccount": {
-          "description": "Separate bank account. Required if bankReportingPolicy = SEPARATE_ACCOUNT",
-          "$ref": "#/definitions/ReferenceModel"
-        }
-      },
-      "title": "PaymentReconciliationOptionsModel",
-      "description": "Payment Reconciliation Options."
     },
     "ReferenceModel": {
       "type": "object",
@@ -1558,18 +951,12 @@
       "title": "ReferenceModel",
       "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
     },
-    "ResponseIdModel": {
+    "ResponseUUIDModel": {
       "type": "object",
       "required": [
-        "code",
         "uuid"
       ],
       "properties": {
-        "code": {
-          "type": "string",
-          "example": "MY_RESOURCE_CODE",
-          "description": "Code of the resource."
-        },
         "uuid": {
           "type": "string",
           "format": "uuid",
@@ -1577,7 +964,7 @@
           "description": "UUID of the created resource."
         }
       },
-      "title": "ResponseIdModel"
+      "title": "ResponseUUIDModel"
     },
     "RestApiError": {
       "type": "object",
@@ -1634,41 +1021,41 @@
       "title": "RestApiErrorResponse",
       "description": "REST API Error Response."
     },
-    "UserZones": {
+    "UserZonesModel": {
       "type": "object",
       "properties": {
         "userZone1": {
           "type": "string",
-          "description": "Free field whose type (Alphanumeric, Numeric, Date, List) is defined in the application setup. The imported value must be consistent with the field type. And the total length across all user zone values must be of 250 characters max.",
+          "description": "Free field whose type (Alphanumeric, Numeric, Date, List) is defined in the application setup. The imported value must be consistent with the field type. And the total length across all user zone values must be of 250 characters max",
           "minLength": 0,
           "maxLength": 100
         },
         "userZone2": {
           "type": "string",
-          "description": "Free field. Same behavior as field User zone 1.",
+          "description": "Free field. Same behavior as field User zone 1",
           "minLength": 0,
           "maxLength": 100
         },
         "userZone3": {
           "type": "string",
-          "description": "Free field. Same behavior as field User zone 1.",
+          "description": "Free field. Same behavior as field User zone 1",
           "minLength": 0,
           "maxLength": 100
         },
         "userZone4": {
           "type": "string",
-          "description": "Free field. Same behavior as field User zone 1.",
+          "description": "Free field. Same behavior as field User zone 1",
           "minLength": 0,
           "maxLength": 100
         },
         "userZone5": {
           "type": "string",
-          "description": "Free field. Same behavior as field User zone 1.",
+          "description": "Free field. Same behavior as field User zone 1",
           "minLength": 0,
           "maxLength": 100
         }
       },
-      "title": "UserZones"
+      "title": "UserZonesModel"
     },
     "_links": {
       "type": "object",
@@ -1703,7 +1090,7 @@
           "format": "int64",
           "example": 100,
           "description": "The number of total records.",
-          "minimum": 0,
+          "minimum": 0.0,
           "exclusiveMinimum": false
         },
         "pageLimit": {
@@ -1711,7 +1098,7 @@
           "format": "int32",
           "example": 100,
           "description": "Limit the number of records per page. By default 100.",
-          "minimum": 1,
+          "minimum": 1.0,
           "exclusiveMinimum": false
         },
         "pageOffset": {
@@ -1719,7 +1106,7 @@
           "format": "int32",
           "example": 0,
           "description": "Page Offset means the number of records you want to skip before starting reading. By default 0.",
-          "minimum": 0,
+          "minimum": 0.0,
           "exclusiveMinimum": false
         },
         "pageResults": {
@@ -1727,13 +1114,13 @@
           "format": "int64",
           "example": 10,
           "description": "The number of records in current page.",
-          "minimum": 0,
+          "minimum": 0.0,
           "exclusiveMinimum": false
         }
       },
       "title": "_metadata"
     },
-    "_pageOfAccountSearchModel": {
+    "_pageOfCashFlowSearchModel": {
       "type": "object",
       "properties": {
         "metadata": {
@@ -1742,11 +1129,11 @@
         "results": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/AccountSearchModel"
+            "$ref": "#/definitions/CashFlowSearchModel"
           }
         }
       },
-      "title": "_pageOfAccountSearchModel"
+      "title": "_pageOfCashFlowSearchModel"
     }
   }
 }

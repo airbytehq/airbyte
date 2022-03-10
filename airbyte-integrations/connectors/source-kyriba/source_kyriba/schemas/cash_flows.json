@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "required": [
+    "account",
+    "date",
+    "flowAmount",
+    "flowCode",
+    "status"
+  ],
+  "properties": {
+    "account": {
+      "description": "Bank account",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "flowCode": {
+      "description": "Flow code",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "budgetCode": {
+      "description": "Budget code",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "status": {
+      "type": "string",
+      "example": "CONFIRMED",
+      "description": "Cash flow status"
+    },
+    "date": {
+      "description": "Cash flow dates",
+      "$ref": "_definitions.json#/definitions/CashFlowDateModel"
+    },
+    "flowAmount": {
+      "description": "Flow amount",
+      "$ref": "_definitions.json#/definitions/AmountModel"
+    },
+    "accountAmount": {
+      "description": "Account amount",
+      "$ref": "_definitions.json#/definitions/CashAmountModel"
+    },
+    "description": {
+      "type": "string",
+      "description": "Cash flow's description",
+      "minLength": 0,
+      "maxLength": 2500
+    },
+    "reference": {
+      "type": "string",
+      "description": "Cash flow's reference",
+      "minLength": 0,
+      "maxLength": 250
+    },
+    "userZones": {
+      "description": "User zones of the cash flow",
+      "$ref": "_definitions.json#/definitions/UserZonesModel"
+    }
+  },
+  "title": "CashFlowModel",
+  "$schema": "http://json-schema.org/schema#"
+}

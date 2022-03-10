@@ -6,13 +6,23 @@
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
                 },
+                "supported_sync_modes": ["full_refresh"]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
+                "name": "cash_flows",
+                "json_schema": {
+                     "$schema": "http://json-schema.org/draft-04/schema"
+                },
                 "supported_sync_modes": ["full_refresh", "incremental"],
                 "source_defined_cursor": true,
-                "default_cursor_field": ["updateDate"]
+                "default_cursor_field": ["updateDateTime"]
             },
             "sync_mode": "incremental",
-            "cursor_field": ["updateDate"],
-            "destination_sync_mode": "overwrite"
+            "destination_sync_mode": "append"
         }
     ]
 }

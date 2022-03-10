@@ -71,15 +71,13 @@ class KyribaStream(HttpStream):
 
 # Basic incremental stream
 class IncrementalKyribaStream(KyribaStream, ABC):
+    cursor_field = "updateDateTime"
+
     # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     @property
     def state_checkpoint_interval(self) -> int:
         # 100 is the default page size
         return 100
-
-    @property
-    def cursor_field(self) -> str:
-        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field) or ""
@@ -90,25 +88,38 @@ class IncrementalKyribaStream(KyribaStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = { "sort": self.cursor_field }
-        latest_cursor = stream_state.get(self.cursor_field) or self.start_date
+        latest_cursor = stream_state.get(self.cursor_field) or self.start_date + " 00:00:00"
         if latest_cursor:
-            filter = f"{self.cursor_field}=gt={latest_cursor}"
+            # the Kyriba datetime output contains T and Z, but the input has a space and no time zone
+            fmt_cursor = latest_cursor.replace("T", " ").replace("Z", "")
+            filter = f"{self.cursor_field}=gt='{fmt_cursor}'"
             params["filter"] = filter
         if next_page_token:
             params = {**params, **next_page_token}
         return params
 
 
-class IncrementalKyribaDateTimeStream(IncrementalKyribaStream, ABC):
-    cursor_field = "updateDateTime"
-
-class IncrementalKyribaDateStream(IncrementalKyribaStream, ABC):
-    cursor_field = "updateDate"
-
-
-class Accounts(IncrementalKyribaDateStream):
+class Accounts(KyribaStream):
     def path(self, **kwargs) -> str:
         return "accounts"
+
+
+class CashFlows(IncrementalKyribaStream):
+    def path(self, **kwargs) -> str:
+        return "cash-flows"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # the updateDateTime is nested, so we need to adap this method
+        latest_cursor = latest_record["date"].get(self.cursor_field) or ""
+        current_cursor = current_stream_state.get(self.cursor_field) or ""
+        return {self.cursor_field: max(current_cursor, latest_cursor)}
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs) or {}
+        params["dateType"] = "UPDATE"
+        params["start_date"] = self.start_date
+        return params
+
 
 # Source
 class SourceKyriba(AbstractSource):
@@ -129,4 +140,4 @@ class SourceKyriba(AbstractSource):
             "client": client,
             "start_date": config.get("start_date"),
         }
-        return [Accounts(**kwargs)]
+        return [Accounts(**kwargs), CashFlows(**kwargs)]
