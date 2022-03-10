@@ -7,29 +7,46 @@
         "required": ["base_url", "start_date", "magento_bearer"],
         "additionalProperties": false,
         "properties": {
-          "base_url": {
-            "type":"string",
-            "title": "Base Url",
-            "description": "Url of Magento Installation",
-            "examples": ["https://skiwebshop.nl/rest/V1/"]
-          },
-          "start_date": {
-            "type": "string",
-            "title": "Start Date",
-            "description": "Start getting data from that date.",
-            "examples": ["2022-01-01 00:00:00"]
-          },
-          "magento_bearer": {
-            "title": "Magento Bearer",
-            "type": "string",
-            "description": "Magento Bearer Token. Also called \"Access Token\"",
-            "airbyte_secret": true
-          },
-          "page_size": {
-            "title": "Page Size",
-            "type": "string",
-            "description": "How many items on a API call. Max 300"
-          }
+            "base_url": {
+                "type": "string",
+                "title": "Base Url",
+                "description": "Url of Magento Installation",
+                "examples": ["https://<magentoshop>.nl/rest/V1/"],
+                "order": 0
+            },
+            "start_date": {
+                "type": "string",
+                "title": "Start Date",
+                "description": "Start getting data from that date. (Api operator: gteq)",
+                "examples": ["2022-01-01 00:00:00"],
+                "order": 1
+            },
+            "end_date": {
+                "type": "string",
+                "title": "End Date",
+                "description": "Get data updated till this date (Api operator: lt)",
+                "examples": ["2022-03-01 00:00:00"],
+                "order": 2
+            },
+            "page_size": {
+                "title": "Page Size",
+                "type": "string",
+                "description": "How many items on a API call. Max 300",
+                "order": 3
+            },
+            "cursor_field_value": {
+                "title": "Cursor Field",
+                "type": "string",
+                "description": "Choose either updated_at or created_at",
+                "order": 4
+            },
+            "magento_bearer": {
+                "title": "Magento Bearer",
+                "type": "string",
+                "description": "Magento Bearer Token. Also called \"Access Token\"",
+                "airbyte_secret": true,
+                "order": 5
+            }
         }
     }
 }

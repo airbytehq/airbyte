@@ -11,6 +11,24 @@ from airbyte_cdk.sources.streams.http.auth.token import TokenAuthenticator
 
 
 class SourceMagento(AbstractSource):
+
+    def datereturn(datestring:str) -> datetime:
+            if(datestring == ''):
+                return None
+            try:
+                date = datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S')
+            except:
+                return False
+
+            return date
+
+    def page_size(config) -> str:
+            if 'page_size' in config:
+                return config['page_size']
+            else:
+                return '100'
+
+
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         bearer = config['magento_bearer']
 
@@ -25,7 +43,14 @@ class SourceMagento(AbstractSource):
             headers=headers_dict,  # Set headers
             params=params  # set Query parameters
         )
+        dates = { 
+            'start_date': SourceMagento.datereturn(config['start_date']),
+            'end_date' : SourceMagento.datereturn(config['end_date'])
+        }
 
+        if(isinstance(dates['start_date'], datetime) != True):
+            return False, f'start_date is not valid. Please check your input: { config["start_date"] }'
+        
         res = req.json()
         errors = {
             401: f'Unauthorized request. Check your credentials and permissions: {res}',
@@ -33,6 +58,11 @@ class SourceMagento(AbstractSource):
             404: f'Route not found. Please check your base URL or submit a bug request: {res}',
             405: f'Method not allowed. Please contact your developer. Airbyte needs at least the permission to make GET requests: {res}',
         }
+
+        
+
+        
+
 
         if(req.status_code > 299):
             if req.status_code in errors:
@@ -44,23 +74,23 @@ class SourceMagento(AbstractSource):
 
         return True, None
 
+    
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        start_date = datetime.strptime(
-            config['start_date'], '%Y-%m-%d %H:%M:%S')
+        
         auth = TokenAuthenticator(config['magento_bearer'])
+        cursor_field = 'updated_at' if 'cursor_field_value' not in config else config['cursor_field_value']
 
-        def page_size() -> str:
-            if 'page_size' in config:
-                return config['page_size']
-            else:
-                return '100'
-
+        args = {
+            'authenticator':auth,
+            'start_date': SourceMagento.datereturn(config['start_date']),
+            'end_date': SourceMagento.datereturn(config['end_date']),
+            'base_url': config['base_url'],
+            'page_size':SourceMagento.page_size(config),
+            'cursor_field_value': cursor_field
+        }
         return [
             SalesOrders(
-                authenticator=auth,
-                start_date=start_date,
-                base_url=config['base_url'],
-                page_size=page_size()
+                **args
             )
         ]
 
@@ -69,20 +99,25 @@ class SourceMagento(AbstractSource):
 
 class MagentoStream(HttpStream, ABC):
 
-    cursor_field = 'updated_at'
     primary_key = 'increment_id'
 
-    def __init__(self, start_date: str, page_size: str, base_url: str, **kwargs):
+    def __init__(self, start_date: str, end_date: str, page_size: str, base_url: str, cursor_field_value: str,  **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
+        self.end_date = end_date
         self.page_size = page_size
         self._cursor_value = None
         self.base_url = base_url
+        self.cursor_field_value = cursor_field_value
 
     # Base Url depends on store
     @property
     def url_base(self) -> str:
         return self.base_url
+
+    @property
+    def cursor_field(self):
+        return self.cursor_field_value
 
     # Pagination is always the same. Max 300 items per page
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -109,13 +144,21 @@ class MagentoStream(HttpStream, ABC):
         else:
             page = next_page_token
 
-        return {
-            'searchCriteria[filter_groups][0][filters][0][field]': 'updated_at',
-            'searchCriteria[filter_groups][0][filters][0][value]': stream_slice['updated_at'],
+        params = {
+            'searchCriteria[filter_groups][0][filters][0][field]': self.cursor_field,
+            'searchCriteria[filter_groups][0][filters][0][value]': stream_slice[self.cursor_field],
             'searchCriteria[filter_groups][0][filters][0][condition_type]': 'gteq',
             'searchCriteria[pageSize]': self.page_size,
             'searchCriteria[currentPage]': page
         }
+        if self.end_date:
+            params = {
+                **params,
+                'searchCriteria[filter_groups][1][filters][0][field]': self.cursor_field,
+                'searchCriteria[filter_groups][1][filters][0][value]': self.end_date,
+                'searchCriteria[filter_groups][1][filters][0][condition_type]': 'lt',
+            }
+        return params
 
     # Parse the repsonse and just returns items
     def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> List:
@@ -161,8 +204,7 @@ class IncrementalMagentoStream(MagentoStream, IncrementalMixin):
         return dates
 
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = datetime.strptime(
-            stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S') if stream_state and self.cursor_field in stream_state else self.start_date
+        start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S') if stream_state and self.cursor_field in stream_state else self.start_date
         return self._chunk_date_range(start_date)
 
 
