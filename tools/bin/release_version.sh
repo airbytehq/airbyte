@@ -29,7 +29,7 @@ PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 # requires no git diffs to run
 # commits the bumped versions code to your branch
 pip install bumpversion
-bumpversion "$PART_TO_BUMP"
+#bumpversion "$PART_TO_BUMP"
 
 NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)

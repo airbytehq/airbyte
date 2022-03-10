@@ -5,6 +5,6 @@ ENV APPLICATION airbyte-bootloader
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-0.35.49-alpha.tar /app
+ADD bin/${APPLICATION}-0.35.47-localtest-shopify.tar /app
 
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.49-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.47-localtest-shopify/bin/${APPLICATION}"]
