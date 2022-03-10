@@ -38,6 +38,7 @@ public class S3DestinationTest {
   @Test
   public void createsThenDeletesTestFile() {
     S3Destination.attemptS3WriteAndDelete(config, "fake-fileToWriteAndDelete", s3);
+
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);
 
