@@ -1049,7 +1049,7 @@ public class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.QUARANTINED && changedStateEvent.isValue())
-          .hasSize(1);
+          .hasSizeGreaterThanOrEqualTo(1);
     }
 
   }
@@ -1132,7 +1132,10 @@ public class ConnectionManagerWorkflowTest {
     @DisplayName("Test that we are getting stuck if the report of a failure happen")
     void testGetStuckAfterRun() throws InterruptedException {
       Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-          .when(mJobCreationAndStatusUpdateActivity).attemptFailure(Mockito.any());
+          .when(mJobCreationAndStatusUpdateActivity).attemptFailureWithAttemptNumber(Mockito.any());
+
+      Mockito.when(mConfigFetchActivity.getMaxAttempt())
+          .thenReturn(new GetMaxAttemptOutput(3));
 
       final UUID testId = UUID.randomUUID();
       final TestStateListener testStateListener = new TestStateListener();
