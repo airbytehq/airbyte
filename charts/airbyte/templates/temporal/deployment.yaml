@@ -112,7 +112,7 @@ spec:
       volumes:
       - name: airbyte-temporal-dynamicconfig
         configMap:
-          name: airbyte-temporal-dynamicconfig
+          name: {{ include "common.names.fullname" . }}-temporal-dynamicconfig
           items:
           - key: development.yaml
             path: development.yaml
