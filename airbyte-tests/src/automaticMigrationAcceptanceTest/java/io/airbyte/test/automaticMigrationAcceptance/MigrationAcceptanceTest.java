@@ -31,6 +31,7 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.concurrency.WaitingUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -238,7 +239,12 @@ public class MigrationAcceptanceTest {
           foundPostgresDestinationDefinition = true;
         }
         case "8be1cf83-fde1-477f-a4ad-318d23c9f3c6" -> {
-          assertEquals("0.2.0", destinationDefinitionRead.getDockerImageTag());
+          final String tag = destinationDefinitionRead.getDockerImageTag();
+          final AirbyteVersion currentVersion = new AirbyteVersion(tag);
+          final AirbyteVersion previousVersion = new AirbyteVersion("0.2.0");
+          final AirbyteVersion finalVersion =
+              (currentVersion.checkOnlyPatchVersionIsUpdatedComparedTo(previousVersion) ? currentVersion : previousVersion);
+          assertEquals(finalVersion.toString(), currentVersion.toString());
           assertTrue(destinationDefinitionRead.getName().contains("Local CSV"));
           foundLocalCSVDestinationDefinition = true;
         }
