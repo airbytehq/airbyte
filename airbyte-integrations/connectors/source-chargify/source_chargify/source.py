@@ -107,15 +107,9 @@ class SourceChargify(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect to Chargify API with the provided credentials - {repr(error)}"
 
-    @classmethod
-    def convert_config2stream_args(cls, config: Mapping[str, Any])-> Mapping[str, Any]:
-        """Convert the input config to streams
-        """
-
-        return {"domain": config["domain"]}
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         
         auth = HTTPBasicAuth(config["api_key"], "X")  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
-        converted_args = self.convert_config2stream_args(config)
-        return [Customers(authenticator=auth, **converted_args), Subscriptions(authenticator=auth, **converted_args)]
+
+        return [Customers(authenticator=auth, domain=config["domain"]), Subscriptions(authenticator=auth, domain=config["domain"])]
