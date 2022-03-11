@@ -162,13 +162,14 @@ public interface JobPersistence {
 
   /**
    * @param connectionId The ID of the connection
-   * @param configType The type of job
+   * @param configTypes The types of jobs
    * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
    * @return List of job statuses from a specific connection that have attempts after the provided
    *         timestamp, sorted by jobs' createAt in descending order
    * @throws IOException
    */
-  List<JobStatus> listJobStatusWithConnection(UUID connectionId, ConfigType configType, Instant jobCreatedAtTimestamp) throws IOException;
+  List<JobStatus> listJobStatusWithConnection(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Instant jobCreatedAtTimestamp)
+      throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
