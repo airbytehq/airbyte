@@ -237,7 +237,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       if (attemptCreationVersion >= DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
-            new AutoDisableConnectionActivityInput(connectionId, Instant.now());
+            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
         runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
       }
       resetNewConnectionInput(connectionUpdaterInput);
