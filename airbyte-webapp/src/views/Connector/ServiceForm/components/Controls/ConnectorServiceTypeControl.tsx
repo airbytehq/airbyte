@@ -32,7 +32,7 @@ import {
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
