@@ -33,6 +33,8 @@ public class ReporterApp {
 
     final var toEmits = ToEmit.values();
     final var pollers = Executors.newScheduledThreadPool(toEmits.length);
+
+    log.info("Scheduling {} metrics for emission..", toEmits.length);
     for (ToEmit toEmit : toEmits) {
       pollers.scheduleAtFixedRate(toEmit.emitRunnable, 0, toEmit.period, toEmit.timeUnit);
     }
