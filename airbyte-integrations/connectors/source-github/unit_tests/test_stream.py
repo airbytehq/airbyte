@@ -10,7 +10,16 @@ import requests
 import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
-from source_github.streams import Commits, Projects, PullRequestCommentReactions, PullRequestCommits, PullRequests, Repositories, Teams
+from source_github.streams import (
+    Commits,
+    ProjectColumns,
+    Projects,
+    PullRequestCommentReactions,
+    PullRequestCommits,
+    PullRequests,
+    Repositories,
+    Teams,
+)
 
 from .utils import read_full_refresh, read_incremental
 
@@ -285,3 +294,102 @@ def test_stream_pull_request_commits():
         {"sha": 3, "repository": "organization/repository", "pull_number": 3},
         {"sha": 4, "repository": "organization/repository", "pull_number": 3},
     ]
+
+
+@responses.activate
+def test_stream_project_columns():
+
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+
+    stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/projects",
+        json=[
+            {"id": 1, "name": "project_1", "updated_at": "2022-01-01T10:00:00Z"},
+            {"id": 2, "name": "project_2", "updated_at": "2022-03-01T10:00:00Z"},
+            {"id": 3, "name": "project_3", "updated_at": "2022-05-01T10:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/projects/2/columns",
+        json=[
+            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
+            {"id": 2, "name": "column_2", "updated_at": "2022-03-01T09:00:00Z"},
+            {"id": 3, "name": "column_3", "updated_at": "2022-03-01T10:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/projects/3/columns",
+        json=[
+            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
+            {"id": 2, "name": "column_2", "updated_at": "2022-05-01T10:00:00Z"},
+        ],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state=stream_state)
+
+    assert records == [
+        {"id": 2, "name": "column_2", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T09:00:00Z"},
+        {"id": 3, "name": "column_3", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T10:00:00Z"},
+        {"id": 2, "name": "column_2", "project_id": 3, "repository": "organization/repository", "updated_at": "2022-05-01T10:00:00Z"},
+    ]
+
+    assert stream_state == {
+        "organization/repository": {"2": {"updated_at": "2022-03-01T10:00:00Z"}, "3": {"updated_at": "2022-05-01T10:00:00Z"}}
+    }
+
+    responses.replace(
+        "GET",
+        "https://api.github.com/repos/organization/repository/projects",
+        json=[
+            {"id": 1, "name": "project_1", "updated_at": "2022-01-01T10:00:00Z"},
+            {"id": 2, "name": "project_2", "updated_at": "2022-04-01T10:00:00Z"},
+            {"id": 3, "name": "project_3", "updated_at": "2022-05-01T10:00:00Z"},
+            {"id": 4, "name": "project_4", "updated_at": "2022-06-01T10:00:00Z"},
+        ],
+    )
+
+    responses.replace(
+        "GET",
+        "https://api.github.com/projects/2/columns",
+        json=[
+            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
+            {"id": 2, "name": "column_2", "updated_at": "2022-03-01T09:00:00Z"},
+            {"id": 3, "name": "column_3", "updated_at": "2022-03-01T10:00:00Z"},
+            {"id": 4, "name": "column_4", "updated_at": "2022-04-01T10:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/projects/4/columns",
+        json=[
+            {"id": 2, "name": "column_1", "updated_at": "2022-06-01T10:00:00Z"},
+        ],
+    )
+
+    records = read_incremental(stream, stream_state=stream_state)
+
+    assert records == [
+        {"id": 4, "name": "column_4", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
+        {"id": 2, "name": "column_1", "project_id": 4, "repository": "organization/repository", "updated_at": "2022-06-01T10:00:00Z"},
+    ]
+
+    assert stream_state == {
+        "organization/repository": {
+            "2": {"updated_at": "2022-04-01T10:00:00Z"},
+            "3": {"updated_at": "2022-05-01T10:00:00Z"},
+            "4": {"updated_at": "2022-06-01T10:00:00Z"},
+        }
+    }
