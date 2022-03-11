@@ -68,16 +68,18 @@ def test_stream_config(domain, mocker):
 
 def test_next_page_token(ChargifyStreamInstance: ChargifyStream):
     response = requests.Response()
-    response.url = "https://test.chargify.com/subscriptions.json?page=1&per_page=200"
+    response.url = "https://test.chargify.com/subscriptions.json?page=1&per_page=2"
     response.json = MagicMock()
     response.json.return_value = [{"id": 1}, {"id": 2}]
 
+    ChargifyStream.PER_PAGE = 2
+
     token_params = ChargifyStreamInstance.next_page_token(response=response)
 
-    assert token_params == {"page": 2, "per_page": "200"}
+    assert token_params == {"page": 2, "per_page": "2"}
 
     response = requests.Response()
-    response.url = "https://test.chargify.com/subscriptions.json?page=1&per_page=200"
+    response.url = "https://test.chargify.com/subscriptions.json?page=1&per_page=2"
     response.json = MagicMock()
     response.json.return_value = {}
 
@@ -87,6 +89,8 @@ def test_next_page_token(ChargifyStreamInstance: ChargifyStream):
 
 
 def test_requests_params(ChargifyStreamInstance: ChargifyStream):
+
+    ChargifyStream.PER_PAGE = 200
 
     params = ChargifyStreamInstance.request_params(stream_state={}, next_page_token=None)
 
