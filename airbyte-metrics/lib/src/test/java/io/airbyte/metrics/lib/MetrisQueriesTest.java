@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static io.airbyte.db.instance.jobs.jooq.Tables.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -29,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jooq.JSONB;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -424,6 +426,110 @@ public class MetrisQueriesTest {
     @DisplayName("should not error out or return any result if not applicable")
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      assertEquals(0, res.size());
+    }
+
+  }
+
+  @Nested
+  class overallJobRuntimeForTerminalJobsInLastHour {
+
+    @AfterEach
+    void tearDown() throws SQLException {
+      configDb.transaction(ctx -> ctx.truncate(JOBS).cascade().execute());
+    }
+
+    @Test
+    @DisplayName("should ignore non terminal jobs")
+    void shouldIgnoreNonTerminalJobs() throws SQLException {
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.incomplete).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    @DisplayName("should ignore jobs older than 1 hour")
+    void shouldIgnoreJobsOlderThan1Hour() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.UPDATED_AT).values(1L, "", JobStatus.succeeded, updateAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    @DisplayName("should return correct duration for terminal jobs")
+    void shouldReturnTerminalJobs() throws SQLException {
+      final var updateAt = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAt.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(1L, "", JobStatus.succeeded, createAt, updateAt).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(2L, "", JobStatus.failed, createAt, updateAt).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(3L, "", JobStatus.cancelled, createAt, updateAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(3, res.size());
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.cancelled, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+    }
+
+    @Test
+    @DisplayName("should return correct duration for jobs that terminated in the last hour")
+    void shouldReturnTerminalJobsComplex() throws SQLException {
+      final var updateAtNow = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAtNow.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      // terminal jobs in last hour
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(1L, "", JobStatus.succeeded, createAt, updateAtNow).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(2L, "", JobStatus.failed, createAt, updateAtNow).execute());
+
+      // old terminal jobs
+      final var updateAtOld = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(3L, "", JobStatus.cancelled, createAt, updateAtOld).execute());
+
+      // non-terminal jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+              .values(4L, "", JobStatus.running, createAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(2, res.size());
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+    }
+
+    @Test
+    @DisplayName("should not error out or return any result if not applicable")
+    void shouldReturnNothingIfNotApplicable() throws SQLException {
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
       assertEquals(0, res.size());
     }
 
