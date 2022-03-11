@@ -398,8 +398,8 @@ public class DefaultJobPersistence implements JobPersistence {
             "created_at >= ? ORDER BY created_at DESC", connectionId.toString(),
             Sqls.toSqlName(configType), timeConvertedIntoLocalDateTime))
         .stream()
-        .flatMap(r -> Stream.of(JobStatus.valueOf(r.get("status", String.class).toUpperCase())))
-        .collect(Collectors.toList());
+        .map(r -> JobStatus.valueOf(r.get("status", String.class).toUpperCase()))
+        .toList();
   }
 
   @Override
