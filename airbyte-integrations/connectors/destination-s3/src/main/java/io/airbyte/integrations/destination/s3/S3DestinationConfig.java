@@ -64,7 +64,8 @@ public class S3DestinationConfig {
                              final String accessKeyId,
                              final String secretAccessKey,
                              final Integer partSize,
-                             final S3FormatConfig formatConfig) {
+                             final S3FormatConfig formatConfig,
+                             final AmazonS3 s3Client) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -73,6 +74,18 @@ public class S3DestinationConfig {
     this.secretAccessKey = secretAccessKey;
     this.formatConfig = formatConfig;
     this.partSize = partSize;
+    this.s3Client = s3Client;
+  }
+
+  public S3DestinationConfig(final String endpoint,
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String accessKeyId,
+                             final String secretAccessKey,
+                             final Integer partSize,
+                             final S3FormatConfig formatConfig) {
+    this(endpoint, bucketName, bucketPath, bucketRegion, accessKeyId, secretAccessKey, partSize, formatConfig, null);
   }
 
   public static S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
@@ -166,9 +179,7 @@ public class S3DestinationConfig {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new InstanceProfileCredentialsProvider(false))
           .build();
-    }
-
-    else if (endpoint == null || endpoint.isEmpty()) {
+    } else if (endpoint == null || endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(bucketRegion)
