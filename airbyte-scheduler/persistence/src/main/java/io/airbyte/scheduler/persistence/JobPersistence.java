@@ -75,12 +75,12 @@ public interface JobPersistence {
   //
 
   /**
-   * Create a new attempt for a job and return its attempt number. Throws
-   * {@link IllegalStateException} if the job is already in a terminal state.
+   * Create a new attempt for a job. Throws {@link IllegalStateException} if the job is already in a
+   * terminal state.
    *
    * @param jobId job for which an attempt will be created
    * @param logPath path where logs should be written for the attempt
-   * @return The attempt number of the created attempt (see {@link DefaultJobPersistence})
+   * @return id of the attempt
    * @throws IOException exception due to interaction with persistence
    */
   int createAttempt(long jobId, Path logPath) throws IOException;
