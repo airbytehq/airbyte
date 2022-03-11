@@ -763,6 +763,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
@@ -822,6 +823,9 @@ class CRMSearchStream(IncrementalStream, ABC):
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
                     pagination_complete = True
+                elif self.state and next_page_token["payload"]["after"] >= 10000:
+                    self._update_state(latest_cursor=latest_cursor)
+                    next_page_token = None
 
             self._update_state(latest_cursor=latest_cursor)
             # Always return an empty generator just in case no records were ever yielded
@@ -844,6 +848,10 @@ class CRMSearchStream(IncrementalStream, ABC):
         payload = {}
 
         if "paging" in response and "next" in response["paging"] and "after" in response["paging"]["next"]:
+            params["after"] = int(response["paging"]["next"]["after"])
+            payload["after"] = int(response["paging"]["next"]["after"])
+
+            return {"params": params, "payload": payload}
             # Hubspot documentations states that the search endpoints are limited to 10,000 total results 
             # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
             # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000, so that
