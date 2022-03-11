@@ -39,6 +39,16 @@ public class Exceptions {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
   }
 
+  public static Runnable toSwallowExceptionRunnable(final Procedure voidCallable) {
+    return () -> {
+      try {
+        voidCallable.call();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    };
+  }
+
   public static void toIllegalState(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, IllegalStateException::new);
   }
