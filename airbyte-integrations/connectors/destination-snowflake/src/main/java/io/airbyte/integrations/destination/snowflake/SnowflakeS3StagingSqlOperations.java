@@ -157,7 +157,6 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         generateBucketPath(stageName),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey());
-    LOGGER.info(copyQuery);
     Exceptions.toRuntime(() -> database.execute(copyQuery));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
