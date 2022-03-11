@@ -128,10 +128,26 @@ class TransformConfig:
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
+
+        project_id = config["project_id"]
+        dataset_id = config["dataset_id"]
+        try:
+            colon_index = config["dataset_id"].index(":")
+        except ValueError:
+            colon_index = None
+
+        if colon_index is not None:
+            project_id = config["dataset_id"][:colon_index]
+            dataset_id = config["dataset_id"][colon_index + 1 :]
+            if project_id != config["project_id"]:
+                raise ValueError(
+                    f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
+                )
+
         dbt_config = {
             "type": "bigquery",
-            "project": config["project_id"],
-            "dataset": config["dataset_id"],
+            "project": project_id,
+            "dataset": dataset_id,
             "priority": config.get("transformation_priority", "interactive"),
             "threads": 8,
             "retries": 3,

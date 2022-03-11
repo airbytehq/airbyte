@@ -174,6 +174,32 @@ class TestTransformConfig:
         assert expected_output == actual_output
         assert extract_schema(actual_output) == "my_dataset_id"
 
+    def test_transform_bigquery_with_embedded_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "my_project_id:my_dataset_id"}
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "priority": "interactive",
+            "retries": 3,
+            "threads": 8,
+        }
+
+        assert expected_output == actual_output
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_mismatched_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "bad_project_id:my_dataset_id"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
     def test_transform_postgres(self):
         input = {
             "host": "airbyte.io",
