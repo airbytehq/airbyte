@@ -76,12 +76,4 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     }
   }
 
-  @Override
-  public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
-    return getSyncWorkflowInput(new SyncInput(
-        input.getAttemptNumber(),
-        input.getJobId(),
-        input.isReset()));
-  }
-
 }
