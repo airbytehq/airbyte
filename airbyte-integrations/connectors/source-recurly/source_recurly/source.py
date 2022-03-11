@@ -9,7 +9,25 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from recurly import ApiError, Client
 
-from .streams import AccountCouponRedemptions, Accounts, Coupons, ExportDates, Invoices, MeasuredUnits, Plans, Subscriptions, Transactions
+from .streams import (
+    AccountCouponRedemptions,
+    AccountNotes,
+    Accounts,
+    AddOns,
+    BillingInfos,
+    Coupons,
+    CreditPayments,
+    ExportDates,
+    Invoices,
+    LineItems,
+    MeasuredUnits,
+    Plans,
+    ShippingAddresses,
+    ShippingMethods,
+    Subscriptions,
+    Transactions,
+    UniqueCoupons,
+)
 
 
 class SourceRecurly(AbstractSource):
@@ -33,18 +51,26 @@ class SourceRecurly(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._client(api_key=config["api_key"])
 
-        args = {"client": client, "begin_time": config.get("begin_time")}
+        args = {"client": client, "begin_time": config.get("begin_time"), "end_time": config.get("end_time")}
 
         return [
             Accounts(**args),
-            Coupons(**args),
             AccountCouponRedemptions(**args),
+            AccountNotes(**args),
+            AddOns(**args),
+            BillingInfos(**args),
+            Coupons(**args),
+            CreditPayments(**args),
+            ExportDates(**args),
             Invoices(**args),
+            LineItems(**args),
             MeasuredUnits(**args),
             Plans(**args),
+            ShippingAddresses(**args),
+            ShippingMethods(**args),
             Subscriptions(**args),
             Transactions(**args),
-            ExportDates(**args),
+            UniqueCoupons(**args),
         ]
 
     def _client(self, api_key: str) -> Client:

@@ -159,4 +159,16 @@ public class DogStatsDMetricSingleton {
     recordTimeGlobal(metric, val, tags);
   }
 
+  /**
+   * Wrapper around {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a different
+   * name to better represent what this function does.
+   *
+   * @param metric
+   * @param val
+   * @param tags
+   */
+  public static void percentile(final MetricsRegistry metric, final double val, final String... tags) {
+    recordTimeGlobal(metric, val, tags);
+  }
+
 }
