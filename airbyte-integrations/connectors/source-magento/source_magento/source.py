@@ -145,9 +145,12 @@ class MagentoStream(HttpStream, ABC):
         else:
             page = next_page_token
 
+        # Get start_date based on stream_state
+        start_date = self.start_date if self.cursor_field not in stream_state else stream_state[self.cursor_field]
+
         params = {
             'searchCriteria[filter_groups][0][filters][0][field]': self.cursor_field,
-            'searchCriteria[filter_groups][0][filters][0][value]': self.start_date,
+            'searchCriteria[filter_groups][0][filters][0][value]': start_date,
             'searchCriteria[filter_groups][0][filters][0][condition_type]': 'gteq',
             'searchCriteria[pageSize]': self.page_size,
             'searchCriteria[currentPage]': page,
