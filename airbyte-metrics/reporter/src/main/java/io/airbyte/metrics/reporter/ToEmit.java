@@ -5,12 +5,18 @@
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricQueries;
+import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.MetricsRegistry;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * This class contains all metrics emitted by the {@link ReporterApp}.
+ */
 @AllArgsConstructor
 public enum ToEmit {
 
@@ -25,7 +31,24 @@ public enum ToEmit {
   OLDEST_RUNNING_JOB_AGE_SECS(Exceptions.toSwallowExceptionRunnable(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
     DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
-  }));
+  })),
+  OLDEST_PENDING_JOB_AGE_SECS(Exceptions.toSwallowExceptionRunnable(() -> {
+    final var age = ReporterApp.configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
+    DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+  })),
+  NUM_ACTIVE_CONN_PER_WORKSPACE(Exceptions.toSwallowExceptionRunnable(() -> {
+    final var age = ReporterApp.configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
+    for (long count : age) {
+      DogStatsDMetricSingleton.percentile(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+    }
+  })),
+  OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(Exceptions.toSwallowExceptionRunnable(() -> {
+    final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+    for (Pair<JobStatus, Double> pair : times) {
+      DogStatsDMetricSingleton.recordTimeGlobal(
+          MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
+    }
+  }), 1, TimeUnit.HOURS);
 
   // default constructor
   final public Runnable emitRunnable;
