@@ -1,8 +1,0 @@
-{
-  "$ref": "object.json",
-  "properties": {
-    "project_id": {
-      "type": ["null", "integer"]
-    }
-  }
-}

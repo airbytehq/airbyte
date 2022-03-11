@@ -1,7 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "project.json",
+  "type": "object",
   "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
     "name": {
       "type": ["null", "string"]
     },
