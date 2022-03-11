@@ -226,6 +226,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.18  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699) | Added unit tests                                                                   |
 | 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
 | 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |
