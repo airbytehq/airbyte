@@ -129,24 +129,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   @Override
-  public AttemptNumberCreationOutput createNewAttemptNumber(final AttemptCreationInput input) throws RetryableException {
-    try {
-      final long jobId = input.getJobId();
-      final Job createdJob = jobPersistence.getJob(jobId);
-
-      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
-      final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
-      final int persistedAttemptNumber = jobPersistence.createAttempt(jobId, logFilePath);
-      emitJobIdToReleaseStagesMetric(MetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
-
-      LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
-      return new AttemptNumberCreationOutput(persistedAttemptNumber);
-    } catch (final IOException e) {
-      throw new RetryableException(e);
-    }
-  }
-
-  @Override
   public void jobSuccess(final JobSuccessInput input) {
     try {
       final long jobId = input.getJobId();
@@ -168,14 +150,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
-  }
-
-  @Override
-  public void jobSuccessWithAttemptNumber(final JobSuccessInputWithAttemptNumber input) {
-    jobSuccess(new JobSuccessInput(
-        input.getJobId(),
-        input.getAttemptNumber(),
-        input.getStandardSyncOutput()));
   }
 
   @Override
@@ -218,15 +192,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   @Override
-  public void attemptFailureWithAttemptNumber(final AttemptNumberFailureInput input) {
-    attemptFailure(new AttemptFailureInput(
-        input.getJobId(),
-        input.getAttemptNumber(),
-        input.getStandardSyncOutput(),
-        input.getAttemptFailureSummary()));
-  }
-
-  @Override
   public void jobCancelled(final JobCancelledInput input) {
     try {
       final long jobId = input.getJobId();
@@ -242,14 +207,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
-  }
-
-  @Override
-  public void jobCancelledWithAttemptNumber(final JobCancelledInputWithAttemptNumber input) {
-    jobCancelled(new JobCancelledInput(
-        input.getJobId(),
-        input.getAttemptNumber(),
-        input.getAttemptFailureSummary()));
   }
 
   @Override
