@@ -106,6 +106,8 @@ def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
 
     yield
     # this minio container was not finished because it is needed for all integration adn acceptance tests
+    LOGGER.info("tear down minio container")
+    container.kill()
 
 
 def pytest_sessionfinish(session: Any, exitstatus: Any) -> None:

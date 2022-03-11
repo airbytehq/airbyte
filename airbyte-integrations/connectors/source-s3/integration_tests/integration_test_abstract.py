@@ -18,7 +18,15 @@ from source_s3.source_files_abstract.stream import FileStream
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
 LOGGER = AirbyteLogger()
-JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "object": dict, "array": list, "boolean": bool, "null": None}
+JSONTYPE_TO_PYTHONTYPE = {
+    "string": str,
+    "number": float,
+    "integer": int,
+    "object": dict,
+    "array": list,
+    "boolean": bool,
+    "null": None,
+}
 
 
 class AbstractTestIncrementalFileStream(ABC):
@@ -36,7 +44,11 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string", FileStream.ab_file_name_col: "string"}
+        return {
+            FileStream.ab_additional_col: "object",
+            FileStream.ab_last_mod_col: "string",
+            FileStream.ab_file_name_col: "string",
+        }
 
     @property
     @abstractmethod
@@ -61,7 +73,13 @@ class AbstractTestIncrementalFileStream(ABC):
         """
 
     @abstractmethod
-    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
+    def cloud_files(
+        self,
+        cloud_bucket_name: str,
+        credentials: Mapping,
+        files_to_upload: List,
+        private: bool = True,
+    ) -> Iterator[str]:
         """
         See S3 for example what the override of this needs to achieve.
 
@@ -98,30 +116,49 @@ class AbstractTestIncrementalFileStream(ABC):
         fails: Any,
         state: Any = None,
     ) -> Any:
-        uploaded_files = [fpath for fpath in self.cloud_files(cloud_bucket_name, self.credentials, files, private)]
+        uploaded_files = [
+            fpath
+            for fpath in self.cloud_files(
+                cloud_bucket_name, self.credentials, files, private
+            )
+        ]
         LOGGER.info(f"file(s) uploaded: {uploaded_files}")
 
         # emulate state for incremental testing
         # since we're not actually saving state out to file here, we pass schema in to our FileStream creation...
         # this isn't how it will work in Airbyte but it's a close enough emulation
-        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
+        current_state = (
+            state
+            if state is not None
+            else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
+        )
         if (user_schema is None) and ("schema" in current_state.keys()):
             user_schema = current_state["schema"]
 
         full_expected_schema = {**expected_schema, **airbyte_system_columns}
-        str_user_schema = str(user_schema).replace("'", '"') if user_schema is not None else None
+        str_user_schema = (
+            str(user_schema).replace("'", '"') if user_schema is not None else None
+        )
         total_num_columns = num_columns + len(airbyte_system_columns.keys())
-        provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(cloud_bucket_name)
+        provider = (
+            {**self.provider(cloud_bucket_name), **self.credentials}
+            if private
+            else self.provider(cloud_bucket_name)
+        )
 
         if not fails:
-            fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
+            fs = self.stream_class(
+                "dataset", provider, format, path_pattern, str_user_schema
+            )
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             # check we return correct schema from get_json_schema()
             assert fs._get_schema_map() == full_expected_schema
 
             records = []
-            for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
+            for stream_slice in fs.stream_slices(
+                sync_mode=sync_mode, stream_state=current_state
+            ):
                 if stream_slice is not None:
                     # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
                     expected_columns = []
@@ -129,14 +166,17 @@ class AbstractTestIncrementalFileStream(ABC):
                         # TODO: if we ever test other filetypes in these tests this will need fixing
                         file_reader = CsvParser(format)
                         with file_dict["storage_file"].open(file_reader.is_binary) as f:
-                            expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
+                            expected_columns.extend(
+                                list(file_reader.get_inferred_schema(f).keys())
+                            )
                     expected_columns = set(expected_columns)  # de-dupe
 
                     for record in fs.read_records(sync_mode, stream_slice=stream_slice):
                         # check actual record values match expected schema
                         assert all(
                             [
-                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
+                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ])
+                                or record[col] is None
                                 for col, typ in full_expected_schema.items()
                             ]
                         )
@@ -146,23 +186,40 @@ class AbstractTestIncrementalFileStream(ABC):
             assert len(records) == num_records
 
             # check additional properties included as expected if any exist
-            if (user_schema is not None) and (expected_columns != set(user_schema.keys())):
-                for additional_property in expected_columns.difference(set(user_schema.keys())):
+            if (user_schema is not None) and (
+                expected_columns != set(user_schema.keys())
+            ):
+                for additional_property in expected_columns.difference(
+                    set(user_schema.keys())
+                ):
                     # since we can't be dynamically aware of which records should have which additional props, we just any() check here
-                    assert any([additional_property in r[FileStream.ab_additional_col].keys() for r in records])
+                    assert any(
+                        [
+                            additional_property in r[FileStream.ab_additional_col].keys()
+                            for r in records
+                        ]
+                    )
 
             # returning state by simulating call to get_updated_state() with final record so we can test incremental
-            return fs.get_updated_state(current_stream_state=current_state, latest_record=records[-1])
+            return fs.get_updated_state(
+                current_stream_state=current_state, latest_record=records[-1]
+            )
 
         else:
             with pytest.raises(Exception) as e_info:
-                fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
-                LOGGER.info(f"Testing EXPECTED FAILURE stream_records() in SyncMode:{sync_mode.value}")
+                fs = self.stream_class(
+                    "dataset", provider, format, path_pattern, str_user_schema
+                )
+                LOGGER.info(
+                    f"Testing EXPECTED FAILURE stream_records() in SyncMode:{sync_mode.value}"
+                )
 
                 fs.get_json_schema()
 
                 records = []
-                for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
+                for stream_slice in fs.stream_slices(
+                    sync_mode=sync_mode, stream_state=current_state
+                ):
                     for record in fs.read_records(sync_mode, stream_slice=stream_slice):
                         records.append(record)
 
@@ -315,7 +372,14 @@ class AbstractTestIncrementalFileStream(ABC):
                 True,
                 6,
                 17,
-                {"id": "integer", "name": "string", "valid": "boolean", "location": "string", "percentage": "number", "nullable": "string"},
+                {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "location": "string",
+                    "percentage": "number",
+                    "nullable": "string",
+                },
                 None,
                 False,
                 False,
@@ -359,8 +423,12 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("file_to_skip.csv"),
                     SAMPLE_DIR.joinpath("file_to_skip.txt"),
                     SAMPLE_DIR.joinpath("pattern_match_test/this_folder/simple_test.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.txt"),
+                    SAMPLE_DIR.joinpath(
+                        "pattern_match_test/not_this_folder/file_to_skip.csv"
+                    ),
+                    SAMPLE_DIR.joinpath(
+                        "pattern_match_test/not_this_folder/file_to_skip.txt"
+                    ),
                 ],
                 "**/simple*",
                 True,
@@ -427,7 +495,13 @@ class AbstractTestIncrementalFileStream(ABC):
                 True,
                 [5, 5, 5],
                 [6, 3, 8],
-                {"id": "integer", "name": "string", "valid": "boolean", "percentage": "number", "nullable": "string"},
+                {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "percentage": "number",
+                    "nullable": "string",
+                },
                 None,
                 True,
                 [False, False, False],

@@ -47,11 +47,6 @@ class SourceFilesAbstractSpec(BaseModel):
         pattern=r"^[A-Za-z0-9-_]+(,[A-Za-z0-9-_]+)*$",
         description="This source can create mulitple tables/streams per connection, this field is the comma-split table/stream names (duplication not allowed). The table name should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
     )
-    # move path_prefix from provider to here
-    path_prefix: str = Field(
-        default="{}",
-        description='JSON string in format {"stream_name": "path_prefix"}. The stream name must be in the stream names defined in the dataset. By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit for each stream, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.',
-    )
 
     path_pattern: str = Field(
         description='JSON string in format {"stream_name": "pattern(s)"}. The stream name must be in the stream names defined in the dataset. Add at least 1 pattern for each stream to match filepaths against. Use | to separate multiple patterns for each stream name. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_blank">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.',
@@ -69,7 +64,7 @@ class SourceFilesAbstractSpec(BaseModel):
             '{"stream_1": {"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}}'
         ],
     )
-    # Here we enforce the same source format accross all dataset (except for the csv advanced options )
+    # Here we enforce the same source format accross all dataset (except for the csv's advanced options and parquet's columns )
     format: Union[CsvFormat, ParquetFormat] = Field(default=CsvFormat.Config.title)
 
     @staticmethod

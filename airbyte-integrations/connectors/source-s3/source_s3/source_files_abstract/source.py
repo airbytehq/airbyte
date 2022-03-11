@@ -56,8 +56,6 @@ class SourceFilesAbstract(AbstractSource, ABC):
         for stream_name in config.get("dataset").split(","):
             _config = copy.deepcopy(config)
             _config["dataset"] = stream_name
-            _path_prefix = json.loads(_config.get("path_prefix", "{}"))
-            _config["path_prefix"] = _path_prefix.get(stream_name, "")
             _path_pattern = json.loads(_config.get("path_pattern", "{}"))
             _config["path_pattern"] = _path_pattern.get(stream_name, "**")
             _format = _config.get("format")
@@ -67,6 +65,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
             _filetype = _format.get("filetype")
             if _filetype == "csv":
                 # csv format
+                # filter advacned_options setting based on stream name
                 _format["advanced_options"] = json.dumps(
                     json.loads(_format.get("advanced_options", "{}")).get(stream_name, {})
                 )

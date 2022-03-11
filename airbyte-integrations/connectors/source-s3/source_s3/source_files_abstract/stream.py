@@ -63,19 +63,16 @@ class FileStream(Stream, ABC):
         provider: dict,
         format: dict,
         path_pattern: str,
-        path_prefix: str = "",
-        schema: str = None,
+        schema: str = None
     ):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
         :param format: file format specific mapping as described in spec.json
-        :param path_prefix: file prefix string thatlimits the files returned by AWS when listing files to only that those starting with this prefix
         :param path_pattern: glob-style pattern for file-matching (https://facelessuser.github.io/wcmatch/glob/)
         :param schema: JSON-syntax user provided schema, defaults to None
         """
         self.dataset = dataset
-        self._path_prefix = path_prefix
         self._path_pattern = path_pattern
         self._provider = provider
         self._format = format

@@ -31,6 +31,10 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
         )
+        path_prefix: str = Field(
+            default="",
+            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
+        )
 
         endpoint: str = Field(
             "",
