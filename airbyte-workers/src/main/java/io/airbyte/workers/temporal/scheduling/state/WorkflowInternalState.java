@@ -17,7 +17,7 @@ import lombok.Setter;
 public class WorkflowInternalState {
 
   private Long jobId = null;
-  private Integer attemptNumber = null;
+  private Integer attemptId = null;
 
   // StandardSyncOutput standardSyncOutput = null;
   private final Set<FailureReason> failures = new HashSet<>();
