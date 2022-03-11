@@ -46,6 +46,47 @@ class SourceFilesAbstract(AbstractSource, ABC):
         :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
         """
 
+    def check_config(self, config: Mapping[str, Any]):
+        """
+        check whether config is valid, if config is not valid, raise exception
+        : return
+        """
+        _datasets = config.get("dataset").split(",")
+        if len(set(_datasets)) != len(_datasets):
+            raise Exception("check_config: datasets has duplicated table/stream name")
+        _path_pattern = json.loads(config.get("path_pattern", "{}"))
+        for _s, _ in _path_pattern.items():
+            if _s not in _datasets:
+                raise Exception(
+                    f"check_config: stream name {_s} in path_pattern is not defined in datasets"
+                )
+        _schema = json.loads(config.get("schema", "{}"))
+        for _s, _ in _schema.items():
+            if _s not in _datasets:
+                raise Exception(
+                    f"check_config: stream name {_s} in schema is not defined in datasets"
+                )
+        _format = config.get("format")
+        _filetype = _format.get("filetype")
+        if _filetype == "csv":
+            # csv format
+            _advanced_options = json.loads(_format.get("advanced_options", "{}"))
+            for _s, _ in _advanced_options.items():
+                if _s not in _datasets:
+                    raise Exception(
+                        f"check_config: stream name {_s} in csv format advanced options is not defined in datasets"
+                    )
+        elif _filetype == "parquet":
+            # parquet format
+            _columns = json.loads(_format.get("columns", "{}"))
+            for _s, _ in _columns.items():
+                if _s not in _datasets:
+                    raise Exception(
+                        f"check_config: stream name {_s} in parquet columns is not defined in datasets"
+                    )
+        else:
+            raise Exception(f"check_config: unsupported filetype = {_filetype}")
+
     def split_config_by_stream(
         self, config: Mapping[str, Any]
     ) -> Mapping[str, Mapping[str, Any]]:
@@ -78,8 +119,10 @@ class SourceFilesAbstract(AbstractSource, ABC):
             else:
                 raise Exception(f"unsupported filetype = {_filetype}")
             _config["format"] = _format
-            _schema = json.loads(_config.get("schema", "{}"))
-            _config["schema"] = _schema.get(stream_name, {})
+            _schema = json.loads(_config.get("schema", "{}")).get(stream_name, None)
+            if _schema is not None:
+                _schema = json.dumps(_schema)
+            _config["schema"] = _schema
             stream_config_map[stream_name] = _config
         return stream_config_map
 
@@ -100,6 +143,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
+            self.check_config(config)
             for stream_name, cfg in self.split_config_by_stream(config).items():
                 _file_not_found = True
                 for file_info in self.stream_class(**cfg).filepath_iterator():
