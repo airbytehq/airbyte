@@ -6,7 +6,6 @@
 import logging
 
 import pytest
-import requests
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Workflows, split_properties
