@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
-from source_github.streams import Commits, Projects, PullRequestCommentReactions, PullRequests, Repositories, Teams
+from source_github.streams import Commits, Projects, PullRequestCommentReactions, PullRequestCommits, PullRequests, Repositories, Teams
 
 from .utils import read_full_refresh, read_incremental
 
@@ -243,3 +243,45 @@ def test_stream_commits_state_upgrade():
     records = read_incremental(stream, stream_state)
     assert [r["sha"] for r in records] == [2]
     assert stream_state == {"organization/repository": {"master": {"created_at": "2022-02-02T10:10:04Z"}}}
+
+
+@responses.activate
+def test_stream_pull_request_commits():
+
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+    }
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-02T10:10:02Z"}
+
+    stream = PullRequestCommits(PullRequests(**repository_args_with_start_date), **repository_args)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls",
+        json=[
+            {"id": 1, "updated_at": "2022-02-02T10:10:02Z", "number": 1},
+            {"id": 2, "updated_at": "2022-02-02T10:10:04Z", "number": 2},
+            {"id": 3, "updated_at": "2022-02-02T10:10:06Z", "number": 3},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/2/commits",
+        json=[{"sha": 1}, {"sha": 2}],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/3/commits",
+        json=[{"sha": 3}, {"sha": 4}],
+    )
+
+    records = read_full_refresh(stream)
+    assert records == [
+        {"sha": 1, "repository": "organization/repository", "pull_number": 2},
+        {"sha": 2, "repository": "organization/repository", "pull_number": 2},
+        {"sha": 3, "repository": "organization/repository", "pull_number": 3},
+        {"sha": 4, "repository": "organization/repository", "pull_number": 3},
+    ]
