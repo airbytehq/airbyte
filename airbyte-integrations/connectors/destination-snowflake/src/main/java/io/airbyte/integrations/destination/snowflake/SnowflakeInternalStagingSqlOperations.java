@@ -97,11 +97,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
-  String getCreateStageQuery(String stageName) {
+  protected String getCreateStageQuery(final String stageName) {
     return String.format(CREATE_STAGE_QUERY, stageName);
   }
 
-  String getCopyQuery(String stageName, String dstTableName, String schemaName) {
+  protected String getCopyQuery(final String stageName, final String dstTableName, final String schemaName) {
     return String.format(COPY_QUERY, schemaName, dstTableName, stageName);
   }
 
@@ -112,7 +112,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         Map.of("stage", stageName));
   }
 
-  String getDropQuery(String stageName) {
+  protected String getDropQuery(final String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
   }
 
