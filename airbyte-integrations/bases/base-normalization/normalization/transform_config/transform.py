@@ -196,7 +196,7 @@ class TransformConfig:
         dbt_config = {
             "type": "snowflake",
             "account": account,
-            "user": config["credentials"]["username"].upper(),
+            "user": config["username"].upper(),
             "password": config["credentials"]["password"],
             "role": config["role"].upper(),
             "database": config["database"].upper(),

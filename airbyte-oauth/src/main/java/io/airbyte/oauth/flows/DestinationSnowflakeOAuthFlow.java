@@ -73,7 +73,6 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
         .put("grant_type", "authorization_code")
         .put("code", authCode)
         .put("redirect_uri", redirectUrl)
-        // .put("state", getState())
         .build();
   }
 

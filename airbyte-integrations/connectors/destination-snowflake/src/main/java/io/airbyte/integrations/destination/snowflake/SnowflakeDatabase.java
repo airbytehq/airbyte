@@ -76,9 +76,11 @@ public class SnowflakeDatabase {
       properties.put("host", config.get("host").asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
+      // the username is required for DBT normalization in OAuth connection
+      properties.put("username", config.get("username").asText());
     } else {
       // Username and pass login option is selected on UI
-      dataSource.setUsername(credentials.get("username").asText());
+      dataSource.setUsername(config.get("username").asText());
       dataSource.setPassword(credentials.get("password").asText());
     }
 
