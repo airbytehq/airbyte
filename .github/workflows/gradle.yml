@@ -36,7 +36,7 @@ jobs:
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
-          list-files: "csv"
+          list-files: csv
   ## Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
   #  start-connectors-base-build-runner:
