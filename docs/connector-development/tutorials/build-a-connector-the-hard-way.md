@@ -1036,59 +1036,87 @@ docker-compose up
 
 Then visiting [localhost:8000](http://localhost:8000) in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
 
-If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. We will make this something you can skip in the future. For now, we suggest just running through it quickly. If you use the exchange rates api as a source and json as your destination, it should be relatively easy to set up.
+If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 
-In the UI, click the "Admin" button in the left side bar:
+In the UI, click the "Settings" button in the left side bar:
 
-![](../../.gitbook/assets/newsourcetutorial_sidebar_admin.png)
+![](../../.gitbook/assets/newsourcetutorial_sidebar_settings.png)
 
-Then on the admin page, click "New Connector":
+Then on the Settings page, select Sources
 
-![](../../.gitbook/assets/newsourcetutorial_admin_page.png)
+![](../../.gitbook/assets/newsourcetutorial_settings_page.png)
+
+Then on the Settings/Sources page, click "+ New Connector" button at the top right:
+
+![](../../.gitbook/assets/newsourcetutorial_settings_sources_newconnector.png)
 
 On the modal that pops up, enter the following information then click "Add"
 
 ![](../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
-Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source":
+After you click "Add", the modal will close and you will be back at the Settings page.
+Now click "Sources" in the navigation bar on the left:
+
+![](../../.gitbook/assets/newsourcetutorial_sources_navbar.png)
+
+You will be redirected to Sources page, which, if you have not set up any connections, will be empty.
+On the Sources page click "+ new source" in the top right corner:
+
+![](../../.gitbook/assets/newsourcetutorial_sources_page.png)
+
+A new modal will popup prompting you for details of the new source. Type "Stock Ticker" in the Name field.
+Then, find your connector in the Source type dropdown. We have lots of connectors already, so it might be easier
+to find your connector by typing part of its name:
+
+![](../../.gitbook/assets/newsourcetutorial_find_your_connector.png)
+
+After you select your connector in the Source type dropdown, the modal will show two more fields: API Key and Stock Ticker.
+Remember that `spec.json` file you created at the very beginning of this tutorial? These fields should correspond to the `properties`
+section of that file. Copy-paste your Polygon.io API key and a stock ticker into these fields and then click "Set up source"
+button at the bottom right of the modal. 
 
 ![](../../.gitbook/assets/newsourcetutorial_source_config.png)
 
-on the following page, click the "add destination" button then "add new destination":
+Once you click "Set up source", Airbyte will spin up your connector and run "check" method to verify the configuration.
+You will see a progress bar briefly and if the configuration is valid, you will see a success message, 
+the modal will close and you will see your connector on the updated Sources page.
+
+![](../../.gitbook/assets/newsourcetutorial_sources_stock_ticker.png)
+
+Next step is to add a destination. On the same page, click "add destination" and then click "+ add a new destination":
+
+![](../../.gitbook/assets/newsourcetutorial_add_destination_new_destination.png)
+
+"New destination" wizard will show up. Type a name (e.g. "Local JSON") into the Name field and select "Local JSON" in Destination type drop-down.
+After you select the destination type, type `/local/tutorial_json` into Destination path field.
+When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+
+Click "Set up destination" at the lower right of the form.
 
 ![](../../.gitbook/assets/newsourcetutorial_add_destination.png)
 
-Configure a local JSON destination as follows: Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+After that Airbyte will test the destination and prompt you to configure the connection between Stock Ticker source and Local JSON destination.
+Select "Mirror source structure" in the Destination Namespace, check the checkbox next to the stock_prices stream, and click "Set up connection" button at the bottom of the form:
 
-![](../../.gitbook/assets/newsourcetutorial_destination_config.png)
+![](../../.gitbook/assets/newsourcetutorial_configure_connection.png)
 
-Finally, setup the connection configuration:
+Ta-da! Your connection is now configured to sync once a day. You will see your new connection on the next screen: 
 
-![](../../.gitbook/assets/newsourcetutorial_schema_select.png)
+![](../../.gitbook/assets/newsourcetutorial_connection_done.png)
 
-We'll choose the "manual" frequency, meaning we need to launch each sync by hand.
+Airbyte will run the first sync job as soon as your connection is saved. Navigate to "Connections" in the side bar and wait for the first sync to succeed:
 
-We've setup our connection! Now let's move data.
-
-#### 3. Run a sync from the UI
-
-To launch the sync, click the "sync now" button:
-
-![](../../.gitbook/assets/newsourcetutorial_launchsync.png)
-
-If you click on the connector row, you should be taken to the sync detail page. After a few seconds \(refresh the page if the status doesn't change to "succeeded" in a few seconds\), the status of the sync should change to `succeeded` as below:
-
-![](../../.gitbook/assets/newsourcetutorial_syncdetail.png)
+![](../../.gitbook/assets/newsourcetutorial_first_sync.png)
 
 Let's verify the output. From your shell, run:
 
 ```bash
 $ cat /tmp/airbyte_local/tutorial_json/_airbyte_raw_stock_prices.jsonl
-  {"ab_id":"5fd36107-6a79-4d64-ab36-900184b3848c","emitted_at":1608877192000,"data":{"date":"2020-12-18","stock_ticker":"TSLA","price":695}}
-  {"ab_id":"8109396a-e3b9-4ada-b527-2f539c9e016e","emitted_at":1608877192000,"data":{"date":"2020-12-21","stock_ticker":"TSLA","price":649.86}}
-  {"ab_id":"203f5d55-260a-44c7-9b70-d4fb79b55aa5","emitted_at":1608877192000,"data":{"date":"2020-12-22","stock_ticker":"TSLA","price":640.34}}
-  {"ab_id":"4ee525c6-ee96-4b0c-889d-555ee23298e0","emitted_at":1608877192000,"data":{"date":"2020-12-23","stock_ticker":"TSLA","price":645.98}}
-  {"ab_id":"240157c9-b226-438e-8ffd-5039c91ff882","emitted_at":1608877192000,"data":{"date":"2020-12-24","stock_ticker":"TSLA","price":661.77}}
+{"_airbyte_ab_id":"7383c6c1-783a-4a8a-a39c-3890ab562495","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-04","stock_ticker":"TSLA","price":838.29}}
+{"_airbyte_ab_id":"cf7dc8d9-1ece-4a40-a7d6-35cae54b94e5","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-07","stock_ticker":"TSLA","price":804.58}}
+{"_airbyte_ab_id":"da7da131-41d2-4ba7-bba1-1a0a5329a30a","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-08","stock_ticker":"TSLA","price":824.4}}
+{"_airbyte_ab_id":"20df0d78-5a5e-437b-95d8-aa57cf19fce1","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-09","stock_ticker":"TSLA","price":858.97}}
+{"_airbyte_ab_id":"0b7a8d33-4500-4a6d-9d74-11716bd22f01","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-10","stock_ticker":"TSLA","price":838.3}}
 ```
 
 Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;\)
