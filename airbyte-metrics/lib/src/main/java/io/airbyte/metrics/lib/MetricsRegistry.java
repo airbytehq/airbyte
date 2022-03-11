@@ -87,7 +87,7 @@ public enum MetricsRegistry {
       "oldest running job in seconds"),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "overall_job_runtime_in_last_hour_by_terminal_state_secs",
-      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour.");
+      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states.");
 
   public final MetricEmittingApp application;
   public final String metricName;
