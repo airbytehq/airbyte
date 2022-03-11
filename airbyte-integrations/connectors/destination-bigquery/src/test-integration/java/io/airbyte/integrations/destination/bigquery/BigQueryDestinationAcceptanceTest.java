@@ -29,6 +29,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -188,9 +189,9 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     setupBigQuery(credentialsJson);
   }
 
-  protected void setupBigQuery(JsonNode credentialsJson) throws IOException {
+  protected void setupBigQuery(final JsonNode credentialsJson) throws IOException {
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
 
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())

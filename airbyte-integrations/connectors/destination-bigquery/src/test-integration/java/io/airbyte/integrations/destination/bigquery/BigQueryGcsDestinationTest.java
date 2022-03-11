@@ -48,6 +48,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -119,7 +120,7 @@ class BigQueryGcsDestinationTest {
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(credentials)
