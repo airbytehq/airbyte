@@ -42,6 +42,7 @@ public class EntrypointEnvChecker {
         "printenv",
         null,
         Collections.emptyMap(),
+        Collections.emptyMap(),
         Collections.emptyMap());
 
     final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));

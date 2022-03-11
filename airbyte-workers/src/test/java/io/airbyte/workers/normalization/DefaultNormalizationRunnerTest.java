@@ -79,6 +79,7 @@ class DefaultNormalizationRunnerTest {
         workerConfigs.getResourceRequirements(),
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
         Map.of(),
+        Map.of(),
         "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
