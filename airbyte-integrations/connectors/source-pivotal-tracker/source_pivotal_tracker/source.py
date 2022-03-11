@@ -80,6 +80,10 @@ class Stories(ProjectBasedStream):
     subpath = "stories"
 
 
+class ProjectMemberships(ProjectBasedStream):
+    subpath = "memberships"
+
+
 class Labels(ProjectBasedStream):
     subpath = "labels"
 
@@ -88,8 +92,8 @@ class Releases(ProjectBasedStream):
     subpath = "releases"
 
 
-class ProjectMemberships(ProjectBasedStream):
-    subpath = "memberships"
+class Epics(ProjectBasedStream):
+    subpath = "epics"
 
 
 # Custom token authenticator because no "Bearer"
@@ -136,7 +140,8 @@ class SourcePivotalTracker(AbstractSource):
         return [
             Projects(authenticator=auth),
             Stories(**project_args),
-            Labels(**project_args),
             ProjectMemberships(**project_args),
+            Labels(**project_args),
             Releases(**project_args),
+            Epics(**project_args),
         ]
