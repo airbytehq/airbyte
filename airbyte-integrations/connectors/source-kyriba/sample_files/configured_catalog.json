@@ -2,6 +2,28 @@
     "streams": [
         {
             "stream": {
+                "name": "bank_balances_intraday",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-04/schema"
+                },
+                "supported_sync_modes": ["full_refresh"]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
+                "name": "cash_balances_intraday",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-04/schema"
+                },
+                "supported_sync_modes": ["full_refresh"]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
                 "name": "accounts",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
@@ -26,13 +48,26 @@
         },
         {
             "stream": {
-                "name": "cash_balances",
+                "name": "cash_balances_eod",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
                 },
                 "supported_sync_modes": ["full_refresh", "incremental"],
                 "source_defined_cursor": true,
                 "default_cursor_field": ["date"]
+            },
+            "sync_mode": "incremental",
+            "destination_sync_mode": "append"
+        },
+        {
+            "stream": {
+                "name": "bank_balances_eod",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-04/schema"
+                },
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": true,
+                "default_cursor_field": ["balanceDate"]
             },
             "sync_mode": "incremental",
             "destination_sync_mode": "append"
