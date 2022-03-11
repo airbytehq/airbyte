@@ -27,6 +27,7 @@ import io.sentry.NoOpTransaction;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import io.sentry.SpanStatus;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class IntegrationRunner {
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
-    final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
+    final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
     while (input.hasNext()) {
       final String inputString = input.next();
