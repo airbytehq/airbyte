@@ -32,8 +32,14 @@ public class StandardNameTransformer implements NamingConventionTransformer {
     return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
   }
 
-  protected String convertStreamName(final String input) {
+  @Override
+  public String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
+  }
+
+  @Override
+  public String applyDefaultCase(final String input) {
+    return input;
   }
 
   /**
