@@ -62,48 +62,48 @@
       "maxLength": 30
     },
     "address": {
-          "type": "object",
-          "properties": {
-            "phone": {
-              "type": "string",
-              "title": "Phone number",
-              "maxLength": 256
-            },
-            "street1": {
-              "type": "string",
-              "title": "Street 1",
-              "maxLength": 256
-            },
-            "street2": {
-              "type": "string",
-              "title": "Street 2",
-              "maxLength": 256
-            },
-            "city": {
-              "type": "string",
-              "title": "City",
-              "maxLength": 256
-            },
-            "region": {
-              "type": "string",
-              "title": "State/Province",
-              "description": "State or province.",
-              "maxLength": 256
-            },
-            "postal_code": {
-              "type": "string",
-              "title": "Zip/Postal code",
-              "description": "Zip or postal code.",
-              "maxLength": 256
-            },
-            "country": {
-              "type": "string",
-              "title": "Country",
-              "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
-              "maxLength": 2
-            }
-          }
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "title": "Phone number",
+          "maxLength": 256
         },
+        "street1": {
+          "type": "string",
+          "title": "Street 1",
+          "maxLength": 256
+        },
+        "street2": {
+          "type": "string",
+          "title": "Street 2",
+          "maxLength": 256
+        },
+        "city": {
+          "type": "string",
+          "title": "City",
+          "maxLength": 256
+        },
+        "region": {
+          "type": "string",
+          "title": "State/Province",
+          "description": "State or province.",
+          "maxLength": 256
+        },
+        "postal_code": {
+          "type": "string",
+          "title": "Zip/Postal code",
+          "description": "Zip or postal code.",
+          "maxLength": 256
+        },
+        "country": {
+          "type": "string",
+          "title": "Country",
+          "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
+          "maxLength": 2
+        }
+      }
+    },
     "custom_fields": {
       "type": ["null", "array"]
     },
