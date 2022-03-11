@@ -1,6 +1,6 @@
 
 from abc import ABC
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional
 from xmlrpc.client import Boolean
 
 from airbyte_cdk.sources.streams import Stream
@@ -23,6 +23,29 @@ REPORT_TYPE_MAPPING = {
     "standard": "TYPE_GENERAL",
     "unique_reach_audience": "TYPE_REACH_AUDIENCE"
 }
+
+def chunk_date_range(field: str,start_date: str, end_date: str = None, range_days: int = None) -> Iterable[Mapping[str, any]]:
+  """
+  Returns a list dates between the start date and now.
+  The return value is a list of dicts {'date': str}
+  """
+  intervals = []
+  end_date = pendulum.parse(end_date) if end_date else pendulum.now()
+  start_date = pendulum.parse(start_date)
+
+  if start_date > end_date:
+    start_date = end_date
+
+  while start_date < end_date:
+    end_date = min(end_date, start_date.add(days=range_days))
+    intervals.append(
+      {
+        "start_date": start_date,
+        "end_date": end_date,
+      }
+    )
+    start_date = start_date.add(days=1)
+  return intervals
 
 class DBM:
   QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json" #Template for creating the query object
@@ -119,6 +142,8 @@ class DBM:
     fields = self.get_fields_from_schema(schema,catalog_fields)
     start_date = pendulum.parse(start_date)
     end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
+    if start_date > end_date:
+      start_date = end_date
     query = self.create_query_object(
       report_name = report_name,
       dimensions = self.get_dimensions_from_fields(fields),
@@ -142,7 +167,11 @@ class DBMStream(Stream, ABC):
     self.dbm = DBM(credentials= credentials, partner_id=partner_id)
     self._start_date = start_date
     self._end_date = end_date
+    self._partner_id = partner_id
     self._filters = filters
+
+  def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    yield {}
 
   def get_query(self, catalog_fields: List[str], stream_slice:Mapping[str, Any]) -> Iterable[Mapping]:
     """
@@ -188,12 +217,30 @@ class DBMStream(Stream, ABC):
 
 
 class DBMIncrementalStream(DBMStream, ABC):
-  cursor_field = "" # ToDo
+  cursor_field = "date"
+  primary_key = None
+  range_days = 15
+  
+  def __init__(self, credentials: Credentials, partner_id: str, filters:List[dict], start_date: str, end_date: str=None):
+    super().__init__(credentials, partner_id, filters, start_date, end_date)
 
-  def __init__(self, start_date: str, end_date: str=None, **kwargs):
-    self._start_date = start_date
-    self._end_date = end_date
-    super().__init__(**kwargs)
+
+  def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    stream_state = stream_state or {}
+    if stream_state.get(self._partner_id):
+      start_date = stream_state[self._partner_id].get(self.cursor_field) or self._start_date
+    else:
+      start_date = self._start_date
+    end_date = self._end_date
+
+    chunks = chunk_date_range(
+      field=self.cursor_field,
+      start_date=start_date,
+      end_date=end_date,
+      range_days= self.range_days
+    )
+    for chunk in chunks:
+      yield chunk
 
 
 class AudienceComposition(DBMStream):

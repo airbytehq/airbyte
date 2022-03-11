@@ -1,3 +1,11 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "credentials": {
+    "access_token": "access_token",
+    "refresh_token": "refresh_token",
+    "client_id": "client_id",
+    "client_secret": "client_secret"
+  },
+  "start_date": "2022-03-01",
+  "end_date": "2022-03-08",
+  "partner_id": 123
 }
