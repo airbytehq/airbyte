@@ -1,6 +1,6 @@
 # Changelog
 
-## 1/28/2021 Summary
+## 1/28/2022 Summary
 
 * New Source: Chartmogul (contributyed by Titas Skrebė)
 * New Source: Hellobaton (contributed by Daniel Luftspring)
@@ -20,7 +20,7 @@
 * 🐛 Postgres Source: Now supports handling of the Java SQL date type.
 * 🐛 Salesforce Source: No longer fails during schema generation.
 
-## 1/13/2021 Summary
+## 1/13/2022 Summary
 
 ⚠️ WARNING ⚠️
 
@@ -40,7 +40,7 @@ Snowflake Source: Normalization with Snowflake now produces permanent tables. [I
 * 🐛 Recurly Source: Now does not load all accounts when importing account coupon redemptions.
 * 🐛 Salesforce Source: Now properly handles 400 when streams don't support query or queryAll.
 
-## 1/6/2021 Summary
+## 1/6/2022 Summary
 
 * New Source: 3PL Central (contributed by Juozas)
 * New Source: My Hours (contributed by Wisse Jelgersma)
