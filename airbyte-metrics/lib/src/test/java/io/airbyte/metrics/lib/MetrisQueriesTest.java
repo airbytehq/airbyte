@@ -492,6 +492,41 @@ public class MetrisQueriesTest {
     }
 
     @Test
+    @DisplayName("should return correct duration for jobs that terminated in the last hour")
+    void shouldReturnTerminalJobsComplex() throws SQLException {
+      final var updateAtNow = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAtNow.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      // terminal jobs in last hour
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(1L, "", JobStatus.succeeded, createAt, updateAtNow).execute());
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(2L, "", JobStatus.failed, createAt, updateAtNow).execute());
+
+      // old terminal jobs
+      final var updateAtOld = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+              .values(3L, "", JobStatus.cancelled, createAt, updateAtOld).execute());
+
+      // non-terminal jobs
+      configDb.transaction(
+          ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+              .values(4L, "", JobStatus.running, createAt).execute());
+
+      final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      assertEquals(2, res.size());
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+    }
+
+    @Test
     @DisplayName("should not error out or return any result if not applicable")
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);

@@ -91,7 +91,7 @@ public class ReporterApp {
       } catch (final SQLException e) {
         e.printStackTrace();
       }
-    }, 0, 15, TimeUnit.SECONDS);
+    }, 0, 1, TimeUnit.HOURS);
 
     Thread.sleep(1000_000 * 1000);
   }

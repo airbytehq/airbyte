@@ -25,8 +25,9 @@ import com.google.api.client.util.Preconditions;
  * <p>
  * - Avoid numbers. This makes the metric confusing to read. Numbers should only be used as a
  * <p>
- * - Add units at name end if applicable. This is especially relevant for time units. versioning
- * tactic and present at the end of the metric.
+ * - Add units at name end if applicable. This is especially relevant for time units.
+ * <p>
+ * - Include the time period in the name if the metric is meant to be run at a certain interval.
  */
 public enum MetricsRegistry {
 
