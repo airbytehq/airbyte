@@ -5,10 +5,10 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static io.airbyte.config.EnvConfigs.DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE;
+import static io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl.AUTO_DISABLE_CONFIG_TYPES;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
-import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -72,7 +72,7 @@ class AutoDisableConnectionActivityTest {
     final List<JobStatus> jobStatuses = new ArrayList<>(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW, JobStatus.FAILED));
     jobStatuses.add(JobStatus.SUCCEEDED);
 
-    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, AUTO_DISABLE_CONFIG_TYPES,
         CURR_INSTANT.minus(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS))).thenReturn(jobStatuses);
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
     Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
@@ -88,7 +88,7 @@ class AutoDisableConnectionActivityTest {
     final List<JobStatus> jobStatuses = new ArrayList<>(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW - 1, JobStatus.FAILED));
     jobStatuses.add(JobStatus.SUCCEEDED);
 
-    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, AUTO_DISABLE_CONFIG_TYPES,
         CURR_INSTANT.minus(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS))).thenReturn(jobStatuses);
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
 
@@ -99,7 +99,7 @@ class AutoDisableConnectionActivityTest {
   @Test
   @DisplayName("Test that the connection is _not_ disabled after 0 jobs in last MAX_DAYS_OF_STRAIGHT_FAILURE days")
   public void testNoRuns() throws IOException {
-    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, AUTO_DISABLE_CONFIG_TYPES,
         CURR_INSTANT.minus(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS))).thenReturn(Collections.emptyList());
 
     autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
@@ -109,7 +109,7 @@ class AutoDisableConnectionActivityTest {
   @Test
   @DisplayName("Test that the connection is disabled after only failed jobs in last MAX_DAYS_OF_STRAIGHT_FAILURE days")
   public void testOnlyFailuresInMaxDays() throws IOException, JsonValidationException, ConfigNotFoundException {
-    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, ConfigType.SYNC,
+    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, AUTO_DISABLE_CONFIG_TYPES,
         CURR_INSTANT.minus(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS)))
         .thenReturn(Collections.singletonList(JobStatus.FAILED));
     Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);

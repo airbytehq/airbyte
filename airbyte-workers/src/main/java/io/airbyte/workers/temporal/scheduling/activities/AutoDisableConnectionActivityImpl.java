@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -15,10 +17,14 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
+
+  @VisibleForTesting
+  public static final Set<ConfigType> AUTO_DISABLE_CONFIG_TYPES = Sets.newHashSet(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
 
   private ConfigRepository configRepository;
   private JobPersistence jobPersistence;
@@ -29,7 +35,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   public void autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
-        final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), ConfigType.SYNC,
+        final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), AUTO_DISABLE_CONFIG_TYPES,
             input.getCurrTimestamp().minus(configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(), ChronoUnit.DAYS));
 
         if (jobStatuses.size() == 0)

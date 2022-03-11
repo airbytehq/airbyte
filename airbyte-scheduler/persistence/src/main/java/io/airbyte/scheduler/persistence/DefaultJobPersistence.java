@@ -386,7 +386,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final ConfigType configType, final Instant jobCreatedAtTimestamp)
+  public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final Set<ConfigType> configTypes, final Instant jobCreatedAtTimestamp)
       throws IOException {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
 
@@ -394,9 +394,8 @@ public class DefaultJobPersistence implements JobPersistence {
     return jobDatabase.query(ctx -> ctx
         .fetch(JobStatusSelect + "WHERE " +
             "CAST(scope AS VARCHAR) = ? AND " +
-            "CAST(config_type AS VARCHAR) =  ? AND " +
-            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(),
-            Sqls.toSqlName(configType), timeConvertedIntoLocalDateTime))
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
         .stream()
         .map(r -> JobStatus.valueOf(r.get("status", String.class).toUpperCase()))
         .toList();
