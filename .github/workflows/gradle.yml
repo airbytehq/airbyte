@@ -1,32 +1,35 @@
-name: Airbyte CI
+# Main build for OSS Airbyte. Only build the Platform modules.
+name: Airbyte CI - Platform
 
 on:
   schedule:
     - cron: "0 */1 * * *"
   push:
+    paths:
+      - "!airbyte-integrations/**"
     branches-ignore:
       - "gitbook/v1"
 
 jobs:
   ## Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
-  start-connectors-base-build-runner:
-    name: "Connectors Base: Start Build EC2 Runner"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+  #  start-connectors-base-build-runner:
+  #    name: "Connectors Base: Start Build EC2 Runner"
+  #    timeout-minutes: 10
+  #    runs-on: ubuntu-latest
+  #    outputs:
+  #      label: ${{ steps.start-ec2-runner.outputs.label }}
+  #      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+  #    steps:
+  #      - name: Checkout Airbyte
+  #        uses: actions/checkout@v2
+  #      - name: Start AWS Runner
+  #        id: start-ec2-runner
+  #        uses: ./.github/actions/start-aws-runner
+  #        with:
+  #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+  #          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
 
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
@@ -39,103 +42,103 @@ jobs:
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
 
-  build-connectors-base:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
-    name: "Connectors Base: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "17"
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "16.13.0"
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.7"
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Generate Template scaffold
-        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
-
-      - name: Format
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
-
-      - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build -x :airbyte-workers:test --scan
-
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
-
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-connectors-base-build-runner:
-    name: "Connectors Base: Stop Build EC2 Runner"
-    timeout-minutes: 10
-    needs:
-      - start-connectors-base-build-runner # required to get output from the start-runner job
-      - build-connectors-base # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.0
-        with:
-          mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
+  #  build-connectors-base:
+  #    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+  #    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
+  #    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
+  #    name: "Connectors Base: Build"
+  #    timeout-minutes: 90
+  #    steps:
+  #      - name: Checkout Airbyte
+  #        uses: actions/checkout@v2
+  #
+  #      - name: Cache Build Artifacts
+  #        uses: ./.github/actions/cache-build-artifacts
+  #        with:
+  #          cache-key: ${{ secrets.CACHE_VERSION }}
+  #
+  #      - uses: actions/setup-java@v1
+  #        with:
+  #          java-version: "17"
+  #
+  #      - uses: actions/setup-node@v1
+  #        with:
+  #          node-version: "16.13.0"
+  #
+  #      - uses: actions/setup-python@v2
+  #        with:
+  #          python-version: "3.7"
+  #
+  #      - name: Install Pyenv
+  #        run: python3 -m pip install virtualenv==16.7.9 --user
+  #
+  #      - name: Set up CI Gradle Properties
+  #        run: |
+  #          mkdir -p ~/.gradle/
+  #          cat > ~/.gradle/gradle.properties <<EOF
+  #          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+  #            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+  #            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+  #            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+  #            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+  #          org.gradle.workers.max=8
+  #          org.gradle.vfs.watch=false
+  #          EOF
+  #
+  #      - name: Generate Template scaffold
+  #        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+  #
+  #      - name: Format
+  #        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+  #
+  #      - name: Build
+  #        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build -x :airbyte-workers:test --scan
+  #
+  #      - name: Ensure no file change
+  #        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+  #
+  #      - name: Slack Notification - Failure
+  #        if: failure() && github.ref == 'refs/heads/master'
+  #        uses: rtCamp/action-slack-notify@master
+  #        env:
+  #          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+  #          SLACK_USERNAME: Buildozer
+  #          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+  #          SLACK_COLOR: DC143C
+  #          SLACK_TITLE: "Build failure"
+  #          SLACK_FOOTER: ""
+  #
+  #      - name: Slack Notification - Success
+  #        if: success() && github.ref == 'refs/heads/master'
+  #        uses: rtCamp/action-slack-notify@master
+  #        env:
+  #          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+  #          SLACK_USERNAME: Buildbot
+  #          SLACK_TITLE: "Build Success"
+  #          SLACK_FOOTER: ""
+  #  # In case of self-hosted EC2 errors, remove this block.
+  #  stop-connectors-base-build-runner:
+  #    name: "Connectors Base: Stop Build EC2 Runner"
+  #    timeout-minutes: 10
+  #    needs:
+  #      - start-connectors-base-build-runner # required to get output from the start-runner job
+  #      - build-connectors-base # required to wait when the main job is done
+  #    runs-on: ubuntu-latest
+  #    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+  #    steps:
+  #      - name: Configure AWS credentials
+  #        uses: aws-actions/configure-aws-credentials@v1
+  #        with:
+  #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+  #          aws-region: us-east-2
+  #      - name: Stop EC2 runner
+  #        uses: machulav/ec2-github-runner@v2.3.0
+  #        with:
+  #          mode: stop
+  #          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+  #          label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
+  #          ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
   ## Gradle Build (Platform)
   # In case of self-hosted EC2 errors, remove this block.
@@ -367,7 +370,6 @@ jobs:
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
-
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
