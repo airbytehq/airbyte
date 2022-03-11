@@ -1,4 +1,3 @@
-# Main build for OSS Airbyte. Only build the Platform modules.
 name: Airbyte CI - Platform
 
 on:
