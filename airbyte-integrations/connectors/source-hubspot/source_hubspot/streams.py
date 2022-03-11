@@ -849,7 +849,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000, so that
             # the new sync starts a new query with a more recent cursor value.
             after = int(response["paging"]["next"]["after"])
-            if after < 10000:
+            if not self.state or after < 10000:
                 params["after"] = after
                 payload["after"] = after
                 return {"params": params, "payload": payload}
