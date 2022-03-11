@@ -110,7 +110,6 @@ public class StagingConsumerFactory {
                                                  final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
-      final Set<String> schemaSet = new HashSet<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
@@ -122,10 +121,7 @@ public class StagingConsumerFactory {
 
         AirbyteSentry.executeWithTracing("PrepareStreamStage",
             () -> {
-              if (!schemaSet.contains(schema)) {
-                stagingOperations.createSchemaIfNotExists(database, schema);
-                schemaSet.add(schema);
-              }
+              stagingOperations.createSchemaIfNotExists(database, schema);
               stagingOperations.createTableIfNotExists(database, schema, tmpTable);
               stagingOperations.createStageIfNotExists(database, stage);
             },
