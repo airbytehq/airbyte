@@ -24,7 +24,11 @@ LOGGER = AirbyteLogger()
 def get_local_ip() -> str:
     all_interface_ips: List[str] = []
     for iface_name in interfaces():
-        all_interface_ips += [i["addr"] for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}]) if i["addr"]]
+        all_interface_ips += [
+            i["addr"]
+            for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}])
+            if i["addr"]
+        ]
     LOGGER.info(f"detected interface IPs: {all_interface_ips}")
     for ip in sorted(all_interface_ips):
         if not ip.startswith("127."):
@@ -38,7 +42,9 @@ def minio_credentials() -> Mapping[str, Any]:
     config_template = Path(__file__).parent / "config_minio.template.json"
     assert config_template.is_file() is not None, f"not found {config_template}"
     config_file = Path(__file__).parent / "config_minio.json"
-    config_file.write_text(config_template.read_text().replace("<local_ip>", get_local_ip()))
+    config_file.write_text(
+        config_template.read_text().replace("<local_ip>", get_local_ip())
+    )
     credentials = {}
     with open(str(config_file)) as f:
         credentials = json.load(f)
@@ -55,12 +61,17 @@ def minio_setup(minio_credentials: Mapping[str, Any]) -> Iterable[None]:
     # Because another test container should have direct connection to it
     local_ip = get_local_ip()
     LOGGER.debug(f"minio settings: {minio_credentials}")
+
     try:
         container = client.containers.run(
             image="minio/minio:RELEASE.2021-10-06T23-36-31Z",
             command=f"server {TMP_FOLDER}",
             name="ci_test_minio",
             auto_remove=True,
+            environment=dict(
+                MINIO_ACCESS_KEY=minio_credentials["provider"]["aws_access_key_id"],
+                MINIO_SECRET_KEY=minio_credentials["provider"]["aws_secret_access_key"],
+            ),
             volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
             detach=True,
             ports={"9000/tcp": (local_ip, 9000)},
