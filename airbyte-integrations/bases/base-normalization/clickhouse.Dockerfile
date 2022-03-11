@@ -20,7 +20,7 @@ WORKDIR /airbyte/normalization_code
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code/dbt-template/
-RUN pip install dbt-clickhouse
+RUN pip install dbt-clickhouse==1.0.0
 # Download external dbt dependencies
 RUN dbt deps
 
