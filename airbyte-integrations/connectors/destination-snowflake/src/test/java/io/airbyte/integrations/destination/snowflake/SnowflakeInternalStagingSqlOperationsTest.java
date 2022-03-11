@@ -1,21 +1,14 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class SnowflakeStagingSqlOperationsTest {
+class SnowflakeInternalStagingSqlOperationsTest {
 
   public static final String SCHEMA_NAME = "schemaName";
   public static final String STAGE_NAME = "stageName";
-  private final SnowflakeStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeStagingSqlOperations();
+  private final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
 
   @Test
   void createStageIfNotExists() {

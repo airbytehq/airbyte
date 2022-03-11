@@ -90,10 +90,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  String getCreateStageQuery(String stageName) {
-    return String.format(CREATE_STAGE_QUERY, stageName);
-  }
-
   public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String stageName, final String dstTableName, final String schemaName)
       throws SQLException {
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
@@ -101,22 +97,26 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
-  @Override
+  String getCreateStageQuery(String stageName) {
+    return String.format(CREATE_STAGE_QUERY, stageName);
+  }
+
   String getCopyQuery(String stageName, String dstTableName, String schemaName) {
     return String.format(COPY_QUERY, schemaName, dstTableName, stageName);
   }
 
+  @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws SQLException {
     AirbyteSentry.executeWithTracing("DropStageIfExists",
         () -> database.execute(getDropQuery(stageName)),
         Map.of("stage", stageName));
   }
 
-  @Override
   String getDropQuery(String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
   }
 
+  @Override
   public void cleanUpStage(final JdbcDatabase database, final String path) throws SQLException {
     AirbyteSentry.executeWithTracing("CleanStage",
         () -> database.execute(String.format("REMOVE @%s;", path)),
