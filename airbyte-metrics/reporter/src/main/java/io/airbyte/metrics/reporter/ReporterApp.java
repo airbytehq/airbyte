@@ -13,14 +13,17 @@ import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReporterApp {
 
+  final public static AtomicInteger EST_NUM_METRICS_EMITTED_LAST_INTERVAL = new AtomicInteger(0);
+
   public static Database configDatabase;
 
-  public static void main(final String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException {
     final Configs configs = new EnvConfigs();
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));
