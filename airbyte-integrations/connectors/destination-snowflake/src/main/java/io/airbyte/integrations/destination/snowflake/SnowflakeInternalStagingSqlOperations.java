@@ -9,6 +9,7 @@ import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.staging.StagingOperations;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -17,6 +18,10 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
+  public static final String CREATE_STAGE_QUERY = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
+  public static final String COPY_QUERY = "COPY INTO %s.%s FROM @%s file_format = " +
+      "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+  public static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private final NamingConventionTransformer nameTransformer;
 
@@ -66,29 +71,39 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
-        () -> database.execute(String.format(query, stageName)),
+        () -> database.execute(getCreateStageQuery(stageName)),
         Map.of("stage", stageName));
   }
 
   @Override
   public void copyIntoTmpTableFromStage(final JdbcDatabase database,
-                                        final String path,
+                                        final String stageName,
                                         final List<String> stagedFiles,
                                         final String dstTableName,
                                         final String schemaName)
-      throws Exception {
-    final String query = "COPY INTO %s.%s FROM @%s file_format = " +
-        "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+      throws SQLException {
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> database.execute(String.format(query, schemaName, dstTableName, path)),
-        Map.of("schema", schemaName, "stage", path, "table", dstTableName));
+        () -> database.execute(getCopyQuery(stageName, dstTableName, schemaName)),
+        Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
+  }
+
+  protected String getCreateStageQuery(final String stageName) {
+    return String.format(CREATE_STAGE_QUERY, stageName);
+  }
+
+  protected String getCopyQuery(final String stageName, final String dstTableName, final String schemaName) {
+    return String.format(COPY_QUERY, schemaName, dstTableName, stageName);
   }
 
   @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String path) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
     AirbyteSentry.executeWithTracing("DropStageIfExists",
-        () -> database.execute(String.format("DROP STAGE IF EXISTS %s;", path)),
-        Map.of("stage", path));
+        () -> database.execute(getDropQuery(stageName)),
+        Map.of("stage", stageName));
+  }
+
+  protected String getDropQuery(final String stageName) {
+    return String.format(DROP_STAGE_QUERY, stageName);
   }
 
   @Override

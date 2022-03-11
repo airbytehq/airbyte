@@ -181,7 +181,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();

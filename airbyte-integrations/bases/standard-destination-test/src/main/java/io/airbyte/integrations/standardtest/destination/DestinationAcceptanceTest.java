@@ -80,6 +80,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
+  private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
 
   private static final String JOB_ID = "0";
@@ -704,7 +705,7 @@ public abstract class DestinationAcceptanceTest {
 
   private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
-    return new Random()
+    return RANDOM
         .ints('a', 'z' + 1)
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)

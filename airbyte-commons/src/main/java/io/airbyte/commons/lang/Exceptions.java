@@ -6,9 +6,11 @@ package io.airbyte.commons.lang;
 
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class Exceptions {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Exceptions.class);
@@ -37,6 +39,22 @@ public class Exceptions {
    */
   public static void toRuntime(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
+  }
+
+  /**
+   * Return a Runnable that logs anonymous function exceptions.
+   *
+   * @param voidCallable
+   * @return
+   */
+  public static Runnable toSwallowExceptionRunnable(final Procedure voidCallable) {
+    return () -> {
+      try {
+        voidCallable.call();
+      } catch (Exception e) {
+        log.error("Exception: ", e);
+      }
+    };
   }
 
   public static void toIllegalState(final Procedure voidCallable) {

@@ -185,17 +185,19 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) {
     final String bucket = s3Config.getBucketName();
     ObjectListing objects = s3Client.listObjects(bucket, stageName);
-    while (objects.isTruncated()) {
-      if (objects.getObjectSummaries().size() > 0) {
-        final List<KeyVersion> toDelete = objects.getObjectSummaries()
-            .stream()
-            .filter(obj -> stagedFiles.isEmpty() || stagedFiles.contains(obj.getKey()))
-            .map(obj -> new KeyVersion(obj.getKey()))
-            .toList();
-        s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(toDelete));
-        LOGGER.info("Stage {} has been clean-up ({} objects were deleted)...", stageName, toDelete.size());
+    while (objects.getObjectSummaries().size() > 0) {
+      final List<KeyVersion> toDelete = objects.getObjectSummaries()
+          .stream()
+          .map(obj -> new KeyVersion(obj.getKey()))
+          .filter(obj -> stagedFiles.isEmpty() || stagedFiles.contains(obj.getKey()))
+          .toList();
+      s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(toDelete));
+      LOGGER.info("Stage {} has been clean-up ({} objects were deleted)...", stageName, toDelete.size());
+      if (objects.isTruncated()) {
+        objects = s3Client.listNextBatchOfObjects(objects);
+      } else {
+        break;
       }
-      objects = s3Client.listNextBatchOfObjects(objects);
     }
   }
 
