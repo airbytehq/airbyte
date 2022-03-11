@@ -96,6 +96,17 @@ class Epics(ProjectBasedStream):
     subpath = "epics"
 
 
+class Activity(ProjectBasedStream):
+    subpath = "activity"
+    primary_key = "guid"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            if "project" in record:
+                record["project_id"] = record["project"]["id"]
+            yield record
+
+
 # Custom token authenticator because no "Bearer"
 class PivotalAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
@@ -144,4 +155,5 @@ class SourcePivotalTracker(AbstractSource):
             Labels(**project_args),
             Releases(**project_args),
             Epics(**project_args),
+            Activity(**project_args),
         ]
