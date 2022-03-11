@@ -187,8 +187,9 @@ const ConnectorServiceTypeControl: React.FC<{
       : [];
   // We want to enable shopify for specific workspaces to allow them to review the integration
   if (
+    window.CLOUD === "true" &&
     window.intercomSettings.workspace_id ==
-    "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
+      "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
   ) {
     disallowedOauthConnectors = disallowedOauthConnectors.filter(
       (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
