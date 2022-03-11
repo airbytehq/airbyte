@@ -38,6 +38,10 @@ public enum MetricsRegistry {
       MetricEmittingApps.WORKER,
       "attempt_failed_by_release_stage",
       "increments when an attempt fails. attempts are double counted as this is tagged by release stage."),
+  ATTEMPT_FAILED_BY_FAILURE_ORIGIN(
+      MetricEmittingApps.WORKER,
+      "attempt_failed_by_failure_origin",
+      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin."),
   ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
@@ -70,6 +74,10 @@ public enum MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_running_jobs",
       "number of running jobs"),
+  NUM_ACTIVE_CONN_PER_WORKSPACE(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_active_conn_per_workspace",
+      "number of active connections per workspace"),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),

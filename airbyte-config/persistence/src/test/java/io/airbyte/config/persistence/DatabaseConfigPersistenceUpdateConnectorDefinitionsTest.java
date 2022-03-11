@@ -94,6 +94,32 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   }
 
   @Test
+  @DisplayName("When a old connector is in use and there is a new patch version, update its version")
+  public void testOldConnectorInUseWithMinorVersion() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1.9");
+
+    assertUpdateConnectorDefinition(
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(latestSource));
+  }
+
+  @Test
+  @DisplayName("When a old connector is in use and there is a new minor version, do not update its version")
+  public void testOldConnectorInUseWithPathVersion() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.2.0");
+
+    assertUpdateConnectorDefinition(
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(currentSource));
+  }
+
+  @Test
   @DisplayName("When an unused connector has a new version, update it")
   public void testUnusedConnectorWithOldVersion() throws Exception {
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.0.0");

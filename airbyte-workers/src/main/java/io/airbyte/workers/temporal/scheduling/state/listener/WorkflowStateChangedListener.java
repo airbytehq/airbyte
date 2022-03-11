@@ -35,6 +35,7 @@ public interface WorkflowStateChangedListener {
     QUARANTINED,
     SUCCESS,
     CANCELLED_FOR_RESET,
+    RESET_WITH_SCHEDULING,
   }
 
   @Value

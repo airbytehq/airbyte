@@ -29,6 +29,8 @@ application {
 // Publish this so Airbyte Cloud can consume and extend the classes within this jar.
 // This needs to be a shadow jar as none of the other modules are published.
 shadowJar {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     zip64 true
     mergeServiceFiles()
     exclude 'META-INF/*.RSA'
@@ -81,3 +83,10 @@ task copyGeneratedTar(type: Copy) {
 Task dockerBuildTask = getDockerBuildTask("bootloader",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
+
+// produce reproducible archives
+// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
