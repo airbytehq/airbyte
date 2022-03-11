@@ -107,20 +107,22 @@ class Accounts(KyribaStream):
         return "accounts"
 
 
-#class AccountSubStream(HttpSubStream, IncrementalKyribaStream):
-#    def __init__(self, **kwargs):
-#        super().__init__(Accounts, **kwargs)
-#
-#    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-#        accounts = self.parent.read_records()
-#        [{"uuid": a["uuid"]} for a in accounts]
-
-
-class CashBalancesEod(HttpSubStream, IncrementalKyribaStream):
+class AccountSubStream(HttpSubStream):
     def __init__(self, **kwargs):
         super().__init__(Accounts, **kwargs)
         self.parent = Accounts(**kwargs)
 
+    def get_account_uuids(self) -> Iterable[Optional[Mapping[str, str]]]:
+        return [{"account_uuid": a["uuid"]} for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+
+    def next_page_token(self, response: requests.Response):
+        pass
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return [response.json()]
+
+
+class CashBalancesEod(AccountSubStream, IncrementalKyribaStream):
     cursor_field = "date"
 
     # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -135,7 +137,7 @@ class CashBalancesEod(HttpSubStream, IncrementalKyribaStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        account_uuids = [a["uuid"] for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+        account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
         days_inc = 31
         start_str = stream_state.get(self.cursor_field) or self.start_date
@@ -148,7 +150,7 @@ class CashBalancesEod(HttpSubStream, IncrementalKyribaStream):
                 "startDate": start_date.isoformat(),
                 "endDate": end_date.isoformat(),
             }
-            slices.extend([{"account_uuid": uuid, **date_params} for uuid in account_uuids])
+            slices.extend([{**u, **date_params} for u in account_uuids])
             # ensure the next start date is never greater than today since we are getting EOD balances
             start_date = end_date + timedelta(days=1)
         return slices
@@ -170,19 +172,10 @@ class CashBalancesEod(HttpSubStream, IncrementalKyribaStream):
             "dateType": "VALUE",
         }
 
-    def next_page_token(self, response: requests.Response):
-        pass
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
-
-class CashBalancesIntraday(HttpSubStream, KyribaStream):
-    def __init__(self, **kwargs):
-        super().__init__(Accounts, **kwargs)
-        self.parent = Accounts(**kwargs)
-
+class CashBalancesIntraday(AccountSubStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{"account_uuid": a["uuid"]} for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+        return self.get_account_uuids()
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         account_uuid = stream_slice['account_uuid']
@@ -201,18 +194,8 @@ class CashBalancesIntraday(HttpSubStream, KyribaStream):
             "dateType": "VALUE",
         }
 
-    def next_page_token(self, response: requests.Response):
-        pass
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
-   
-
-class BankBalancesEod(HttpSubStream, IncrementalKyribaStream):
-    def __init__(self, **kwargs):
-        super().__init__(Accounts, **kwargs)
-        self.parent = Accounts(**kwargs)
-
+class BankBalancesEod(AccountSubStream, IncrementalKyribaStream):
     cursor_field = "balanceDate"
 
     # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -227,13 +210,13 @@ class BankBalancesEod(HttpSubStream, IncrementalKyribaStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        account_uuids = [a["uuid"] for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+        account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
         bal_date_str = stream_state.get(self.cursor_field) or self.start_date
         bal_date = date.fromisoformat(bal_date_str)
         yesterday = date.today() - timedelta(days=1)
         while bal_date <= yesterday:
-            slices.extend([{"account_uuid": uuid, self.cursor_field: bal_date.isoformat()} for uuid in account_uuids])
+            slices.extend([{**u, self.cursor_field: bal_date.isoformat()} for u in account_uuids])
             bal_date = bal_date + timedelta(days=1)
         return slices
 
@@ -249,19 +232,10 @@ class BankBalancesEod(HttpSubStream, IncrementalKyribaStream):
             "type": "END_OF_DAY",
         }
 
-    def next_page_token(self, response: requests.Response):
-        pass
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
-
-class BankBalancesIntraday(HttpSubStream, KyribaStream):
-    def __init__(self, **kwargs):
-        super().__init__(Accounts, **kwargs)
-        self.parent = Accounts(**kwargs)
-
+class BankBalancesIntraday(AccountSubStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [{"account_uuid": a["uuid"]} for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+        return self.get_account_uuids()
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         account_uuid = stream_slice['account_uuid']
@@ -274,12 +248,6 @@ class BankBalancesIntraday(HttpSubStream, KyribaStream):
             "date": date.today().isoformat(),
             "type": "INTRADAY",
         }
-
-    def next_page_token(self, response: requests.Response):
-        pass
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
 
 
 class CashFlows(IncrementalKyribaStream):
