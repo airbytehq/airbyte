@@ -35,7 +35,7 @@ On some systems, `python` points to a Python2 installation and `python3` points 
 
 ## Our connector: a stock ticker API
 
-Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/pricing/) for this \(the free account is at the bottom\). We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
+Our connector will output the daily price of a stock since a given date. We'll leverage the free [Polygon.io API](https://polygon.io/pricing) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
 
 Here's the outline of what we'll do to build our connector:
 
@@ -111,15 +111,15 @@ At this stage in the tutorial, we just want to implement the `spec` operation as
 To contact the stock ticker API, we need two things:
 
 1. Which stock ticker we're interested in
-2. The API key to use when contacting the API \(you can obtain a free API token from the [IEX Cloud](https://iexcloud.io/) free plan\)
+2. The API key to use when contacting the API \(you can obtain a free API token from [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-For reference, the API docs we'll be using [can be found here](https://iexcloud.io/docs/api/).
+For reference, the API docs we'll be using [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date).
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements:
 
 ```javascript
 {
-  "documentationUrl": "https://iexcloud.io/docs/api",
+  "documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -135,7 +135,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
       "api_key": {
         "title": "API Key",
         "type": "string",
-        "description": "The IEX Cloud API key to use to hit the API.",
+        "description": "The Polygon.io Stocks API key to use to hit the API.",
         "airbyte_secret": true
       }
     }
@@ -232,7 +232,7 @@ Now if we run `python source.py spec` we should see the specification printed ou
 
 ```bash
 python source.py spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 ```
 
 We've implemented the first command! Three more and we'll have a working connector.
@@ -244,7 +244,7 @@ The second command to implement is the [check operation](https://docs.airbyte.io
 To achieve this, we'll:
 
 1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys.
-2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
+2. Add a `check` method which calls the Polygon.io API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
 3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked.
 
 Let's first add the configuration files:
@@ -262,13 +262,16 @@ Then we'll add the `check_method`:
 ```python
 import requests
 
-def _call_api(endpoint, token):
-    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+def _call_api(ticker, token):
+    today = date.today()
+    to_day = today.strftime("%Y-%m-%d")
+    from_day = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
 
 
 def check(config):
-    # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
-    response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
+    # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+    response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
     if response.status_code == 200:
         result = {"status": "SUCCEEDED"}
     elif response.status_code == 403:
@@ -522,9 +525,15 @@ Then we'll define the `read` method in `source.py`:
 
 ```python
 import datetime
-
+from datetime import date
+from datetime import timedelta
 
 def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
     # Find the stock_prices stream if it is present in the input catalog
     stock_prices_stream = None
     for configured_stream in catalog["streams"]:
@@ -541,19 +550,17 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    api_key = config["api_key"]
-    stock_ticker = config["stock_ticker"]
-    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling IEX API")
+        log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
-        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
-        for price in prices:
-            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
-            # emitted_at is in milliseconds so we multiply by 1000
+        # Stock prices are returned sorted by by date in ascending order
+        # We want to output them one by one as AirbyteMessages
+        results = response.json()["results"]
+        for result in results:
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -652,16 +659,44 @@ With this method, we now have a fully functioning connector! Let's pat ourselves
 For reference, the full `source.py` file now looks like this:
 
 ```python
-# source.py
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
 import argparse  # helps parse commandline arguments
 import json
 import sys
 import os
 import requests
 import datetime
-
+from datetime import date
+from datetime import timedelta
 
 def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
     # Find the stock_prices stream if it is present in the input catalog
     stock_prices_stream = None
     for configured_stream in catalog["streams"]:
@@ -678,18 +713,17 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    api_key = config["api_key"]
-    stock_ticker = config["stock_ticker"]
-    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling IEX API")
+        log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
-        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
-        for price in prices:
-            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
+        # Stock prices are returned sorted by by date in ascending order
+        # We want to output them one by one as AirbyteMessages
+        results = response.json()["results"]
+        for result in results:
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -700,25 +734,33 @@ def read_json(filepath):
         return json.loads(f.read())
 
 
-def _call_api(endpoint, token):
-    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+def _call_api(ticker, token):
+    today = date.today()
+    to_day = today.strftime("%Y-%m-%d")
+    from_day = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
 
 
 def check(config):
-    # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
-    response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
-    if response.status_code == 200:
-        result = {"status": "SUCCEEDED"}
-    elif response.status_code == 403:
-        # HTTP code 403 means authorization failed so the API key is incorrect
-        result = {"status": "FAILED", "message": "API Key is incorrect."}
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
     else:
-        # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
-        result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+        # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+        response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
+        if response.status_code == 200:
+            result = {"status": "SUCCEEDED"}
+        elif response.status_code == 403:
+            # HTTP code 403 means authorization failed so the API key is incorrect
+            result = {"status": "FAILED", "message": "API Key is incorrect."}
+        else:
+            # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
+            result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
 
-    # Format the result of the check operation according to the Airbyte Specification
-    output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
-    print(json.dumps(output_message))
+        # Format the result of the check operation according to the Airbyte Specification
+        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+        print(json.dumps(output_message))
 
 
 def log(message):
@@ -875,7 +917,7 @@ to run any of our commands, we'll need to mount all the inputs into the Docker c
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
@@ -992,7 +1034,7 @@ If the Airbyte server isn't already running, start it by running **from the Airb
 docker-compose up
 ```
 
-Then visiting [locahost:8000](http://localhost:8000) in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
+Then visiting [localhost:8000](http://localhost:8000) in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
 
 If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. We will make this something you can skip in the future. For now, we suggest just running through it quickly. If you use the exchange rates api as a source and json as your destination, it should be relatively easy to set up.
 
@@ -1066,4 +1108,8 @@ Follow the [next tutorial](adding-incremental-sync.md) to implement incremental 
 
 ### Connector Development Kit
 Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors.
-/
+
+### Language specific helpers
+ * [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source)
+ * [Building a Python Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-python-destination)
+ * [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)
