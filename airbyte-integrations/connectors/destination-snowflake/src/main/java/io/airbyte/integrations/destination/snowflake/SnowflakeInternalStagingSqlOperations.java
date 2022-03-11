@@ -6,7 +6,8 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.nio.file.Files;
@@ -14,16 +15,47 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.lang3.NotImplementedException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implements SqlOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   public static final String CREATE_STAGE_QUERY = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   public static final String COPY_QUERY = "COPY INTO %s.%s FROM @%s file_format = " +
       "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
   public static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private final NamingConventionTransformer nameTransformer;
+
+  public SnowflakeInternalStagingSqlOperations(final NamingConventionTransformer nameTransformer) {
+    this.nameTransformer = nameTransformer;
+  }
+
+  @Override
+  public String getStageName(final String namespace, final String streamName) {
+    return nameTransformer.applyDefaultCase(String.join("_",
+        nameTransformer.convertStreamName(namespace),
+        nameTransformer.convertStreamName(streamName)));
+  }
+
+  @Override
+  public String getStagingPath(final String connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+    // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
+    return nameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
+        getStageName(namespace, streamName),
+        writeDatetime.year().get(),
+        writeDatetime.monthOfYear().get(),
+        writeDatetime.dayOfMonth().get(),
+        writeDatetime.hourOfDay().get(),
+        connectionId));
+  }
+
+  @Override
+  public void uploadRecordsToStage(final JdbcDatabase database, final File dataFile, final String schemaName, final String path) throws Exception {
+    throw new NotImplementedException("placeholder function is not implemented yet");
+  }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
@@ -50,12 +82,14 @@ public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implem
     Files.delete(tempFile.toPath());
   }
 
+  @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws SQLException {
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
         () -> database.execute(getCreateStageQuery(stageName)),
         Map.of("stage", stageName));
   }
 
+  @Override
   String getCreateStageQuery(String stageName) {
     return String.format(CREATE_STAGE_QUERY, stageName);
   }
@@ -67,6 +101,7 @@ public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implem
         Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
+  @Override
   String getCopyQuery(String stageName, String dstTableName, String schemaName) {
     return String.format(COPY_QUERY, schemaName, dstTableName, stageName);
   }
@@ -77,6 +112,7 @@ public class SnowflakeStagingSqlOperations extends SnowflakeSqlOperations implem
         Map.of("stage", stageName));
   }
 
+  @Override
   String getDropQuery(String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
   }
