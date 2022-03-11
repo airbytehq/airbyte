@@ -22,10 +22,12 @@ jobs:
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
 
-  detect-modified-files:
+  changes:
     name: "Detect Modified Files"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
       - uses: dorny/paths-filter@v2
         with:
           filters: |
