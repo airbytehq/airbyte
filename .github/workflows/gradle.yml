@@ -4,8 +4,6 @@ on:
   schedule:
     - cron: "0 */1 * * *"
   push:
-    paths:
-      - "*"
     branches-ignore:
       - "gitbook/v1"
 
