@@ -4,14 +4,12 @@
 
 package io.airbyte.metrics.reporter;
 
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.MetricsRegistry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,11 +45,11 @@ public enum ToEmit {
     }
   })),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
-        final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
-        for (Pair<JobStatus, Double> pair : times) {
-          DogStatsDMetricSingleton.recordTimeGlobal(
-              MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
-        }
+    final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+    for (Pair<JobStatus, Double> pair : times) {
+      DogStatsDMetricSingleton.recordTimeGlobal(
+          MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
+    }
   }), 1, TimeUnit.HOURS);
 
   // default constructor
@@ -64,14 +62,16 @@ public enum ToEmit {
   }
 
   /**
-   * Wrapper callable to handle 1) query exception logging and 2) counting metric emissions so reporter app can be monitored too.
-   * @param callable
+   * Wrapper callable to handle 1) query exception logging and 2) counting metric emissions so
+   * reporter app can be monitored too.
+   *
+   * @param metricQuery
    * @return
    */
-  private static Runnable countMetricEmission(Procedure callable) {
+  private static Runnable countMetricEmission(Procedure metricQuery) {
     return () -> {
       try {
-        callable.call();
+        metricQuery.call();
         DogStatsDMetricSingleton.gauge(MetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
       } catch (Exception e) {
         log.error("Exception querying database for metric: ", e);
