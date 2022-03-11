@@ -57,6 +57,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1090,7 +1094,60 @@ public abstract class DestinationAcceptanceTest {
 
   // Allows subclasses to implement custom comparison asserts
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
-    assertEquals(expectedValue, actualValue);
+    LOGGER.info("assertSameValue : {} vs {}", expectedValue, actualValue);
+
+    if (expectedValue == null || actualValue == null)
+      assertEquals(expectedValue, actualValue);
+    else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat())
+      compareNumericValues(expectedValue.asText(), actualValue.asText());
+    else if (expectedValue.isBoolean())
+      compareBooleanValues(expectedValue.asText(), actualValue.asText());
+    else if (isDateTimeWithTzValue(expectedValue.asText()))
+      compareDateTimeWithTzValues(expectedValue.asText(), actualValue.asText());
+    else
+      assertEquals(expectedValue, actualValue);
+  }
+
+  protected void compareBooleanValues(final String firstNumericValue, final String secondNumericValue) {
+    LOGGER.info("compareBooleanValues : {} vs {}", firstNumericValue, secondNumericValue);
+    assertEquals(Boolean.valueOf(firstNumericValue), Boolean.valueOf(secondNumericValue));
+  }
+
+  protected void compareNumericValues(final String firstNumericValue, final String secondNumericValue) {
+    LOGGER.info("compareNumericValues : {} vs {}", firstNumericValue, secondNumericValue);
+
+    double firstValue = Double.parseDouble(firstNumericValue);
+    double secondValue = Double.parseDouble(secondNumericValue);
+
+    assertEquals(firstValue, secondValue);
+  }
+
+  protected DateTimeFormatter getAirbyteDateTimeWithTzFormatter() {
+    return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+  }
+
+  protected DateTimeFormatter getDestinationDateTimeWithTzFormatter() {
+    return getAirbyteDateTimeWithTzFormatter();
+  }
+
+  protected boolean isDateTimeWithTzValue(final String value) {
+    return value.matches(".+[+-]\\d{2}:\\d{2}");
+  }
+
+  protected void compareDateTimeWithTzValues(final String airbyteMessageValue, final String destinationValue) {
+    try {
+      ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue, getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
+      ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue, getDestinationDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
+      assertEquals(airbyteDate, destinationDate);
+    } catch (DateTimeParseException e) {
+      LOGGER.warn("Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
+          airbyteMessageValue, destinationValue, e);
+      compareTextValues(airbyteMessageValue, destinationValue);
+    }
+  }
+
+  protected void compareTextValues(final String firstValue, final String secondValue) {
+    assertEquals(firstValue, secondValue);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(final AirbyteCatalog catalog, final String defaultSchema) throws Exception {
