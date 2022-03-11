@@ -2,20 +2,24 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import responses
 from unittest.mock import MagicMock
 
 from source_pivotal_tracker.source import SourcePivotalTracker
 
 
-def test_check_connection(mocker):
+@responses.activate
+def test_check_connection(config_pass, projects_response):
     source = SourcePivotalTracker()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    logger_mock = MagicMock()
+    responses.add(responses.GET, "https://www.pivotaltracker.com/services/v5/projects", json=projects_response)
+    assert source.check_connection(logger_mock, config_pass) == (True, None)
 
 
-def test_streams(mocker):
+@responses.activate
+def test_streams(config_pass, projects_response):
     source = SourcePivotalTracker()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
+    responses.add(responses.GET, "https://www.pivotaltracker.com/services/v5/projects", json=projects_response)
+    streams = source.streams(config_pass)
     expected_streams_number = 7
     assert len(streams) == expected_streams_number

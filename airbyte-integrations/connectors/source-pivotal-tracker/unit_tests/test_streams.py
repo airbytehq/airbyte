@@ -2,82 +2,101 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
-from unittest.mock import MagicMock
+import responses
+from airbyte_cdk.models import SyncMode
+from source_pivotal_tracker.source import PivotalAuthenticator, Projects, ProjectMemberships, Activity, Labels, Releases, Epics, Stories
 
-import pytest
-from source_pivotal_tracker.source import PivotalTrackerStream
-
-
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(PivotalTrackerStream, "path", "v0/example_endpoint")
-    mocker.patch.object(PivotalTrackerStream, "primary_key", "test_primary_key")
-    mocker.patch.object(PivotalTrackerStream, "__abstractmethods__", set())
+auth = PivotalAuthenticator("goodtoken")
+project_args = {"project_ids": [98, 99], "authenticator": auth}
+stream_slice = {"project_id": 99}
 
 
-def test_request_params(patch_base_class):
-    stream = PivotalTrackerStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
+@responses.activate
+def test_projects_stream(projects_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects",
+        json=projects_response,
+    )
+    stream = Projects(authenticator=auth)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, None, None)]
+    assert len(records) == 2
+    assert len(responses.calls) == 1
 
 
-def test_next_page_token(patch_base_class):
-    stream = PivotalTrackerStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+@responses.activate
+def test_project_memberships_stream(project_memberships_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/memberships",
+        json=project_memberships_response,
+    )
+    stream = ProjectMemberships(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 7
+    assert len(responses.calls) == 1
 
 
-def test_parse_response(patch_base_class):
-    stream = PivotalTrackerStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+@responses.activate
+def test_activity_stream(activity_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/activity",
+        json=activity_response,
+    )
+    stream = Activity(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 15
+    assert len(responses.calls) == 1
 
 
-def test_request_headers(patch_base_class):
-    stream = PivotalTrackerStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+@responses.activate
+def test_labels_stream(labels_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/labels",
+        json=labels_response,
+    )
+    stream = Labels(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 10
+    assert len(responses.calls) == 1
 
 
-def test_http_method(patch_base_class):
-    stream = PivotalTrackerStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+@responses.activate
+def test_releases_stream(releases_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/releases",
+        json=releases_response,
+    )
+    stream = Releases(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 1
+    assert len(responses.calls) == 1
 
 
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = PivotalTrackerStream()
-    assert stream.should_retry(response_mock) == should_retry
+@responses.activate
+def test_epics_stream(epics_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/epics",
+        json=epics_response,
+    )
+    stream = Epics(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 5
+    assert len(responses.calls) == 1
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = PivotalTrackerStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+@responses.activate
+def test_stories_stream(stories_response):
+    responses.add(
+        responses.GET,
+        "https://www.pivotaltracker.com/services/v5/projects/99/stories",
+        json=stories_response,
+    )
+    stream = Stories(**project_args)
+    records = [r for r in stream.read_records(SyncMode.full_refresh, None, stream_slice, None)]
+    assert len(records) == 4
+    assert len(responses.calls) == 1
