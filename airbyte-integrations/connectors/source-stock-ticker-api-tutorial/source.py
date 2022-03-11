@@ -146,7 +146,7 @@ def spec():
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
-    # json.dumps converts the JSON (python dict) to a string
+    # json.dumps converts the JSON (Python dict) to a string
     print(json.dumps(airbyte_message))
 
 
