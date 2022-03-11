@@ -25,8 +25,9 @@ import com.google.api.client.util.Preconditions;
  * <p>
  * - Avoid numbers. This makes the metric confusing to read. Numbers should only be used as a
  * <p>
- * - Add units at name end if applicable. This is especially relevant for time units. versioning
- * tactic and present at the end of the metric.
+ * - Add units at name end if applicable. This is especially relevant for time units.
+ * <p>
+ * - Include the time period in the name if the metric is meant to be run at a certain interval.
  */
 public enum MetricsRegistry {
 
@@ -83,7 +84,10 @@ public enum MetricsRegistry {
       "oldest pending job in seconds"),
   OLDEST_RUNNING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_running_job_age_secs",
-      "oldest running job in seconds");
+      "oldest running job in seconds"),
+  OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "overall_job_runtime_in_last_hour_by_terminal_state_secs",
+      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states.");
 
   public final MetricEmittingApp application;
   public final String metricName;
