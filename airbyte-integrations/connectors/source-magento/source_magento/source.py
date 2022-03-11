@@ -98,14 +98,14 @@ class MagentoStream(HttpStream, ABC):
 
     primary_key = 'increment_id'
 
-    def __init__(self, start_date, end_date, page_size: str, base_url: str, cursor_field_value: str,  **kwargs):
+    def __init__(self, start_date, page_size: str, base_url: str, cursor_field_value: str, end_date = None,  **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
-        self.end_date = end_date
         self.page_size = page_size
         self._cursor_value = None
         self.base_url = base_url
         self.cursor_field_value = cursor_field_value
+        self.end_date = end_date
 
     # Base Url depends on store
     @property
