@@ -48,6 +48,8 @@ public class RequestLoggerTest {
   private static final String URL = "/api/v1/test";
   private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
 
+  private static final Random RANDOM = new Random();
+
   @Mock
   private HttpServletRequest mServletRequest;
 
@@ -132,6 +134,7 @@ public class RequestLoggerTest {
 
       Assertions.assertThat(matchingLines).hasSize(1);
     }
+
   }
 
   @Nested
@@ -211,7 +214,7 @@ public class RequestLoggerTest {
       public void run() {
         try {
           requestLogger.filter(mRequestContext);
-          Thread.sleep(new Random().nextInt(1000)); // random sleep to make race more likely
+          Thread.sleep(RANDOM.nextInt(1000)); // random sleep to make race more likely
           requestLogger.filter(mRequestContext, mResponseContext);
         } catch (final IOException | InterruptedException e) {
           e.printStackTrace();
@@ -232,7 +235,7 @@ public class RequestLoggerTest {
         .thenReturn(METHOD);
 
     Mockito.when(mockContainerRequestContext.getEntityStream())
-        .thenReturn(new ByteArrayInputStream(requestBody.getBytes()));
+        .thenReturn(new ByteArrayInputStream(requestBody.getBytes(StandardCharsets.UTF_8)));
 
     Mockito.when(mockContainerRequestContext.getProperty(REQUEST_BODY_PROPERTY)).thenReturn(requestBody);
   }
