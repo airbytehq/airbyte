@@ -16,6 +16,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.github.spotbugs' version '5.0.5'
 }
 
 repositories {
@@ -177,6 +178,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.spotbugs'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -247,6 +249,11 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
+    spotbugs {
+        reportLevel = 'high'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+    }
+
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -303,6 +310,8 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
+        // adds owasp plugin
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     }
 
     tasks.withType(Tar) {

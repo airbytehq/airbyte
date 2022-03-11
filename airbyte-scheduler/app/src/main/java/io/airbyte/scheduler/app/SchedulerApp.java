@@ -70,7 +70,7 @@ import org.slf4j.MDC;
  */
 public class SchedulerApp {
 
-  public static AtomicInteger PENDING_JOBS = new AtomicInteger();
+  public static final AtomicInteger PENDING_JOBS = new AtomicInteger();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
