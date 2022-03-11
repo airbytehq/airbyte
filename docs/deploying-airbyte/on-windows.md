@@ -12,9 +12,13 @@ Follow the steps on the system requirements, and necessarily, download and insta
 
 **2. Install Docker Desktop on Windows.**
 
-Install Docker Desktop following the guidelines, and reboot your computer.
+Install [Docker Desktop](https://docs.docker.com/desktop/windows/install/) from here.
+Make sure to select the options:
+1. *Enable Hyper-V Windows Features*
+2. *Install required Windows components for WSL 2*\
+when prompted. After installation, it will require to reboot your computer.
 
-**3. You're done!
+**3. You're done!**
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
