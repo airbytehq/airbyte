@@ -158,15 +158,15 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String stageName, final String dstTableName, final String schemaName) {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stageName, schemaName);
+  public void copyIntoTmpTableFromStage(final JdbcDatabase database, final String path, final String dstTableName, final String schemaName) {
+    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, path, schemaName);
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
             + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
         schemaName,
         dstTableName,
-        generateBucketPath(stageName),
+        generateBucketPath(path),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey());
     Exceptions.toRuntime(() -> database.execute(copyQuery));
@@ -174,7 +174,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   private String generateBucketPath(final String stage) {
-    return "s3://" + s3Config.getBucketName() + "/" + stage + "/";
+    return "s3://" + s3Config.getBucketName() + "/" + stage;
   }
 
   @Override

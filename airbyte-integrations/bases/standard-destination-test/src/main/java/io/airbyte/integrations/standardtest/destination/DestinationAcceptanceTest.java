@@ -1045,12 +1045,12 @@ public abstract class DestinationAcceptanceTest {
         .map(AirbyteMessage::getRecord)
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
-        .map(recordMessage -> recordMessage.getData())
+        .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
-        .map(recordMessage -> recordMessage.getData())
+        .map(AirbyteRecordMessage::getData)
         .collect(Collectors.toList());
 
     assertSameData(expectedProcessed, actualProcessed);
@@ -1340,11 +1340,11 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private AirbyteCatalog readCatalogFromFile(String catalogFilename) throws IOException {
+  private AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private List<AirbyteMessage> readMessagesFromFile(String messagesFilename) throws IOException {
+  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename) throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
   }
