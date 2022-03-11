@@ -7,11 +7,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from airbyte_cdk.models import SyncMode
 
 
 class PivotalTrackerStream(HttpStream, ABC):
@@ -22,7 +22,7 @@ class PivotalTrackerStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
         headers = response.headers
-        if not "X-Tracker-Pagination-Total" in headers:
+        if "X-Tracker-Pagination-Total" not in headers:
             return None  # not paginating
 
         page_size = int(headers["X-Tracker-Pagination-Limit"])
