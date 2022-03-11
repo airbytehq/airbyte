@@ -14,6 +14,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
@@ -21,6 +23,8 @@ import java.util.Objects;
  * operations).
  */
 public class S3DestinationConfig {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3DestinationConfig.class);
 
   // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
@@ -35,6 +39,9 @@ public class S3DestinationConfig {
   private final String secretAccessKey;
   private final Integer partSize;
   private final S3FormatConfig formatConfig;
+
+  private final Object lock = new Object();
+  private AmazonS3 s3Client = null;
 
   /**
    * The part size should not matter in any use case that depends on this constructor. So the default
@@ -127,6 +134,27 @@ public class S3DestinationConfig {
   }
 
   public AmazonS3 getS3Client() {
+    synchronized (lock) {
+      if (s3Client == null) {
+        return resetS3Client();
+      }
+      return s3Client;
+    }
+  }
+
+  public AmazonS3 resetS3Client() {
+    synchronized (lock) {
+      if (s3Client != null) {
+        s3Client.shutdown();
+      }
+      s3Client = createS3Client();
+      return s3Client;
+    }
+  }
+
+  protected AmazonS3 createS3Client() {
+    LOGGER.info("Creating S3 client...");
+
     final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
     if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty()
@@ -134,7 +162,7 @@ public class S3DestinationConfig {
       throw new RuntimeException("Either both accessKeyId and secretAccessKey should be provided, or neither");
     }
 
-    if (accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
+    if (accessKeyId.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new InstanceProfileCredentialsProvider(false))
           .build();
