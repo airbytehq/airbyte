@@ -190,15 +190,15 @@
     },
     "ip_address_v4": {
       "type": ["null", "string"],
-          "maxLength": 256
+      "maxLength": 256
     },
     "ip_address_country": {
       "type": ["null", "string"],
-          "maxLength": 256
+      "maxLength": 256
     },
     "status_code": {
       "type": ["null", "string"],
-          "maxLength": 256
+      "maxLength": 256
     },
     "status_message": {
       "type": ["null", "string"],
