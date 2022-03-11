@@ -42,10 +42,12 @@ class SourceMagento(AbstractSource):
             headers=headers_dict,  # Set headers
             params=params  # set Query parameters
         )
-        dates = { 
-            'start_date': SourceMagento.datereturn(config['start_date']),
-            'end_date' : SourceMagento.datereturn(config['end_date'])
-        }
+        dates = {}
+        dates['start_date'] = SourceMagento.datereturn(config['start_date'])
+        
+        if 'end_date' in config:
+            dates['end_date'] = SourceMagento.datereturn(config['end_date'])
+        
 
         if(isinstance(dates['start_date'], datetime) != True):
             return False, f'start_date is not valid. Please check your input: { config["start_date"] }'
@@ -77,11 +79,12 @@ class SourceMagento(AbstractSource):
         args = {
             'authenticator':auth,
             'start_date': SourceMagento.datereturn(config['start_date']),
-            'end_date': SourceMagento.datereturn(config['end_date']),
             'base_url': config['base_url'],
             'page_size':SourceMagento.page_size(config),
             'cursor_field_value': cursor_field
         }
+        if 'end_date' in config:
+            args['end_date'] = SourceMagento.datereturn(config['end_date']),
         return [
             SalesOrders(
                 **args
