@@ -745,10 +745,6 @@ public class KubePodProcess extends Process implements KubePod {
     return returnCode;
   }
 
-  private static String prependPodInfo(final String message, final String podNamespace, final String podName) {
-    return String.format("(pod: %s / %s) - %s", podNamespace, podName, message);
-  }
-
   @Override
   public int exitValue() {
     // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
@@ -788,6 +784,10 @@ public class KubePodProcess extends Process implements KubePod {
           .withLimits(limitMap);
     }
     return null;
+  }
+
+  private static String prependPodInfo(final String message, final String podNamespace, final String podName) {
+    return String.format("(pod: %s / %s) - %s", podNamespace, podName, message);
   }
 
 }
