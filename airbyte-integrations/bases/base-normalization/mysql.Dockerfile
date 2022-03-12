@@ -1,3 +1,4 @@
+# As of today, dbt-mysql doesn't support 1.0.0
 FROM fishtownanalytics/dbt:0.19.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
