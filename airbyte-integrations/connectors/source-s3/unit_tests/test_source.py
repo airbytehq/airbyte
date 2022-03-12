@@ -4,9 +4,9 @@
 
 import json
 
-from source_s3 import SourceS3
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
+from source_s3 import SourceS3
 
 LOGGER = AirbyteLogger()
 
@@ -114,9 +114,7 @@ def test_source_check_config(config, fails):
                     "schema": json.dumps({"column_1": "object"}),
                     "format": {
                         "filetype": "csv",
-                        "advanced_options": json.dumps(
-                            {"column_names": ["column1", "column2"]}
-                        ),
+                        "advanced_options": json.dumps({"column_names": ["column1", "column2"]}),
                     },
                 },
             },
@@ -171,9 +169,7 @@ def test_source_check_config(config, fails):
                     "schema": None,
                     "format": {
                         "filetype": "csv",
-                        "advanced_options": json.dumps(
-                            {"column_names": ["column1", "column2"]}
-                        ),
+                        "advanced_options": json.dumps({"column_names": ["column1", "column2"]}),
                     },
                 },
             },

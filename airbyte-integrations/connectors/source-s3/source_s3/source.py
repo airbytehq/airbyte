@@ -40,12 +40,8 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             "",
             description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
         )
-        use_ssl: bool = Field(
-            default=None, description="Is remote server using secure SSL/TLS connection"
-        )
-        verify_ssl_cert: bool = Field(
-            default=None, description="Allow self signed certificates"
-        )
+        use_ssl: bool = Field(default=None, description="Is remote server using secure SSL/TLS connection")
+        verify_ssl_cert: bool = Field(default=None, description="Allow self signed certificates")
 
     provider: S3Provider
 

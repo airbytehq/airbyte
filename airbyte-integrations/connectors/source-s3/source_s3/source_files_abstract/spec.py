@@ -80,21 +80,15 @@ class SourceFilesAbstractSpec(BaseModel):
     @staticmethod
     def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
-            raise RuntimeError(
-                "You must add the 'provider' property in your child spec class"
-            )
+            raise RuntimeError("You must add the 'provider' property in your child spec class")
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
         json_schema_ref_resolver = RefResolver.from_schema(schema)
         str_schema = json.dumps(schema)
-        for ref_block in re.findall(
-            r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema
-        ):
+        for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
             ref = json.loads(ref_block)["$ref"]
-            str_schema = str_schema.replace(
-                ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1])
-            )
+            str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
         pyschema: dict = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema

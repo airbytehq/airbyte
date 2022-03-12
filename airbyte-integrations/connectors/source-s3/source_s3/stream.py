@@ -57,9 +57,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
                 for c in content:
                     key = c["Key"]
                     if accept_key(key):
-                        yield FileInfo(
-                            key=key, last_modified=c["LastModified"], size=c["Size"]
-                        )
+                        yield FileInfo(key=key, last_modified=c["LastModified"], size=c["Size"])
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break

@@ -24,11 +24,7 @@ LOGGER = AirbyteLogger()
 def get_local_ip() -> str:
     all_interface_ips: List[str] = []
     for iface_name in interfaces():
-        all_interface_ips += [
-            i["addr"]
-            for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}])
-            if i["addr"]
-        ]
+        all_interface_ips += [i["addr"] for i in ifaddresses(iface_name).setdefault(AF_INET, [{"addr": None}]) if i["addr"]]
     LOGGER.info(f"detected interface IPs: {all_interface_ips}")
     for ip in sorted(all_interface_ips):
         if not ip.startswith("127."):
@@ -42,9 +38,7 @@ def minio_credentials() -> Mapping[str, Any]:
     config_template = Path(__file__).parent / "config_minio.template.json"
     assert config_template.is_file() is not None, f"not found {config_template}"
     config_file = Path(__file__).parent / "config_minio.json"
-    config_file.write_text(
-        config_template.read_text().replace("<local_ip>", get_local_ip())
-    )
+    config_file.write_text(config_template.read_text().replace("<local_ip>", get_local_ip()))
     credentials = {}
     with open(str(config_file)) as f:
         credentials = json.load(f)

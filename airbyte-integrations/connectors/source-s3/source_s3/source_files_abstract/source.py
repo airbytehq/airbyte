@@ -3,12 +3,13 @@
 #
 
 
+import copy
+import json
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
-from collections import OrderedDict
-import json
-import copy
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
@@ -57,15 +58,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
         _path_pattern = json.loads(config.get("path_pattern", "{}"))
         for _s, _ in _path_pattern.items():
             if _s not in _datasets:
-                raise Exception(
-                    f"check_config: stream name {_s} in path_pattern is not defined in datasets"
-                )
+                raise Exception(f"check_config: stream name {_s} in path_pattern is not defined in datasets")
         _schema = json.loads(config.get("schema", "{}"))
         for _s, _ in _schema.items():
             if _s not in _datasets:
-                raise Exception(
-                    f"check_config: stream name {_s} in schema is not defined in datasets"
-                )
+                raise Exception(f"check_config: stream name {_s} in schema is not defined in datasets")
         _format = config.get("format")
         _filetype = _format.get("filetype")
         if _filetype == "csv":
@@ -73,23 +70,17 @@ class SourceFilesAbstract(AbstractSource, ABC):
             _advanced_options = json.loads(_format.get("advanced_options", "{}"))
             for _s, _ in _advanced_options.items():
                 if _s not in _datasets:
-                    raise Exception(
-                        f"check_config: stream name {_s} in csv format advanced options is not defined in datasets"
-                    )
+                    raise Exception(f"check_config: stream name {_s} in csv format advanced options is not defined in datasets")
         elif _filetype == "parquet":
             # parquet format
             _columns = json.loads(_format.get("columns", "{}"))
             for _s, _ in _columns.items():
                 if _s not in _datasets:
-                    raise Exception(
-                        f"check_config: stream name {_s} in parquet columns is not defined in datasets"
-                    )
+                    raise Exception(f"check_config: stream name {_s} in parquet columns is not defined in datasets")
         else:
             raise Exception(f"check_config: unsupported filetype = {_filetype}")
 
-    def split_config_by_stream(
-        self, config: Mapping[str, Any]
-    ) -> Mapping[str, Mapping[str, Any]]:
+    def split_config_by_stream(self, config: Mapping[str, Any]) -> Mapping[str, Mapping[str, Any]]:
         """
         :return: config map with key as stream name
         """
@@ -107,15 +98,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
             if _filetype == "csv":
                 # csv format
                 # filter advacned_options setting based on stream name
-                _format["advanced_options"] = json.dumps(
-                    json.loads(_format.get("advanced_options", "{}")).get(stream_name, {})
-                )
+                _format["advanced_options"] = json.dumps(json.loads(_format.get("advanced_options", "{}")).get(stream_name, {}))
             elif _filetype == "parquet":
                 # parquet format
                 # filter columns setting based on stream name
-                _format["columns"] = json.loads(_format.get("columns", "{}")).get(
-                    stream_name, None
-                )
+                _format["columns"] = json.loads(_format.get("columns", "{}")).get(stream_name, None)
             else:
                 raise Exception(f"unsupported filetype = {_filetype}")
             _config["format"] = _format
@@ -126,9 +113,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
             stream_config_map[stream_name] = _config
         return stream_config_map
 
-    def check_connection(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         This method checks two things:
             - That the credentials provided in config are valid for access.
@@ -147,16 +132,12 @@ class SourceFilesAbstract(AbstractSource, ABC):
             for stream_name, cfg in self.split_config_by_stream(config).items():
                 _file_not_found = True
                 for file_info in self.stream_class(**cfg).filepath_iterator():
-                    globmatch(
-                        file_info.key, cfg.get("path_pattern"), flags=GLOBSTAR | SPLIT
-                    )
+                    globmatch(file_info.key, cfg.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                     # just need first file here to test connection and valid patterns
                     _file_not_found = False
                     break
                 if _file_not_found:
-                    logger.warn(
-                        f"Found 0 file for stream {stream_name} (but connection is valid)"
-                    )
+                    logger.warn(f"Found 0 file for stream {stream_name} (but connection is valid)")
         except Exception as e:
             logger.error(format_exc())
             return False, e
@@ -167,10 +148,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         :param config: The user-provided configuration as specified by the source's spec.
         :return: A list of the streams in this source connector.
         """
-        return [
-            self.stream_class(**cfg)
-            for _, cfg in self.split_config_by_stream(config).items()
-        ]
+        return [self.stream_class(**cfg) for _, cfg in self.split_config_by_stream(config).items()]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
@@ -178,15 +156,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
         required to run this integration.
         """
         # make dummy instance of stream_class in order to get 'supports_incremental' property
-        incremental = self.stream_class(
-            dataset="", provider="", format="", path_pattern=""
-        ).supports_incremental
+        incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
 
         supported_dest_sync_modes = [DestinationSyncMode.overwrite]
         if incremental:
-            supported_dest_sync_modes.extend(
-                [DestinationSyncMode.append, DestinationSyncMode.append_dedup]
-            )
+            supported_dest_sync_modes.extend([DestinationSyncMode.append, DestinationSyncMode.append_dedup])
 
         return ConnectorSpecification(
             documentationUrl=self.documentation_url,
