@@ -32,4 +32,3 @@ secretGenerator:
 
 patchesStrategicMerge:
   - parallelize-worker.yaml
-  - speed-up-worker.yaml
