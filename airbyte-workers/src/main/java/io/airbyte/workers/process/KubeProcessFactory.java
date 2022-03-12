@@ -124,7 +124,6 @@ public class KubeProcessFactory implements ProcessFactory {
           isOrchestrator,
           processRunnerHost,
           fabricClient,
-          workerConfigs.getWorkerStatusCheckInterval(),
           podName,
           namespace,
           imageName,
