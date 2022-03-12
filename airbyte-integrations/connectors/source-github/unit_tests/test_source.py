@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_github.source import SourceGithub
@@ -91,3 +92,28 @@ def test_get_branches_data():
     assert len(branches_to_pull["airbytehq/integration-test"]) == 2
     assert "feature/branch_0" in branches_to_pull["airbytehq/integration-test"]
     assert "feature/branch_1" in branches_to_pull["airbytehq/integration-test"]
+
+
+@responses.activate
+def test_generate_repositories():
+
+    source = SourceGithub()
+
+    with pytest.raises(Exception):
+        config = {"repository": ""}
+        source._generate_repositories(config, authenticator=None)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/orgs/docker/repos",
+        json=[
+            {"full_name": "docker/docker-py"},
+            {"full_name": "docker/compose"},
+        ],
+    )
+
+    config = {"repository": "airbytehq/integration-test docker/*"}
+    repositories_list, organisation_repos = source._generate_repositories(config, authenticator=None)
+
+    assert repositories_list == ["airbytehq/integration-test"]
+    assert organisation_repos == ["docker/compose", "docker/docker-py"]
