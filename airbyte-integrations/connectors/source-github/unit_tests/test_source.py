@@ -116,4 +116,6 @@ def test_generate_repositories():
     repositories_list, organisation_repos = source._generate_repositories(config, authenticator=None)
 
     assert repositories_list == ["airbytehq/integration-test"]
-    assert organisation_repos == ["docker/compose", "docker/docker-py"]
+    assert len(organisation_repos) == 2
+    assert "docker/compose" in organisation_repos
+    assert "docker/docker-py" in organisation_repos
