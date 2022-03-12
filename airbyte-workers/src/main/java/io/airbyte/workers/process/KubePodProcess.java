@@ -99,7 +99,7 @@ public class KubePodProcess extends Process implements KubePod {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
-  private static final String MAIN_CONTAINER_NAME = "main";
+  public static final String MAIN_CONTAINER_NAME = "main";
   private static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
@@ -118,7 +118,6 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
-  public static final String MAIN_CONTAINER_NAME = "main";
 
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
