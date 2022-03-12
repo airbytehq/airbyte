@@ -26,7 +26,8 @@ This script:
 
 ## 2.b If you want to directly run the CLI without alias in your current directory:
 ```bash
-docker run --rm -v ${PWD}:/home/octavia-project --network host -e AIRBYTE_URL="${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:dev
+mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
+docker run --rm -v ./my_octavia_project_directory:/home/octavia-project --network host -e AIRBYTE_URL="http://localhost:8000" airbyte/octavia-cli:dev
 ````
 
 # Current development status
@@ -34,11 +35,22 @@ Octavia is currently under development.
 You can find a detailed and updated execution plan [here](https://docs.google.com/spreadsheets/d/1weB9nf0Zx3IR_QvpkxtjBAzyfGb7B0PWpsVt6iMB5Us/edit#gid=0).
 We welcome community contributions!
 
+# Secret management
+Sources and destinations configurations have credential fields that you **do not want to store as plain text and version on Git**.
+`octavia` offers secret management through environment variables expansion:
+```yaml
+configuration:
+  password: ${MY_PASSWORD}
+```
+If you have set a  `MY_PASSWORD` environment variable, `octavia apply` will load its value into the `password` field. 
+
 **Summary of achievements**:
 
 | Date       | Milestone                           |
 |------------|-------------------------------------|
-| 2022-03-04 | Implement `octavia apply` for connections|
+| 2022-03-09 | Implement secret management through environment variable expansion |
+| 2022-03-09 | Implement `octavia generate connection`|
+| 2022-03-09 | Implement `octavia apply` for connections|
 | 2022-03-02 | Implement `octavia apply` (sources and destination only)|
 | 2022-02-06 | Implement `octavia generate` (sources and destination only)|
 | 2022-01-25 | Implement `octavia init` + some context checks|

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -204,7 +205,7 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("h\"i\nhi2\n", output);
     process.waitFor();
 
@@ -218,7 +219,7 @@ public class KubePodProcessIntegrationTest {
   public void testEnvMapSet() throws Exception {
     // start a finite process
     final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("ENV_VAR_1=ENV_VALUE_1\n", output);
     process.waitFor();
 

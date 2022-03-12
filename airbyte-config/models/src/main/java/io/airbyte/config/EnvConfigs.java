@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -598,9 +599,12 @@ public class EnvConfigs implements Configs {
     final Map<String, String> jobPrefixedEnvMap = getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+    // This method assumes that these shared env variables are not critical to the execution
+    // of the jobs, and only serve as metadata. So any exception is swallowed and default to
+    // an empty string. Change this logic if this assumption no longer holds.
     final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
         Entry::getKey,
-        entry -> Objects.requireNonNullElse(entry.getValue().apply(this), "")));
+        entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
