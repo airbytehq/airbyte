@@ -15,5 +15,7 @@ jobs:
         run: |
           set -euxo pipefail
 
+          aws configure set default.region us-east-2
+
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json
