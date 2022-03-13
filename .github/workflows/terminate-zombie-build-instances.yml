@@ -11,12 +11,17 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # See https://github.com/aws/aws-cli/issues/5623
           AWS_EC2_METADATA_DISABLED: true
         run: |
           set -euxo pipefail
 
           aws configure set default.region us-east-2
 
+          echo CURR_TIME=date +%s
+
+          env
+
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
-          | jq '.[][] | select( .LaunchTime | fromdateiso8601 > 10000)'
+          | jq 'def c(str): str | (split("+")[0] + "Z") | fromdate ; flatten | map( { InstanceId: .Instance, LaunchTime: c(.LaunchTime) } ) | map( select ( .LaunchTime > 1626421602 ) )'
