@@ -10,6 +10,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.GetMaxAttemptOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -87,6 +88,8 @@ public class ConnectionManagerWorkflowTest {
       Mockito.mock(GenerateInputActivityImpl.class, Mockito.withSettings().withoutAnnotations());
   private static final JobCreationAndStatusUpdateActivity mJobCreationAndStatusUpdateActivity =
       Mockito.mock(JobCreationAndStatusUpdateActivity.class, Mockito.withSettings().withoutAnnotations());
+  private static final AutoDisableConnectionActivity mAutoDisableConnectionActivity =
+      Mockito.mock(AutoDisableConnectionActivity.class, Mockito.withSettings().withoutAnnotations());
 
   private TestWorkflowEnvironment testEnv;
   private WorkflowClient client;
@@ -108,6 +111,7 @@ public class ConnectionManagerWorkflowTest {
     Mockito.reset(mConnectionDeletionActivity);
     Mockito.reset(mGenerateInputActivityImpl);
     Mockito.reset(mJobCreationAndStatusUpdateActivity);
+    Mockito.reset(mAutoDisableConnectionActivity);
 
     // default is to wait "forever"
     Mockito.when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
@@ -702,7 +706,7 @@ public class ConnectionManagerWorkflowTest {
       final Worker managerWorker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
       managerWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
       managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-          mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
+          mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity);
 
       client = testEnv.getWorkflowClient();
       workflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
@@ -1260,7 +1264,7 @@ public class ConnectionManagerWorkflowTest {
     final Worker managerWorker = testEnv.newWorker(TemporalJobType.CONNECTION_UPDATER.name());
     managerWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
     managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mConnectionDeletionActivity,
-        mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity);
+        mGenerateInputActivityImpl, mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity);
 
     client = testEnv.getWorkflowClient();
     testEnv.start();

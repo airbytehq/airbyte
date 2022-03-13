@@ -58,7 +58,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
-  private static final int DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
+  private static final int AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -229,14 +229,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
-      final int attemptCreationVersion =
-          Workflow.getVersion("disable_failing_connection", Workflow.DEFAULT_VERSION, DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
 
-      if (attemptCreationVersion >= DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION) {
+      final int attemptCreationVersion =
+          Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
+
+      if (attemptCreationVersion != Workflow.DEFAULT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
             new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
         runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
       }
+
       resetNewConnectionInput(connectionUpdaterInput);
       if (workflowState.isResetConnection()) {
         connectionUpdaterInput.setFromJobResetFailure(true);
