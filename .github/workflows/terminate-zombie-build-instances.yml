@@ -1,6 +1,7 @@
 name: Terminate Zombie Build Instances
 
 on:
+  push:
   schedule:
     - cron: "0 */1 * * *"
 
