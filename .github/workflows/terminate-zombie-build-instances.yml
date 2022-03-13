@@ -9,6 +9,10 @@ jobs:
     steps:
       - name: List and Remove Old Instances
         run: |
+
+          export AWS_ACCESS_KEY_ID=${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
           set -euxo pipefail
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json
