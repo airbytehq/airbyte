@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
 from source_github.streams import (
     Commits,
+    ProjectCards,
     ProjectColumns,
     Projects,
     PullRequestCommentReactions,
@@ -21,7 +22,7 @@ from source_github.streams import (
     Teams,
 )
 
-from .utils import read_full_refresh, read_incremental
+from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 
@@ -305,85 +306,75 @@ def test_stream_project_columns():
         "start_date": "2022-02-01T00:00:00Z",
     }
 
+    data = [
+        {
+            "updated_at": "2022-01-01T10:00:00Z",
+        },
+        {
+            "updated_at": "2022-03-01T10:00:00Z",
+            "columns": [
+                {"updated_at": "2022-01-01T10:00:00Z"},
+                {"updated_at": "2022-03-01T09:00:00Z"},
+                {"updated_at": "2022-03-01T10:00:00Z"},
+            ],
+        },
+        {
+            "updated_at": "2022-05-01T10:00:00Z",
+            "columns": [
+                {"updated_at": "2022-01-01T10:00:00Z"},
+                {"updated_at": "2022-05-01T10:00:00Z"},
+            ],
+        },
+    ]
+
+    ProjectsResponsesAPI.register(data)
+
     stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/projects",
-        json=[
-            {"id": 1, "name": "project_1", "updated_at": "2022-01-01T10:00:00Z"},
-            {"id": 2, "name": "project_2", "updated_at": "2022-03-01T10:00:00Z"},
-            {"id": 3, "name": "project_3", "updated_at": "2022-05-01T10:00:00Z"},
-        ],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/projects/2/columns",
-        json=[
-            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
-            {"id": 2, "name": "column_2", "updated_at": "2022-03-01T09:00:00Z"},
-            {"id": 3, "name": "column_3", "updated_at": "2022-03-01T10:00:00Z"},
-        ],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/projects/3/columns",
-        json=[
-            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
-            {"id": 2, "name": "column_2", "updated_at": "2022-05-01T10:00:00Z"},
-        ],
-    )
-
     stream_state = {}
+
     records = read_incremental(stream, stream_state=stream_state)
 
     assert records == [
-        {"id": 2, "name": "column_2", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T09:00:00Z"},
-        {"id": 3, "name": "column_3", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T10:00:00Z"},
-        {"id": 2, "name": "column_2", "project_id": 3, "repository": "organization/repository", "updated_at": "2022-05-01T10:00:00Z"},
+        {"id": 22, "name": "column_22", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T09:00:00Z"},
+        {"id": 23, "name": "column_23", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-03-01T10:00:00Z"},
+        {"id": 32, "name": "column_32", "project_id": 3, "repository": "organization/repository", "updated_at": "2022-05-01T10:00:00Z"},
     ]
 
     assert stream_state == {
         "organization/repository": {"2": {"updated_at": "2022-03-01T10:00:00Z"}, "3": {"updated_at": "2022-05-01T10:00:00Z"}}
     }
 
-    responses.replace(
-        "GET",
-        "https://api.github.com/repos/organization/repository/projects",
-        json=[
-            {"id": 1, "name": "project_1", "updated_at": "2022-01-01T10:00:00Z"},
-            {"id": 2, "name": "project_2", "updated_at": "2022-04-01T10:00:00Z"},
-            {"id": 3, "name": "project_3", "updated_at": "2022-05-01T10:00:00Z"},
-            {"id": 4, "name": "project_4", "updated_at": "2022-06-01T10:00:00Z"},
-        ],
-    )
+    data = [
+        {"updated_at": "2022-01-01T10:00:00Z"},
+        {
+            "updated_at": "2022-04-01T10:00:00Z",
+            "columns": [
+                {"updated_at": "2022-01-01T10:00:00Z"},
+                {"updated_at": "2022-03-01T09:00:00Z"},
+                {"updated_at": "2022-03-01T10:00:00Z"},
+                {"updated_at": "2022-04-01T10:00:00Z"},
+            ],
+        },
+        {
+            "updated_at": "2022-05-01T10:00:00Z",
+            "columns": [
+                {"updated_at": "2022-01-01T10:00:00Z"},
+                {"updated_at": "2022-05-01T10:00:00Z"},
+            ],
+        },
+        {
+            "updated_at": "2022-06-01T10:00:00Z",
+            "columns": [{"updated_at": "2022-06-01T10:00:00Z"}],
+        },
+    ]
 
-    responses.replace(
-        "GET",
-        "https://api.github.com/projects/2/columns",
-        json=[
-            {"id": 1, "name": "column_1", "updated_at": "2022-01-01T10:00:00Z"},
-            {"id": 2, "name": "column_2", "updated_at": "2022-03-01T09:00:00Z"},
-            {"id": 3, "name": "column_3", "updated_at": "2022-03-01T10:00:00Z"},
-            {"id": 4, "name": "column_4", "updated_at": "2022-04-01T10:00:00Z"},
-        ],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/projects/4/columns",
-        json=[
-            {"id": 2, "name": "column_1", "updated_at": "2022-06-01T10:00:00Z"},
-        ],
-    )
+    ProjectsResponsesAPI.register(data)
 
     records = read_incremental(stream, stream_state=stream_state)
-
     assert records == [
-        {"id": 4, "name": "column_4", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
-        {"id": 2, "name": "column_1", "project_id": 4, "repository": "organization/repository", "updated_at": "2022-06-01T10:00:00Z"},
+        {"id": 24, "name": "column_24", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
+        {"id": 41, "name": "column_41", "project_id": 4, "repository": "organization/repository", "updated_at": "2022-06-01T10:00:00Z"},
     ]
 
     assert stream_state == {
@@ -393,3 +384,67 @@ def test_stream_project_columns():
             "4": {"updated_at": "2022-06-01T10:00:00Z"},
         }
     }
+
+
+@responses.activate
+def test_stream_project_cards():
+
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+
+    projects_stream = Projects(**repository_args_with_start_date)
+    project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
+    stream = ProjectCards(project_columns_stream, **repository_args_with_start_date)
+
+    data = [
+        {
+            "updated_at": "2022-01-01T10:00:00Z",
+        },
+        {
+            "updated_at": "2022-03-01T10:00:00Z",
+            "columns": [
+                {
+                    "updated_at": "2022-04-01T10:00:00Z",
+                    "cards": [
+                        {"updated_at": "2022-04-01T10:00:00Z"},
+                        {"updated_at": "2022-04-01T10:00:00Z"},
+                    ],
+                },
+                {"updated_at": "2022-03-01T09:00:00Z"},
+                {"updated_at": "2022-03-01T10:00:00Z"},
+            ],
+        },
+        {
+            "updated_at": "2022-05-01T10:00:00Z",
+            "columns": [
+                {"updated_at": "2022-01-01T10:00:00Z"},
+                {"updated_at": "2022-05-01T10:00:00Z"},
+            ],
+        },
+    ]
+
+    ProjectsResponsesAPI.register(data)
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state=stream_state)
+    assert records == [
+        {
+            "column_id": 21,
+            "id": 211,
+            "name": "card_211",
+            "project_id": 2,
+            "repository": "organization/repository",
+            "updated_at": "2022-04-01T10:00:00Z",
+        },
+        {
+            "column_id": 21,
+            "id": 212,
+            "name": "card_212",
+            "project_id": 2,
+            "repository": "organization/repository",
+            "updated_at": "2022-04-01T10:00:00Z",
+        },
+    ]
