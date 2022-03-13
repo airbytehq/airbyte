@@ -1,6 +1,6 @@
 # airbyte-webapp
 
-This module contains the Airbyte Webapp. It is a React app written in TypeScript. It runs in Docker container. A very lightweight nginx server runs in that Docker container and serves the webapp.
+This module contains the Airbyte Webapp. It is a React app written in TypeScript. It runs in a Docker container. A very lightweight nginx server runs in that Docker container and serves the webapp.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
