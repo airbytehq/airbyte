@@ -9,5 +9,6 @@ jobs:
     steps:
       - name: List and Remove Old Instances
         run: |
+          set -euxo pipefail
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json
