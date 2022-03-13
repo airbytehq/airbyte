@@ -10,6 +10,10 @@
       "history_in_days": {
         "type": "integer",
         "description": "Number of days in the past from today."
+      },
+      "incidence_in_days": {
+        "type": "integer",
+        "description": "Number of days in the past from today."
       }
     }
   }

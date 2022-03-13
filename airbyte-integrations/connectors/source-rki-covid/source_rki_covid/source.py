@@ -180,6 +180,46 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             return "germany/history/cases/"+str(self.config.get('history_in_days'))
         return "germany/history/cases/"
 
+class GermanHistoryIncidence(IncrementalRkiCovidStream):
+
+    primary_key = None
+
+    def __init__(self, config, **kwargs):
+        super().__init__(**kwargs)
+        self.config = config
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        TODO
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return "date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
+        latest_state = latest_record.get(self.cursor_field)
+        current_state = current_stream_state.get(self.cursor_field) or latest_state
+        return {self.cursor_field: max(latest_state, current_state)}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json().get("data")
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        if self.config.get('incidence_in_days'):
+            return "germany/history/incidence/"+str(self.config.get('incidence_in_days'))
+        return "germany/history/incidence/"
+
+
 class Employees(IncrementalRkiCovidStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
@@ -248,4 +288,6 @@ class SourceRkiCovid(AbstractSource):
         """
         # TODO remove the authenticator if not required.
 
-        return [Germany(), GermanyHistoryCases(config=config)]
+        return [Germany(),
+                GermanyHistoryCases(config=config),
+                GermanHistoryIncidence(config=config)]
