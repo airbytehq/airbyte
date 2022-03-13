@@ -18,9 +18,9 @@ jobs:
 
           aws configure set default.region us-east-2
 
-          echo CURR_TIME=date +%s
+          echo CURR_TIME=${date +%s}
 
-          env
+          env | sort
 
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
