@@ -66,8 +66,8 @@ public class ConfigRepository {
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
 
-  // todo (cgardens) - very bad that this exposed. queries that rely on this endpoint should be pushed
-  // into this class.
+  // todo (cgardens) - very bad that this exposed. usages should be removed. do not use it.
+  @Deprecated
   public ExceptionWrappingDatabase getDatabase() {
     return database;
   }
