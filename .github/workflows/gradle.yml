@@ -368,7 +368,6 @@ jobs:
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
-
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
