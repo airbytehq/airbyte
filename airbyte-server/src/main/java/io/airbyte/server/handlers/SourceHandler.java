@@ -259,7 +259,7 @@ public class SourceHandler {
   private SourceRead buildSourceReadWithSecrets(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final SourceConnection sourceConnection = configRepository.getSourceConnectionWithSecrets(sourceId);
+    final SourceConnection sourceConnection = secretsRepositoryReader.getSourceConnectionWithSecrets(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     return toSourceRead(sourceConnection, standardSourceDefinition);

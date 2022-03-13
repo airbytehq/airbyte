@@ -75,7 +75,6 @@ public class ConfigDumpImporter {
 
   public ConfigDumpImporter(final ConfigRepository configRepository,
                             final SecretsRepositoryWriter secretsRepositoryWriter,
-
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final boolean importDefinitions) {
@@ -134,7 +133,7 @@ public class ConfigDumpImporter {
 
       // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
-      secretsRepositoryWriter.loadData(seedPersistence);
+      configRepository.loadDataNoSecrets(seedPersistence);
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);

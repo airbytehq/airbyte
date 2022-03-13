@@ -287,7 +287,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnectionWithSecrets(destinationId));
+    final DestinationConnection dci = Jsons.clone(secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationId));
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return toDestinationRead(dci, standardDestinationDefinition);

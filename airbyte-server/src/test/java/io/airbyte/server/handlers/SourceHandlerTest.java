@@ -201,7 +201,7 @@ class SourceHandlerTest {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceRead.getSourceId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getSourceId());
-    when(configRepository.getSourceConnectionWithSecrets(sourceConnection.getSourceId())).thenReturn(sourceConnection);
+    when(secretsRepositoryReader.getSourceConnectionWithSecrets(sourceConnection.getSourceId())).thenReturn(sourceConnection);
     when(configRepository.getSourceConnection(clonedConnection.getSourceId())).thenReturn(clonedConnection);
 
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))

@@ -4,239 +4,212 @@
 
 package io.airbyte.config.persistence;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
+import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 class SecretsRepositoryWriterTest {
-  //
-  // private static final UUID WORKSPACE_ID = UUID.randomUUID();
-  //
-  // private ConfigPersistence configPersistence;
-  // private ConfigRepository configRepository;
-  //
-  // @BeforeEach
-  // void setup() {
-  // configPersistence = mock(ConfigPersistence.class);
-  // final var secretPersistence = new MemorySecretPersistence();
-  // configRepository =
-  // spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(),
-  // Optional.of(secretPersistence), Optional.of(secretPersistence)));
-  // }
-  //
-  // @AfterEach
-  // void cleanUp() {
-  // reset(configPersistence);
-  // }
-  //
-  // @Test
-  // void testWorkspaceWithNullTombstone() throws ConfigNotFoundException, IOException,
-  // JsonValidationException {
-  // assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID));
-  // }
-  //
-  // @Test
-  // void testWorkspaceWithFalseTombstone() throws ConfigNotFoundException, IOException,
-  // JsonValidationException {
-  // assertReturnsWorkspace(new
-  // StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false));
-  // }
-  //
-  // @Test
-  // void testWorkspaceWithTrueTombstone() throws ConfigNotFoundException, IOException,
-  // JsonValidationException {
-  // assertReturnsWorkspace(new
-  // StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(true));
-  // }
-  //
-  // void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException,
-  // IOException, JsonValidationException {
-  // when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(),
-  // StandardWorkspace.class)).thenReturn(workspace);
-  //
-  // assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
-  // }
-  //
-  // @ParameterizedTest
-  // @ValueSource(booleans = {true, false})
-  // void testWorkspaceByConnectionId(final boolean isTombstone) throws ConfigNotFoundException,
-  // IOException, JsonValidationException {
-  // final StandardWorkspace workspace = new
-  // StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(isTombstone);
-  //
-  // final UUID connectionId = UUID.randomUUID();
-  // final UUID sourceId = UUID.randomUUID();
-  // final StandardSync mSync = new StandardSync()
-  // .withSourceId(sourceId);
-  // final SourceConnection mSourceConnection = new SourceConnection()
-  // .withWorkspaceId(WORKSPACE_ID);
-  // final StandardWorkspace mWorkflow = new StandardWorkspace()
-  // .withWorkspaceId(WORKSPACE_ID);
-  //
-  // doReturn(mSync)
-  // .when(configRepository)
-  // .getStandardSync(connectionId);
-  // doReturn(mSourceConnection)
-  // .when(configRepository)
-  // .getSourceConnection(sourceId);
-  // doReturn(mWorkflow)
-  // .when(configRepository)
-  // .getStandardWorkspace(WORKSPACE_ID, isTombstone);
-  //
-  // configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
-  //
-  // verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
-  // }
-  //
-  // @Test
-  // void testGetConnectionState() throws Exception {
-  // final UUID connectionId = UUID.randomUUID();
-  // final State state = new State().withState(Jsons.deserialize("{ \"cursor\": 1000 }"));
-  // final StandardSyncState connectionState = new
-  // StandardSyncState().withConnectionId(connectionId).withState(state);
-  //
-  // when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(),
-  // StandardSyncState.class))
-  // .thenThrow(new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_STATE, connectionId));
-  // assertEquals(Optional.empty(), configRepository.getConnectionState(connectionId));
-  //
-  // reset(configPersistence);
-  // when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(),
-  // StandardSyncState.class))
-  // .thenReturn(connectionState);
-  // assertEquals(Optional.of(state), configRepository.getConnectionState(connectionId));
-  // }
-  //
-  // @Test
-  // void testUpdateConnectionState() throws Exception {
-  // final UUID connectionId = UUID.randomUUID();
-  // final State state1 = new State().withState(Jsons.deserialize("{ \"cursor\": 1 }"));
-  // final StandardSyncState connectionState1 = new
-  // StandardSyncState().withConnectionId(connectionId).withState(state1);
-  // final State state2 = new State().withState(Jsons.deserialize("{ \"cursor\": 2 }"));
-  // final StandardSyncState connectionState2 = new
-  // StandardSyncState().withConnectionId(connectionId).withState(state2);
-  //
-  // configRepository.updateConnectionState(connectionId, state1);
-  // verify(configPersistence, times(1)).writeConfig(ConfigSchema.STANDARD_SYNC_STATE,
-  // connectionId.toString(), connectionState1);
-  // configRepository.updateConnectionState(connectionId, state2);
-  // verify(configPersistence, times(1)).writeConfig(ConfigSchema.STANDARD_SYNC_STATE,
-  // connectionId.toString(), connectionState2);
-  // }
-  //
-  // @Test
-  // void testDeleteSourceDefinitionAndAssociations() throws JsonValidationException, IOException,
-  // ConfigNotFoundException {
-  // final StandardSourceDefinition sourceDefToDelete = new
-  // StandardSourceDefinition().withSourceDefinitionId(UUID.randomUUID());
-  // final StandardSourceDefinition sourceDefToStay = new
-  // StandardSourceDefinition().withSourceDefinitionId(UUID.randomUUID());
-  //
-  // final SourceConnection sourceConnectionToDelete = new
-  // SourceConnection().withSourceId(UUID.randomUUID())
-  // .withSourceDefinitionId(sourceDefToDelete.getSourceDefinitionId());
-  // final SourceConnection sourceConnectionToStay = new
-  // SourceConnection().withSourceId(UUID.randomUUID())
-  // .withSourceDefinitionId(sourceDefToStay.getSourceDefinitionId());
-  // when(configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION,
-  // SourceConnection.class)).thenReturn(List.of(
-  // sourceConnectionToDelete,
-  // sourceConnectionToStay));
-  // when(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION,
-  // DestinationConnection.class)).thenReturn(List.of());
-  //
-  // final StandardSync syncToDelete = new
-  // StandardSync().withConnectionId(UUID.randomUUID()).withSourceId(sourceConnectionToDelete.getSourceId())
-  // .withDestinationId(UUID.randomUUID());
-  // final StandardSync syncToStay = new
-  // StandardSync().withConnectionId(UUID.randomUUID()).withSourceId(sourceConnectionToStay.getSourceId())
-  // .withDestinationId(UUID.randomUUID());
-  //
-  // when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC,
-  // StandardSync.class)).thenReturn(List.of(syncToDelete, syncToStay));
-  //
-  // configRepository.deleteSourceDefinitionAndAssociations(sourceDefToDelete.getSourceDefinitionId());
-  //
-  // // verify that all records associated with sourceDefToDelete were deleted
-  // verify(configPersistence, times(1)).deleteConfig(ConfigSchema.STANDARD_SYNC,
-  // syncToDelete.getConnectionId().toString());
-  // verify(configPersistence, times(1)).deleteConfig(ConfigSchema.SOURCE_CONNECTION,
-  // sourceConnectionToDelete.getSourceId().toString());
-  // verify(configPersistence, times(1)).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION,
-  // sourceDefToDelete.getSourceDefinitionId().toString());
-  //
-  // // verify that none of the records associated with sourceDefToStay were deleted
-  // verify(configPersistence, never()).deleteConfig(ConfigSchema.STANDARD_SYNC,
-  // syncToStay.getConnectionId().toString());
-  // verify(configPersistence, never()).deleteConfig(ConfigSchema.SOURCE_CONNECTION,
-  // sourceConnectionToStay.getSourceId().toString());
-  // verify(configPersistence, never()).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION,
-  // sourceDefToStay.getSourceDefinitionId().toString());
-  // }
-  //
-  // @Test
-  // void testDeleteDestinationDefinitionAndAssociations() throws JsonValidationException,
-  // IOException, ConfigNotFoundException {
-  // final StandardDestinationDefinition destDefToDelete = new
-  // StandardDestinationDefinition().withDestinationDefinitionId(UUID.randomUUID());
-  // final StandardDestinationDefinition destDefToStay = new
-  // StandardDestinationDefinition().withDestinationDefinitionId(UUID.randomUUID());
-  //
-  // final DestinationConnection destConnectionToDelete = new
-  // DestinationConnection().withDestinationId(UUID.randomUUID())
-  // .withDestinationDefinitionId(destDefToDelete.getDestinationDefinitionId());
-  // final DestinationConnection destConnectionToStay = new
-  // DestinationConnection().withDestinationId(UUID.randomUUID())
-  // .withDestinationDefinitionId(destDefToStay.getDestinationDefinitionId());
-  // when(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION,
-  // DestinationConnection.class)).thenReturn(List.of(
-  // destConnectionToDelete,
-  // destConnectionToStay));
-  // when(configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION,
-  // SourceConnection.class)).thenReturn(List.of());
-  //
-  // final StandardSync syncToDelete = new StandardSync().withConnectionId(UUID.randomUUID())
-  // .withDestinationId(destConnectionToDelete.getDestinationId())
-  // .withSourceId(UUID.randomUUID());
-  // final StandardSync syncToStay = new
-  // StandardSync().withConnectionId(UUID.randomUUID()).withDestinationId(destConnectionToStay.getDestinationId())
-  // .withSourceId(UUID.randomUUID());
-  //
-  // when(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC,
-  // StandardSync.class)).thenReturn(List.of(syncToDelete, syncToStay));
-  //
-  // configRepository.deleteDestinationDefinitionAndAssociations(destDefToDelete.getDestinationDefinitionId());
-  //
-  // // verify that all records associated with destDefToDelete were deleted
-  // verify(configPersistence, times(1)).deleteConfig(ConfigSchema.STANDARD_SYNC,
-  // syncToDelete.getConnectionId().toString());
-  // verify(configPersistence, times(1)).deleteConfig(ConfigSchema.DESTINATION_CONNECTION,
-  // destConnectionToDelete.getDestinationId().toString());
-  // verify(configPersistence, times(1)).deleteConfig(
-  // ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-  // destDefToDelete.getDestinationDefinitionId().toString());
-  //
-  // // verify that none of the records associated with destDefToStay were deleted
-  // verify(configPersistence, never()).deleteConfig(ConfigSchema.STANDARD_SYNC,
-  // syncToStay.getConnectionId().toString());
-  // verify(configPersistence, never()).deleteConfig(ConfigSchema.DESTINATION_CONNECTION,
-  // destConnectionToStay.getDestinationId().toString());
-  // verify(configPersistence, never()).deleteConfig(
-  // ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-  // destDefToStay.getDestinationDefinitionId().toString());
-  // }
-  //
-  // @Test
-  // public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException,
-  // IOException {
-  // final StandardWorkspace workspace = new
-  // StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
-  // doReturn(workspace)
-  // .when(configRepository)
-  // .getStandardWorkspace(WORKSPACE_ID, false);
-  //
-  // configRepository.setFeedback(WORKSPACE_ID);
-  //
-  // assertTrue(workspace.getFeedbackDone());
-  // verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE,
-  // workspace.getWorkspaceId().toString(), workspace);
-  // }
+
+  private static final UUID UUID1 = UUID.randomUUID();
+
+  private static final ConnectorSpecification SPEC = new ConnectorSpecification()
+      .withConnectionSpecification(Jsons.deserialize(
+          "{ \"properties\": { \"username\": { \"type\": \"string\" }, \"password\": { \"type\": \"string\", \"airbyte_secret\": true } } }"));
+
+  private static final String SECRET = "abc";
+  private static final JsonNode FULL_CONFIG = Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": \"%s\"}", SECRET));
+
+  private static final SourceConnection SOURCE_WITH_FULL_CONFIG = new SourceConnection()
+      .withSourceId(UUID1)
+      .withSourceDefinitionId(UUID.randomUUID())
+      .withConfiguration(FULL_CONFIG);
+
+  private static final DestinationConnection DESTINATION_WITH_FULL_CONFIG = new DestinationConnection()
+      .withDestinationId(UUID1)
+      .withConfiguration(FULL_CONFIG);
+
+  private static final StandardSourceDefinition SOURCE_DEF = new StandardSourceDefinition()
+      .withSourceDefinitionId(SOURCE_WITH_FULL_CONFIG.getSourceDefinitionId())
+      .withSpec(SPEC);
+
+  private static final StandardDestinationDefinition DEST_DEF = new StandardDestinationDefinition()
+      .withDestinationDefinitionId(DESTINATION_WITH_FULL_CONFIG.getDestinationDefinitionId())
+      .withSpec(SPEC);
+
+  private ConfigRepository configRepository;
+  private MemorySecretPersistence longLivedSecretPersistence;
+  private MemorySecretPersistence ephemeralSecretPersistence;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
+
+  private RealSecretsHydrator longLivedSecretsHydrator;
+  private SecretsRepositoryReader longLivedSecretsRepositoryReader;
+  private RealSecretsHydrator ephemeralSecretsHydrator;
+  private SecretsRepositoryReader ephemeralSecretsRepositoryReader;
+
+  @BeforeEach
+  void setup() {
+    configRepository = spy(mock(ConfigRepository.class));
+    longLivedSecretPersistence = new MemorySecretPersistence();
+    ephemeralSecretPersistence = new MemorySecretPersistence();
+
+    secretsRepositoryWriter = new SecretsRepositoryWriter(
+        configRepository,
+        Optional.of(longLivedSecretPersistence),
+        Optional.of(ephemeralSecretPersistence));
+
+    longLivedSecretsHydrator = new RealSecretsHydrator(longLivedSecretPersistence);
+    longLivedSecretsRepositoryReader = new SecretsRepositoryReader(configRepository, longLivedSecretsHydrator);
+
+    ephemeralSecretsHydrator = new RealSecretsHydrator(ephemeralSecretPersistence);
+    ephemeralSecretsRepositoryReader = new SecretsRepositoryReader(configRepository, ephemeralSecretsHydrator);
+  }
+
+  @Test
+  void testWriteSourceConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    doThrow(ConfigNotFoundException.class).when(configRepository).getSourceConnection(UUID1);
+
+    secretsRepositoryWriter.writeSourceConnection(SOURCE_WITH_FULL_CONFIG, SPEC);
+    final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
+
+    assertNotNull(coordinate);
+    final SourceConnection partialSource = injectCoordinateIntoSource(coordinate.getFullCoordinate());
+    verify(configRepository).writeSourceConnectionNoSecrets(partialSource);
+    final Optional<String> persistedSecret = longLivedSecretPersistence.read(coordinate);
+    assertTrue(persistedSecret.isPresent());
+    assertEquals(SECRET, persistedSecret.get());
+
+    // verify that the round trip works.
+    reset(configRepository);
+    when(configRepository.getSourceConnection(UUID1)).thenReturn(partialSource);
+    assertEquals(SOURCE_WITH_FULL_CONFIG, longLivedSecretsRepositoryReader.getSourceConnectionWithSecrets(UUID1));
+  }
+
+  @Test
+  void testWriteDestinationConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    doThrow(ConfigNotFoundException.class).when(configRepository).getDestinationConnection(UUID1);
+
+    secretsRepositoryWriter.writeDestinationConnection(DESTINATION_WITH_FULL_CONFIG, SPEC);
+    final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
+
+    assertNotNull(coordinate);
+    final DestinationConnection partialDestination = injectCoordinateIntoDestination(coordinate.getFullCoordinate());
+    verify(configRepository).writeDestinationConnectionNoSecrets(partialDestination);
+    final Optional<String> persistedSecret = longLivedSecretPersistence.read(coordinate);
+    assertTrue(persistedSecret.isPresent());
+    assertEquals(SECRET, persistedSecret.get());
+
+    // verify that the round trip works.
+    reset(configRepository);
+    when(configRepository.getDestinationConnection(UUID1)).thenReturn(partialDestination);
+    assertEquals(DESTINATION_WITH_FULL_CONFIG, longLivedSecretsRepositoryReader.getDestinationConnectionWithSecrets(UUID1));
+  }
+
+  @Test
+  void testStatefulSplitEphemeralSecrets() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final JsonNode split = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
+        SOURCE_WITH_FULL_CONFIG.getConfiguration(),
+        SPEC);
+    final SecretCoordinate coordinate = getCoordinateFromSecretsStore(ephemeralSecretPersistence);
+
+    assertNotNull(coordinate);
+    final Optional<String> persistedSecret = ephemeralSecretPersistence.read(coordinate);
+    assertTrue(persistedSecret.isPresent());
+    assertEquals(SECRET, persistedSecret.get());
+
+    // verify that the round trip works.
+    assertEquals(SOURCE_WITH_FULL_CONFIG.getConfiguration(), ephemeralSecretsHydrator.hydrate(split));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testReplaceAllConfigs() throws IOException {
+    final Map<AirbyteConfig, Stream<?>> configs = new HashMap<>();
+    configs.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(Jsons.clone(SOURCE_DEF)));
+    configs.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, Stream.of(Jsons.clone(DEST_DEF)));
+    configs.put(ConfigSchema.SOURCE_CONNECTION, Stream.of(Jsons.clone(SOURCE_WITH_FULL_CONFIG)));
+    configs.put(ConfigSchema.DESTINATION_CONNECTION, Stream.of(Jsons.clone(DESTINATION_WITH_FULL_CONFIG)));
+
+    secretsRepositoryWriter.replaceAllConfigs(configs, false);
+
+    final ArgumentCaptor<Map<AirbyteConfig, Stream<?>>> argument = ArgumentCaptor.forClass(Map.class);
+    verify(configRepository).replaceAllConfigsNoSecrets(argument.capture(), eq(false));
+    final Map<AirbyteConfig, ? extends List<?>> actual = argument.getValue().entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().collect(Collectors.toList())));
+
+    assertEquals(SOURCE_DEF, actual.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).get(0));
+    assertEquals(DEST_DEF, actual.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).get(0));
+
+    // we can't easily get the pointer, so verify the secret has been stripped out and then make sure
+    // the rest of the object meets expectations.
+    final SourceConnection actualSource = (SourceConnection) actual.get(ConfigSchema.SOURCE_CONNECTION).get(0);
+    assertTrue(actualSource.getConfiguration().get("password").has("_secret"));
+    ((ObjectNode) actualSource.getConfiguration()).remove("password");
+    final SourceConnection expectedSource = Jsons.clone(SOURCE_WITH_FULL_CONFIG);
+    ((ObjectNode) expectedSource.getConfiguration()).remove("password");
+    assertEquals(expectedSource, actualSource);
+
+    final DestinationConnection actualDest = (DestinationConnection) actual.get(ConfigSchema.DESTINATION_CONNECTION).get(0);
+    assertTrue(actualDest.getConfiguration().get("password").has("_secret"));
+    ((ObjectNode) actualDest.getConfiguration()).remove("password");
+    final DestinationConnection expectedDest = Jsons.clone(DESTINATION_WITH_FULL_CONFIG);
+    ((ObjectNode) expectedDest.getConfiguration()).remove("password");
+    assertEquals(expectedDest, actualDest);
+  }
+
+  // this only works if the secrets store has one secret.
+  private SecretCoordinate getCoordinateFromSecretsStore(final MemorySecretPersistence secretPersistence) {
+    return secretPersistence.getMap()
+        .keySet()
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  private static JsonNode injectCoordinate(final String coordinate) {
+    return Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": { \"_secret\": \"%s\" } }", coordinate));
+  }
+
+  private static SourceConnection injectCoordinateIntoSource(final String coordinate) {
+    return Jsons.clone(SOURCE_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate));
+  }
+
+  private static DestinationConnection injectCoordinateIntoDestination(final String coordinate) {
+    return Jsons.clone(DESTINATION_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate));
+  }
 
 }

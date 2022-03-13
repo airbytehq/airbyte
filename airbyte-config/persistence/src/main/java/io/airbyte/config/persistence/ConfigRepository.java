@@ -725,7 +725,7 @@ public class ConfigRepository {
    * @param seedPersistenceWithoutSecrets - seed persistence WITHOUT secrets
    * @throws IOException - you never know when you IO
    */
-  void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
+  public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
     persistence.loadData(seedPersistenceWithoutSecrets);
   }
 

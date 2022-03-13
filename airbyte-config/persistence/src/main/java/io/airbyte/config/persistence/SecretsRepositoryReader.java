@@ -30,7 +30,6 @@ public class SecretsRepositoryReader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryReader.class);
 
-  // private final ConfigPersistence persistence;
   private final ConfigRepository configRepository;
   private final SecretsHydrator secretsHydrator;
 
@@ -42,8 +41,7 @@ public class SecretsRepositoryReader {
 
   public SourceConnection getSourceConnectionWithSecrets(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
     final var source = configRepository.getSourceConnection(sourceId);
-    final var fullConfig = secretsHydrator.hydrate(source.getConfiguration());
-    return Jsons.clone(source).withConfiguration(fullConfig);
+    return hydrateSourcePartialConfig(source);
   }
 
   public List<SourceConnection> listSourceConnectionWithSecrets() throws JsonValidationException, IOException {
@@ -51,15 +49,14 @@ public class SecretsRepositoryReader {
 
     return sources
         .stream()
-        .map(partialSource -> Exceptions.toRuntime(() -> getSourceConnectionWithSecrets(partialSource.getSourceId())))
+        .map(partialSource -> Exceptions.toRuntime(() -> hydrateSourcePartialConfig(partialSource)))
         .collect(Collectors.toList());
   }
 
   public DestinationConnection getDestinationConnectionWithSecrets(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final var destination = configRepository.getDestinationConnection(destinationId);
-    final var fullConfig = secretsHydrator.hydrate(destination.getConfiguration());
-    return Jsons.clone(destination).withConfiguration(fullConfig);
+    return hydrateDestinationPartialConfig(destination);
   }
 
   public List<DestinationConnection> listDestinationConnectionWithSecrets() throws JsonValidationException, IOException {
@@ -67,26 +64,36 @@ public class SecretsRepositoryReader {
 
     return destinations
         .stream()
-        .map(partialDestination -> Exceptions.toRuntime(() -> getDestinationConnectionWithSecrets(partialDestination.getDestinationId())))
+        .map(partialDestination -> Exceptions.toRuntime(() -> hydrateDestinationPartialConfig(partialDestination)))
         .collect(Collectors.toList());
   }
 
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    final var map = new HashMap<>(configRepository.dumpConfigsNoSecrets());
-    final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
-    final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
+  public Map<String, Stream<JsonNode>> dumpConfigsWithSecrets() throws IOException {
+    final Map<String, Stream<JsonNode>> dump = new HashMap<>(configRepository.dumpConfigsNoSecrets());
+    final String sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
+    final String destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
 
-    if (map.containsKey(sourceKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(sourceKey).map(secretsHydrator::hydrate);
-      map.put(sourceKey, augmentedValue);
+    hydrateValuesIfKeyPresent(sourceKey, dump);
+    hydrateValuesIfKeyPresent(destinationKey, dump);
+
+    return dump;
+  }
+
+  private SourceConnection hydrateSourcePartialConfig(final SourceConnection sourceWithPartialConfig) {
+    final JsonNode hydratedConfig = secretsHydrator.hydrate(sourceWithPartialConfig.getConfiguration());
+    return Jsons.clone(sourceWithPartialConfig).withConfiguration(hydratedConfig);
+  }
+
+  private DestinationConnection hydrateDestinationPartialConfig(final DestinationConnection sourceWithPartialConfig) {
+    final JsonNode hydratedConfig = secretsHydrator.hydrate(sourceWithPartialConfig.getConfiguration());
+    return Jsons.clone(sourceWithPartialConfig).withConfiguration(hydratedConfig);
+  }
+
+  private void hydrateValuesIfKeyPresent(final String key, final Map<String, Stream<JsonNode>> dump) {
+    if (dump.containsKey(key)) {
+      final Stream<JsonNode> augmentedValue = dump.get(key).map(secretsHydrator::hydrate);
+      dump.put(key, augmentedValue);
     }
-
-    if (map.containsKey(destinationKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(destinationKey).map(secretsHydrator::hydrate);
-      map.put(destinationKey, augmentedValue);
-    }
-
-    return map;
   }
 
 }

@@ -147,21 +147,21 @@ public class ArchiveHandlerTest {
    */
   @Test
   void testFullExportImportRoundTrip() throws Exception {
-    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // Export the configs.
     File archive = archiveHandler.exportData();
 
     // After deleting the configs, the dump becomes empty.
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // After importing the configs, the dump is restored.
     assertTrue(archive.exists());
     final ImportRead importResult = archiveHandler.importData(archive);
     assertFalse(archive.exists());
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // When a connector definition is in use, it will not be updated.
     final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
@@ -221,12 +221,12 @@ public class ArchiveHandlerTest {
 
   @Test
   void testLightWeightExportImportRoundTrip() throws Exception {
-    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // Insert some workspace data
     final UUID workspaceId = UUID.randomUUID();
     setupTestData(workspaceId);
-    final Map<String, Stream<JsonNode>> workspaceDump = secretsRepositoryReader.dumpConfigs();
+    final Map<String, Stream<JsonNode>> workspaceDump = secretsRepositoryReader.dumpConfigsWithSecrets();
 
     // Insert some other workspace data
     setupTestData(UUID.randomUUID());
@@ -238,11 +238,11 @@ public class ArchiveHandlerTest {
 
     // After deleting all the configs, the dump becomes empty.
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // Restore default seed data
     configPersistence.loadData(seedPersistence);
-    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     setupWorkspaceData(workspaceId);
 
@@ -255,11 +255,11 @@ public class ArchiveHandlerTest {
         .resourceId(uploadRead.getResourceId())
         .workspaceId(workspaceId));
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(workspaceDump, secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(workspaceDump, secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // we modify first workspace
     setupTestData(workspaceId);
-    final Map<String, Stream<JsonNode>> secondWorkspaceDump = secretsRepositoryReader.dumpConfigs();
+    final Map<String, Stream<JsonNode>> secondWorkspaceDump = secretsRepositoryReader.dumpConfigsWithSecrets();
 
     final UUID secondWorkspaceId = UUID.randomUUID();
     setupWorkspaceData(secondWorkspaceId);
@@ -315,7 +315,7 @@ public class ArchiveHandlerTest {
         .resourceId(uploadRead.getResourceId())
         .workspaceId(workspaceId));
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
-    assertSameConfigDump(secondWorkspaceDump, secretsRepositoryReader.dumpConfigs());
+    assertSameConfigDump(secondWorkspaceDump, secretsRepositoryReader.dumpConfigsWithSecrets());
   }
 
   private void setupWorkspaceData(final UUID workspaceId) throws IOException, JsonValidationException {

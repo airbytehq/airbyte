@@ -65,7 +65,7 @@ public class SecretsRepositoryWriter {
     this.ephemeralSecretPersistence = ephemeralSecretPersistence;
   }
 
-  private Optional<SourceConnection> getOptionalSourceConnection(final UUID sourceId) throws JsonValidationException, IOException {
+  private Optional<SourceConnection> getSourceIfExists(final UUID sourceId) throws JsonValidationException, IOException {
     try {
       return Optional.of(configRepository.getSourceConnection(sourceId));
     } catch (final ConfigNotFoundException e) {
@@ -76,8 +76,7 @@ public class SecretsRepositoryWriter {
   // validates too!
   public void writeSourceConnection(final SourceConnection source, final ConnectorSpecification connectorSpecification)
       throws JsonValidationException, IOException {
-
-    final var previousSourceConnection = getOptionalSourceConnection(source.getSourceId())
+    final var previousSourceConnection = getSourceIfExists(source.getSourceId())
         .map(SourceConnection::getConfiguration);
 
     // strip secrets
@@ -88,13 +87,10 @@ public class SecretsRepositoryWriter {
         connectorSpecification);
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
-    // validate partial to avoid secret leak issues.
-    validator.ensure(connectorSpecification.getConnectionSpecification(), partialSource.getConfiguration());
-
     configRepository.writeSourceConnectionNoSecrets(partialSource);
   }
 
-  private Optional<DestinationConnection> getOptionalDestinationConnection(final UUID destinationId) throws JsonValidationException, IOException {
+  private Optional<DestinationConnection> getDestinationIfExists(final UUID destinationId) throws JsonValidationException, IOException {
     try {
       return Optional.of(configRepository.getDestinationConnection(destinationId));
     } catch (final ConfigNotFoundException e) {
@@ -104,7 +100,7 @@ public class SecretsRepositoryWriter {
 
   public void writeDestinationConnection(final DestinationConnection destination, final ConnectorSpecification connectorSpecification)
       throws JsonValidationException, IOException {
-    final var previousDestinationConnection = getOptionalDestinationConnection(destination.getDestinationId())
+    final var previousDestinationConnection = getDestinationIfExists(destination.getDestinationId())
         .map(DestinationConnection::getConfiguration);
 
     final JsonNode partialConfig = statefulUpdateSecrets(
@@ -113,9 +109,6 @@ public class SecretsRepositoryWriter {
         destination.getConfiguration(),
         connectorSpecification);
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
-
-    // validate partial to avoid secret leak issues.
-    validator.ensure(connectorSpecification.getConnectionSpecification(), partialDestination.getConfiguration());
 
     configRepository.writeDestinationConnectionNoSecrets(partialDestination);
   }
@@ -129,21 +122,32 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
-  public JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
+  private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
     return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
   }
 
+  // todo (cgardens) - the contract on this method is hard to follow, because it sometimes returns
+  // secrets (i.e. when there is no longLivedSecretPersistence). If we treated all secrets the same
+  // (i.e. used a separate db for secrets when the user didn't provide a store), this would be easier
+  // to reason about.
   /**
+   * If a secrets store is present, this method attempts to fetch the existing config and merge its
+   * secrets with the passed in config. If there is no secrets store, it just returns the passed in
+   * config. Also validates the config.
+   *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
    * @param fullConfig new full config
    * @param spec connector specification
    * @return partial config
    */
-  public JsonNode statefulUpdateSecrets(final UUID workspaceId,
-                                        final Optional<JsonNode> oldConfig,
-                                        final JsonNode fullConfig,
-                                        final ConnectorSpecification spec) {
+  private JsonNode statefulUpdateSecrets(final UUID workspaceId,
+                                         final Optional<JsonNode> oldConfig,
+                                         final JsonNode fullConfig,
+                                         final ConnectorSpecification spec)
+      throws JsonValidationException {
+    validator.ensure(spec.getConnectionSpecification(), fullConfig);
+
     if (longLivedSecretPersistence.isPresent()) {
       if (oldConfig.isPresent()) {
         final var splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
@@ -154,7 +158,6 @@ public class SecretsRepositoryWriter {
             longLivedSecretPersistence.get());
 
         splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-
         return splitSecretConfig.getPartialConfig();
       } else {
         final var splitSecretConfig = SecretsHelpers.splitConfig(
@@ -259,10 +262,6 @@ public class SecretsRepositoryWriter {
     } else {
       configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
     }
-  }
-
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    configRepository.loadDataNoSecrets(seedPersistence);
   }
 
 }
