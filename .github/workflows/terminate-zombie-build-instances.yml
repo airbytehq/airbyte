@@ -1,0 +1,13 @@
+name: Terminate Zombie Build Instances
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terminate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List and Remove Old Instances
+        run: |
+          aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
+            --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json
