@@ -72,7 +72,7 @@ public enum ToEmit {
     return () -> {
       try {
         metricQuery.call();
-        DogStatsDMetricSingleton.gauge(MetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
+        DogStatsDMetricSingleton.count(MetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
       } catch (Exception e) {
         log.error("Exception querying database for metric: ", e);
       }
