@@ -1,13 +1,14 @@
 name: Terminate Zombie Build Instances
 
 on:
-  push:
+  schedule:
+    - cron: "0 */1 * * *"
 
 jobs:
   terminate:
     runs-on: ubuntu-latest
     steps:
-      - name: List and Remove Old Instances
+      - name: List Instances Older Than an Hour
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -20,5 +21,6 @@ jobs:
 
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge Name=instance-state-name,Values=running \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
-          | jq 'def c(str): str | (split("+")[0] + "Z") | fromdate ;
-              flatten | map( { InstanceId: .Instance, LaunchTime: c(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )'
+          # Since the AWS cli returns an ISO HH:MM timestamp, and Jq only accepts Z timestamps, we define a function toZ to convert this.
+          | jq 'def toZ(str): str | (split("+")[0] + "Z") | fromdate ;
+              flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )'
