@@ -21,4 +21,4 @@ jobs:
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
           | jq 'def c(str): str | (split("+")[0] + "Z") | fromdate ;
-              flatten | map( { InstanceId: .Instance, LaunchTime: c(.LaunchTime) } ) | map( select ( .LaunchTime > (now - 3600) ) )'
+              flatten | map( { InstanceId: .Instance, LaunchTime: c(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )'
