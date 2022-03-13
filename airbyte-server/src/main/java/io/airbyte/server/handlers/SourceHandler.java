@@ -20,6 +20,8 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -34,18 +36,24 @@ public class SourceHandler {
 
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryReader secretsRepositoryReader;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final JsonSchemaValidator validator;
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
+                final SecretsRepositoryReader secretsRepositoryReader,
+                final SecretsRepositoryWriter secretsRepositoryWriter,
                 final JsonSchemaValidator integrationSchemaValidation,
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
                 final JsonSecretsProcessor secretsProcessor,
                 final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
@@ -54,15 +62,19 @@ public class SourceHandler {
   }
 
   public SourceHandler(final ConfigRepository configRepository,
+                       final SecretsRepositoryReader secretsRepositoryReader,
+                       final SecretsRepositoryWriter secretsRepositoryWriter,
                        final JsonSchemaValidator integrationSchemaValidation,
                        final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
         new JsonSecretsProcessor(),
-        new ConfigurationUpdate(configRepository));
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
   public SourceRead createSource(final SourceCreate sourceCreate)
@@ -211,7 +223,7 @@ public class SourceHandler {
     }
 
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
-    final var fullConfig = configRepository.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
+    final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
 
     // persist
     persistSourceConnection(
@@ -247,7 +259,7 @@ public class SourceHandler {
   private SourceRead buildSourceReadWithSecrets(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final SourceConnection sourceConnection = configRepository.getSourceConnectionWithSecrets(sourceId);
+    final SourceConnection sourceConnection = secretsRepositoryReader.getSourceConnectionWithSecrets(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     return toSourceRead(sourceConnection, standardSourceDefinition);
@@ -286,7 +298,7 @@ public class SourceHandler {
         .withTombstone(tombstone)
         .withConfiguration(configurationJson);
 
-    configRepository.writeSourceConnection(sourceConnection, spec);
+    secretsRepositoryWriter.writeSourceConnection(sourceConnection, spec);
   }
 
   protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
