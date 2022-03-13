@@ -19,4 +19,4 @@ jobs:
 
           aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
-          | jq '.[][]'
+          | jq '.[][] | select( .LaunchTime | fromdateiso8601 > 10000)'
