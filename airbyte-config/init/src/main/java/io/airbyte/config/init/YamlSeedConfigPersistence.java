@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
-  public static Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
+  public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
 
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,

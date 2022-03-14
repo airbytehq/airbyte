@@ -366,10 +366,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -386,6 +383,7 @@ public class WorkerApp {
         configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
+        configs.connectorSpecificResourceDefaultsEnabled(),
         new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));

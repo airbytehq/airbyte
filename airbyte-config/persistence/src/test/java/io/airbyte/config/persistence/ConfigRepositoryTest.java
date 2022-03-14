@@ -25,8 +25,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -54,10 +52,7 @@ class ConfigRepositoryTest {
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
     database = mock(Database.class);
-    final var secretPersistence = new MemorySecretPersistence();
-    configRepository =
-        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
-            database));
+    configRepository = spy(new ConfigRepository(configPersistence, database));
   }
 
   @AfterEach

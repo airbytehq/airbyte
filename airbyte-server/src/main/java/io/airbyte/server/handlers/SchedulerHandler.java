@@ -43,6 +43,8 @@ import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.EventRunner;
@@ -77,6 +79,7 @@ public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final SchedulerJobClient schedulerJobClient;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
   private final ConfigurationUpdate configurationUpdate;
@@ -92,6 +95,8 @@ public class SchedulerHandler {
   private final FeatureFlags featureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
+                          final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final JobPersistence jobPersistence,
@@ -104,9 +109,11 @@ public class SchedulerHandler {
                           final FeatureFlags featureFlags) {
     this(
         configRepository,
+        secretsRepositoryWriter,
+        secretsRepositoryReader,
         schedulerJobClient,
         synchronousSchedulerClient,
-        new ConfigurationUpdate(configRepository),
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
         new JsonSchemaValidator(),
         jobPersistence,
         jobNotifier,
@@ -121,6 +128,8 @@ public class SchedulerHandler {
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
+                   final SecretsRepositoryWriter secretsRepositoryWriter,
+                   final SecretsRepositoryReader secretsRepositoryReader,
                    final SchedulerJobClient schedulerJobClient,
                    final SynchronousSchedulerClient synchronousSchedulerClient,
                    final ConfigurationUpdate configurationUpdate,
@@ -135,6 +144,7 @@ public class SchedulerHandler {
                    final FeatureFlags featureFlags,
                    final JobConverter jobConverter) {
     this.configRepository = configRepository;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
@@ -162,7 +172,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
         sourceDef.getSpec());
 
@@ -202,7 +212,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
         destDef.getSpec());
 
@@ -243,7 +253,7 @@ public class SchedulerHandler {
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceCreate.getConnectionConfiguration(),
         sourceDef.getSpec());
 
@@ -399,7 +409,7 @@ public class SchedulerHandler {
   // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     if (featureFlags.usesNewScheduler()) {
-      createNewSchedulerCancellation(jobIdRequestBody.getId());
+      return createNewSchedulerCancellation(jobIdRequestBody.getId());
     }
 
     final long jobId = jobIdRequestBody.getId();

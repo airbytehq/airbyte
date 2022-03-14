@@ -33,14 +33,7 @@
           "type": "string"
         }
       }
-    },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "end_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
-  }
+  },
+  "required": ["id", "created_at"]
 }

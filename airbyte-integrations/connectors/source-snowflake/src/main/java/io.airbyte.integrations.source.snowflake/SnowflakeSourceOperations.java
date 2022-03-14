@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.snowflake;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -30,6 +31,11 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     } catch (final SQLException e) {
       node.put(columnName, (BigDecimal) null);
     }
+  }
+
+  @Override
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
   }
 
 }

@@ -3,61 +3,106 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
-    },
-    "object": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "parent_account_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "bill_to": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 6
     },
     "state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "username": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "email": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "cc_emails": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "preferred_locale": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 12
     },
     "first_name": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "last_name": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "company": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 50
     },
     "vat_number": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 20
     },
     "tax_exempt": {
       "type": ["null", "boolean"]
     },
     "exemption_certificate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 30
     },
     "address": {
-      "type": ["null", "object"]
-    },
-    "billing_info": {
-      "type": ["null", "object"]
-    },
-    "shipping_addresses": {
-      "type": ["null", "array"]
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "title": "Phone number",
+          "maxLength": 256
+        },
+        "street1": {
+          "type": "string",
+          "title": "Street 1",
+          "maxLength": 256
+        },
+        "street2": {
+          "type": "string",
+          "title": "Street 2",
+          "maxLength": 256
+        },
+        "city": {
+          "type": "string",
+          "title": "City",
+          "maxLength": 256
+        },
+        "region": {
+          "type": "string",
+          "title": "State/Province",
+          "description": "State or province.",
+          "maxLength": 256
+        },
+        "postal_code": {
+          "type": "string",
+          "title": "Zip/Postal code",
+          "description": "Zip or postal code.",
+          "maxLength": 256
+        },
+        "country": {
+          "type": "string",
+          "title": "Country",
+          "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
+          "maxLength": 2
+        }
+      }
     },
     "custom_fields": {
       "type": ["null", "array"]
@@ -81,16 +126,20 @@
       "type": ["null", "boolean"]
     },
     "dunning_campaign_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "deleted_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
