@@ -4,8 +4,6 @@ on:
   schedule:
     - cron: "0 */1 * * *"
   push:
-    paths:
-      - ".github/**"
     branches-ignore:
       - "gitbook/v1"
 
@@ -40,6 +38,8 @@ jobs:
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
+            build:
+              - '.github/**'
   changes-output:
     needs: changes
     runs-on: ubuntu-latest
@@ -50,6 +50,7 @@ jobs:
           echo '${{ toJSON(job) }}'
           echo '${{ toJSON(needs) }}'
           echo "after"
+
   ## Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
   #  start-connectors-base-build-runner:
