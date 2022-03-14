@@ -1,11 +1,9 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import logging
 import json
 from datetime import datetime
 from typing import Dict, Generator, Mapping, Any, List, Tuple
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -20,7 +18,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import Source, AbstractSource
 from googleapiclient.discovery import build
 from  google.oauth2.credentials import Credentials
-
 from .streams import (
     DBMStream,
     Standard, 
@@ -36,11 +33,12 @@ class SourceDV360(AbstractSource):
     def get_credentials(self,config: json) -> Credentials:
         cred_json = config.get('credentials')
         return Credentials(
-        cred_json.get('access_token'),
-        refresh_token= cred_json.get('refresh_token'),
-        token_uri=cred_json.get('token_uri'),
-        client_id=cred_json.get('client_id'),
-        client_secret=cred_json.get('client_secret'))
+            token = cred_json.get('access_token'),
+            refresh_token = cred_json.get('refresh_token'),
+            token_uri = cred_json.get('token_uri'),
+            client_id = cred_json.get('client_id'),
+            client_secret = cred_json.get('client_secret')
+        )
 
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
