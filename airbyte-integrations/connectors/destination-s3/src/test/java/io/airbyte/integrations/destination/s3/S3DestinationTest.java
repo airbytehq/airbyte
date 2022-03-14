@@ -4,13 +4,26 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.UploadPartRequest;
+import com.amazonaws.services.s3.model.UploadPartResult;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +38,11 @@ public class S3DestinationTest {
   @BeforeEach
   public void setup() {
     s3 = mock(AmazonS3.class);
+    final InitiateMultipartUploadResult uploadResult = mock(InitiateMultipartUploadResult.class);
+    final UploadPartResult uploadPartResult = mock(UploadPartResult.class);
+    when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
+    when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
+
     config = new S3DestinationConfig(
         "fake-endpoint",
         "fake-bucket",
@@ -32,7 +50,57 @@ public class S3DestinationTest {
         "fake-region",
         "fake-accessKeyId",
         "fake-secretAccessKey",
-        null);
+        S3DestinationConfig.DEFAULT_PART_SIZE_MB, null, s3);
+  }
+
+  @Test
+  /**
+   * Test that check will fail if IAM user does not have listObjects permission
+   */
+  public void checksS3WithoutListObjectPermission() {
+    final S3Destination destinationFail = new S3Destination(new S3DestinationConfigFactory() {
+
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+        return new S3DestinationConfig(
+            "fake-endpoint",
+            "fake-bucket",
+            "fake-bucketPath",
+            "fake-region",
+            "fake-accessKeyId",
+            "fake-secretAccessKey",
+            S3DestinationConfig.DEFAULT_PART_SIZE_MB,
+            null, s3);
+      }
+
+    });
+    doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
+    final AirbyteConnectionStatus status = destinationFail.check(null);
+    assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
+    assertTrue(status.getMessage().indexOf("Access Denied") > 0, "Connection check returned wrong failure message");
+  }
+
+  @Test
+  /**
+   * Test that check will succeed when IAM user has all required permissions
+   */
+  public void checksS3WithListObjectPermission() {
+    final S3Destination destinationSuccess = new S3Destination(new S3DestinationConfigFactory() {
+
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+        return new S3DestinationConfig(
+            "fake-endpoint",
+            "fake-bucket",
+            "fake-bucketPath",
+            "fake-region",
+            "fake-accessKeyId",
+            "fake-secretAccessKey",
+            S3DestinationConfig.DEFAULT_PART_SIZE_MB,
+            null, s3);
+      }
+
+    });
+    final AirbyteConnectionStatus status = destinationSuccess.check(null);
+    assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }
 
   @Test

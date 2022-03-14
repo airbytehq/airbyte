@@ -220,12 +220,12 @@ public abstract class GcsStreamCopier implements StreamCopier {
     final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
     final var blobInfo = BlobInfo.newBuilder(blobId).build();
 
-    storage.create(blobInfo, "".getBytes());
+    storage.create(blobInfo, "".getBytes(StandardCharsets.UTF_8));
     storage.delete(blobId);
   }
 
   public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
-    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
     final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
     return StorageOptions.newBuilder()
         .setCredentials(credentials)

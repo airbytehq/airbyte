@@ -4,15 +4,20 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +28,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
+import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -35,8 +42,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
 
@@ -53,7 +64,7 @@ public class SnowflakeDestinationTest {
     final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
-    assertTrue(SnowflakeDestination.isS3Copy(stubConfig));
+    assertTrue(SnowflakeDestinationResolver.isS3Copy(stubConfig));
   }
 
   @Test
@@ -67,7 +78,7 @@ public class SnowflakeDestinationTest {
     final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
 
-    assertTrue(SnowflakeDestination.isGcsCopy(stubConfig));
+    assertTrue(SnowflakeDestinationResolver.isGcsCopy(stubConfig));
   }
 
   @Test
@@ -76,29 +87,48 @@ public class SnowflakeDestinationTest {
     final var stubLoadingMethod = mapper.createObjectNode();
     final var stubConfig = mapper.createObjectNode();
     stubConfig.set("loading_method", stubLoadingMethod);
-    assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
+    assertFalse(SnowflakeDestinationResolver.isS3Copy(stubConfig));
   }
 
   @Test
   public void testCleanupStageOnFailure() throws Exception {
 
-    JdbcDatabase mockDb = mock(JdbcDatabase.class);
-    SnowflakeStagingSqlOperations sqlOperations = mock(SnowflakeStagingSqlOperations.class);
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    final SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
+    when(sqlOperations.getStageName(anyString(), anyString())).thenReturn("stage_name");
+    when(sqlOperations.getStagingPath(anyString(), anyString(), anyString(), any())).thenReturn("staging_path");
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-    AirbyteMessageConsumer airbyteMessageConsumer = new SnowflakeInternalStagingConsumerFactory()
+    final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
             sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
-    for (AirbyteMessage m : testMessages) {
+    for (final AirbyteMessage m : testMessages) {
       airbyteMessageConsumer.accept(m);
     }
     assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
 
     verify(sqlOperations, times(1)).cleanUpStage(any(), anyString());
   }
+
+  @ParameterizedTest
+  @MethodSource("destinationTypeToConfig")
+  public void testS3ConfigType(String configFileName, DestinationType expectedDestinationType) throws Exception {
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
+    DestinationType typeFromConfig = SnowflakeDestinationResolver.getTypeFromConfig(config);
+    assertEquals(expectedDestinationType, typeFromConfig);
+  }
+
+  private static Stream<Arguments> destinationTypeToConfig() {
+    return Stream.of(
+        arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
+        arguments("copy_s3_config.json", DestinationType.COPY_S3),
+        arguments("insert_config.json", DestinationType.INTERNAL_STAGING)
+    );
+  }
+
 
   private List<AirbyteMessage> generateTestMessages() {
     return IntStream.range(0, 3)

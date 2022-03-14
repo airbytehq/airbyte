@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
@@ -28,12 +27,12 @@ public class SnowflakeGCSStreamCopierTest {
   private SnowflakeGcsStreamCopier copier;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     Storage storageClient = mock(Storage.class, RETURNS_DEEP_STUBS);
     db = mock(JdbcDatabase.class);
     SqlOperations sqlOperations = mock(SqlOperations.class);
 
-    copier = new SnowflakeGcsStreamCopier(
+    copier = (SnowflakeGcsStreamCopier) new SnowflakeGcsStreamCopierFactory().create(
         "fake-staging-folder",
         DestinationSyncMode.OVERWRITE,
         "fake-schema",
@@ -42,8 +41,7 @@ public class SnowflakeGCSStreamCopierTest {
         db,
         new GcsConfig("fake-project-id", "fake-bucket-name", "fake-credentials"),
         new ExtendedNameTransformer(),
-        sqlOperations,
-        new StagingFilenameGenerator("fake-stream", 256L));
+        sqlOperations);
   }
 
   @Test
@@ -53,8 +51,8 @@ public class SnowflakeGCSStreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getGcsStagingFiles()), 1000);
-    for (List<String> files : partition) {
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getGcsStagingFiles()), 1000);
+    for (final List<String> files : partition) {
       verify(db).execute(String.format(
           "COPY INTO fake-schema.%s FROM '%s' storage_integration = gcs_airbyte_integration "
               + " file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "

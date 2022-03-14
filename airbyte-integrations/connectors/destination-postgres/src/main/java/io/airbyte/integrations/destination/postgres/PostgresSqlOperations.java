@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
@@ -41,7 +42,7 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
 
         final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
         final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
-        final var bufferedReader = new BufferedReader(new FileReader(tmpFile));
+        final var bufferedReader = new BufferedReader(new FileReader(tmpFile, StandardCharsets.UTF_8));
         copyManager.copyIn(sql, bufferedReader);
       } catch (final Exception e) {
         throw new RuntimeException(e);
