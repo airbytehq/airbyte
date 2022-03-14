@@ -1,4 +1,4 @@
-name: Airbyte CI - Platform
+name: Airbyte CI
 
 on:
   schedule:
@@ -19,7 +19,7 @@ jobs:
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
-
+  # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
 
-  # Uncommon to debug.
+  # Uncomment to debug.
   #  changes-output:
   #    name: "Debug Change Detection Logic"
   #    needs: changes
@@ -580,7 +580,7 @@ jobs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However it run even if the previous step is skipped.
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
     if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}}
     steps:
