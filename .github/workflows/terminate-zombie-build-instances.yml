@@ -31,4 +31,4 @@ jobs:
 
           echo "${TO_TERMINATE}"
 
-          echo "${TO_TERMINATE}" | jq '.[]  | .InstanceId' | echo
+          echo "${TO_TERMINATE}" | jq '.[]  | .InstanceId'
