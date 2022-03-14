@@ -295,7 +295,7 @@
         }
       }
     },
-    "required": ["start_date", "account_id", "access_token"]
+    "required": ["account_id", "start_date", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
