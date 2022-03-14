@@ -5,6 +5,7 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import {
   ControlLabels,
@@ -186,14 +187,13 @@ const ConnectorServiceTypeControl: React.FC<{
         ]
       : [];
   // We want to enable shopify for specific workspaces to allow them to review the integration
-  if (
-    window.CLOUD === "true" &&
-    window.intercomSettings.workspace_id ==
-      "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
-  ) {
-    disallowedOauthConnectors = disallowedOauthConnectors.filter(
-      (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
-    );
+  if (window.CLOUD !== "true") {
+    const workspace = useCurrentWorkspace();
+    if (workspace.workspaceId == "8fda1978-22bc-466c-a9d5-eaf18bb705a9") {
+      disallowedOauthConnectors = disallowedOauthConnectors.filter(
+        (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
+      );
+    }
   }
   const sortedDropDownData = useMemo(
     () =>
