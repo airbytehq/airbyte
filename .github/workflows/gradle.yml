@@ -431,7 +431,7 @@ jobs:
 
   octavia-cli-build:
     runs-on: ubuntu-latest
-    if: needs.changes.outputs.cli == 'true' || github.ref == 'refs/heads/master' || needs.changes.outputs.build == 'true'
+    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
