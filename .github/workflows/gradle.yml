@@ -574,6 +574,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && needs.start-frontend-tests-runner.result != 'skipped'}} # required to stop the runner even if the error happened in the previous jobs
     steps:
+      - run: |
+          echo '${{ toJSON(needs) }}'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
