@@ -1232,7 +1232,7 @@ class SubscriptionChanges(IncrementalStream):
     updated_at_field = "timestamp"
 
 
-class Workflows(Stream):
+class Workflows(IncrementalStream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
