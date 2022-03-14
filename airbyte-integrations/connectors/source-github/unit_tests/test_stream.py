@@ -126,6 +126,19 @@ def test_stream_repositories_404():
 
 
 @responses.activate
+def test_stream_repositories_read():
+    kwargs = {"organizations": ["org1", "org2"]}
+    stream = Repositories(**kwargs)
+    responses.add("GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1}, {"id": 2}])
+    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3}])
+    records = read_full_refresh(stream)
+    assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
+    assert len(responses.calls) == 2
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100"
+
+
+@responses.activate
 def test_stream_projects_disabled():
     kwargs = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
     stream = Projects(**kwargs)
