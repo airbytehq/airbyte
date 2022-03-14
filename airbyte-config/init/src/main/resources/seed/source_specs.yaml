@@ -2357,7 +2357,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.20"
+- dockerImage: "airbyte/source-github:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -5832,6 +5832,60 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-orb:0.1.1"
+  spec:
+    documentationUrl: "https://docs.withorb.com/"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Orb Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: false
+      properties:
+        api_key:
+          type: "string"
+          title: "Orb API Key"
+          description: "Orb API Key, issued from the Orb admin console."
+          airbyte_secret: true
+          order: 1
+        start_date:
+          type: "string"
+          title: "Start Date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2022-03-01T00:00:00Z. Any\
+            \ data with created_at before this data will not be synced."
+          examples:
+          - "2022-03-01T00:00:00Z"
+          order: 2
+        lookback_window_days:
+          type: "integer"
+          title: "Lookback Window (in days)"
+          default: 0
+          minimum: 0
+          description: "When set to N, the connector will always refresh resources\
+            \ created within the past N days. By default, updated objects that are\
+            \ not newly created are not incrementally synced."
+          order: 3
+        string_event_properties_keys:
+          type: "array"
+          items:
+            type: "string"
+          title: "Event properties keys (string values)"
+          description: "Property key names to extract from all events, in order to\
+            \ enrich ledger entries corresponding to an event deduction."
+          order: 4
+        numeric_event_properties_keys:
+          type: "array"
+          items:
+            type: "string"
+          title: "Event properties keys (numeric values)"
+          description: "Property key names to extract from all events, in order to\
+            \ enrich ledger entries corresponding to an event deduction."
+          order: 5
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-outreach:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/outreach"
@@ -7353,7 +7407,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.34"
+- dockerImage: "airbyte/source-shopify:0.1.35"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -8037,7 +8091,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.28"
+- dockerImage: "airbyte/source-stripe:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:

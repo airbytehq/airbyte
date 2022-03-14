@@ -7,6 +7,9 @@
     "invoice": {
       "type": ["null", "string"]
     },
+    "invoice_id": {
+      "type": ["null", "string"]
+    },
     "subscription_item": {
       "type": ["null", "string"]
     },

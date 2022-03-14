@@ -3454,7 +3454,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.9"
+- dockerImage: "airbyte/destination-s3:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3825,7 +3825,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.17"
+- dockerImage: "airbyte/destination-snowflake:0.4.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3844,9 +3844,12 @@
       properties:
         host:
           description: "The host domain of the snowflake instance (must include the\
-            \ account, region, cloud environment, and end with snowflakecomputing.com)."
+            \ account, region, cloud environment, and end with snowflakecomputing.com).\
+            \ The account identifier differs depending on your cloud region, be sure\
+            \ to verify with Snowflake's documentation."
           examples:
           - "accountname.us-east-2.aws.snowflakecomputing.com"
+          - "accountname.snowflakecomputing.com"
           type: "string"
           title: "Host"
           order: 0
