@@ -85,7 +85,7 @@ To setup your new Smartsheets source, Airbyte will need:
 
 3. (optional) ON / OFF: Include select set of metadata fields in each synced Airbyte row:
 
-![example setup](https://imgur.com/a/dzjWNF3)
+![Imgur](https://imgur.com/m65eXUz)
 
 currently included (configurable selection coming soon):
   - id
