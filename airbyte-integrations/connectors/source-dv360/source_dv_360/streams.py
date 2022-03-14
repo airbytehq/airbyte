@@ -242,14 +242,6 @@ class DBMIncrementalStream(DBMStream, ABC):
       start_date = self._start_date
     end_date = self._end_date
 
-    chunks = chunk_date_range(
-      field=self.cursor_field,
-      start_date=start_date,
-      end_date=end_date,
-      range_days= self.range_days
-    )
-    for chunk in chunks:
-      yield chunk
 
 
 class AudienceComposition(DBMStream):
