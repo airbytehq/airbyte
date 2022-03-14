@@ -21,6 +21,7 @@ from source_github.streams import (
     PullRequests,
     Repositories,
     Teams,
+    Users,
 )
 
 from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental
@@ -92,6 +93,19 @@ def test_stream_teams_read():
     assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/teams?per_page=100"
     assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/teams?per_page=100"
+
+
+@responses.activate
+def test_stream_users_read():
+    kwargs = {"organizations": ["org1", "org2"]}
+    stream = Users(**kwargs)
+    responses.add("GET", "https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
+    responses.add("GET", "https://api.github.com/orgs/org2/members", json=[{"id": 3}])
+    records = read_full_refresh(stream)
+    assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
+    assert len(responses.calls) == 2
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/members?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/members?per_page=100"
 
 
 @responses.activate
