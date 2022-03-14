@@ -45,4 +45,8 @@ public interface NamingConventionTransformer {
   @Deprecated
   String getTmpTableName(String name);
 
+  String convertStreamName(final String input);
+
+  String applyDefaultCase(final String input);
+
 }
