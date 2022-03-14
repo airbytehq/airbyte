@@ -11,6 +11,7 @@ import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
 from source_github.streams import (
+    Comments,
     Commits,
     ProjectCards,
     ProjectColumns,
@@ -477,3 +478,50 @@ def test_stream_project_cards():
             "updated_at": "2022-05-01T00:00:00Z",
         },
     ]
+
+
+@responses.activate
+def test_stream_comments():
+
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    stream = Comments(**repository_args_with_start_date)
+
+    data = [
+        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
+        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
+        {"id": 3, "updated_at": "2022-02-02T10:10:06Z"},
+        {"id": 4, "updated_at": "2022-02-02T10:10:08Z"},
+    ]
+
+    api_url = "https://api.github.com/repos/organization/repository/issues/comments"
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[0:2],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[2:4],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z"}, strict_match=False)],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert records == [{"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"}]
+    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:04Z"}}
+
+    records = read_incremental(stream, stream_state)
+    assert records == [
+        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:06Z"},
+        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:08Z"},
+    ]
+    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
