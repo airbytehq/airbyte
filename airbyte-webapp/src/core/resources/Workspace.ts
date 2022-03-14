@@ -42,17 +42,6 @@ export default class WorkspaceResource
     };
   }
 
-  static getBySlug<T extends typeof Resource>(
-    this: T
-  ): ReadShape<SchemaDetail<Workspace>> {
-    return {
-      ...super.detailShape(),
-      schema: this,
-      fetch: async (body: Readonly<{ slug: string }>): Promise<Workspace> =>
-        await this.fetch("post", `${this.url(body)}/get_by_slug`, body),
-    };
-  }
-
   static updateShape<T extends typeof Resource>(
     this: T
   ): MutateShape<SchemaDetail<Workspace>> {

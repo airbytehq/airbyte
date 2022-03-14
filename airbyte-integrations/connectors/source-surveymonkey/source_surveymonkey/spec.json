@@ -19,6 +19,15 @@
         "type": "string",
         "airbyte_secret": true,
         "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
+      },
+      "survey_ids": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[0-9]{8,9}$"
+        },
+        "title": "Survey Monkey survey IDs",
+        "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all boards to which you have access will be replicated."
       }
     }
   },

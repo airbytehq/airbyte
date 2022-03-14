@@ -98,9 +98,11 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | `email_events` | `content` |
 | `engagements` | `contacts` |
 | `forms` | `forms` |
+| `form_submissions`| `forms` |
 | `line_items` | `e-commerce` |
 | `owners` | `contacts` |
 | `products` | `e-commerce` |
+| `property_history` | `contacts` |
 | `quotes` | no scope required |
 | `subscription_changes` | `content` |
 | `tickets` | `tickets` |
@@ -110,10 +112,21 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request | Subject                                                                                                                                        |
 |:--------|:-----------| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.33 | 2021-01-14 | [8887](https://github.com/airbytehq/airbyte/pull/8887) | More efficient support for incremental updates on Companies, Contact, Deals and Engagement streams |
+| 0.1.45  | 2022-03-04 | [10707](https://github.com/airbytehq/airbyte/pull/10707) | Remove stage history from deals stream to increase efficiency |
+| 0.1.44  | 2022-02-24 | [9027](https://github.com/airbytehq/airbyte/pull/9027) | Add associations companies to deals, ticket and contact stream |
+| 0.1.43  | 2022-02-24 | [10576](https://github.com/airbytehq/airbyte/pull/10576) | Cast timestamp to date/datetime|
+| 0.1.42  | 2022-02-22 | [10492](https://github.com/airbytehq/airbyte/pull/10492) | Add `date-time` format to datetime fields|
+| 0.1.41  | 2022-02-21 | [10177](https://github.com/airbytehq/airbyte/pull/10177) | Migrate to CDK |
+| 0.1.40  | 2022-02-10 | [10142](https://github.com/airbytehq/airbyte/pull/10142) | Add associations to ticket stream |
+| 0.1.39  | 2022-02-10 | [10055](https://github.com/airbytehq/airbyte/pull/10055) | Bug fix: reading not initialized stream |
+| 0.1.38  | 2022-02-03 | [9786](https://github.com/airbytehq/airbyte/pull/9786) | Add new streams for engagements(calls, emails, meetings, notes and tasks) |
+| 0.1.37  | 2022-01-27 | [9555](https://github.com/airbytehq/airbyte/pull/9555) | Getting form_submission for all forms |
+| 0.1.36  | 2022-01-22 | [7784](https://github.com/airbytehq/airbyte/pull/7784) | Add Property History Stream |
+| 0.1.35  | 2021-12-24 | [9081](https://github.com/airbytehq/airbyte/pull/9081) | Add Feedback Submissions stream and update Ticket Pipelines stream |
+| 0.1.34  | 2022-01-20 | [9641](https://github.com/airbytehq/airbyte/pull/9641) | Add more fields for `email_events` stream |
+| 0.1.33  | 2022-01-14 | [8887](https://github.com/airbytehq/airbyte/pull/8887) | More efficient support for incremental updates on Companies, Contact, Deals and Engagement streams |
 | 0.1.32  | 2022-01-13 | [8011](https://github.com/airbytehq/airbyte/pull/8011) | Add new stream form_submissions                                                                                   |
 | 0.1.31  | 2022-01-11 | [9385](https://github.com/airbytehq/airbyte/pull/9385) | Remove auto-generated `properties` from `Engagements` stream                                                                                   |
-
 | 0.1.30  | 2021-01-10 | [9129](https://github.com/airbytehq/airbyte/pull/9129) | Created Contacts list memberships streams                                                                                                      |
 | 0.1.29  | 2021-12-17 | [8699](https://github.com/airbytehq/airbyte/pull/8699) | Add incremental sync support for `companies`, `contact_lists`, `contacts`, `deals`, `line_items`, `products`, `quotes`, `tickets` streams      |
 | 0.1.28  | 2021-12-15 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update fields and descriptions                                                                                                                 |

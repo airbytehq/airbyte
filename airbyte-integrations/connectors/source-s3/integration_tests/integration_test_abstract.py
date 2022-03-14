@@ -6,7 +6,7 @@
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterator, List, Mapping
+from typing import Any, Iterator, List, Mapping
 from uuid import uuid4
 
 import pytest
@@ -24,12 +24,14 @@ JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "objec
 class AbstractTestIncrementalFileStream(ABC):
     """Prefix this class with Abstract so the tests don't run here but only in the children"""
 
-    @pytest.fixture(scope="session")
-    def cloud_bucket_prefix(self) -> str:
-        return "airbytetest-"
+    temp_bucket_prefix = "airbytetest-"
 
     @pytest.fixture(scope="session")
-    def format(self) -> str:
+    def cloud_bucket_prefix(self) -> str:
+        return self.temp_bucket_prefix
+
+    @pytest.fixture(scope="session")
+    def format(self) -> Mapping[str, Any]:
         return {"filetype": "csv"}
 
     @pytest.fixture(scope="session")
@@ -71,7 +73,7 @@ class AbstractTestIncrementalFileStream(ABC):
         """
 
     @abstractmethod
-    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping):
+    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
         """
         Provider-specific logic to tidy up any cloud resources.
         See S3 for example.
@@ -82,20 +84,20 @@ class AbstractTestIncrementalFileStream(ABC):
 
     def _stream_records_test_logic(
         self,
-        cloud_bucket_name,
-        format,
-        airbyte_system_columns,
-        sync_mode,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        fails,
-        state=None,
-    ):
+        cloud_bucket_name: str,
+        format: Mapping[str, str],
+        airbyte_system_columns: Mapping[str, str],
+        sync_mode: Any,
+        files: List[str],
+        path_pattern: str,
+        private: bool,
+        num_columns: Any,
+        num_records: Any,
+        expected_schema: Mapping[str, Any],
+        user_schema: Mapping[str, Any],
+        fails: Any,
+        state: Any = None,
+    ) -> Any:
         uploaded_files = [fpath for fpath in self.cloud_files(cloud_bucket_name, self.credentials, files, private)]
         LOGGER.info(f"file(s) uploaded: {uploaded_files}")
 
@@ -112,7 +114,6 @@ class AbstractTestIncrementalFileStream(ABC):
         provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(cloud_bucket_name)
 
         if not fails:
-            print(str_user_schema)
             fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
@@ -124,10 +125,10 @@ class AbstractTestIncrementalFileStream(ABC):
                 if stream_slice is not None:
                     # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
                     expected_columns = []
-                    for file_dict in stream_slice:
+                    for file_dict in stream_slice["files"]:
                         # TODO: if we ever test other filetypes in these tests this will need fixing
                         file_reader = CsvParser(format)
-                        with file_dict["storagefile"].open(file_reader.is_binary) as f:
+                        with file_dict["storage_file"].open(file_reader.is_binary) as f:
                             expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
                     expected_columns = set(expected_columns)  # de-dupe
 
@@ -167,7 +168,8 @@ class AbstractTestIncrementalFileStream(ABC):
 
                 LOGGER.info(f"Failed as expected, error: {e_info}")
 
-    @pytest.mark.parametrize(  # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
+    @pytest.mark.parametrize(
+        # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
         "files, path_pattern, private, num_columns, num_records, expected_schema, user_schema, incremental, fails",
         [
             # single file tests
@@ -477,19 +479,19 @@ class AbstractTestIncrementalFileStream(ABC):
     )
     def test_stream_records(
         self,
-        cloud_bucket_prefix,
-        format,
-        airbyte_system_columns,
-        files,
-        path_pattern,
-        private,
-        num_columns,
-        num_records,
-        expected_schema,
-        user_schema,
-        incremental,
-        fails,
-    ):
+        cloud_bucket_prefix: str,
+        format: Mapping[str, Any],
+        airbyte_system_columns: Mapping[str, str],
+        files: List[str],
+        path_pattern: str,
+        private: bool,
+        num_columns: List[int],
+        num_records: List[int],
+        expected_schema: Mapping[str, Any],
+        user_schema: Mapping[str, Any],
+        incremental: bool,
+        fails: List[bool],
+    ) -> None:
         try:
             if not incremental:  # we expect matching behaviour here in either sync_mode
                 for sync_mode in [

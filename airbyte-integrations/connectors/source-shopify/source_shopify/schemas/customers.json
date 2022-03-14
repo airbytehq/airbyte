@@ -13,6 +13,9 @@
     "multipass_identifier": {
       "type": ["null", "string"]
     },
+    "shop_url": {
+      "type": ["null", "string"]
+    },
     "default_address": {
       "type": ["null", "object"],
       "properties": {

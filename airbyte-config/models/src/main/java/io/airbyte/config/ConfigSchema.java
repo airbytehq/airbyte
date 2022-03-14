@@ -60,6 +60,9 @@ public enum ConfigSchema implements AirbyteConfig {
 
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class),
 
+  ACTOR_CATALOG("ActorCatalog.yaml", ActorCatalog.class),
+  ACTOR_CATALOG_FETCH_EVENT("ActorCatalogFetchEvent.yaml", ActorCatalogFetchEvent.class),
+
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class),
   NORMALIZATION_INPUT("NormalizationInput.yaml", NormalizationInput.class),

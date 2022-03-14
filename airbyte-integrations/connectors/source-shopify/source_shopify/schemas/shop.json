@@ -167,6 +167,9 @@
     },
     "zip": {
       "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

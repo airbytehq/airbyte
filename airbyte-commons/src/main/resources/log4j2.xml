@@ -7,28 +7,17 @@
         <!--Logs the timestamp and log_source/application name in the beginning of the line if it exists with a > separator, and then always the rest of the line.-->
         <Property name="simple-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0}%replace{ %X{log_source}}{^ -}{} > %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
 
-        <!--
-            Note the $${sys:S3_LOG_BUCKET:-${env:S3_LOG_BUCKET}} pattern below.
-            This means that it uses the system property if it exists.
-            Otherwise it falls back to the environment variable.
-
-            This is useful if you want to override the environment variables at runtime (or if you don't have
-            access to the necessary information at the point where you are setting environment variables).
-
-            Please update configuring-airbyte.md if the names of any of the below variables change.
-        -->
-
         <!-- Always log INFO by default. -->
-        <Property name="log-level">$${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
+        <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
 
-        <Property name="s3-bucket">$${sys:S3_LOG_BUCKET:-${env:S3_LOG_BUCKET}}</Property>
-        <Property name="s3-region">$${sys:S3_LOG_BUCKET_REGION:-${env:S3_LOG_BUCKET_REGION}}</Property>
-        <Property name="s3-aws-key">$${sys:AWS_ACCESS_KEY_ID:-${env:AWS_ACCESS_KEY_ID}}</Property>
-        <Property name="s3-aws-secret">$${sys:AWS_SECRET_ACCESS_KEY:-${env:AWS_SECRET_ACCESS_KEY}}</Property>
-        <Property name="s3-minio-endpoint">$${sys:S3_MINIO_ENDPOINT:-${env:S3_MINIO_ENDPOINT}}</Property>
-        <Property name="s3-path-style-access">$${sys:S3_PATH_STYLE_ACCESS:-${env:S3_PATH_STYLE_ACCESS}}</Property>
+        <Property name="s3-bucket">${sys:S3_LOG_BUCKET:-${env:S3_LOG_BUCKET}}</Property>
+        <Property name="s3-region">${sys:S3_LOG_BUCKET_REGION:-${env:S3_LOG_BUCKET_REGION}}</Property>
+        <Property name="s3-aws-key">${sys:AWS_ACCESS_KEY_ID:-${env:AWS_ACCESS_KEY_ID}}</Property>
+        <Property name="s3-aws-secret">${sys:AWS_SECRET_ACCESS_KEY:-${env:AWS_SECRET_ACCESS_KEY}}</Property>
+        <Property name="s3-minio-endpoint">${sys:S3_MINIO_ENDPOINT:-${env:S3_MINIO_ENDPOINT}}</Property>
+        <Property name="s3-path-style-access">${sys:S3_PATH_STYLE_ACCESS:-${env:S3_PATH_STYLE_ACCESS}}</Property>
 
-        <Property name="gcs-log-bucket">$${sys:GCS_LOG_BUCKET:-${env:GCS_LOG_BUCKET}}</Property>
+        <Property name="gcs-log-bucket">${sys:GCS_LOG_BUCKET:-${env:GCS_LOG_BUCKET}}</Property>
     </Properties>
 
     <Appenders>
@@ -128,7 +117,7 @@
                                     s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                                     s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                                     gcpStorageBucket="${gcs-log-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
-                        <PatternLayout pattern="${default-pattern}"/>
+                        <PatternLayout pattern="${simple-pattern}"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>

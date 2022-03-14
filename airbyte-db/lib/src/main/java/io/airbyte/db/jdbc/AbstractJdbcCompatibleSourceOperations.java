@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -52,8 +53,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
-    ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
     while (arrayResultSet.next()) {
       arrayNode.add(arrayResultSet.getString(2));
     }
@@ -120,9 +121,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-    final Timestamp t = resultSet.getTimestamp(index);
-    final java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
-    node.put(columnName, DataTypeUtils.toISO8601String(d));
+    final Instant instant = resultSet.getTimestamp(index).toInstant();
+    node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
   }
 
   protected void putBinary(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
@@ -143,8 +143,22 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
     // value in the following format
     try {
-      preparedStatement.setTimestamp(parameterIndex, Timestamp
-          .from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
+      var valueWithoutMicros = value;
+      final StringBuilder nanos = new StringBuilder();
+      final var dotIndex = value.indexOf(".");
+      if (dotIndex > 0) {
+        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+        nanos.append(micro);
+        valueWithoutMicros = value.replace("." + micro, "");
+      }
+      while (nanos.length() != 9) {
+        nanos.append("0");
+      }
+
+      final var timestamp = Timestamp
+          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
+      timestamp.setNanos(Integer.parseInt(nanos.toString()));
+      preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
       throw new RuntimeException(e);
     }
@@ -152,7 +166,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
-      final Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+      final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
     } catch (final ParseException e) {
       throw new RuntimeException(e);

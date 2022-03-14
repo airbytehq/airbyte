@@ -4,10 +4,21 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static org.jooq.impl.DSL.asterisk;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -21,17 +32,15 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
-import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.db.Database;
+import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,29 +50,31 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.Record2;
+import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
 
-  private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
-
   private final ConfigPersistence persistence;
-  private final SecretsHydrator secretsHydrator;
-  private final Optional<SecretPersistence> longLivedSecretPersistence;
-  private final Optional<SecretPersistence> ephemeralSecretPersistence;
+  private final ExceptionWrappingDatabase database;
 
-  public ConfigRepository(final ConfigPersistence persistence,
-                          final SecretsHydrator secretsHydrator,
-                          final Optional<SecretPersistence> longLivedSecretPersistence,
-                          final Optional<SecretPersistence> ephemeralSecretPersistence) {
+  // todo (cgardens) - very bad that this exposed. usages should be removed. do not use it.
+  @Deprecated
+  public ExceptionWrappingDatabase getDatabase() {
+    return database;
+  }
+
+  public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
-    this.secretsHydrator = secretsHydrator;
-    this.longLivedSecretPersistence = longLivedSecretPersistence;
-    this.ephemeralSecretPersistence = ephemeralSecretPersistence;
+    this.database = new ExceptionWrappingDatabase(database);;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -73,7 +84,6 @@ public class ConfigRepository {
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
-
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
@@ -289,168 +299,87 @@ public class ConfigRepository {
     persistence.deleteConfig(definitionType, definitionId.toString());
   }
 
+  /**
+   * Returns source with a given id. Does not contain secrets. To hydrate with secrets see { @link
+   * SecretsRepositoryReader#getSourceConnectionWithSecrets(final UUID sourceId) }.
+   *
+   * @param sourceId - id of source to fetch.
+   * @return sources
+   * @throws JsonValidationException - throws if returned sources are invalid
+   * @throws IOException - you never know when you IO
+   * @throws ConfigNotFoundException - throws if no source with that id can be found.
+   */
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
 
-  public SourceConnection getSourceConnectionWithSecrets(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final var source = getSourceConnection(sourceId);
-    final var fullConfig = secretsHydrator.hydrate(source.getConfiguration());
-    return Jsons.clone(source).withConfiguration(fullConfig);
-  }
-
-  private Optional<SourceConnection> getOptionalSourceConnection(final UUID sourceId) throws JsonValidationException, IOException {
-    try {
-      return Optional.of(getSourceConnection(sourceId));
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    }
-  }
-
-  public void writeSourceConnection(final SourceConnection source, final ConnectorSpecification connectorSpecification)
-      throws JsonValidationException, IOException {
-    // actual validation is only for sanity checking
-    final JsonSchemaValidator validator = new JsonSchemaValidator();
-    validator.ensure(connectorSpecification.getConnectionSpecification(), source.getConfiguration());
-
-    final var previousSourceConnection = getOptionalSourceConnection(source.getSourceId())
-        .map(SourceConnection::getConfiguration);
-
-    final var partialConfig =
-        statefulUpdateSecrets(source.getWorkspaceId(), previousSourceConnection, source.getConfiguration(), connectorSpecification);
-    final var partialSource = Jsons.clone(source).withConfiguration(partialConfig);
-
-    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), partialSource);
+  /**
+   * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
+   *
+   * Write a SourceConnection to the database. The configuration of the Source will be a partial
+   * configuration (no secrets, just pointer to the secrets store).
+   *
+   * @param partialSource - The configuration of the Source will be a partial configuration (no
+   *        secrets, just pointer to the secrets store)
+   * @throws JsonValidationException - throws is the source is invalid
+   * @throws IOException - you never know when you IO
+   */
+  public void writeSourceConnectionNoSecrets(final SourceConnection partialSource) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, partialSource.getSourceId().toString(), partialSource);
   }
 
   /**
-   * @param workspaceId workspace id for the config
-   * @param fullConfig full config
-   * @param spec connector specification
-   * @return partial config
+   * Returns all sources in the database. Does not contain secrets. To hydrate with secrets see
+   * { @link SecretsRepositoryReader#listSourceConnectionWithSecrets() }.
+   *
+   * @return sources
+   * @throws JsonValidationException - throws if returned sources are invalid
+   * @throws IOException - you never know when you IO
    */
-  public JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
-    return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
-  }
-
-  /**
-   * @param workspaceId workspace id for the config
-   * @param oldConfig old full config
-   * @param fullConfig new full config
-   * @param spec connector specification
-   * @return partial config
-   */
-  public JsonNode statefulUpdateSecrets(final UUID workspaceId,
-                                        final Optional<JsonNode> oldConfig,
-                                        final JsonNode fullConfig,
-                                        final ConnectorSpecification spec) {
-    if (longLivedSecretPersistence.isPresent()) {
-      if (oldConfig.isPresent()) {
-        final var splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
-            workspaceId,
-            oldConfig.get(),
-            fullConfig,
-            spec,
-            longLivedSecretPersistence.get());
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-
-        return splitSecretConfig.getPartialConfig();
-      } else {
-        final var splitSecretConfig = SecretsHelpers.splitConfig(
-            workspaceId,
-            fullConfig,
-            spec);
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-
-        return splitSecretConfig.getPartialConfig();
-      }
-    } else {
-      return fullConfig;
-    }
-  }
-
-  /**
-   * @param fullConfig full config
-   * @param spec connector specification
-   * @return partial config
-   */
-  public JsonNode statefulSplitEphemeralSecrets(final JsonNode fullConfig, final ConnectorSpecification spec) {
-    return splitSecretConfig(NO_WORKSPACE, fullConfig, spec, ephemeralSecretPersistence);
-  }
-
-  private JsonNode splitSecretConfig(final UUID workspaceId,
-                                     final JsonNode fullConfig,
-                                     final ConnectorSpecification spec,
-                                     final Optional<SecretPersistence> secretPersistence) {
-    if (secretPersistence.isPresent()) {
-      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec);
-      splitSecretConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
-      return splitSecretConfig.getPartialConfig();
-    } else {
-      return fullConfig;
-    }
-  }
-
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
   }
 
-  public List<SourceConnection> listSourceConnectionWithSecrets() throws JsonValidationException, IOException {
-    final var sources = listSourceConnection();
-
-    return sources.stream()
-        .map(partialSource -> Exceptions.toRuntime(() -> getSourceConnectionWithSecrets(partialSource.getSourceId())))
-        .collect(Collectors.toList());
-  }
-
+  /**
+   * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see
+   * { @link SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
+   *
+   * @param destinationId - id of destination to fetch.
+   * @return destinations
+   * @throws JsonValidationException - throws if returned destinations are invalid
+   * @throws IOException - you never know when you IO
+   * @throws ConfigNotFoundException - throws if no destination with that id can be found.
+   */
   public DestinationConnection getDestinationConnection(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
-  public DestinationConnection getDestinationConnectionWithSecrets(final UUID destinationId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    final var destination = getDestinationConnection(destinationId);
-    final var fullConfig = secretsHydrator.hydrate(destination.getConfiguration());
-    return Jsons.clone(destination).withConfiguration(fullConfig);
+  /**
+   * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
+   *
+   * Write a DestinationConnection to the database. The configuration of the Destination will be a
+   * partial configuration (no secrets, just pointer to the secrets store).
+   *
+   * @param partialDestination - The configuration of the Destination will be a partial configuration
+   *        (no secrets, just pointer to the secrets store)
+   * @throws JsonValidationException - throws is the destination is invalid
+   * @throws IOException - you never know when you IO
+   */
+  public void writeDestinationConnectionNoSecrets(final DestinationConnection partialDestination) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, partialDestination.getDestinationId().toString(), partialDestination);
   }
 
-  private Optional<DestinationConnection> getOptionalDestinationConnection(final UUID destinationId) throws JsonValidationException, IOException {
-    try {
-      return Optional.of(getDestinationConnection(destinationId));
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    }
-  }
-
-  public void writeDestinationConnection(final DestinationConnection destination, final ConnectorSpecification connectorSpecification)
-      throws JsonValidationException, IOException {
-    // actual validation is only for sanity checking
-    final JsonSchemaValidator validator = new JsonSchemaValidator();
-    validator.ensure(connectorSpecification.getConnectionSpecification(), destination.getConfiguration());
-
-    final var previousDestinationConnection = getOptionalDestinationConnection(destination.getDestinationId())
-        .map(DestinationConnection::getConfiguration);
-
-    final var partialConfig =
-        statefulUpdateSecrets(destination.getWorkspaceId(), previousDestinationConnection, destination.getConfiguration(), connectorSpecification);
-    final var partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
-
-    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), partialDestination);
-  }
-
+  /**
+   * Returns all destinations in the database. Does not contain secrets. To hydrate with secrets see
+   * { @link SecretsRepositoryReader#listDestinationConnectionWithSecrets() }.
+   *
+   * @return destinations
+   * @throws JsonValidationException - throws if returned destinations are invalid
+   * @throws IOException - you never know when you IO
+   */
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
-  }
-
-  public List<DestinationConnection> listDestinationConnectionWithSecrets() throws JsonValidationException, IOException {
-    final var destinations = listDestinationConnection();
-
-    return destinations.stream()
-        .map(partialDestination -> Exceptions.toRuntime(() -> getDestinationConnectionWithSecrets(partialDestination.getDestinationId())))
-        .collect(Collectors.toList());
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -463,6 +392,26 @@ public class ConfigRepository {
 
   public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+  }
+
+  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      final UUID connectionId = record.get(CONNECTION.ID);
+      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
+          .from(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .fetch());
+
+      final List<UUID> connectionOperationIds =
+          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
+      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    }
+    return standardSyncs;
   }
 
   public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -551,111 +500,233 @@ public class ConfigRepository {
     }
   }
 
+  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
+                                                 final String configurationHash,
+                                                 final String connectorVersion)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
+      if (event.getConnectorVersion().equals(connectorVersion)
+          && event.getConfigHash().equals(configurationHash)
+          && event.getActorId().equals(sourceId)) {
+        return getCatalogById(event.getActorCatalogId());
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
+
+    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+        ActorCatalogFetchEvent.class)) {
+      actorCatalogFetchEvents.add(event);
+    }
+    return actorCatalogFetchEvents;
+  }
+
+  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
+      throws IOException {
+    try {
+      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
+          ActorCatalog.class));
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
+      throws JsonValidationException, IOException {
+    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
+      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
+        return Optional.of(fetchedCatalog);
+      }
+    }
+    return Optional.empty();
+  }
+
+  public List<ActorCatalog> listActorCatalogs()
+      throws JsonValidationException, IOException {
+    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
+
+    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
+        ActorCatalog.class)) {
+      actorCatalogs.add(event);
+    }
+    return actorCatalogs;
+  }
+
+  private Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash, final DSLContext context) {
+    final Result<Record2<UUID, JSONB>> records = context.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
+        .from(ACTOR_CATALOG)
+        .where(ACTOR_CATALOG.CATALOG_HASH.eq(catalogHash)).fetch();
+
+    final Map<UUID, AirbyteCatalog> result = new HashMap<>();
+    for (final Record record : records) {
+      final AirbyteCatalog catalog = Jsons.deserialize(
+          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      result.put(record.get(ACTOR_CATALOG.ID), catalog);
+    }
+    return result;
+  }
+
   /**
-   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
+   * Store an Airbyte catalog in DB if it is not present already
    *
-   * @param configurations from dumpConfig()
-   * @return input suitable for replaceAllConfigs()
+   * Checks in the config DB if the catalog is present already, if so returns it identifier. It is not
+   * present, it is inserted in DB with a new identifier and that identifier is returned.
+   *
+   * @param airbyteCatalog An Airbyte catalog to cache
+   * @param context
+   * @return the db identifier for the cached catalog.
    */
-  public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
-    final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
-    for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(
-          ConfigSchema.valueOf(configSchemaName),
-          configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
-    }
-    return deserialized;
-  }
+  private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
+                                       final DSLContext context) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final HashFunction hashFunction = Hashing.murmur3_32_fixed();
+    final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
+        Charsets.UTF_8)).toString();
+    final Map<UUID, AirbyteCatalog> catalogs = findCatalogByHash(catalogHash, context);
 
-  public void replaceAllConfigsDeserializing(final Map<String, Stream<JsonNode>> configs, final boolean dryRun) throws IOException {
-    replaceAllConfigs(deserialize(configs), dryRun);
-  }
-
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    if (longLivedSecretPersistence.isPresent()) {
-      final var augmentedMap = new HashMap<>(configs);
-
-      // get all source defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardSourceDefinition> sourceDefs =
-          (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
-      // restore data in the map that gets consumed downstream.
-      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
-      final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
-          .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
-
-      // get all destination defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
-      final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
-          .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
-
-      if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
-            .map(config -> {
-              final SourceConnection source = (SourceConnection) config;
-
-              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
-                throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
-              }
-
-              final var connectionConfig =
-                  statefulSplitSecrets(source.getWorkspaceId(), source.getConfiguration(), sourceDefIdToSpec.get(source.getSourceDefinitionId()));
-
-              return source.withConfiguration(connectionConfig);
-            });
-        augmentedMap.put(ConfigSchema.SOURCE_CONNECTION, augmentedValue);
+    for (final Map.Entry<UUID, AirbyteCatalog> entry : catalogs.entrySet()) {
+      if (entry.getValue().equals(airbyteCatalog)) {
+        return entry.getKey();
       }
-
-      if (augmentedMap.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
-            .map(config -> {
-              final DestinationConnection destination = (DestinationConnection) config;
-
-              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
-                throw new RuntimeException(
-                    new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
-              }
-
-              final var connectionConfig = statefulSplitSecrets(destination.getWorkspaceId(), destination.getConfiguration(),
-                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
-
-              return destination.withConfiguration(connectionConfig);
-            });
-        augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
-      }
-
-      persistence.replaceAllConfigs(augmentedMap, dryRun);
-    } else {
-      persistence.replaceAllConfigs(configs, dryRun);
     }
+
+    final UUID catalogId = UUID.randomUUID();
+    context.insertInto(ACTOR_CATALOG)
+        .set(ACTOR_CATALOG.ID, catalogId)
+        .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(airbyteCatalog)))
+        .set(ACTOR_CATALOG.CATALOG_HASH, catalogHash)
+        .set(ACTOR_CATALOG.CREATED_AT, timestamp)
+        .set(ACTOR_CATALOG.MODIFIED_AT, timestamp).execute();
+    return catalogId;
   }
 
-  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    final var map = new HashMap<>(persistence.dumpConfigs());
-    final var sourceKey = ConfigSchema.SOURCE_CONNECTION.name();
-    final var destinationKey = ConfigSchema.DESTINATION_CONNECTION.name();
+  public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
+                                                  final String actorVersion,
+                                                  final String configHash)
+      throws IOException {
+    final Result<Record1<JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.CATALOG)
+        .from(ACTOR_CATALOG).join(ACTOR_CATALOG_FETCH_EVENT)
+        .on(ACTOR_CATALOG.ID.eq(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(actorId))
+        .and(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION.eq(actorVersion))
+        .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (map.containsKey(sourceKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(sourceKey).map(secretsHydrator::hydrate);
-      map.put(sourceKey, augmentedValue);
+    if (records.size() >= 1) {
+      final JSONB record = records.get(0).get(ACTOR_CATALOG.CATALOG);
+      return Optional.of(Jsons.deserialize(record.toString(), AirbyteCatalog.class));
     }
+    return Optional.empty();
 
-    if (map.containsKey(destinationKey)) {
-      final Stream<JsonNode> augmentedValue = map.get(destinationKey).map(secretsHydrator::hydrate);
-      map.put(destinationKey, augmentedValue);
-    }
-
-    return map;
   }
 
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    persistence.loadData(seedPersistence);
+  /**
+   * Stores source catalog information.
+   *
+   * This function is called each time the schema of a source is fetched. This can occur because the
+   * source is set up for the first time, because the configuration or version of the connector
+   * changed or because the user explicitly requested a schema refresh. Schemas are stored separately
+   * and de-duplicated upon insertion. Once a schema has been successfully stored, a call to
+   * getActorCatalog(actorId, connectionVersion, configurationHash) will return the most recent schema
+   * stored for those parameters.
+   *
+   * @param catalog
+   * @param actorId
+   * @param connectorVersion
+   * @param configurationHash
+   * @return The identifier (UUID) of the fetch event inserted in the database
+   * @throws IOException
+   */
+  public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
+                                          final UUID actorId,
+                                          final String connectorVersion,
+                                          final String configurationHash)
+      throws IOException {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final UUID fetchEventID = UUID.randomUUID();
+    database.transaction(ctx -> {
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH, configurationHash)
+          .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
+          .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
+          .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp).execute();
+    });
+
+    return fetchEventID;
+  }
+
+  public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countSourcesForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  public int countDestinationsForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.equal(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
+  }
+
+  /**
+   * MUST NOT ACCEPT SECRETS - Package private so that secrets are not accidentally passed in. Should
+   * only be called from { @link SecretsRepositoryWriter }
+   *
+   * Takes as inputs configurations that it then uses to overwrite the contents of the existing Config
+   * Database.
+   *
+   * @param configs - configurations to load.
+   * @param dryRun - whether to test run of the load
+   * @throws IOException - you never know when you IO.
+   */
+  void replaceAllConfigsNoSecrets(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
+    persistence.replaceAllConfigs(configs, dryRun);
+  }
+
+  /**
+   * Dumps all configurations in the Config Database. Note: It will not contain secrets as the Config
+   * Database does not contain connector configurations that include secrets. In order to hydrate with
+   * secrets see { @link SecretsRepositoryReader#dumpConfigs() }.
+   *
+   * @return all configurations in the Config Database
+   * @throws IOException - you never know when you IO
+   */
+  public Map<String, Stream<JsonNode>> dumpConfigsNoSecrets() throws IOException {
+    return persistence.dumpConfigs();
+  }
+
+  /**
+   * MUST NOT ACCEPT SECRETS - Package private so that secrets are not accidentally passed in. Should
+   * only be called from { @link SecretsRepositoryWriter }
+   *
+   * Loads all Data from a ConfigPersistence into the database.
+   *
+   * @param seedPersistenceWithoutSecrets - seed persistence WITHOUT secrets
+   * @throws IOException - you never know when you IO
+   */
+  public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
+    persistence.loadData(seedPersistenceWithoutSecrets);
   }
 
 }

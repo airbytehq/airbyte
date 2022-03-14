@@ -104,6 +104,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               resourceRequirements,
               Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
               Collections.emptyMap(),
+              Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
