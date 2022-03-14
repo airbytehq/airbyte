@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
+      build: ${{ steps.filter.outputs.build }}
+      cli: ${{ steps.filter.outputs.cli }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
@@ -501,7 +503,7 @@ jobs:
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.ref == 'refs/heads/master' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true'
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
