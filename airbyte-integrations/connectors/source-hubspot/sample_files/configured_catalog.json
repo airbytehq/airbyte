@@ -302,6 +302,9 @@
           "incremental"
         ]
       },
+      "default_cursor_field": [
+        "updatedAt"
+      ]
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }

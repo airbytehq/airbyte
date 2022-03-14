@@ -1081,7 +1081,7 @@ class Engagements(IncrementalStream):
         return params
 
 
-class Forms(Stream):
+class Forms(IncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -1153,7 +1153,7 @@ class FormSubmissions(Stream):
             yield record
 
 
-class MarketingEmails(Stream):
+class MarketingEmails(IncrementalStream):
     """Marketing Email, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
     """
@@ -1166,7 +1166,7 @@ class MarketingEmails(Stream):
     primary_key = "id"
 
 
-class Owners(Stream):
+class Owners(IncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
