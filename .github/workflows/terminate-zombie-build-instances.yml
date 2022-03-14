@@ -5,7 +5,6 @@ name: Terminate Zombie Build Instances
 
 on:
   workflow_dispatch:
-  push:
   schedule:
     - cron: "0 */1 * * *"
 
@@ -31,7 +30,7 @@ jobs:
           | jq 'def toZ(str): str | (split("+")[0] + "Z") | fromdate ;
               flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )')
 
-          echo "[31m MARKED FOR TERMINATION: ${to_terminate}"
+          echo "MARKED FOR TERMINATION: ${to_terminate}"
 
           # See https://docs.aws.amazon.com/cli/latest/reference/ec2/terminate-instances.html for terminate command.
           echo $to_terminate |  jq '.[]  | .InstanceId' | xargs --no-run-if-empty --max-args=1 aws ec2 terminate-instances --instance-ids
