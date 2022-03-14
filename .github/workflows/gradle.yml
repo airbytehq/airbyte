@@ -572,7 +572,7 @@ jobs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.start-frontend-tests-runner.result != 'skipped'}} # required to stop the runner even if the error happened in the previous jobs
+    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - run: |
           echo '${{ toJSON(needs) }}'
