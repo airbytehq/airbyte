@@ -577,7 +577,9 @@ jobs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However it run even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
