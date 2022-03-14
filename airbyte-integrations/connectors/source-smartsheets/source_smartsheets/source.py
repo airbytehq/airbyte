@@ -135,7 +135,7 @@ class SourceSmartsheets(Source):
 
                         # make a row of data for airbyte to sync from above name map and a Smartsheet Row
                         # - catch_nan: returns empty string "" for unhashable input cells
-                        data = {id_name_map[i["columnId"]]: catch_nan(i) for i in row["cells"]}
+                        data = {id_name_map[cell["columnId"]]: catch_nan(cell) for cell in row["cells"]}
 
                         # TODO: make metadata_fields configurable
                         if include_metadata:
