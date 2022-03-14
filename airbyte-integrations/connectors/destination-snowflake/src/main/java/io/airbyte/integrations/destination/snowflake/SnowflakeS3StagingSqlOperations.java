@@ -33,6 +33,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
   private static final int DEFAULT_PART_SIZE = 10;
   private static final int UPLOAD_RETRY_LIMIT = 3;
+  private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
 
   private final NamingConventionTransformer nameTransformer;
   private final S3DestinationConfig s3Config;
@@ -151,7 +152,9 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
             + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
-            + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
+            + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+            + generateFilesList(stagedFiles)
+            + ";",
         schemaName,
         dstTableName,
         generateBucketPath(stageName),
@@ -166,9 +169,14 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   private String generateFilesList(final List<String> files) {
-    final StringJoiner joiner = new StringJoiner(",");
-    files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
-    return joiner.toString();
+    if (files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
+      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
+      final StringJoiner joiner = new StringJoiner(",");
+      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
+      return "files = (" + joiner + ") ";
+    } else {
+      return "";
+    }
   }
 
   @Override
