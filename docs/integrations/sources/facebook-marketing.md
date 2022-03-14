@@ -64,7 +64,7 @@ From the App's Dashboard screen (seen in the screenshot below) enable the Market
 
 #### API Access Token
 
-In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions (`ads_management`, `ads_read`, `read_insights`) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
+In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
 ![](../../.gitbook/assets/facebook_access_token.png)
 
