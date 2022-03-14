@@ -32,6 +32,7 @@ import {
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -167,6 +168,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -219,6 +221,14 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
+
   return (
     <>
       <ControlLabels
@@ -242,6 +252,7 @@ const ConnectorServiceTypeControl: React.FC<{
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (
