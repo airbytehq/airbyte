@@ -31,4 +31,4 @@ jobs:
 
           echo "${TO_TERMINATE}"
 
-          echo $TO_TERMINATE |  jq '.[]  | .InstanceId' | xargs -n 1 aws ec2 terminate-instances --dry-run --instance-ids
+          echo $TO_TERMINATE |  jq '.[]  | .InstanceId' | xargs -n 1 aws ec2 terminate-instances --instance-ids
