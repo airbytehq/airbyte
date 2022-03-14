@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,4 +40,5 @@ public class SnowflakeDestinationResolver {
         DestinationType.COPY_GCS, copyGcsDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
+
 }

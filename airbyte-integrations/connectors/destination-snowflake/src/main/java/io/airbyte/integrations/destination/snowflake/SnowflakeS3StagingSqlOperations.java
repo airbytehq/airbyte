@@ -92,7 +92,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         LOGGER.error("Failed to upload records into stage {}", path, e);
         exceptionsThrown.add(e);
       }
-      if (!succeeded){
+      if (!succeeded) {
         LOGGER.info("Retrying to upload records into stage {} ({}/{}})", path, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();
@@ -205,5 +205,5 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
       }
     }
   }
-}
 
+}
