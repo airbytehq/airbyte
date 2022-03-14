@@ -16,14 +16,15 @@ If configured by the user, the Facebook connector replicates records for campaig
 
 This Source is capable of syncing the following tables and their data:
 
+* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
+* [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
 * [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
-* [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
-* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
-* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account) 
+* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
-* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
+* [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -33,7 +34,7 @@ You can segment the AdInsights table into parts based on the following informati
 * Platform & Device
 * Region
 
-For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)`
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -87,24 +88,23 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ## Custom Insights
 In order to retrieve specific fields from Facebook Ads Insights combined with other breakdowns, there is a mechanism to allow you to choose which fields and breakdowns to sync.
-It is highly recommended to follow the [documenation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
+It is highly recommended to follow the [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
 By now, the only check done when setting up a source is to check if the fields, breakdowns and action breakdowns are within the ones provided by Facebook. This is, if you enter a good input, it's gonna be validated, but after, if the calls to Facebook API with those pareameters fails you will receive an error from the API.
 As a summary, custom insights allows to replicate only some fields, resulting in sync speed increase.
 
 #### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | retry connections when FB API returns error code 2 (temporary oauth error) |
+| 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | Retry connections when FB API returns error code 2 (temporary oauth error) |
 | 0.2.38  | 2022-03-08 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
 | 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
 | 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
