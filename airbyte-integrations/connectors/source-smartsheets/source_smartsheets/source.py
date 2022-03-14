@@ -3,7 +3,6 @@
 #
 
 
-from curses import meta
 import json
 from datetime import datetime
 from typing import Any, Dict, Generator
@@ -24,8 +23,8 @@ from airbyte_cdk.models import (
 # helpers
 from airbyte_cdk.sources import Source
 
+metadata_fields = ("id", "parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt")
 
-metadata_fields =  ("id", "parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt")
 
 def get_prop(col_type: str) -> Dict[str, any]:
     props = {
@@ -38,12 +37,12 @@ def get_prop(col_type: str) -> Dict[str, any]:
 
 def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
     column_info = {i["title"]: get_prop(i["type"]) for i in sheet["columns"]}
-    
+
     if include_metadata:
         # assume string for metadata fields for now
-        metadata_schema = {i: get_prop(i) for i in metadata_fields} 
+        metadata_schema = {i: get_prop(i) for i in metadata_fields}
         column_info.update(metadata_schema)
-    
+
     json_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -51,10 +50,11 @@ def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
     }
     return json_schema
 
+
 def catch(d: dict) -> Any:
-    if 'value' in d:
-        return d['value']
-    return ''
+    if "value" in d:
+        return d["value"]
+    return ""
 
 
 # main class definition
@@ -110,7 +110,7 @@ class SourceSmartsheets(Source):
         access_token = config["access_token"]
         spreadsheet_id = config["spreadsheet_id"]
         include_metadata = config["include_metadata"]
-        
+
         smartsheet_client = smartsheet.Smartsheet(access_token)
 
         for configured_stream in catalog.streams:
@@ -122,6 +122,9 @@ class SourceSmartsheets(Source):
                 columns = tuple(i for i in properties.keys())
             else:
                 logger.error("Could not read properties from the JSONschema in this stream")
+
+            logger.info(f"found {columns}")
+
             name = stream.name
 
             try:
@@ -133,13 +136,13 @@ class SourceSmartsheets(Source):
                 for row in sheet["rows"]:
                     # convert all data to string as it is only expected format in schema
                     try:
-                        id_name_map = {d['id']: d['title'] for d in sheet['columns']}
-                        data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
+                        id_name_map = {d["id"]: d["title"] for d in sheet["columns"]}
+                        data = {id_name_map[i["columnId"]]: catch(i) for i in row["cells"]}
 
                         if include_metadata:
                             metadata = {i: row[i] if i in row else None for i in metadata_fields}
                             data.update(metadata)
-                            
+
                         yield AirbyteMessage(
                             type=Type.RECORD,
                             record=AirbyteRecordMessage(stream=name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
