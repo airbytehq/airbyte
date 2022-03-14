@@ -5,6 +5,7 @@ name: Terminate Zombie Build Instances
 
 on:
   workflow_dispatch:
+  push:
   schedule:
     - cron: "0 */1 * * *"
 
