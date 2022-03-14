@@ -13,6 +13,7 @@ from responses import matchers
 from source_github.streams import (
     Comments,
     Commits,
+    Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
@@ -80,6 +81,16 @@ def test_stream_teams_404():
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/teams?per_page=100"
+
+
+@responses.activate
+def test_stream_organizations_read():
+    kwargs = {"organizations": ["org1", "org2"]}
+    stream = Organizations(**kwargs)
+    responses.add("GET", "https://api.github.com/orgs/org1", json={"id": 1})
+    responses.add("GET", "https://api.github.com/orgs/org2", json={"id": 2})
+    records = read_full_refresh(stream)
+    assert records == [{"id": 1}, {"id": 2}]
 
 
 @responses.activate
