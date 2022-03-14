@@ -177,6 +177,7 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
+  const workspace = useCurrentWorkspace();
   let disallowedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
     window.CLOUD !== "false"
@@ -188,7 +189,6 @@ const ConnectorServiceTypeControl: React.FC<{
       : [];
   // We want to enable shopify for specific workspaces to allow them to review the integration
   if (window.CLOUD !== "true") {
-    const workspace = useCurrentWorkspace();
     if (workspace.workspaceId == "8fda1978-22bc-466c-a9d5-eaf18bb705a9") {
       disallowedOauthConnectors = disallowedOauthConnectors.filter(
         (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
