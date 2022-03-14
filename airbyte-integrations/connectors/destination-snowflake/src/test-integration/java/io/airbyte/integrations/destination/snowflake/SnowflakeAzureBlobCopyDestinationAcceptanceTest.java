@@ -15,9 +15,9 @@ public class SnowflakeAzureBlobCopyDestinationAcceptanceTest extends SnowflakeIn
   @Override
   public JsonNode getStaticConfig() {
     final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_azure_blob_config.json")));
-    Preconditions.checkArgument(SnowflakeDestination.isAzureBlobCopy(copyConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(copyConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(copyConfig));
+    Preconditions.checkArgument(SnowflakeDestinationResolver.isAzureBlobCopy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(copyConfig));
     return copyConfig;
   }
 
