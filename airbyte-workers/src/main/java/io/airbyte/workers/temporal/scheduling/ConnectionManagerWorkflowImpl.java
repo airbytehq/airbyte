@@ -132,11 +132,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // resetConnection flag to the next run so that that run can execute the actual reset
       workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
 
-<<<<<<< HEAD
       workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
 
-=======
->>>>>>> 11a029158 (Add Disable Failing Connections feature)
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
