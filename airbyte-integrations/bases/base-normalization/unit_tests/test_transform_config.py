@@ -200,6 +200,15 @@ class TestTransformConfig:
         except ValueError:
             pass
 
+    def test_transform_bigquery_with_invalid_format(self):
+        input = {"project_id": "my_project_id", "dataset_id": "foo:bar:baz"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
     def test_transform_postgres(self):
         input = {
             "host": "airbyte.io",

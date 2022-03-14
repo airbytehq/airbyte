@@ -131,14 +131,12 @@ class TransformConfig:
 
         project_id = config["project_id"]
         dataset_id = config["dataset_id"]
-        try:
-            colon_index = config["dataset_id"].index(":")
-        except ValueError:
-            colon_index = None
 
-        if colon_index is not None:
-            project_id = config["dataset_id"][:colon_index]
-            dataset_id = config["dataset_id"][colon_index + 1 :]
+        if ":" in config["dataset_id"]:
+            splits = config["dataset_id"].split(":")
+            if len(splits) > 2:
+                raise ValueError("Invalid format for dataset ID (expected at most one colon)")
+            project_id, dataset_id = splits
             if project_id != config["project_id"]:
                 raise ValueError(
                     f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
