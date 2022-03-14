@@ -20,7 +20,7 @@
       },
       "include_metadata": {
         "title": "Include Metadata?",
-        "description": "Include Smartsheet row metadata in each synced row?",
+        "description": "Include select Smartsheet row metadata in each synced row?",
         "type": "boolean"
       }
     }
