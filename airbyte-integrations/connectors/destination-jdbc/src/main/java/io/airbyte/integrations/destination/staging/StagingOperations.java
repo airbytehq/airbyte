@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
 import java.util.List;
 import org.joda.time.DateTime;
 

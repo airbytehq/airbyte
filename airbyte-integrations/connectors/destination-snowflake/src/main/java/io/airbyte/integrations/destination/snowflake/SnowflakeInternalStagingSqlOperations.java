@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.snowflake;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
-  public static final String CREATE_STAGE_QUERY = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
+  public static final String CREATE_STAGE_QUERY =
+      "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   public static final String COPY_QUERY = "COPY INTO %s.%s FROM @%s file_format = " +
       "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
   public static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";

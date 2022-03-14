@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
@@ -17,22 +17,16 @@ public interface RecordBufferImplementation extends AutoCloseable {
 
   Long getCount();
 
-  String getFilename();
+  String getFilename() throws IOException;
 
   File getFile() throws IOException;
 
   InputStream getInputStream();
 
-  interface RecordBufferSettings {
+  Long getMaxTotalBufferSizeInBytes();
 
-    RecordBufferImplementation newInstance() throws IOException;
+  Long getMaxPerStreamBufferSizeInBytes();
 
-    Long getMaxTotalBufferSizeInBytes();
-
-    Long getMaxPerStreamBufferSizeInBytes();
-
-    int getMaxConcurrentStreamsInBuffer();
-
-  }
+  int getMaxConcurrentStreamsInBuffer();
 
 }

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.staging;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedBiConsumer;
+import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -16,20 +17,17 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordBufferImplementation.RecordBufferSettings;
-import io.airbyte.integrations.destination.buffered_stream_consumer.SerializedRecordBufferingStrategy;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializedRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,15 +57,14 @@ public class StagingConsumerFactory {
                                        final JdbcDatabase database,
                                        final StagingOperations sqlOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final RecordBufferSettings bufferSettings,
+                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
-    LOGGER.info("Buffering records using {}", bufferSettings);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
-        new SerializedRecordBufferingStrategy(bufferSettings,
+        new SerializedRecordBufferingStrategy(onCreateBuffer, catalog,
             flushBufferFunction(database, sqlOperations, writeConfigs, catalog)),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
@@ -111,8 +108,8 @@ public class StagingConsumerFactory {
   }
 
   private OnStartFunction onStartFunction(final JdbcDatabase database,
-                                                 final StagingOperations stagingOperations,
-                                                 final List<WriteConfig> writeConfigs) {
+                                          final StagingOperations stagingOperations,
+                                          final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -163,8 +160,8 @@ public class StagingConsumerFactory {
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
-      final String tableName = writeConfig.getOutputTableName();
-      final String path = stagingSqlOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
+      final String path =
+          stagingSqlOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
         writeConfig.addStagedFile(stagingSqlOperations.uploadRecordsToStage(database, writer, schemaName, path));

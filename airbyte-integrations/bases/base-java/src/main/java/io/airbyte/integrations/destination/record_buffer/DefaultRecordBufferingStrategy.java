@@ -2,11 +2,14 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
+import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.ArrayList;
@@ -48,7 +51,7 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   }
 
   @Override
-  public void addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception {
+  public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
       flushAll();
@@ -61,7 +64,7 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   }
 
   @Override
-  public void flushWriter(AirbyteStreamNameNamespacePair stream, RecordBufferImplementation writer) throws Exception {
+  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final RecordBufferImplementation writer) throws Exception {
     LOGGER.info("Flushing single stream {}: {} records", stream, streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
   }

@@ -12,9 +12,11 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
+import io.airbyte.integrations.destination.record_buffer.RecordBufferStorage;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.staging.CompressedCsvFileBuffer;
+import io.airbyte.integrations.destination.s3.csv.CsvRecordBuffer;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -42,7 +44,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeS3StagingSqlOperations SnowflakeS3StagingSqlOperations = new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config);
+    final SnowflakeS3StagingSqlOperations SnowflakeS3StagingSqlOperations =
+        new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config);
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
@@ -97,7 +100,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         getDatabase(config),
         new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
         getNamingResolver(),
-        CompressedCsvFileBuffer.defaultSettings(),
+        CsvRecordBuffer.createFunction(new S3CsvFormatConfig(config)),
         config,
         catalog);
   }
