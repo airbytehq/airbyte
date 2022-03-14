@@ -501,7 +501,7 @@ jobs:
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
     needs: changes
-    if: (needs.changes.outputs.frontend == 'true' && github.ref == 'refs/heads/master') || needs.changes.outputs.build == 'true'
+    if: needs.changes.outputs.frontend == 'true' || github.ref == 'refs/heads/master' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
