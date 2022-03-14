@@ -30,3 +30,5 @@ jobs:
               flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )')
 
           echo "${TO_TERMINATE}"
+
+          echo "${TO_TERMINATE}" | jq '.[]  | .InstanceId' | echo
