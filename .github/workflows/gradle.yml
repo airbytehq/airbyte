@@ -35,13 +35,13 @@ jobs:
           filters: |
             backend:
               - 'airbyte-**/**'
-            frontend:
-              - 'airbyte-webapp/**'
-              - 'airbyte-webapp-e2e-tests/**'
             build:
               - '.github/**'
             cli:
               - 'airbyte-cli/**'
+            frontend:
+              - 'airbyte-webapp/**'
+              - 'airbyte-webapp-e2e-tests/**'
 
   # Uncommon to debug.
   #  changes-output:
@@ -429,7 +429,7 @@ jobs:
 
   octavia-cli-build:
     runs-on: ubuntu-latest
-    if: needs.changes.outputs.cli == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.cli == 'true' || github.ref == 'refs/heads/master' || needs.changes.outputs.build == 'true'
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
@@ -501,7 +501,7 @@ jobs:
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' && github.ref == 'refs/heads/master'
+    if: (needs.changes.outputs.frontend == 'true' && github.ref == 'refs/heads/master') || needs.changes.outputs.build == 'true'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -579,8 +579,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}} # required to stop the runner even if the error happened in the previous jobs
     steps:
-      - run: |
-          echo '${{ toJSON(needs) }}'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
