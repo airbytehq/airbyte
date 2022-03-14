@@ -104,7 +104,8 @@ class IncrementalTransactionStream(PlaidStream):
         if date >= datetime.datetime.utcnow().date():
             return
 
-        date = max(self.start_date, date)
+        if self.start_date:
+            date = max(self.start_date, date)
 
         response = self._get_transactions_response(date)
         all_transactions.extend(response.transactions)
