@@ -1034,10 +1034,11 @@ If the Airbyte server isn't already running, start it by running **from the Airb
 docker-compose up
 ```
 
-Note: if you are on an M1 Mac, you should run Airbyte in `dev` mode:
-```bash
-VERSION=dev docker-compose up
-```
+>**_NOTE:_** if you are on an M1 Mac, you have to build Airbyte first and then run it in `dev` mode:
+>```bash
+>SUB_BUILD=PLATFORM ./gradlew build
+>VERSION=dev docker-compose up
+>```
 
 When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
 
