@@ -1,5 +1,5 @@
-# This is required since we cannot guarantee instances are always terminated.
-# This is also a failsafe against a dev writing a workflow that does not terminate build instances.
+# Required since we cannot guarantee instances are always terminated.
+# Also a failsafe against a dev writing a workflow that does not terminate build instances.
 # The average runtime as of this commit is ~20 mins. Set this to an hour for some buffer.
 name: Terminate Zombie Build Instances
 
@@ -12,7 +12,7 @@ jobs:
   terminate:
     runs-on: ubuntu-latest
     steps:
-      - name: List Instances Older Than an Hour
+      - name: List and Terminate Instances Older Than an Hour
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -23,6 +23,7 @@ jobs:
 
           aws configure set default.region us-east-2
 
+          # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-instances.html for describe command.
           # Since the AWS cli returns an ISO HH:MM timestamp, and Jq only accepts Z timestamps, we define a function toZ to convert this.
           export TO_TERMINATE=$(aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge Name=instance-state-name,Values=running \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
@@ -31,4 +32,5 @@ jobs:
 
           echo "${TO_TERMINATE}"
 
+          # See https://docs.aws.amazon.com/cli/latest/reference/ec2/terminate-instances.html for terminate command.
           echo $TO_TERMINATE |  jq '.[]  | .InstanceId' | xargs -n 1 aws ec2 terminate-instances --instance-ids
