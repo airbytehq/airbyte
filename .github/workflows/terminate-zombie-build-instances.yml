@@ -33,4 +33,4 @@ jobs:
           echo "${TO_TERMINATE}"
 
           # See https://docs.aws.amazon.com/cli/latest/reference/ec2/terminate-instances.html for terminate command.
-          echo $TO_TERMINATE |  jq '.[]  | .InstanceId' | xargs -n 1 aws ec2 terminate-instances --instance-ids
+          echo $TO_TERMINATE |  jq '.[]  | .InstanceId' | xargs --no-run-if-empty --max-args=1 aws ec2 terminate-instances --instance-ids
