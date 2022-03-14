@@ -74,8 +74,7 @@ For questions on advanced authorization flows, refer to [this](https://www.smart
 
 You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google Sheets, this ID is not found in the URL. You can find the required spreadsheet ID from your Smartsheet app session by going to:
 
-* File
-* Properties
+* File > Properties
 
 ### Configuring the source in the Airbyte UI
 
@@ -84,10 +83,27 @@ To setup your new Smartsheets source, Airbyte will need:
 1. Your API access token
 2. The spreadsheet ID
 
+3. (optional) ON / OFF: Include select set of metadata fields in each synced Airbyte row:
+
+![example setup](https://imgur.com/a/dzjWNF3)
+
+currently included (configurable selection coming soon):
+  - id
+  - parentId
+  - sheetId
+  - rowNumber
+  - version
+  - expanded
+  - accessLevel
+  - createdAt
+  - modifiedAt
+
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject             |
 |:--------|:-----------| :--- |:--------------------|
+| 0.1.9   | 2022-03-14 | [11003](https://github.com/airbytehq/airbyte/pull/11003) | Resolve scrambed kv pairs |
 | 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792) | Added oauth support |
 
 

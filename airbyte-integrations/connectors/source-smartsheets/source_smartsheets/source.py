@@ -51,7 +51,7 @@ def get_json_schema(sheet: Dict, include_metadata: bool) -> Dict:
     return json_schema
 
 
-def catch(d: dict) -> Any:
+def catch_nan(d: dict) -> Any:
     if "value" in d:
         return d["value"]
     return ""
@@ -115,30 +115,29 @@ class SourceSmartsheets(Source):
 
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
-            properties = stream.json_schema["properties"]
-            if isinstance(properties, list):
-                columns = tuple(key for dct in properties for key in dct.keys())
-            elif isinstance(properties, dict):
-                columns = tuple(i for i in properties.keys())
-            else:
-                logger.error("Could not read properties from the JSONschema in this stream")
-
-            logger.info(f"found {columns}")
 
             name = stream.name
 
             try:
-                sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
-                sheet = json.loads(str(sheet))  # make it subscriptable
+                sheet_object = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
+
+                sheet = json.loads(str(sheet_object))  # make it subscriptable
+
                 logger.info(f"Starting syncing spreadsheet {sheet['name']}")
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
-                for row in sheet["rows"]:
-                    # convert all data to string as it is only expected format in schema
-                    try:
-                        id_name_map = {d["id"]: d["title"] for d in sheet["columns"]}
-                        data = {id_name_map[i["columnId"]]: catch(i) for i in row["cells"]}
+                fields = sheet["columns"]
 
+                for row in sheet["rows"]:
+                    try:
+                        # make a dict by mapping row ID to NAME for each field
+                        id_name_map = {d["id"]: d["title"] for d in fields}
+
+                        # make a row of data for airbyte to sync from above name map and a Smartsheet Row
+                        # - catch_nan: returns empty string "" for unhashable input cells
+                        data = {id_name_map[i["columnId"]]: catch_nan(i) for i in row["cells"]}
+
+                        # TODO: make metadata_fields configurable
                         if include_metadata:
                             metadata = {i: row[i] if i in row else None for i in metadata_fields}
                             data.update(metadata)

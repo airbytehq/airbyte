@@ -1,4 +1,5 @@
 {
   "access_token": "access-token",
-  "spreadsheet_id": "spreadsheet-id"
+  "spreadsheet_id": "spreadsheet-id",
+  "include_metadata": false
 }
