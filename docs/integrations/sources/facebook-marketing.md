@@ -104,7 +104,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.40  | 2022-03-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add new permission `business_management` to oauth flow |
+| 0.2.40  | 2022-03-14 | [11108](https://github.com/airbytehq/airbyte/pull/11108) | Add new permission `business_management` to oauth flow |
 | 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | retry connections when FB API returns error code 2 (temporary oauth error) |
 | 0.2.38  | 2022-03-08 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
 | 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
