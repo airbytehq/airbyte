@@ -25,18 +25,31 @@ jobs:
   changes:
     name: "Detect Modified Files"
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - uses: dorny/paths-filter@v2
+        id: filter
         with:
           filters: |
             backend:
-              - 'backend/**'
+              - 'airbyte-**/**'
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
-          list-files: csv
+  changes-output:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          echo "here~"
+          echo '${{ toJSON(job) }}'
+          echo '${{ toJSON(needs) }}'
+          echo "after"
   ## Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
   #  start-connectors-base-build-runner:
@@ -157,6 +170,7 @@ jobs:
 
   ## Gradle Build (Platform)
   # In case of self-hosted EC2 errors, remove this block.
+
 #  start-platform-build-runner:
 #    name: "Platform: Start Build EC2 Runner"
 #    timeout-minutes: 10
