@@ -924,7 +924,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(Stream):
+class Campaigns(IncrementalStream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
