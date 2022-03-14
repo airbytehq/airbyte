@@ -430,6 +430,7 @@ jobs:
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
   octavia-cli-build:
+    needs: changes
     runs-on: ubuntu-latest
     if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     name: "Octavia CLI: Build"
