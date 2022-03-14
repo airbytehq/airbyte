@@ -10,6 +10,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ public class RequestLoggerTest {
   private static final String REMOTE_ADDR = "123.456.789.101";
   private static final String URL = "/api/v1/test";
   private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
+
+  private static final Random RANDOM = new Random();
 
   @Mock
   private HttpServletRequest mServletRequest;
@@ -211,7 +214,7 @@ public class RequestLoggerTest {
       public void run() {
         try {
           requestLogger.filter(mRequestContext);
-          Thread.sleep(new Random().nextInt(1000)); // random sleep to make race more likely
+          Thread.sleep(RANDOM.nextInt(1000)); // random sleep to make race more likely
           requestLogger.filter(mRequestContext, mResponseContext);
         } catch (final IOException | InterruptedException e) {
           e.printStackTrace();
@@ -232,7 +235,7 @@ public class RequestLoggerTest {
         .thenReturn(METHOD);
 
     Mockito.when(mockContainerRequestContext.getEntityStream())
-        .thenReturn(new ByteArrayInputStream(requestBody.getBytes()));
+        .thenReturn(new ByteArrayInputStream(requestBody.getBytes(StandardCharsets.UTF_8)));
 
     Mockito.when(mockContainerRequestContext.getProperty(REQUEST_BODY_PROPERTY)).thenReturn(requestBody);
   }

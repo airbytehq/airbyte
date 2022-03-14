@@ -30,6 +30,7 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -85,8 +86,8 @@ class DefaultNormalizationRunnerTest {
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
             .thenReturn(process);
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
-    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes(StandardCharsets.UTF_8)));
   }
 
   @AfterEach
