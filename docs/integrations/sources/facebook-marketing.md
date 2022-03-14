@@ -63,7 +63,7 @@ From the App's Dashboard screen \(seen in the screenshot below\) enable the Mark
 
 #### API Access Token
 
-In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
+In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`, `business_management`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
 ![](../../.gitbook/assets/facebook_access_token.png)
 
@@ -104,10 +104,11 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.38  | 2022-02-22 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
+| 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | retry connections when FB API returns error code 2 (temporary oauth error) |
+| 0.2.38  | 2022-03-08 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
 | 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
 | 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
-| 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add 104 error code to backoff triggers |
+| 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add error code 104 to backoff triggers |
 | 0.2.34  | 2022-02-17 | [10180](https://github.com/airbytehq/airbyte/pull/9805) | Performance and reliability fixes |
 | 0.2.33  | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams |
 | 0.2.32  | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams. |

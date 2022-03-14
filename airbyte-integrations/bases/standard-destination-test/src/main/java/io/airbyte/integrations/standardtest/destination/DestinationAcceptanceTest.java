@@ -80,6 +80,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
+  private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
 
   private static final String JOB_ID = "0";
@@ -704,7 +705,7 @@ public abstract class DestinationAcceptanceTest {
 
   private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
-    return new Random()
+    return RANDOM
         .ints('a', 'z' + 1)
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
@@ -1340,11 +1341,11 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private AirbyteCatalog readCatalogFromFile(String catalogFilename) throws IOException {
+  private AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private List<AirbyteMessage> readMessagesFromFile(String messagesFilename) throws IOException {
+  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename) throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
   }

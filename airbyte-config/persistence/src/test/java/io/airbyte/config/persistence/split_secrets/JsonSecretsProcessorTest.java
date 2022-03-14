@@ -6,6 +6,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -322,6 +323,106 @@ public class JsonSecretsProcessorTest {
     final JsonNode actual = processor.maskSecrets(input, specs);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void copiesSecrets_inNestedNonCombinationNode() throws JsonProcessingException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final JsonNode source = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+            "a_secret": "hunter2"
+          }
+        }
+        """);
+    final JsonNode dest = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+            "a_secret": "**********"
+          }
+        }
+        """);
+    final JsonNode schema = objectMapper.readTree(
+        """
+        {
+          "type": "object",
+          "properties": {
+            "top_level": {
+              "type": "object",
+              "properties": {
+                "a_secret": {
+                  "type": "string",
+                  "airbyte_secret": true
+                }
+              }
+            }
+          }
+        }
+        """);
+
+    final JsonNode copied = processor.copySecrets(source, dest, schema);
+
+    final JsonNode expected = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+            "a_secret": "hunter2"
+          }
+        }
+        """);
+    assertEquals(expected, copied);
+  }
+
+  @Test
+  public void doesNotCopySecrets_inNestedNonCombinationNodeWhenDestinationMissing() throws JsonProcessingException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final JsonNode source = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+            "a_secret": "hunter2"
+          }
+        }
+        """);
+    final JsonNode dest = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+          }
+        }
+        """);
+    final JsonNode schema = objectMapper.readTree(
+        """
+        {
+          "type": "object",
+          "properties": {
+            "top_level": {
+              "type": "object",
+              "properties": {
+                "a_secret": {
+                  "type": "string",
+                  "airbyte_secret": true
+                }
+              }
+            }
+          }
+        }
+        """);
+
+    final JsonNode copied = processor.copySecrets(source, dest, schema);
+
+    final JsonNode expected = objectMapper.readTree(
+        """
+        {
+          "top_level": {
+          }
+        }
+        """);
+    assertEquals(expected, copied);
   }
 
 }
