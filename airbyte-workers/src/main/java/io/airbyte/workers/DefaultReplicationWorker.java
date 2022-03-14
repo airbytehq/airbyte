@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -297,11 +298,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             recordsRead += 1;
 
             if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {}", recordsRead);
+              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
             }
           }
         }
-        LOGGER.info("Total records read: {}", recordsRead);
+        LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         try {
           destination.notifyEndOfStream();
         } catch (final Exception e) {

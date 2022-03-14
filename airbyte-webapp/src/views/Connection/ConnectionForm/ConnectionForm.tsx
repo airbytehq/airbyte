@@ -30,7 +30,7 @@ import {
 import { OperationsSection } from "./components/OperationsSection";
 
 const EditLaterMessage = styled(Label)`
-  margin: 20px 0 29px;
+  margin: -20px 0 29px;
 `;
 
 const ConnectorLabel = styled(ControlLabels)`

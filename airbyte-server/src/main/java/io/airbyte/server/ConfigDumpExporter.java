@@ -16,6 +16,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
@@ -53,11 +54,16 @@ public class ConfigDumpExporter {
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String VERSION_FILE_NAME = "VERSION";
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryReader secretsRepositoryReader;
   private final JobPersistence jobPersistence;
   private final WorkspaceHelper workspaceHelper;
 
-  public ConfigDumpExporter(final ConfigRepository configRepository, final JobPersistence jobPersistence, final WorkspaceHelper workspaceHelper) {
+  public ConfigDumpExporter(final ConfigRepository configRepository,
+                            final SecretsRepositoryReader secretsRepositoryReader,
+                            final JobPersistence jobPersistence,
+                            final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
   }
@@ -83,7 +89,7 @@ public class ConfigDumpExporter {
   }
 
   private void dumpConfigsDatabase(final Path parentFolder) throws IOException {
-    for (final Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
+    for (final Map.Entry<String, Stream<JsonNode>> configEntry : secretsRepositoryReader.dumpConfigsWithSecrets().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }
@@ -132,7 +138,7 @@ public class ConfigDumpExporter {
     final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.SOURCE_CONNECTION.name(),
-        configRepository::listSourceConnectionWithSecrets,
+        secretsRepositoryReader::listSourceConnectionWithSecrets,
         (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         () -> listSourceDefinition(sourceConnections),
@@ -141,7 +147,7 @@ public class ConfigDumpExporter {
     final Collection<DestinationConnection> destinationConnections = writeConfigsToArchive(
         parentFolder,
         ConfigSchema.DESTINATION_CONNECTION.name(),
-        configRepository::listDestinationConnectionWithSecrets,
+        secretsRepositoryReader::listDestinationConnectionWithSecrets,
         (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
         () -> listDestinationDefinition(destinationConnections),
