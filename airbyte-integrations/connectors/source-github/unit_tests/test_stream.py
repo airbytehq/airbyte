@@ -392,7 +392,7 @@ def test_stream_project_cards():
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
-        "start_date": "2022-02-01T00:00:00Z",
+        "start_date": "2022-03-01T00:00:00Z",
     }
 
     projects_stream = Projects(**repository_args_with_start_date)
@@ -401,27 +401,39 @@ def test_stream_project_cards():
 
     data = [
         {
-            "updated_at": "2022-01-01T10:00:00Z",
+            "updated_at": "2022-01-01T00:00:00Z",
         },
         {
-            "updated_at": "2022-03-01T10:00:00Z",
+            "updated_at": "2022-06-01T00:00:00Z",
             "columns": [
                 {
-                    "updated_at": "2022-04-01T10:00:00Z",
+                    "updated_at": "2022-04-01T00:00:00Z",
                     "cards": [
-                        {"updated_at": "2022-04-01T10:00:00Z"},
-                        {"updated_at": "2022-04-01T10:00:00Z"},
+                        {"updated_at": "2022-03-01T00:00:00Z"},
+                        {"updated_at": "2022-04-01T00:00:00Z"},
                     ],
                 },
-                {"updated_at": "2022-03-01T09:00:00Z"},
-                {"updated_at": "2022-03-01T10:00:00Z"},
+                {"updated_at": "2022-05-01T09:00:00Z"},
+                {
+                    "updated_at": "2022-06-01T00:00:00Z",
+                    "cards": [
+                        {"updated_at": "2022-05-01T00:00:00Z"},
+                        {"updated_at": "2022-06-01T00:00:00Z"},
+                    ],
+                },
             ],
         },
         {
-            "updated_at": "2022-05-01T10:00:00Z",
+            "updated_at": "2022-05-01T00:00:00Z",
             "columns": [
-                {"updated_at": "2022-01-01T10:00:00Z"},
-                {"updated_at": "2022-05-01T10:00:00Z"},
+                {"updated_at": "2022-01-01T00:00:00Z"},
+                {
+                    "updated_at": "2022-05-01T00:00:00Z",
+                    "cards": [
+                        {"updated_at": "2022-02-01T00:00:00Z"},
+                        {"updated_at": "2022-05-01T00:00:00Z"},
+                    ],
+                },
             ],
         },
     ]
@@ -430,21 +442,38 @@ def test_stream_project_cards():
 
     stream_state = {}
     records = read_incremental(stream, stream_state=stream_state)
+
     assert records == [
-        {
-            "column_id": 21,
-            "id": 211,
-            "name": "card_211",
-            "project_id": 2,
-            "repository": "organization/repository",
-            "updated_at": "2022-04-01T10:00:00Z",
-        },
         {
             "column_id": 21,
             "id": 212,
             "name": "card_212",
             "project_id": 2,
             "repository": "organization/repository",
-            "updated_at": "2022-04-01T10:00:00Z",
+            "updated_at": "2022-04-01T00:00:00Z",
+        },
+        {
+            "column_id": 23,
+            "id": 231,
+            "name": "card_231",
+            "project_id": 2,
+            "repository": "organization/repository",
+            "updated_at": "2022-05-01T00:00:00Z",
+        },
+        {
+            "column_id": 23,
+            "id": 232,
+            "name": "card_232",
+            "project_id": 2,
+            "repository": "organization/repository",
+            "updated_at": "2022-06-01T00:00:00Z",
+        },
+        {
+            "column_id": 32,
+            "id": 322,
+            "name": "card_322",
+            "project_id": 3,
+            "repository": "organization/repository",
+            "updated_at": "2022-05-01T00:00:00Z",
         },
     ]
