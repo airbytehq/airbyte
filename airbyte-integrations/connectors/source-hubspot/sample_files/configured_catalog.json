@@ -169,9 +169,15 @@
       "stream": {
         "name": "forms",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "full_refresh",
+      "cursor_field": [
+        "updatedAt"
+      ],
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
