@@ -1,10 +1,14 @@
 FROM python:3.7-slim
 
+# We change to a directory unique to us
 WORKDIR /airbyte/integration_code
+# Install any needed Python dependencies
 RUN pip install requests
+# Copy source files
 COPY source.py .
 COPY spec.json .
 
+# When this container is invoked, append the input argemnts to `python source.py`
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/source.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/source.py"]
 
