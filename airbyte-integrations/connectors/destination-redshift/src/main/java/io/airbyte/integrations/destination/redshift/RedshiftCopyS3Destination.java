@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -51,7 +52,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) throws Exception {
-    S3Destination.attemptS3WriteAndDelete(getS3DestinationConfig(config), "");
+    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
   }
 
   @Override

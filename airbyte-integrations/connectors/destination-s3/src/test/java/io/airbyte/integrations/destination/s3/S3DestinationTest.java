@@ -105,7 +105,7 @@ public class S3DestinationTest {
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3Destination.attemptS3WriteAndDelete(config, "fake-fileToWriteAndDelete", s3);
+    S3Destination.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);
@@ -116,6 +116,7 @@ public class S3DestinationTest {
     final String testFile = testFileCaptor.getValue();
     assertTrue(testFile.startsWith("fake-fileToWriteAndDelete/_airbyte_connection_test_"), "testFile was actually " + testFile);
 
+    inOrder.verify(s3).listObjects(any(ListObjectsRequest.class));
     inOrder.verify(s3).deleteObject("fake-bucket", testFile);
 
     verifyNoMoreInteractions(s3);

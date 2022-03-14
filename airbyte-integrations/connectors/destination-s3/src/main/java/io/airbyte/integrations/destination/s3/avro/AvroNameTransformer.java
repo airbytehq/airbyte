@@ -6,13 +6,12 @@ package io.airbyte.integrations.destination.s3.avro;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * <ul>
- *   <li>An Avro name starts with [A-Za-z_], followed by [A-Za-z0-9_].</li>
- *   <li>An Avro namespace is a dot-separated sequence of such names.</li>
- *   <li>Reference: https://avro.apache.org/docs/current/spec.html#names</li>
+ * <li>An Avro name starts with [A-Za-z_], followed by [A-Za-z0-9_].</li>
+ * <li>An Avro namespace is a dot-separated sequence of such names.</li>
+ * <li>Reference: https://avro.apache.org/docs/current/spec.html#names</li>
  * </ul>
  */
 public class AvroNameTransformer extends ExtendedNameTransformer {

@@ -13,7 +13,7 @@ public interface BlobStorageOperations {
 
   String getBucketObjectName(String namespace, String streamName);
 
-  String getBucketObjectPath(final String prefix, String namespace, String streamName, DateTime writeDatetime);
+  String getBucketObjectPath(String namespace, String streamName, DateTime writeDatetime, String customFormat);
 
   /**
    * Create a storage object where to store data in the destination for a @param streamName using

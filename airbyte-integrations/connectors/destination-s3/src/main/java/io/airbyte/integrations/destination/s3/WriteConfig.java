@@ -8,7 +8,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 /**
  * Write configuration POJO for blob storage destinations
@@ -23,29 +22,24 @@ public class WriteConfig {
   private final String outputBucket;
   private final DestinationSyncMode syncMode;
   private final DateTime writeDatetime;
+  private final String customOutputFormat;
   private final List<String> storedFiles;
 
   public WriteConfig(final String streamName,
                      final String namespace,
                      final String outputNamespace,
                      final String outputBucket,
-                     final DestinationSyncMode syncMode) {
-    this(streamName, namespace, outputNamespace, outputBucket, syncMode, DateTime.now(DateTimeZone.UTC));
-  }
-
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputNamespace,
-                     final String outputBucket,
                      final DestinationSyncMode syncMode,
-                     final DateTime writeDatetime) {
+                     final DateTime writeDatetime,
+                     final String customOutputFormat) {
     this.streamName = streamName;
     this.namespace = namespace;
     this.outputNamespace = outputNamespace;
     this.outputBucket = outputBucket;
     this.syncMode = syncMode;
-    this.storedFiles = new ArrayList<>();
     this.writeDatetime = writeDatetime;
+    this.customOutputFormat = customOutputFormat;
+    this.storedFiles = new ArrayList<>();
   }
 
   public String getStreamName() {
@@ -66,6 +60,10 @@ public class WriteConfig {
 
   public DestinationSyncMode getSyncMode() {
     return syncMode;
+  }
+
+  public String getCustomOutputFormat() {
+    return customOutputFormat;
   }
 
   public DateTime getWriteDatetime() {
@@ -92,6 +90,7 @@ public class WriteConfig {
         ", outputNamespace=" + outputNamespace +
         ", outputBucket=" + outputBucket +
         ", syncMode=" + syncMode +
+        ", customOutputFormat=" + customOutputFormat +
         '}';
   }
 

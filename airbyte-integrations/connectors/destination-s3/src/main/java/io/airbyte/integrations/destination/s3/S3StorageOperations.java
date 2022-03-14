@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static org.apache.logging.log4j.util.Strings.isNotBlank;
+
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +53,12 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String getBucketObjectPath(final String prefix, final String namespace, final String streamName, final DateTime writeDatetime) {
-    return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
-        prefix,
-        getBucketObjectName(namespace, streamName),
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get()));
+  public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
+    return nameTransformer.applyDefaultCase(
+        customPathFormat
+            .replaceAll(Pattern.quote("${NAMESPACE}"), isNotBlank(namespace) ? namespace : "")
+            .replaceAll(Pattern.quote("${STREAM_NAME}"), isNotBlank(streamName) ? streamName : "")
+            .replaceAll("/+", "/"));
   }
 
   @Override
