@@ -24,7 +24,7 @@ To run this tutorial, you'll need:
 * Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 * The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
-**A note on running Python**: all the commands below assume that `python` points to a version of python 3.7. Verify this by running
+**A note on running Python**: all the commands below assume that `python` points to a version of Python 3.7. Verify this by running
 
 ```bash
 $ python --version
@@ -35,19 +35,19 @@ On some systems, `python` points to a Python2 installation and `python3` points 
 
 ## Our connector: a stock ticker API
 
-Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/pricing/) for this \(the free account is at the bottom\). We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
+Our connector will output the daily price of a stock since a given date. We'll leverage the free [Polygon.io API](https://polygon.io/pricing) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
 
 Here's the outline of what we'll do to build our connector:
 
 1. Use the Airbyte connector template to bootstrap the connector package
 2. Implement the methods required by the Airbyte Specification for our connector:
    1. `spec`: declares the user-provided credentials or configuration needed to run the connector
-   2. `check`: tests if with the user-provided configuration the connector can connect with the underlying data source.
+   2. `check`: tests if the connector can connect with the underlying data source  with the user-provided configuration
    3. `discover`: declares the different streams of data that this connector can output
    4. `read`: reads data from the underlying data source \(The stock ticker API\)
 3. Package the connector in a Docker image
 4. Test the connector using Airbyte's Standard Test Suite
-5. Use the connector to run a sync from the Airbyte UI
+5. Use the connector to create a new Connection and run a sync in Airbyte UI
 
 Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
 
@@ -81,7 +81,7 @@ We'll select the `generic` template and call the connector `stock-ticker-api`:
 
 ![](../../.gitbook/assets/newsourcetutorial_plop.gif)
 
-Note: The generic template is very bare. If you are planning on developing a python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a python connector here \(**coming soon**\).
+Note: The generic template is very bare. If you are planning on developing a Python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a Python connector here \(**coming soon**\).
 
 Head to the connector directory and we should see the following files have been generated:
 
@@ -95,7 +95,7 @@ We'll use each of these files later. But first, let's write some code!
 
 ### 2. Implement the connector in line with the Airbyte Specification
 
-In the connector package directory, create a single python file `source.py` that will hold our implementation:
+In the connector package directory, create a single Python file `source.py` that will hold our implementation:
 
 ```bash
 touch source.py
@@ -105,21 +105,21 @@ touch source.py
 
 At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps:
 
-1. Decide which inputs we need from the user in order to connect to the stock ticker API i.e: the connector's specification, and encode it as a JSON file.
+1. Decide which inputs we need from the user in order to connect to the stock ticker API \(i.e: the connector's specification\) and encode it as a JSON file.
 2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
 
 To contact the stock ticker API, we need two things:
 
 1. Which stock ticker we're interested in
-2. The API key to use when contacting the API \(you can obtain a free API token from the [IEX Cloud](https://iexcloud.io/) free plan\)
+2. The API key to use when contacting the API \(you can obtain a free API token from [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-For reference, the API docs we'll be using [can be found here](https://iexcloud.io/docs/api/).
+For reference, the API docs we'll be using [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date).
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements:
 
 ```javascript
 {
-  "documentationUrl": "https://iexcloud.io/docs/api",
+  "documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -135,7 +135,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
       "api_key": {
         "title": "API Key",
         "type": "string",
-        "description": "The IEX Cloud API key to use to hit the API.",
+        "description": "The Polygon.io Stocks API key to use to hit the API.",
         "airbyte_secret": true
       }
     }
@@ -143,10 +143,10 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
 }
 ```
 
-* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.io/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation.
+* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.io/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation
 * `title` is the "human readable" title displayed in the UI. Without this field, The Stock Ticker field will have the title `stock_ticker` in the UI
 * `description` will be shown in the Airbyte UI under each field to help the user understand it
-* `airbyte_secret` used by Airbyte to determine if the field should be displayed as a password \(e.g: `********`\) in the UI and not readable from the API.
+* `airbyte_secret` used by Airbyte to determine if the field should be displayed as a password \(e.g: `********`\) in the UI and not readable from the API
 
 We'll save this file in the root directory of our connector. Now we have the following files:
 
@@ -159,7 +159,7 @@ source.py
 spec.json
 ```
 
-Now, let's edit `source.py` to detect if the program was invoked with the `spec` argument and if so, output the connector specification.
+Now, let's edit `source.py` to detect if the program was invoked with the `spec` argument and if so, output the connector specification:
 
 ```python
 # source.py
@@ -187,7 +187,7 @@ def spec():
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
-    # json.dumps converts the JSON (python dict) to a string
+    # json.dumps converts the JSON (Python dict) to a string
     print(json.dumps(airbyte_message))
 
 
@@ -225,14 +225,14 @@ if __name__ == "__main__":
 
 Some notes on the above code:
 
-1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.
-2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.
+1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
+2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
 ```bash
 python source.py spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 ```
 
 We've implemented the first command! Three more and we'll have a working connector.
@@ -243,9 +243,9 @@ The second command to implement is the [check operation](https://docs.airbyte.io
 
 To achieve this, we'll:
 
-1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys.
-2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
-3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked.
+1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys
+2. Add a `check` method which calls the Polygon.io API to verify if the provided token & stock ticker are correct and output the correct airbyte message
+3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
 
 Let's first add the configuration files:
 
@@ -255,20 +255,23 @@ $ echo '{"api_key": "put_your_key_here", "stock_ticker": "TSLA"}' > secrets/vali
 $ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config.json
 ```
 
-Make sure to add your actual API key \(the private key\) instead of the placeholder value `<put_your_key_here>` when following the tutorial.
+Make sure to add your actual API key instead of the placeholder value `<put_your_key_here>` when following the tutorial.
 
 Then we'll add the `check_method`:
 
 ```python
 import requests
 
-def _call_api(endpoint, token):
-    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+def _call_api(ticker, token):
+    today = date.today()
+    to_day = today.strftime("%Y-%m-%d")
+    from_day = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
 
 
 def check(config):
-    # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
-    response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
+    # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+    response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
     if response.status_code == 200:
         result = {"status": "SUCCEEDED"}
     elif response.status_code == 403:
@@ -293,7 +296,7 @@ def get_input_file_path(path):
 
 In Airbyte, the contract for input files is that they will be available in the current working directory if they are not provided as an absolute path. This method helps us achieve that.
 
-and the following blocks in the argument parser in the run method:
+We also need to extend the arguments parser by adding the following two blocks to the `run` method:
 
 ```python
     # Accept the check command
@@ -365,8 +368,8 @@ The data output by this connector will be structured in a very simple way. This 
 
 To implement `discover`, we'll:
 
-1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
-2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method.
+1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
+2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method
 
 Let's implement `discover` by adding the following in `source.py`:
 
@@ -476,16 +479,16 @@ python source.py read --config <config_file_path> --catalog <configured_catalog.
 
 Each of these are described in the Airbyte Specification in detail, but we'll give a quick description of the two options we haven't seen so far:
 
-* `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog \(remember the Catalog we output from discover?\). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).\)
-* `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below.
+* `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog \(remember the Catalog we output from discover?\). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md)\)
+* `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below
 
 For our connector, the contents of those two files should be very unsurprising: the connector only supports one Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync \(yet!\) we'll ignore the state option for now.
 
 To read data in our connector, we'll:
 
-1. Create a configured catalog which tells our connector that we want to sync the `stock_prices` stream.
-2. Implement a method `read` in `source.py`. For now we'll always read the last 7 days of a stock price's data.
-3. Extend the arguments parser to recognize the `read` command and its arguments.
+1. Create a configured catalog which tells our connector that we want to sync the `stock_prices` stream
+2. Implement a method `read` in `source.py`. For now we'll always read the last 7 days of a stock price's data
+3. Extend the arguments parser to recognize the `read` command and its arguments
 
 First, let's create a configured catalog `fullrefresh_configured_catalog.json` to use as test input for the read operation:
 
@@ -522,9 +525,15 @@ Then we'll define the `read` method in `source.py`:
 
 ```python
 import datetime
-
+from datetime import date
+from datetime import timedelta
 
 def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
     # Find the stock_prices stream if it is present in the input catalog
     stock_prices_stream = None
     for configured_stream in catalog["streams"]:
@@ -541,25 +550,23 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    api_key = config["api_key"]
-    stock_ticker = config["stock_ticker"]
-    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling IEX API")
+        log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
-        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
-        for price in prices:
-            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
-            # emitted_at is in milliseconds so we multiply by 1000
+        # Stock prices are returned sorted by by date in ascending order
+        # We want to output them one by one as AirbyteMessages
+        results = response.json()["results"]
+        for result in results:
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
 
-After doing some input validation, the code above calls the API to obtain the last 7 days of prices for the input stock ticker, then outputs the prices in ascending order (this is only for human-readability; real sources do not need to do this sorting). As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
+After doing some input validation, the code above calls the API to obtain daily prices for the input stock ticker, then outputs the prices. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
 
 ```python
 # Accept the read command
@@ -652,16 +659,44 @@ With this method, we now have a fully functioning connector! Let's pat ourselves
 For reference, the full `source.py` file now looks like this:
 
 ```python
-# source.py
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
 import argparse  # helps parse commandline arguments
 import json
 import sys
 import os
 import requests
 import datetime
-
+from datetime import date
+from datetime import timedelta
 
 def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
     # Find the stock_prices stream if it is present in the input catalog
     stock_prices_stream = None
     for configured_stream in catalog["streams"]:
@@ -678,18 +713,17 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    api_key = config["api_key"]
-    stock_ticker = config["stock_ticker"]
-    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling IEX API")
+        log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
-        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
-        for price in prices:
-            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
+        # Stock prices are returned sorted by by date in ascending order
+        # We want to output them one by one as AirbyteMessages
+        results = response.json()["results"]
+        for result in results:
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -700,25 +734,33 @@ def read_json(filepath):
         return json.loads(f.read())
 
 
-def _call_api(endpoint, token):
-    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+def _call_api(ticker, token):
+    today = date.today()
+    to_day = today.strftime("%Y-%m-%d")
+    from_day = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
 
 
 def check(config):
-    # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
-    response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
-    if response.status_code == 200:
-        result = {"status": "SUCCEEDED"}
-    elif response.status_code == 403:
-        # HTTP code 403 means authorization failed so the API key is incorrect
-        result = {"status": "FAILED", "message": "API Key is incorrect."}
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
     else:
-        # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
-        result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+        # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+        response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
+        if response.status_code == 200:
+            result = {"status": "SUCCEEDED"}
+        elif response.status_code == 403:
+            # HTTP code 403 means authorization failed so the API key is incorrect
+            result = {"status": "FAILED", "message": "API Key is incorrect."}
+        else:
+            # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
+            result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
 
-    # Format the result of the check operation according to the Airbyte Specification
-    output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
-    print(json.dumps(output_message))
+        # Format the result of the check operation according to the Airbyte Specification
+        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+        print(json.dumps(output_message))
 
 
 def log(message):
@@ -765,7 +807,7 @@ def spec():
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
-    # json.dumps converts the JSON (python dict) to a string
+    # json.dumps converts the JSON (Python dict) to a string
     print(json.dumps(airbyte_message))
 
 
@@ -841,7 +883,7 @@ FROM python:3.7-slim
 
 # We change to a directory unique to us
 WORKDIR /airbyte/integration_code
-# Install any needed python dependencies
+# Install any needed Python dependencies
 RUN pip install requests
 # Copy source files
 COPY source.py .
@@ -875,7 +917,7 @@ to run any of our commands, we'll need to mount all the inputs into the Docker c
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
@@ -955,9 +997,9 @@ Let's recap what we've achieved so far:
 
 To use it from the Airbyte UI, we need to:
 
-1. Publish our connector's Docker image somewhere accessible by Airbyte Core \(Airbyte's server, scheduler, workers, and webapp infrastructure\).
-2. Add the connector via the Airbyte UI and setup a connection from our new connector to a local CSV file for illustration purposes.
-3. Run a sync and inspect the output.
+1. Publish our connector's Docker image somewhere accessible by Airbyte Core \(Airbyte's server, scheduler, workers, and webapp infrastructure\)
+2. Add the connector via the Airbyte UI and setup a connection from our new connector to a local CSV file for illustration purposes
+3. Run a sync and inspect the output
 
 #### 1. Publish the Docker image
 
@@ -992,61 +1034,112 @@ If the Airbyte server isn't already running, start it by running **from the Airb
 docker-compose up
 ```
 
-Then visiting [locahost:8000](http://localhost:8000) in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
+>**_NOTE:_** if you are on an M1 Mac, you have to build Airbyte first and then run it in `dev` mode:
+>```bash
+>SUB_BUILD=PLATFORM ./gradlew build
+>VERSION=dev docker-compose up
+>```
 
-If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. We will make this something you can skip in the future. For now, we suggest just running through it quickly. If you use the exchange rates api as a source and json as your destination, it should be relatively easy to set up.
+When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
 
-In the UI, click the "Admin" button in the left side bar:
+```bash
+airbyte-server      | 2022-03-11 18:38:33 INFO i.a.s.ServerApp(start):121 - 
+airbyte-server      |     ___    _      __          __
+airbyte-server      |    /   |  (_)____/ /_  __  __/ /____
+airbyte-server      |   / /| | / / ___/ __ \/ / / / __/ _ \
+airbyte-server      |  / ___ |/ / /  / /_/ / /_/ / /_/  __/
+airbyte-server      | /_/  |_/_/_/  /_.___/\__, /\__/\___/
+airbyte-server      |                     /____/
+airbyte-server      | --------------------------------------
+airbyte-server      |  Now ready at http://localhost:8000/
+airbyte-server      | --------------------------------------
+airbyte-server      | Version: dev
+airbyte-server      | 
+```
 
-![](../../.gitbook/assets/newsourcetutorial_sidebar_admin.png)
+After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser. 
 
-Then on the admin page, click "New Connector":
+If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 
-![](../../.gitbook/assets/newsourcetutorial_admin_page.png)
+In the UI, click the "Settings" button in the left side bar:
+
+![](../../.gitbook/assets/newsourcetutorial_sidebar_settings.png)
+
+Then on the Settings page, select Sources
+
+![](../../.gitbook/assets/newsourcetutorial_settings_page.png)
+
+Then on the Settings/Sources page, click "+ New Connector" button at the top right:
+
+![](../../.gitbook/assets/newsourcetutorial_settings_sources_newconnector.png)
 
 On the modal that pops up, enter the following information then click "Add"
 
 ![](../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
-Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source":
+After you click "Add", the modal will close and you will be back at the Settings page.
+Now click "Sources" in the navigation bar on the left:
+
+![](../../.gitbook/assets/newsourcetutorial_sources_navbar.png)
+
+You will be redirected to Sources page, which, if you have not set up any connections, will be empty.
+On the Sources page click "+ new source" in the top right corner:
+
+![](../../.gitbook/assets/newsourcetutorial_sources_page.png)
+
+A new modal will prompt you for details of the new source. Type "Stock Ticker" in the Name field.
+Then, find your connector in the Source type dropdown. We have lots of connectors already, so it might be easier
+to find your connector by typing part of its name:
+
+![](../../.gitbook/assets/newsourcetutorial_find_your_connector.png)
+
+After you select your connector in the Source type dropdown, the modal will show two more fields: API Key and Stock Ticker.
+Remember that `spec.json` file you created at the very beginning of this tutorial? These fields should correspond to the `properties`
+section of that file. Copy-paste your Polygon.io API key and a stock ticker into these fields and then click "Set up source"
+button at the bottom right of the modal. 
 
 ![](../../.gitbook/assets/newsourcetutorial_source_config.png)
 
-on the following page, click the "add destination" button then "add new destination":
+Once you click "Set up source", Airbyte will spin up your connector and run "check" method to verify the configuration.
+You will see a progress bar briefly and if the configuration is valid, you will see a success message, 
+the modal will close and you will see your connector on the updated Sources page.
+
+![](../../.gitbook/assets/newsourcetutorial_sources_stock_ticker.png)
+
+Next step is to add a destination. On the same page, click "add destination" and then click "+ add a new destination":
+
+![](../../.gitbook/assets/newsourcetutorial_add_destination_new_destination.png)
+
+"New destination" wizard will show up. Type a name (e.g. "Local JSON") into the Name field and select "Local JSON" in Destination type drop-down.
+After you select the destination type, type `/local/tutorial_json` into Destination path field.
+When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+
+Click "Set up destination" at the lower right of the form.
 
 ![](../../.gitbook/assets/newsourcetutorial_add_destination.png)
 
-Configure a local JSON destination as follows: Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+After that Airbyte will test the destination and prompt you to configure the connection between Stock Ticker source and Local JSON destination.
+Select "Mirror source structure" in the Destination Namespace, check the checkbox next to the stock_prices stream, and click "Set up connection" button at the bottom of the form:
 
-![](../../.gitbook/assets/newsourcetutorial_destination_config.png)
+![](../../.gitbook/assets/newsourcetutorial_configure_connection.png)
 
-Finally, setup the connection configuration:
+Ta-da! Your connection is now configured to sync once a day. You will see your new connection on the next screen: 
 
-![](../../.gitbook/assets/newsourcetutorial_schema_select.png)
+![](../../.gitbook/assets/newsourcetutorial_connection_done.png)
 
-We'll choose the "manual" frequency, meaning we need to launch each sync by hand.
+Airbyte will run the first sync job as soon as your connection is saved. Navigate to "Connections" in the side bar and wait for the first sync to succeed:
 
-We've setup our connection! Now let's move data.
-
-#### 3. Run a sync from the UI
-
-To launch the sync, click the "sync now" button:
-
-![](../../.gitbook/assets/newsourcetutorial_launchsync.png)
-
-If you click on the connector row, you should be taken to the sync detail page. After a few seconds \(refresh the page if the status doesn't change to "succeeded" in a few seconds\), the status of the sync should change to `succeeded` as below:
-
-![](../../.gitbook/assets/newsourcetutorial_syncdetail.png)
+![](../../.gitbook/assets/newsourcetutorial_first_sync.png)
 
 Let's verify the output. From your shell, run:
 
 ```bash
 $ cat /tmp/airbyte_local/tutorial_json/_airbyte_raw_stock_prices.jsonl
-  {"ab_id":"5fd36107-6a79-4d64-ab36-900184b3848c","emitted_at":1608877192000,"data":{"date":"2020-12-18","stock_ticker":"TSLA","price":695}}
-  {"ab_id":"8109396a-e3b9-4ada-b527-2f539c9e016e","emitted_at":1608877192000,"data":{"date":"2020-12-21","stock_ticker":"TSLA","price":649.86}}
-  {"ab_id":"203f5d55-260a-44c7-9b70-d4fb79b55aa5","emitted_at":1608877192000,"data":{"date":"2020-12-22","stock_ticker":"TSLA","price":640.34}}
-  {"ab_id":"4ee525c6-ee96-4b0c-889d-555ee23298e0","emitted_at":1608877192000,"data":{"date":"2020-12-23","stock_ticker":"TSLA","price":645.98}}
-  {"ab_id":"240157c9-b226-438e-8ffd-5039c91ff882","emitted_at":1608877192000,"data":{"date":"2020-12-24","stock_ticker":"TSLA","price":661.77}}
+{"_airbyte_ab_id":"7383c6c1-783a-4a8a-a39c-3890ab562495","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-04","stock_ticker":"TSLA","price":838.29}}
+{"_airbyte_ab_id":"cf7dc8d9-1ece-4a40-a7d6-35cae54b94e5","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-07","stock_ticker":"TSLA","price":804.58}}
+{"_airbyte_ab_id":"da7da131-41d2-4ba7-bba1-1a0a5329a30a","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-08","stock_ticker":"TSLA","price":824.4}}
+{"_airbyte_ab_id":"20df0d78-5a5e-437b-95d8-aa57cf19fce1","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-09","stock_ticker":"TSLA","price":858.97}}
+{"_airbyte_ab_id":"0b7a8d33-4500-4a6d-9d74-11716bd22f01","_airbyte_emitted_at":1647026803000,"_airbyte_data":{"date":"2022-03-10","stock_ticker":"TSLA","price":838.3}}
 ```
 
 Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;\)
@@ -1055,7 +1148,7 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 
 1. Implement Incremental Sync for your connector \(described in the sections below\)
 2. Implement another connector using the language specific helpers listed below
-3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airbyte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.
+3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airbyte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself
 
 ## Optional additions
 
@@ -1066,4 +1159,8 @@ Follow the [next tutorial](adding-incremental-sync.md) to implement incremental 
 
 ### Connector Development Kit
 Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors.
-/
+
+### Language specific helpers
+ * [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source)
+ * [Building a Python Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-python-destination)
+ * [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)

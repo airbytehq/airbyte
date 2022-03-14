@@ -12,8 +12,6 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferStorage;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvRecordBuffer;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
