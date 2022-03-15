@@ -184,23 +184,20 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
-  let disallowedOauthConnectors =
-    // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD === "true"
+  const workspace = useCurrentWorkspace();
+  const disallowedOauthConnectors = ([] as string[]).concat(
+    ...// I would prefer to use windowConfigProvider.cloud but that function is async
+    (window.CLOUD === "true"
       ? [
-          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
-          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
+          ["200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b"], // Snapchat
+          ["2470e835-feaf-4db6-96f3-70fd645acc77"], // Salesforce Singer
+          // TODO Issue 10817: we need to enable shopify ONLY for this workspace so until Shopify gives us approval to use oauth
+          workspace.workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace
+            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
+            : [],
         ]
-      : [];
-  if (
-    window.CLOUD === "true" &&
-    workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
-  ) {
-    disallowedOauthConnectors = disallowedOauthConnectors.filter(
-      (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
-    );
-  }
+      : [])
+  );
   const sortedDropDownData = useMemo(
     () =>
       availableServices
