@@ -314,7 +314,6 @@ class ConnectionsHandlerTest {
           .status(ConnectionStatus.INACTIVE)
           .schedule(null)
           .syncCatalog(catalog)
-          .name(standardSync.getName())
           .resourceRequirements(new ResourceRequirements()
               .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
               .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
