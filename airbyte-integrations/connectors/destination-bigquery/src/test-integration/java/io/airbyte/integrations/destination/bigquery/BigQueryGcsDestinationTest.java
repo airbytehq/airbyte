@@ -48,6 +48,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -112,14 +113,14 @@ class BigQueryGcsDestinationTest {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final JsonNode credentialsGcsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.GCS_CONFIG);
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(credentials)

@@ -46,7 +46,7 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
+    final String fullConfigAsString = Files.readString(getCredentialsPath());
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get("credentials");
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
