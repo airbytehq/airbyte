@@ -62,6 +62,11 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
     }
   }, [connection.latestSyncJobStatus, feedbackPassed]);
 
+  const onSkipFeedback = () => {
+    passFeedback();
+    setIsOpen(false);
+  };
+
   const onSendFeedback = (feedback: string) => {
     sendFeedback({
       feedback,
@@ -115,7 +120,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
 
       {isOpen ? (
         <SyncCompletedModal
-          onClose={() => setIsOpen(false)}
+          onClose={onSkipFeedback}
           onPassFeedback={onSendFeedback}
         />
       ) : null}

@@ -1,3 +1,4 @@
+import React from "react";
 import userEvent from "@testing-library/user-event";
 import { getByTestId, screen, waitFor } from "@testing-library/react";
 import selectEvent from "react-select-event";
@@ -6,6 +7,15 @@ import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+
+// hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
+jest.mock(
+  "components/Markdown",
+  () =>
+    function ReactMarkdown({ children }: React.PropsWithChildren<unknown>) {
+      return <>{children}</>;
+    }
+);
 
 jest.setTimeout(10000);
 
@@ -87,6 +97,8 @@ const schema: AirbyteJSONSchema = {
     },
   },
 };
+
+jest.mock("hooks/services/Analytics");
 
 describe("Service Form", () => {
   describe("should display json schema specs", () => {

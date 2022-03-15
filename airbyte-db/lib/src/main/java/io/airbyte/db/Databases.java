@@ -28,6 +28,14 @@ public class Databases {
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
   private static final long DEFAULT_WAIT_MS = 5 * 1000;
 
+  public static Database createPostgresDatabase(final String username,
+                                                final String password,
+                                                final String host,
+                                                final int port,
+                                                final String database) {
+    return createPostgresDatabase(username, password, String.format("jdbc:postgresql://%s:%s/%s", host, port, database));
+  }
+
   public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }

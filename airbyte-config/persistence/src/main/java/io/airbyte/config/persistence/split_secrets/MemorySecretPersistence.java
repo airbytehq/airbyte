@@ -26,7 +26,7 @@ public class MemorySecretPersistence implements SecretPersistence {
     secretMap.put(coordinate, payload);
   }
 
-  public Map<SecretCoordinate, String> getSecretMap() {
+  public Map<SecretCoordinate, String> getMap() {
     return Collections.unmodifiableMap(secretMap);
   }
 

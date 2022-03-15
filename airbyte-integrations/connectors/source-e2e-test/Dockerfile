@@ -13,7 +13,6 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-e2e-test
-ENV APPLICATION_VERSION=2.1.0
 ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
