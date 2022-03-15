@@ -12,6 +12,7 @@ import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourc
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
