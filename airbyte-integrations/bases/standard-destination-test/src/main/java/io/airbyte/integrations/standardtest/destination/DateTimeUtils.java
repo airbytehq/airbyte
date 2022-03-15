@@ -36,8 +36,8 @@ public class DateTimeUtils {
               "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
 
   /**
-   * Parse the Json date-time logical type to long value of epoch microseconds.
-   * Only for test purposes!
+   * Parse the Json date-time logical type to long value of epoch microseconds. Only for test
+   * purposes!
    *
    * @return the number of microseconds from the unix epoch, 1 January 1970 00:00:00.000000 UTC.
    */
@@ -57,8 +57,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to bigquery-denormalized specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to bigquery-denormalized specific format. Only for test purposes!
    *
    * @param data "2021-01-03T01:01:01.544+01:00"
    * @return converted data "2021-01-03T01:01:01.544000"
@@ -81,8 +80,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to snowflake specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to snowflake specific format. Only for test purposes!
    *
    * @param jsonDateTime e.g. "2021-01-03T01:01:01.544+01:00"
    * @return converted data e.g. "2021-01-03T00:01:02Z"
@@ -108,8 +106,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to Redshift specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to Redshift specific format. Only for test purposes!
    *
    * @param jsonDateTime e.g. "2021-01-03T01:01:01.544+01:00"
    * @return converted data e.g. "2021-01-03 00:01:01.544000+00"
@@ -120,8 +117,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to postgres specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to postgres specific format. Only for test purposes!
    *
    * @param jsonDateTime e.g. "2021-01-03T01:01:01.544+01:00"
    * @return converted data e.g. "2021-01-03T00:01:01.544Z"
@@ -132,8 +128,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to databricks specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to databricks specific format. Only for test purposes!
    *
    * @param jsonDateTime e.g. "2021-01-03T01:01:01.544+01:00"
    * @return converted data "{\"member0\":2021-01-03 00:01:01.544,\"member1\":null}"
@@ -144,8 +139,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date-time type to MSSQL specific format.
-   * Only for test purposes!
+   * Parse the Json date-time type to MSSQL specific format. Only for test purposes!
    *
    * @param jsonDateTime e.g. "2021-01-03T01:01:01.544+01:00"
    * @return converted data "2021-01-03 00:01:01.544"
@@ -156,8 +150,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date type to date-time format with zero values for time.
-   * Only for test purposes!
+   * Parse the Json date type to date-time format with zero values for time. Only for test purposes!
    *
    * @param jsonDate e.g. "2021-01-01"
    * @return converted data "2021-01-01T00:00:00Z"
@@ -169,8 +162,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date type to general ISO date format.
-   * Only for test purposes!
+   * Parse the Json date type to general ISO date format. Only for test purposes!
    *
    * @param jsonDate e.g. "2021-1-1"
    * @return converted data "2021-01-01"
@@ -182,9 +174,8 @@ public class DateTimeUtils {
   }
 
   /**
-   * Parse the Json date type to Instant and applies function to convert instant to connector
-   * specific date string.
-   * Only for test purposes!
+   * Parse the Json date type to Instant and applies function to convert instant to connector specific
+   * date string. Only for test purposes!
    *
    * @param jsonDateTime input date-time string
    * @param dateTimeFormatter function to convert instant to specific date-time format string
@@ -210,8 +201,7 @@ public class DateTimeUtils {
 
   /**
    * Parse the Json date type to LocalDate and applies function to convert localDate to connector
-   * specific date string.
-   * Only for test purposes!
+   * specific date string. Only for test purposes!
    *
    * @param jsonDate input date string
    * @param dateFormatter function to convert LocalDate to specific date format string
@@ -231,8 +221,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Formats instant to MSSQL date-time.
-   * Only for test purposes!
+   * Formats instant to MSSQL date-time. Only for test purposes!
    *
    * @param instant input date-time
    * @return string with date-time without 'T' separator and zero timezone ('Z')
@@ -243,9 +232,8 @@ public class DateTimeUtils {
   }
 
   /**
-   * Formats instant to Redshift date-time.
-   * If instant has some milli of second, the output date-time string will contain it after seconds,
-   * in the other case millis will be omitted for output sting.
+   * Formats instant to Redshift date-time. If instant has some milli of second, the output date-time
+   * string will contain it after seconds, in the other case millis will be omitted for output sting.
    * Only for test purposes!
    *
    * @param instant input date-time
@@ -261,12 +249,11 @@ public class DateTimeUtils {
   }
 
   /**
-   * Formats instant to bigquery-denormalized date-time.
-   * If instant has some milli of second, the output date-time string will contain it after seconds,
-   * in the other case millis will be omitted for output sting.
-   * Note: bigquery-denormalized represents millis by 6-digits, but the last 3 digits are always '0' (e.g. 12:43:21.333000)
-   * This is the reason of division to 1000000 and then multiplication to 1000 in this method
-   * Only for test purposes!
+   * Formats instant to bigquery-denormalized date-time. If instant has some milli of second, the
+   * output date-time string will contain it after seconds, in the other case millis will be omitted
+   * for output sting. Note: bigquery-denormalized represents millis by 6-digits, but the last 3
+   * digits are always '0' (e.g. 12:43:21.333000) This is the reason of division to 1000000 and then
+   * multiplication to 1000 in this method Only for test purposes!
    *
    * @param instant input date-time
    * @return string with date-time without time zone
@@ -282,8 +269,7 @@ public class DateTimeUtils {
   }
 
   /**
-   * Formats instant to Databricks date-time.
-   * Only for test purposes!
+   * Formats instant to Databricks date-time. Only for test purposes!
    *
    * @param instant input date-time
    * @return wrapped string with date-time
@@ -292,12 +278,13 @@ public class DateTimeUtils {
   private static String toDatabricksDateFormat(Instant instant) {
     if (instant.get(ChronoField.MILLI_OF_SECOND) == 0) {
       return DateTimeFormatter.ofPattern(
-              "'{\"member0\":'yyyy-MM-dd HH:mm:ss',\"member1\":null}'").withZone(ZoneOffset.UTC)
+          "'{\"member0\":'yyyy-MM-dd HH:mm:ss',\"member1\":null}'").withZone(ZoneOffset.UTC)
           .format(instant);
     } else {
       return DateTimeFormatter.ofPattern(
-              "'{\"member0\":'yyyy-MM-dd HH:mm:ss.SSS',\"member1\":null}'").withZone(ZoneOffset.UTC)
+          "'{\"member0\":'yyyy-MM-dd HH:mm:ss.SSS',\"member1\":null}'").withZone(ZoneOffset.UTC)
           .format(instant);
     }
   }
+
 }

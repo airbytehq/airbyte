@@ -198,9 +198,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
               var data = message.getRecord().getData().get(fieldName).get(f);
               var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
-                  dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() :
-                  StringUtils.wrap(data.asText(), "\""));
-              ((ObjectNode)message.getRecord().getData()).put(fieldName, wrappedData);
+                  dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() : StringUtils.wrap(data.asText(), "\""));
+              ((ObjectNode) message.getRecord().getData()).put(fieldName, wrappedData);
             });
           }
         }
