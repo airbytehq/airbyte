@@ -25,6 +25,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -727,6 +728,16 @@ public class ConfigRepository {
    */
   public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
     persistence.loadData(seedPersistenceWithoutSecrets);
+  }
+
+  public StagingConfiguration getStagingConfigurationNoSecrets(final UUID destinationDefinitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+  }
+
+  public void writeStagingConfigurationNoSecrets(final StagingConfiguration stagingConfiguration)
+      throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(), stagingConfiguration);
   }
 
 }

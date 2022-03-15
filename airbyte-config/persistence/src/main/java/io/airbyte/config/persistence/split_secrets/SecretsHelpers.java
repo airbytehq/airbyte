@@ -461,10 +461,14 @@ public class SecretsHelpers {
     return new SecretCoordinate(coordinateBase, version);
   }
 
-  public static JsonNode decryptStagingConfiguration(final StagingConfiguration stagingConfiguration, final ReadOnlySecretPersistence secretReader) {
+  public static JsonNode decryptStagingConfiguration(final StagingConfiguration stagingConfiguration, final SecretsHydrator secretsHydrator) {
     final JsonNode configuration = stagingConfiguration.getConfiguration().deepCopy();
+    if (!secretsHydrator.isReadAllowed()) {
+      return configuration;
+    }
+
     final var secretCoordinate = SecretCoordinate.fromFullCoordinate(configuration.get(COORDINATE_FIELD).asText());
-    final var secretValue = secretReader.read(secretCoordinate);
+    final var secretValue = secretsHydrator.read(secretCoordinate);
     if (secretValue.isEmpty()) {
       throw new RuntimeException("That secret was not found in the store!");
     }

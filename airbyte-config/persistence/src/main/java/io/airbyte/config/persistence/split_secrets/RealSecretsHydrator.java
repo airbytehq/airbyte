@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Optional;
 
 /**
  * Adds secrets to a partial config based off a persistence.
@@ -20,6 +21,16 @@ public class RealSecretsHydrator implements SecretsHydrator {
   @Override
   public JsonNode hydrate(final JsonNode partialConfig) {
     return SecretsHelpers.combineConfig(partialConfig, readOnlySecretPersistence);
+  }
+
+  @Override
+  public Optional<String> read(SecretCoordinate secretCoordinate) {
+    return readOnlySecretPersistence.read(secretCoordinate);
+  }
+
+  @Override
+  public boolean isReadAllowed() {
+    return true;
   }
 
 }

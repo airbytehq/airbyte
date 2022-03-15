@@ -250,7 +250,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
-    stagingConfigurationHandler = new StagingConfigurationHandler(configRepository);
+    stagingConfigurationHandler = new StagingConfigurationHandler(secretsRepositoryWriter);
   }
 
   // WORKSPACE

@@ -5,7 +5,9 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,10 +15,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -24,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,6 +120,37 @@ class SecretsRepositoryReaderTest {
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().collect(Collectors.toList())));
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReadStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final RealSecretsHydrator realSecretsHydrator = new RealSecretsHydrator(secretPersistence);
+    final SecretsRepositoryReader secretsRepositoryReader =
+        spy(new SecretsRepositoryReader(configRepository, realSecretsHydrator));
+
+    final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
+    assertEquals("{\"age\":\"30\",\"car\":\"null\",\"name\":\"John\"}", secretPayload.toString());
+
+    final SecretCoordinate secretCoordinate = new SecretCoordinate(
+        "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    doReturn(new StagingConfiguration().withDestinationDefinitionId(destinationDefinitionId).withConfiguration(Jsons.jsonNode(
+        Map.of("_secret", secretCoordinate.getFullCoordinate()))))
+            .when(configRepository).getStagingConfigurationNoSecrets(destinationDefinitionId);
+    doReturn(Optional.of(secretPayload.toString())).when(secretPersistence).read(secretCoordinate);
+
+    final StagingConfiguration actual = secretsRepositoryReader.getStagingConfigurationWithSecrets(destinationDefinitionId);
+    final StagingConfiguration expected = new StagingConfiguration().withDestinationDefinitionId(destinationDefinitionId)
+        .withConfiguration(secretPayload);
+    assertEquals(expected, actual);
+  }
+
+  private Map<String, String> sortMap(Map<String, String> originalMap) {
+    return originalMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
 }

@@ -10,6 +10,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StagingConfiguration;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -75,6 +77,7 @@ public class SecretsRepositoryReader {
 
     hydrateValuesIfKeyPresent(sourceKey, dump);
     hydrateValuesIfKeyPresent(destinationKey, dump);
+    hydrateStagingConfig(dump);
 
     return dump;
   }
@@ -94,6 +97,28 @@ public class SecretsRepositoryReader {
       final Stream<JsonNode> augmentedValue = dump.get(key).map(secretsHydrator::hydrate);
       dump.put(key, augmentedValue);
     }
+  }
+
+  private void hydrateStagingConfig(final Map<String, Stream<JsonNode>> dump) {
+    if (dump.containsKey(ConfigSchema.STAGING_CONFIGURATION.name())) {
+      Stream<JsonNode> augmentedValue = dump.get(ConfigSchema.STAGING_CONFIGURATION.name()).map(c -> Jsons.object(c, StagingConfiguration.class))
+          .map(c -> {
+            try {
+              return Jsons.jsonNode(getStagingConfigurationWithSecrets(c.getDestinationDefinitionId()));
+            } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      dump.put(ConfigSchema.STAGING_CONFIGURATION.name(), augmentedValue);
+    }
+  }
+
+  public StagingConfiguration getStagingConfigurationWithSecrets(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StagingConfiguration stagingConfiguration = configRepository.getStagingConfigurationNoSecrets(destinationDefinitionId);
+
+    final JsonNode secret = SecretsHelpers.decryptStagingConfiguration(stagingConfiguration, secretsHydrator);
+    return Jsons.clone(stagingConfiguration).withConfiguration(secret);
   }
 
 }
