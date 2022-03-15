@@ -6,6 +6,7 @@
     
     
       compound sortkey(_airbyte_unique_key,_airbyte_emitted_at)
+    
   as (
     
 -- Final base SQL model

@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
@@ -85,6 +86,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> labels,
+                        final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
@@ -101,6 +103,7 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
+      LOGGER.info("Creating docker job ID: {}", jobId);
       final List<String> cmd = Lists.newArrayList(
           "docker",
           "run",
@@ -127,7 +130,8 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      for (final var envEntry : workerConfigs.getEnvMap().entrySet()) {
+      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap());
+      for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }
@@ -137,9 +141,6 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(entrypoint);
       }
       if (resourceRequirements != null) {
-        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
-          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
-        }
         if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }

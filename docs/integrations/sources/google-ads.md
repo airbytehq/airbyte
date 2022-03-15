@@ -100,29 +100,32 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| `0.1.25` | 2022-02-04 | [9812](https://github.com/airbytehq/airbyte/pull/9812) | Handle `EXPIRED_PAGE_TOKEN` exception and retry with updated state. |
-| `0.1.24` | 2022-02-04 | [9996](https://github.com/airbytehq/airbyte/pull/9996) | Use Google Ads API version V9. |
-| `0.1.23` | 2022-01-25 | [8669](https://github.com/airbytehq/airbyte/pull/8669) | Add end date parameter in spec. |
-| `0.1.22` | 2022-01-24 | [9608](https://github.com/airbytehq/airbyte/pull/9608) | Reduce stream slice date range. |
-| `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description |
-| `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum |
-| `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword |
-| `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account. |
-| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields |
-| `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |
-| `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File |
-| `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |
-| `0.1.11` | 2021-09-22 | [\#6373](https://github.com/airbytehq/airbyte/pull/6373) | Fix inconsistent segments.date field type across all streams |
-| `0.1.10` | 2021-09-13 | [\#6022](https://github.com/airbytehq/airbyte/pull/6022) | Annotate Oauth2 flow initialization parameters in connector spec |
-| `0.1.9` | 2021-09-07 | [\#5302](https://github.com/airbytehq/airbyte/pull/5302) | Add custom query stream support |
-| `0.1.8` | 2021-08-03 | [\#5509](https://github.com/airbytehq/airbyte/pull/5509) | allow additionalProperties in spec.json |
-| `0.1.7` | 2021-08-03 | [\#5422](https://github.com/airbytehq/airbyte/pull/5422) | Correct query to not skip dates |
-| `0.1.6` | 2021-08-03 | [\#5423](https://github.com/airbytehq/airbyte/pull/5423) | Added new stream UserLocationReport |
-| `0.1.5` | 2021-08-03 | [\#5159](https://github.com/airbytehq/airbyte/pull/5159) | Add field `login_customer_id` to spec |
-| `0.1.4` | 2021-07-28 | [\#4962](https://github.com/airbytehq/airbyte/pull/4962) | Support new Report streams |
-| `0.1.3` | 2021-07-23 | [\#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
-| `0.1.2` | 2021-07-06 | [\#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| `0.1.1` | 2021-06-23 | [\#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters` |
+| Version  | Date       | Pull Request | Subject                                                                                      |
+|:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
+| `0.1.28` | 2022-02-25 | [10372](https://github.com/airbytehq/airbyte/pull/10372) | Add network fields to click view stream                                                      |
+| `0.1.27` | 2022-02-16 | [10315](https://github.com/airbytehq/airbyte/pull/10315) | Make `ad_group_ads` and other streams support incremental sync.                              |
+| `0.1.26` | 2022-02-11 | [10150](https://github.com/airbytehq/airbyte/pull/10150) | Add support for multiple customer IDs.                                                       |
+| `0.1.25` | 2022-02-04 | [9812](https://github.com/airbytehq/airbyte/pull/9812) | Handle `EXPIRED_PAGE_TOKEN` exception and retry with updated state.                          |
+| `0.1.24` | 2022-02-04 | [9996](https://github.com/airbytehq/airbyte/pull/9996) | Use Google Ads API version V9.                                                               |
+| `0.1.23` | 2022-01-25 | [8669](https://github.com/airbytehq/airbyte/pull/8669) | Add end date parameter in spec.                                                              |
+| `0.1.22` | 2022-01-24 | [9608](https://github.com/airbytehq/airbyte/pull/9608) | Reduce stream slice date range.                                                              |
+| `0.1.21` | 2021-12-28 | [9149](https://github.com/airbytehq/airbyte/pull/9149) | Update title and description                                                                 |
+| `0.1.20` | 2021-12-22 | [9071](https://github.com/airbytehq/airbyte/pull/9071) | Fix: Keyword schema enum                                                                     |
+| `0.1.19` | 2021-12-14 | [8431](https://github.com/airbytehq/airbyte/pull/8431) | Add new streams: Geographic and Keyword                                                      |
+| `0.1.18` | 2021-12-09 | [8225](https://github.com/airbytehq/airbyte/pull/8225) | Include time_zone to sync. Remove streams for manager account.                               |
+| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields                                                                         |
+| `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view`                                                                  |
+| `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File                                                                          |
+| `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File                                                                       |
+| `0.1.11` | 2021-09-22 | [\#6373](https://github.com/airbytehq/airbyte/pull/6373) | Fix inconsistent segments.date field type across all streams                                 |
+| `0.1.10` | 2021-09-13 | [\#6022](https://github.com/airbytehq/airbyte/pull/6022) | Annotate Oauth2 flow initialization parameters in connector spec                             |
+| `0.1.9`  | 2021-09-07 | [\#5302](https://github.com/airbytehq/airbyte/pull/5302) | Add custom query stream support                                                              |
+| `0.1.8`  | 2021-08-03 | [\#5509](https://github.com/airbytehq/airbyte/pull/5509) | allow additionalProperties in spec.json                                                      |
+| `0.1.7`  | 2021-08-03 | [\#5422](https://github.com/airbytehq/airbyte/pull/5422) | Correct query to not skip dates                                                              |
+| `0.1.6`  | 2021-08-03 | [\#5423](https://github.com/airbytehq/airbyte/pull/5423) | Added new stream UserLocationReport                                                          |
+| `0.1.5`  | 2021-08-03 | [\#5159](https://github.com/airbytehq/airbyte/pull/5159) | Add field `login_customer_id` to spec                                                        |
+| `0.1.4`  | 2021-07-28 | [\#4962](https://github.com/airbytehq/airbyte/pull/4962) | Support new Report streams                                                                   |
+| `0.1.3`  | 2021-07-23 | [\#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
+| `0.1.2`  | 2021-07-06 | [\#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                              |
+| `0.1.1`  | 2021-06-23 | [\#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters`                                              |
 

@@ -74,7 +74,7 @@ and `DATA` is not null
 -- depends_on: __dbt__CTE__nested_stream_with_co_3es_partition_data_ab1
 select
     _airbyte_partition_hashid,
-    cast(currency as char) as currency,
+    cast(currency as char(1024)) as currency,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     

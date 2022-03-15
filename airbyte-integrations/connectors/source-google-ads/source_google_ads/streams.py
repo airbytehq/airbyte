@@ -84,6 +84,7 @@ def chunk_date_range(
 class GoogleAdsStream(Stream, ABC):
     def __init__(self, api: GoogleAds):
         self.google_ads_client = api
+        self._customer_id = None
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
         query = GoogleAds.convert_schema_into_query(schema=self.get_json_schema(), report_name=self.name)
@@ -93,9 +94,15 @@ class GoogleAdsStream(Stream, ABC):
         for result in response:
             yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for customer_id in self.google_ads_client.customer_ids:
+            self._customer_id = customer_id
+            yield {}
+
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        response = self.google_ads_client.send_request(self.get_query(stream_slice))
-        yield from self.parse_response(response)
+        account_responses = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=self._customer_id)
+        for response in account_responses:
+            yield from self.parse_response(response)
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
@@ -112,19 +119,30 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field) or self._start_date
-        end_date = self._end_date
+        for customer_id in self.google_ads_client.customer_ids:
+            self._customer_id = customer_id
+            stream_state = stream_state or {}
+            if stream_state.get(customer_id):
+                start_date = stream_state[customer_id].get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(
-            start_date=start_date,
-            end_date=end_date,
-            conversion_window=self.conversion_window_days,
-            field=self.cursor_field,
-            days_of_data_storage=self.days_of_data_storage,
-            range_days=self.range_days,
-            time_zone=self.time_zone,
-        )
+            # We should keep backward compatibility with the previous version
+            elif stream_state.get(self.cursor_field) and len(self.google_ads_client.customer_ids) == 1:
+                start_date = stream_state.get(self.cursor_field) or self._start_date
+            else:
+                start_date = self._start_date
+
+            end_date = self._end_date
+
+            for chunk in chunk_date_range(
+                start_date=start_date,
+                end_date=end_date,
+                conversion_window=self.conversion_window_days,
+                field=self.cursor_field,
+                days_of_data_storage=self.days_of_data_storage,
+                range_days=self.range_days,
+                time_zone=self.time_zone,
+            ):
+                yield chunk
 
     def read_records(
         self,
@@ -152,13 +170,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
                         # If range days is 1, no need in retry, because it's the minimum date range
                         self.logger.error("Page token has expired.")
                         raise exception
-                    elif state.get(self.cursor_field) == stream_slice["start_date"]:
+                    elif state.get(self._customer_id, {}).get(self.cursor_field) == stream_slice["start_date"]:
                         # It couldn't read all the records within one day, it will enter an infinite loop,
                         # so raise the error
                         self.logger.error("Page token has expired.")
                         raise exception
                     # Retry reading records from where it crushed
-                    stream_slice["start_date"] = state.get(self.cursor_field, stream_slice["start_date"])
+                    stream_slice["start_date"] = state.get(self._customer_id, {}).get(self.cursor_field, stream_slice["start_date"])
                 else:
                     # raise caught error for other error statuses
                     raise exception
@@ -169,16 +187,20 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
-        # When state is none return date from latest record
-        if current_stream_state.get(self.cursor_field) is None:
-            current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
-
+        if current_stream_state.get(self.cursor_field):
+            stream_state = current_stream_state.pop(self.cursor_field)
+        elif current_stream_state.get(self._customer_id) and current_stream_state[self._customer_id].get(self.cursor_field):
+            stream_state = current_stream_state[self._customer_id][self.cursor_field]
+        else:
+            current_stream_state.update({self._customer_id: {self.cursor_field: latest_record[self.cursor_field]}})
             return current_stream_state
 
-        date_in_current_stream = pendulum.parse(current_stream_state.get(self.cursor_field))
+        date_in_current_stream = pendulum.parse(stream_state)
         date_in_latest_record = pendulum.parse(latest_record[self.cursor_field])
 
-        current_stream_state[self.cursor_field] = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
+        current_stream_state.update(
+            {self._customer_id: {self.cursor_field: (max(date_in_current_stream, date_in_latest_record)).to_date_string()}}
+        )
 
         return current_stream_state
 
@@ -193,36 +215,36 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class Accounts(GoogleAdsStream):
+class Accounts(IncrementalGoogleAdsStream):
     """
     Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
     """
 
-    primary_key = "customer.id"
+    primary_key = ["customer.id", "segments.date"]
 
 
-class Campaigns(GoogleAdsStream):
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
     """
 
-    primary_key = "campaign.id"
+    primary_key = ["campaign.id", "segments.date"]
 
 
-class AdGroups(GoogleAdsStream):
+class AdGroups(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
     """
 
-    primary_key = "ad_group.id"
+    primary_key = ["ad_group.id", "segments.date"]
 
 
-class AdGroupAds(GoogleAdsStream):
+class AdGroupAds(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
     """
 
-    primary_key = "ad_group_ad.ad.id"
+    primary_key = ["ad_group_ad.ad.id", "segments.date"]
 
 
 class AccountPerformanceReport(IncrementalGoogleAdsStream):
@@ -284,5 +306,6 @@ class ClickView(IncrementalGoogleAdsStream):
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
 
+    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
     range_days = 1

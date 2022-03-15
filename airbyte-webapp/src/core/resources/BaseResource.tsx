@@ -51,7 +51,7 @@ export default abstract class BaseResource extends Resource {
   }
 
   /** Perform network request and resolve with json body */
-  static async fetch<T extends unknown>(
+  static async fetch<T>(
     method: Method,
     url: string,
     body?: Readonly<Record<string, unknown> | Array<unknown> | string>
