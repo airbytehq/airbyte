@@ -100,9 +100,14 @@ public class ConnectionsHandler {
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+
     // Validate source and destination
-    configRepository.getSourceConnection(connectionCreate.getSourceId());
-    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionCreate.getSourceId());
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+
+    // Set this as default name if connectionCreate doesn't have it
+    final String defaultName = sourceConnection.getName() + " <> " + destinationConnection.getName();
+
     ConnectionHelper.validateWorkspace(workspaceHelper,
         connectionCreate.getSourceId(),
         connectionCreate.getDestinationId(),
@@ -113,7 +118,7 @@ public class ConnectionsHandler {
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
-        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
         .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())

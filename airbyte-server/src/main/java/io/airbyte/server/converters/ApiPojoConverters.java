@@ -83,10 +83,13 @@ public class ApiPojoConverters {
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(update.getNamespaceFormat())
         .withPrefix(update.getPrefix())
-        .withName(update.getName())
         .withOperationIds(update.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
         .withStatus(toPersistenceStatus(update.getStatus()));
+
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {

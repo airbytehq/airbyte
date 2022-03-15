@@ -66,10 +66,14 @@ public class ConnectionHelper {
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(update.getNamespaceFormat())
         .withPrefix(update.getPrefix())
-        .withName(update.getName())
         .withOperationIds(update.getOperationIds())
         .withCatalog(update.getCatalog())
         .withStatus(update.getStatus());
+
+    // update name
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {
