@@ -1023,6 +1023,7 @@ class DealPipelines(IncrementalStream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "pipeline-id"
 
 
 class TicketPipelines(IncrementalStream):

@@ -32,10 +32,13 @@ The primary key for the following streams is `canonical-vid`:
 
 - contacts_list_memberships
 
+The primary key for the following streams is `pipeline-id`:
+
+- deal_pipelines
+
 The following streams do not have a primary key:
 
 - contact_lists (The primary key could potentially be a composite key (portalId, listId) - https://legacydocs.hubspot.com/docs/methods/lists/get_lists)
-- deal_pipelines
 - form_submissions
 - line_items
 - property_history
