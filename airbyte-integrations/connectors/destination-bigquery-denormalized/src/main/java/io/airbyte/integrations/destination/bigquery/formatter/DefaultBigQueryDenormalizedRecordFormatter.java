@@ -44,6 +44,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   public static final String NESTED_ARRAY_FIELD = "big_query_array";
   protected static final String PROPERTIES_FIELD = "properties";
   private static final String TYPE_FIELD = "type";
+  private static final String ALL_OF_FIELD = "allOf";
+  private static final String ANY_OF_FIELD = "anyOf";
   private static final String ARRAY_ITEMS_FIELD = "items";
   private static final String FORMAT_FIELD = "format";
   private static final String REF_DEFINITION_KEY = "$ref";
@@ -199,7 +201,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
     }
     LOGGER.info("Airbyte Schema is transformed from {} to {}.", jsonSchema, fieldList);
-    return com.google.cloud.bigquery.Schema.of(fieldList);
+    return Schema.of(fieldList);
   }
 
   private List<Field> getSchemaFields(final StandardNameTransformer namingResolver, final JsonNode jsonSchema) {
@@ -235,10 +237,32 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     };
   }
 
+  private static JsonNode getFileDefinition(final JsonNode fieldDefinition) {
+    if (fieldDefinition.has(TYPE_FIELD)) {
+      return fieldDefinition;
+    } else {
+      if (fieldDefinition.has(ANY_OF_FIELD) && fieldDefinition.get(ANY_OF_FIELD).isArray()) {
+        var fieldOptional = MoreIterators.toList(fieldDefinition.get(ANY_OF_FIELD).elements()).stream().findFirst();
+        if (fieldOptional.isPresent()) {
+          return getFileDefinition(fieldOptional.get());
+        }
+      }
+      if (fieldDefinition.has(ALL_OF_FIELD) && fieldDefinition.get(ALL_OF_FIELD).isArray()) {
+        var fieldOptional = MoreIterators.toList(fieldDefinition.get(ALL_OF_FIELD).elements()).stream().findFirst();
+        if (fieldOptional.isPresent()) {
+          return getFileDefinition(fieldOptional.get());
+        }
+      }
+    }
+    return fieldDefinition;
+  }
+
   private static Builder getField(final StandardNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
-    final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));
+    JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
+    JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
+    final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
       final JsonSchemaType fieldType = fieldTypes.get(i);
       if (fieldType == JsonSchemaType.NULL) {
@@ -256,8 +280,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           }
           case ARRAY -> {
             final JsonNode items;
-            if (fieldDefinition.has("items")) {
-              items = fieldDefinition.get("items");
+            if (updatedFileDefinition.has("items")) {
+              items = updatedFileDefinition.get("items");
             } else {
               LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
               // this is handler for case when we get "array" without "items"
@@ -268,10 +292,10 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           }
           case OBJECT -> {
             final JsonNode properties;
-            if (fieldDefinition.has(PROPERTIES_FIELD)) {
-              properties = fieldDefinition.get(PROPERTIES_FIELD);
+            if (updatedFileDefinition.has(PROPERTIES_FIELD)) {
+              properties = updatedFileDefinition.get(PROPERTIES_FIELD);
             } else {
-              properties = fieldDefinition;
+              properties = updatedFileDefinition;
             }
             final FieldList fieldList = FieldList.of(Jsons.keys(properties)
                 .stream()
@@ -292,7 +316,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     }
 
     // If a specific format is defined, use their specific type instead of the JSON's one
-    final JsonNode fieldFormat = fieldDefinition.get(FORMAT_FIELD);
+    final JsonNode fieldFormat = updatedFileDefinition.get(FORMAT_FIELD);
     if (fieldFormat != null) {
       final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
       if (schemaFormat != null) {
