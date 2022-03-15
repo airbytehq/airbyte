@@ -4,12 +4,15 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.staging.StagingOperations;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -20,6 +23,8 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
+  private static final int UPLOAD_RETRY_LIMIT = 3;
+
   public static final String CREATE_STAGE_QUERY =
       "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   public static final String COPY_QUERY = "COPY INTO %s.%s FROM @%s file_format = " +
@@ -55,19 +60,35 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final RecordBufferImplementation recordsData,
                                      final String schema,
-                                     final String stage) {
-    try {
-      loadDataIntoStage(database, stage, recordsData);
-      return recordsData.getFilename();
-    } catch (final Exception e) {
-      LOGGER.error("Failed to upload records into stage {}", stage, e);
-      throw new RuntimeException(e);
+                                     final String stage) throws IOException {
+    final List<Exception> exceptionsThrown = new ArrayList<>();
+    boolean succeeded = false;
+    while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
+      try {
+        loadDataIntoStage(database, stage, recordsData);
+        succeeded = true;
+      } catch (final Exception e) {
+        LOGGER.error("Failed to upload records into stage {}", stage, e);
+        exceptionsThrown.add(e);
+      }
+      if (!succeeded) {
+        LOGGER.info("Retrying to upload records into stage {} ({}/{}})", stage, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
+      }
     }
+    if (!succeeded) {
+      throw new RuntimeException(String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
+    }
+    return recordsData.getFilename();
   }
 
   private void loadDataIntoStage(final JdbcDatabase database, final String stage, final RecordBufferImplementation recordsData) throws Exception {
     database.execute(
         String.format("PUT file://%s @%s PARALLEL = %d", recordsData.getFile().getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
+    // TODO: check if data was successfully loaded into stage
+    if (false) {
+      LOGGER.error(String.format("Failed to upload data into stage, object @%s/%s not found", stage, recordsData.getFilename()));
+      throw new RuntimeException("Upload failed");
+    }
   }
 
   @Override
