@@ -13,6 +13,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   enum DestinationType {
     COPY_S3,
     COPY_GCS,
+    COPY_AZURE_BLOB,
     INTERNAL_STAGING
   }
 
