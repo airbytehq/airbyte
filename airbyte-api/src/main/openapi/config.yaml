@@ -2710,9 +2710,6 @@ components:
           description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
           default: null
           example: "${SOURCE_NAMESPACE}"
-        name:
-          type: string
-          description: Name that will be set to this connection
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2735,9 +2732,6 @@ components:
         - syncCatalog
         - status
       properties:
-        name:
-          type: string
-          description: Name that will be set to the connection
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         namespaceDefinition:

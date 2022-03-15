@@ -66,7 +66,6 @@ public class ConnectionHelper {
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(update.getNamespaceFormat())
         .withPrefix(update.getPrefix())
-        .withName(update.getName())
         .withOperationIds(update.getOperationIds())
         .withCatalog(update.getCatalog())
         .withStatus(update.getStatus());
