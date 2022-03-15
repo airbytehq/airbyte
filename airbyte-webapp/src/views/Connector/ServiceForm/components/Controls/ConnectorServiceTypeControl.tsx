@@ -187,9 +187,9 @@ const ConnectorServiceTypeControl: React.FC<{
           ["200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b"], // Snapchat
           ["2470e835-feaf-4db6-96f3-70fd645acc77"], // Salesforce Singer
           // TODO Issue 10817: we need to enable shopify ONLY for this workspace so until Shopify gives us approval to use oauth
-          workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
-            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"]
-            : [], // Shopify
+          workspace.workspaceId !== "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
+            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
+            : [],
         ]
       : [])
   );
