@@ -91,17 +91,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
     def compute_pause_interval(self, usage, pause_interval):
         """ The sleep time will be calculated based on usage consumed.
         """
-        max_pause_interval = self.MIN_PAUSE_INTERVAL
         if usage >= self.MAX_RATE:
-            max_pause_interval = self.MAX_PAUSE_INTERVAL
-
-        return max(max_pause_interval, pause_interval)
+            return max(self.MAX_PAUSE_INTERVAL, pause_interval)
+        return self.MIN_PAUSE_INTERVAL
 
     def handle_call_rate_limit(self, response, params):
-        if "batch" in params:
-            max_usage = 0
-            max_pause_interval = self.MIN_PAUSE_INTERVAL
+        usage = 0
+        pause_interval = self.MIN_PAUSE_INTERVAL
 
+        if "batch" in params:
             for record in response.json():
                 # there are two types of failures:
                 # 1. no response (we execute batch until all inner requests has response)
@@ -110,23 +108,17 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 if "headers" not in record:
                     continue
                 headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-                usage, pause_interval = self._parse_call_rate_header(headers)
-                max_usage = max(max_usage, usage)
-                max_pause_interval = max(max_pause_interval, pause_interval)
-
-            if max_usage >= self.MIN_RATE:
-                sleep_time = self.compute_pause_interval(usage=max_usage, pause_interval=max_pause_interval)
-                logger.warning(f"Utilization is too high ({max_usage})%, pausing for {sleep_time}")
-                sleep(sleep_time).total_seconds()
-
-
+                usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+                usage = max(usage, usage_from_response)
+                pause_interval = max(pause_interval_from_response, pause_interval)
         else:
             headers = response.headers()
             usage, pause_interval = self._parse_call_rate_header(headers)
-            if usage >= self.MIN_RATE or pause_interval:
-                sleep_time = self.compute_pause_interval(usage=usage, pause_interval=pause_interval)
-                logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
-                sleep(sleep_time).total_seconds()
+
+        if usage >= self.MIN_RATE:
+            sleep_time = self.compute_pause_interval(usage=usage, pause_interval=pause_interval)
+            logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
+            sleep(sleep_time).total_seconds()
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
         """
