@@ -9,7 +9,6 @@ from time import sleep
 
 import backoff
 import pendulum
-from typing import Tuple
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
@@ -89,8 +88,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         return usage, pause_interval
 
     def compute_pause_interval(self, usage, pause_interval):
-        """ The sleep time will be calculated based on usage consumed.
-        """
+        """The sleep time will be calculated based on usage consumed."""
         if usage >= self.MAX_RATE:
             return max(self.MAX_PAUSE_INTERVAL, pause_interval)
         return self.MIN_PAUSE_INTERVAL
