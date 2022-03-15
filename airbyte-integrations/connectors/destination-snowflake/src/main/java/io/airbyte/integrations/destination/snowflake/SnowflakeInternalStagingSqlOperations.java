@@ -12,16 +12,18 @@ import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
+  private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
   public static final String CREATE_STAGE_QUERY =
       "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   public static final String COPY_QUERY = "COPY INTO %s.%s FROM @%s file_format = " +
-      "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+      "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') ";
   public static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private final NamingConventionTransformer nameTransformer;
@@ -70,7 +72,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String query = "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
         () -> database.execute(getCreateStageQuery(stageName)),
         Map.of("stage", stageName));
@@ -84,7 +85,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
                                         final String schemaName)
       throws SQLException {
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> database.execute(getCopyQuery(stageName, dstTableName, schemaName)),
+        () -> database.execute(getCopyQuery(stageName, stagedFiles, dstTableName, schemaName)),
         Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
   }
 
@@ -92,8 +93,19 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return String.format(CREATE_STAGE_QUERY, stageName);
   }
 
-  protected String getCopyQuery(final String stageName, final String dstTableName, final String schemaName) {
-    return String.format(COPY_QUERY, schemaName, dstTableName, stageName);
+  protected String getCopyQuery(final String stageName, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
+    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName);
+  }
+
+  private String generateFilesList(final List<String> files) {
+    if (files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
+      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
+      final StringJoiner joiner = new StringJoiner(",");
+      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
+      return "files = (" + joiner + ") ";
+    } else {
+      return "";
+    }
   }
 
   @Override

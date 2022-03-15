@@ -24,6 +24,9 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
+  public static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
+      + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
+      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') ";
 
   private final NamingConventionTransformer nameTransformer;
   private final S3StorageOperations s3StorageOperations;
@@ -69,7 +72,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
         () -> s3StorageOperations.createBucketObjectIfNotExists(stageName),
-    Map.of("stage", stageName));
+        Map.of("stage", stageName));
   }
 
   @Override
@@ -79,21 +82,19 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                         final String dstTableName,
                                         final String schemaName) {
     LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stageName, schemaName);
-    final var copyQuery = String.format(
-        "COPY INTO %s.%s FROM '%s' "
-            + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
-            + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
-            + generateFilesList(stagedFiles)
-            + ";",
+    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
+        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stageName, stagedFiles, dstTableName, schemaName))),
+        Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
+    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
+  }
+
+  protected String getCopyQuery(final String stageName, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
+    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
         schemaName,
         dstTableName,
         generateBucketPath(stageName),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey());
-    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> Exceptions.toRuntime(() -> database.execute(copyQuery)),
-    Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
   private String generateBucketPath(final String stage) {
