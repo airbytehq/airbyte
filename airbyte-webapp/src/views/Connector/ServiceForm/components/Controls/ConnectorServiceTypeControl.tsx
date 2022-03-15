@@ -5,6 +5,7 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
@@ -183,7 +184,7 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
-  const disallowedOauthConnectors =
+  let disallowedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
     window.CLOUD === "true"
       ? [
@@ -192,6 +193,14 @@ const ConnectorServiceTypeControl: React.FC<{
           "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
         ]
       : [];
+  if (
+    window.CLOUD === "true" &&
+    workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
+  ) {
+    disallowedOauthConnectors = disallowedOauthConnectors.filter(
+      (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
+    );
+  }
   const sortedDropDownData = useMemo(
     () =>
       availableServices
