@@ -70,8 +70,7 @@ jobs:
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
     needs: changes
-    #    if: needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || github.ref == 'refs/heads/master'
-    if: needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -519,7 +518,9 @@ jobs:
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
+    if: |
+      needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master' ||
+      (needs.changes.outputs.backend == 'true' && needs.changes.output.connectors == 'false')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
