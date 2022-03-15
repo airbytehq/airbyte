@@ -78,8 +78,8 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 
 @responses.activate
 def test_stream_teams_404():
-    kwargs = {"organizations": ["org_name"]}
-    stream = Teams(**kwargs)
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
 
     responses.add(
         "GET",
@@ -95,8 +95,8 @@ def test_stream_teams_404():
 
 @responses.activate
 def test_stream_organizations_read():
-    kwargs = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**kwargs)
+    organization_args = {"organizations": ["org1", "org2"]}
+    stream = Organizations(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1", json={"id": 1})
     responses.add("GET", "https://api.github.com/orgs/org2", json={"id": 2})
     records = read_full_refresh(stream)
@@ -105,8 +105,8 @@ def test_stream_organizations_read():
 
 @responses.activate
 def test_stream_teams_read():
-    kwargs = {"organizations": ["org1", "org2"]}
-    stream = Teams(**kwargs)
+    organization_args = {"organizations": ["org1", "org2"]}
+    stream = Teams(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = read_full_refresh(stream)
@@ -118,8 +118,8 @@ def test_stream_teams_read():
 
 @responses.activate
 def test_stream_users_read():
-    kwargs = {"organizations": ["org1", "org2"]}
-    stream = Users(**kwargs)
+    organization_args = {"organizations": ["org1", "org2"]}
+    stream = Users(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/members", json=[{"id": 3}])
     records = read_full_refresh(stream)
@@ -131,8 +131,8 @@ def test_stream_users_read():
 
 @responses.activate
 def test_stream_repositories_404():
-    kwargs = {"organizations": ["org_name"]}
-    stream = Repositories(**kwargs)
+    organization_args = {"organizations": ["org_name"]}
+    stream = Repositories(**organization_args)
 
     responses.add(
         "GET",
@@ -148,8 +148,8 @@ def test_stream_repositories_404():
 
 @responses.activate
 def test_stream_repositories_read():
-    kwargs = {"organizations": ["org1", "org2"]}
-    stream = Repositories(**kwargs)
+    organization_args = {"organizations": ["org1", "org2"]}
+    stream = Repositories(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3}])
     records = read_full_refresh(stream)
@@ -161,9 +161,10 @@ def test_stream_repositories_read():
 
 @responses.activate
 def test_stream_projects_disabled():
-    kwargs = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
-    stream = Projects(**kwargs)
 
+    repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
+
+    stream = Projects(**repository_args_with_start_date)
     responses.add(
         "GET",
         "https://api.github.com/repos/test_repo/projects",
