@@ -9,7 +9,9 @@ import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DAT
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
@@ -26,6 +28,8 @@ import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
@@ -33,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -232,4 +237,33 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       }
     });
   }
+
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    HashSet<String> nestedFieldNames = new HashSet<>();
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            nestedFieldNames.add(fieldName.toUpperCase());
+          }
+        }
+      }
+    }
+    if (actualMessages != null) {
+      for (AirbyteRecordMessage message : actualMessages) {
+        nestedFieldNames.stream().filter(name -> message.getData().has(name)).forEach(name -> {
+          var data = message.getData().get(name).asText();
+          try {
+            ((ObjectNode) message.getData()).put(name,
+                new ObjectMapper().readTree(data));
+          } catch (JsonProcessingException e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    }
+  }
+
 }

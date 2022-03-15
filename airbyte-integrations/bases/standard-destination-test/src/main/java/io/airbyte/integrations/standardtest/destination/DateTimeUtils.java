@@ -290,7 +290,14 @@ public class DateTimeUtils {
    */
   @VisibleForTesting
   private static String toDatabricksDateFormat(Instant instant) {
-    return DateTimeFormatter.ofPattern("'***\"member0\":'yyyy-MM-dd HH:mm:ss.SSS',\"member1\":null***'").withZone(ZoneOffset.UTC).format(instant);
+    if (instant.get(ChronoField.MILLI_OF_SECOND) == 0) {
+      return DateTimeFormatter.ofPattern(
+              "'{\"member0\":'yyyy-MM-dd HH:mm:ss',\"member1\":null}'").withZone(ZoneOffset.UTC)
+          .format(instant);
+    } else {
+      return DateTimeFormatter.ofPattern(
+              "'{\"member0\":'yyyy-MM-dd HH:mm:ss.SSS',\"member1\":null}'").withZone(ZoneOffset.UTC)
+          .format(instant);
+    }
   }
-
 }

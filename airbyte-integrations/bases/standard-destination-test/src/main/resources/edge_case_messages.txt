@@ -1,3 +1,4 @@
+{"type": "RECORD", "record": {"stream": "stream_with_nested_objects", "emitted_at": 1602637589000, "data": { "nested_object": { "nested_field" : "one"}}}}
 {"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589000, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589100, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589200, "data": { "fieldWithCamelCase" : "one" }}}
@@ -26,4 +27,5 @@
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-06T01:01:01-01:00"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-08T01:01:01+0000"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-01T01:01:01+01"}}}
+{"type": "RECORD", "record": {"stream": "stream_with_nested_dates", "emitted_at": 1602637589000, "data": { "nested_object": { "datetime_nested" : "2021-01-01T01:01:01+01"}}}}
 {"type": "STATE", "state": { "data": {"start_date": "2020-09-02"}}}

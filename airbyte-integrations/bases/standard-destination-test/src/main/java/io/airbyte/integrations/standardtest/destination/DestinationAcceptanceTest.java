@@ -10,7 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -379,6 +381,7 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     if (requiresDateTimeConversionForSync()) {
       dateTimeFieldNames = getDateTimeFieldsFormat(catalog.getStreams());
       convertDateTimeFields(messages, dateTimeFieldNames);
+      deserializeNestedObjects(messages, null);
     }
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
@@ -582,6 +585,7 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     if (requiresDateTimeConversionForNormalizedSync()) {
       dateTimeFieldNames = getDateTimeFieldsFormat(catalog.getStreams());
       convertDateTimeFields(messages, dateTimeFieldNames);
+      deserializeNestedObjects(messages, actualMessages);
     }
     assertSameMessages(messages, actualMessages, true);
   }
@@ -1421,20 +1425,28 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     final Map<String, String> fieldFormats = new HashMap<>();
 
     streams.stream().map(AirbyteStream::getJsonSchema).forEach(streamSchema -> {
-      final JsonNode fieldDefinitions = streamSchema.get("properties");
-      final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
-      while (iterator.hasNext()) {
-        Map.Entry<String, JsonNode> entry = iterator.next();
-        if (entry.getValue().has("format")) {
-          String format = entry.getValue().get("format").asText();
-          if (format.equalsIgnoreCase("date") || format.equalsIgnoreCase("date-time")) {
-            fieldFormats.put(entry.getKey(), format);
-          }
-        }
-      }
+      putFieldsFromSchema(streamSchema, fieldFormats);
     });
 
     return fieldFormats;
+  }
+
+  private static void putFieldsFromSchema(JsonNode streamSchema, Map<String, String> fieldFormats) {
+    final JsonNode fieldDefinitions = streamSchema.get("properties");
+    final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
+    while (iterator.hasNext()) {
+      Map.Entry<String, JsonNode> entry = iterator.next();
+      if (entry.getValue().has("type") && entry.getValue().get("type").asText().equals("object")
+          && entry.getValue().has("properties")) {
+        putFieldsFromSchema(entry.getValue(), fieldFormats);
+      }
+      if (entry.getValue().has("format")) {
+        String format = entry.getValue().get("format").asText();
+        if (format.equalsIgnoreCase("date") || format.equalsIgnoreCase("date-time")) {
+          fieldFormats.put(entry.getKey(), format);
+        }
+      }
+    }
   }
 
   private final static String LOREM_IPSUM =
@@ -1527,4 +1539,31 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     return airbyteMessages;
   }
 
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    HashSet<String> nestedFieldNames = new HashSet<>();
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            nestedFieldNames.add(fieldName);
+          }
+        }
+      }
+    }
+    if (actualMessages != null) {
+      for (AirbyteRecordMessage message : actualMessages) {
+        nestedFieldNames.stream().filter(name -> message.getData().has(name)).forEach(name -> {
+          var data = message.getData().get(name).asText();
+          try {
+            ((ObjectNode) message.getData()).put(name,
+                new ObjectMapper().readTree(data));
+          } catch (JsonProcessingException e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    }
+  }
 }
