@@ -29,7 +29,13 @@ public class S3OutputPathHelper {
     if (namespace != null) {
       paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
-    paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
+    if (streamName.contains("=")){
+      // case AWS Glue crawler
+      // more details https://docs.aws.amazon.com/glue/latest/dg/crawler-s3-folder-table-partition.html
+      paths.add(streamName);
+    }else {
+      paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
+    }
     return String.join("/", paths).replaceAll("/+", "/");
   }
 
