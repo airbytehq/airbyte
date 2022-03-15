@@ -1,6 +1,21 @@
 {
   "streams": [
     {
+      "name": "stream_with_nested_objects",
+      "json_schema": {
+        "properties": {
+          "nested_object": {
+            "type": "object",
+            "properties": {
+              "nested_field": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "streamWithCamelCase",
       "json_schema": {
         "properties": {
@@ -10,7 +25,6 @@
         }
       }
     },
-
     {
       "name": "stream_with_underscores",
       "json_schema": {
@@ -151,6 +165,22 @@
           "datetime": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_nested_dates",
+      "json_schema": {
+        "properties": {
+          "nested_object": {
+            "type": "object",
+            "properties": {
+              "datetime_nested": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
           }
         }
       }

@@ -29,11 +29,15 @@ import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -168,18 +172,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
     data.removeAll();
-    fields.forEach(field -> {
-      var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key)) {
-        switch (dateTimeFieldNames.get(key)) {
-          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(),
-              String.format("***\"member0\":%s,\"member1\":null***", DateTimeUtils.convertToDateFormat(field.getValue().asText())));
-        }
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
-      }
-    });
+    fields.forEach(field -> convertField(field, field.getValue(), dateTimeFieldNames, data));
   }
 
   @Override
@@ -191,6 +184,49 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
       Assertions.assertEquals(expectedValue.asText(), expectedValue.asText());
     } else {
       super.assertSameValue(key, expectedValue, actualValue);
+    }
+  }
+
+  @Override
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
+              var data = message.getRecord().getData().get(fieldName).get(f);
+              var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
+                  dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() :
+                  StringUtils.wrap(data.asText(), "\""));
+              ((ObjectNode)message.getRecord().getData()).put(fieldName, wrappedData);
+            });
+          }
+        }
+      }
+    }
+  }
+
+  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode data) {
+    if (fieldValue.isContainerNode()) {
+      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
+          Spliterator.ORDERED), false).toList();
+      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, data));
+    }
+    var key = field.getKey();
+    if (fieldValue.isContainerNode()) {
+      var dataCopy = data.deepCopy();
+      data.removeAll();
+      data.set(key, dataCopy);
+    } else if (dateTimeFieldNames.containsKey(key)) {
+      switch (dateTimeFieldNames.get(key)) {
+        case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(fieldValue.asText()));
+        case DATE -> data.put(key.toLowerCase(), String.format("***\"member0\":%s,\"member1\":null***",
+            DateTimeUtils.convertToDateFormat(field.getValue().asText())));
+      }
+    } else {
+      data.set(key.toLowerCase(), field.getValue());
     }
   }
 
