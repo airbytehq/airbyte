@@ -12,6 +12,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.STAGING_CONFIGURATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
@@ -38,6 +39,7 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -49,6 +51,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.configs.jooq.Tables;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
@@ -118,6 +121,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (T) getActorCatalog(configId);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (T) getActorCatalogFetchEvent(configId);
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      return (T) getStagingConfiguration(configId);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -197,6 +202,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return result.get(0).getConfig();
   }
 
+  private StagingConfiguration getStagingConfiguration(final String configId) throws IOException, ConfigNotFoundException {
+    final List<ConfigWithMetadata<StagingConfiguration>> result = listStagingConfigurationWithMetadata(Optional.of(UUID.fromString(configId)));
+    validate(configId, result, ConfigSchema.STAGING_CONFIGURATION);
+    return result.get(0).getConfig();
+  }
+
   private List<UUID> connectionOperationIds(final UUID connectionId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(CONNECTION_OPERATION)
@@ -263,6 +274,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogFetchEventWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStagingConfigurationWithMetadata(configIdOpt), configType);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -295,6 +308,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       listActorCatalogWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       listActorCatalogFetchEventWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      listStagingConfigurationWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -748,6 +763,37 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withActorId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID));
   }
 
+  private List<ConfigWithMetadata<StagingConfiguration>> listStagingConfigurationWithMetadata() throws IOException {
+    return listStagingConfigurationWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<StagingConfiguration>> listStagingConfigurationWithMetadata(final Optional<UUID> configId) throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(STAGING_CONFIGURATION);
+      if (configId.isPresent()) {
+        return query.where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
+    final List<ConfigWithMetadata<StagingConfiguration>> stagingConfigurations = new ArrayList<>();
+    for (final Record record : result) {
+      final StagingConfiguration stagingConfiguration = buildStagingConfiguration(record);
+      stagingConfigurations.add(new ConfigWithMetadata<>(
+          record.get(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID).toString(),
+          ConfigSchema.STAGING_CONFIGURATION.name(),
+          record.get(STAGING_CONFIGURATION.CREATED_AT).toInstant(),
+          record.get(STAGING_CONFIGURATION.UPDATED_AT).toInstant(),
+          stagingConfiguration));
+    }
+    return stagingConfigurations;
+  }
+
+  private StagingConfiguration buildStagingConfiguration(final Record record) {
+    return new StagingConfiguration()
+        .withDestinationDefinitionId(record.get(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID))
+        .withConfiguration(Jsons.deserialize(record.get(STAGING_CONFIGURATION.CONFIG).data()));
+  }
+
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
     if (configType == ConfigSchema.STANDARD_WORKSPACE) {
@@ -774,6 +820,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(Collections.singletonList((ActorCatalog) config));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(Collections.singletonList((ActorCatalogFetchEvent) config));
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      writeStagingConfiguration(Collections.singletonList((StagingConfiguration) config));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1292,6 +1340,37 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  private void writeStagingConfiguration(final List<StagingConfiguration> configs) throws IOException {
+    database.transaction(ctx -> {
+      writeStagingConfiguration(configs, ctx);
+      return null;
+    });
+  }
+
+  private void writeStagingConfiguration(final List<StagingConfiguration> configs, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    configs.forEach((stagingConfiguration) -> {
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(STAGING_CONFIGURATION)
+          .where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(stagingConfiguration.getDestinationDefinitionId())));
+
+      if (isExistingConfig) {
+        ctx.update(STAGING_CONFIGURATION)
+            .set(STAGING_CONFIGURATION.CONFIG, JSONB.valueOf(Jsons.serialize(stagingConfiguration.getConfiguration())))
+            .set(STAGING_CONFIGURATION.UPDATED_AT, timestamp)
+            .where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(stagingConfiguration.getDestinationDefinitionId()))
+            .execute();
+      } else {
+        ctx.insertInto(STAGING_CONFIGURATION)
+            .set(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID, stagingConfiguration.getDestinationDefinitionId())
+            .set(STAGING_CONFIGURATION.CONFIG, JSONB.valueOf(Jsons.serialize(stagingConfiguration.getConfiguration())))
+            .set(STAGING_CONFIGURATION.CREATED_AT, timestamp)
+            .set(STAGING_CONFIGURATION.UPDATED_AT, timestamp)
+            .execute();
+      }
+    });
+  }
+
   private void writeActorCatalog(final List<ActorCatalog> configs) throws IOException {
     database.transaction(ctx -> {
       writeActorCatalog(configs, ctx);
@@ -1388,6 +1467,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(configs.values().stream().map(c -> (ActorCatalog) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(configs.values().stream().map(c -> (ActorCatalogFetchEvent) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      writeStagingConfiguration(configs.values().stream().map(c -> (StagingConfiguration) c).collect(Collectors.toList()));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1419,6 +1500,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       deleteConfig(ACTOR_CATALOG, ACTOR_CATALOG.ID, UUID.fromString(configId));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       deleteConfig(ACTOR_CATALOG_FETCH_EVENT, ACTOR_CATALOG_FETCH_EVENT.ID, UUID.fromString(configId));
+    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
+      deleteConfig(STAGING_CONFIGURATION, STAGING_CONFIGURATION.ACTOR_DEFINITION_ID, UUID.fromString(configId));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1476,6 +1559,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(STATE).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG_FETCH_EVENT).restartIdentity().cascade().execute();
+      ctx.truncate(STAGING_CONFIGURATION).restartIdentity().cascade().execute();
 
       if (configs.containsKey(ConfigSchema.STANDARD_WORKSPACE)) {
         configs.get(ConfigSchema.STANDARD_WORKSPACE).map(c -> (StandardWorkspace) c)
@@ -1569,6 +1653,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
       } else {
         LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + " not found");
+      }
+
+      if (configs.containsKey(ConfigSchema.STAGING_CONFIGURATION)) {
+        configs.get(ConfigSchema.STAGING_CONFIGURATION).map(c -> (StagingConfiguration) c)
+            .forEach(c -> writeStagingConfiguration(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.STAGING_CONFIGURATION);
+      } else {
+        LOGGER.warn(ConfigSchema.STAGING_CONFIGURATION + " not found");
       }
 
       if (!originalConfigs.isEmpty()) {
@@ -1668,21 +1760,31 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalog>> actorCatalogWithMetadata = listActorCatalogWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG.name(),
-          standardSyncStateWithMetadata
+          actorCatalogWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalogFetchEvent>> actorCatalogFetchEventWithMetadata = listActorCatalogFetchEventWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogFetchEventWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT.name(),
-          standardSyncStateWithMetadata
+          actorCatalogFetchEventWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));
     }
+
+    final List<ConfigWithMetadata<StagingConfiguration>> stagingConfigurationWithMetadata = listStagingConfigurationWithMetadata();
+    if (!stagingConfigurationWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.STAGING_CONFIGURATION.name(),
+          stagingConfigurationWithMetadata
+              .stream()
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
+    }
+
     return result;
   }
 

@@ -938,6 +938,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/staging_configuration/create:
+    post:
+      tags:
+        - staging
+      summary: Create staging configuration
+      operationId: createStagingConfiguration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StagingConfigurationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StagingConfigurationRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/create:
     post:
       tags:
@@ -2558,6 +2581,26 @@ components:
           type: string
         destinationName:
           type: string
+    StagingConfigurationRead:
+      type: object
+      required:
+        - destinationDefinitionId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+    StagingConfiguration:
+      description: The values required to configure the staging bucket.
+      example: { user: "charles" }
+    StagingConfigurationCreate:
+      type: object
+      required:
+        - destinationDefinitionId
+        - configuration
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        stagingConfiguration:
+          $ref: "#/components/schemas/StagingConfiguration"
     DestinationReadList:
       type: object
       required:

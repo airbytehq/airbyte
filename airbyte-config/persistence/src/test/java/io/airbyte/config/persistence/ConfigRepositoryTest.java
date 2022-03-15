@@ -6,7 +6,9 @@ package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -15,10 +17,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -27,14 +31,18 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,21 +56,15 @@ class ConfigRepositoryTest {
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
-  private Database database;
+  private MemorySecretPersistence secretPersistence;
 
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
-    database = mock(Database.class);
-    final var secretPersistence = new MemorySecretPersistence();
+    secretPersistence = new MemorySecretPersistence();
     configRepository =
         spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
-            database));
-  }
-
-  @AfterEach
-  void cleanUp() {
-    reset(configPersistence);
+            mock(Database.class)));
   }
 
   @Test
@@ -431,6 +433,98 @@ class ConfigRepositoryTest {
 
     assertTrue(workspace.getFeedbackDone());
     verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
+  @Test
+  public void testWriteStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID destinationDefinitionId = UUID.randomUUID();
+    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name","John","age","30","car","tesla")));
+    assertEquals("{\"age\":\"30\",\"car\":\"tesla\",\"name\":\"John\"}", secretPayload.toString());
+    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
+        .withDestinationDefinitionId(destinationDefinitionId)
+        .withConfiguration(secretPayload);
+
+    doThrow(new ConfigNotFoundException(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString()))
+        .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+    configRepository.writeStagingConfiguration(stagingConfiguration);
+
+    assertEquals(1, secretPersistence.getSecretMap().size());
+    final String payloadSavedInPersistence = secretPersistence.getSecretMap().values().stream().toList().get(0);
+    assertEquals(secretPayload.toString(), payloadSavedInPersistence);
+    final SecretCoordinate secretCoordinate = secretPersistence.getSecretMap().keySet().stream().toList().get(0);
+
+    verify(configPersistence).writeConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(),
+        Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(Map.of("_secret", secretCoordinate.getFullCoordinate())))));
+  }
+
+  @Test
+  public void testWriteSameStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigPersistence configPersistence = mock(ConfigPersistence.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final ConfigRepository configRepository =
+        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
+            mock(Database.class)));
+
+    final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
+    assertEquals("{\"age\":\"30\",\"car\":\"null\",\"name\":\"John\"}", secretPayload.toString());
+    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
+        .withDestinationDefinitionId(destinationDefinitionId)
+        .withConfiguration(secretPayload);
+    final SecretCoordinate secretCoordinate = new SecretCoordinate(
+        "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
+        Map.of("_secret", secretCoordinate.getFullCoordinate()))))
+        .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+
+    doReturn(Optional.of(secretPayload.toString())).when(secretPersistence).read(secretCoordinate);
+    configRepository.writeStagingConfiguration(stagingConfiguration);
+
+    verify(secretPersistence).write(secretCoordinate, secretPayload.toString());
+    verify(configPersistence).writeConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(),
+        Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(
+            Map.of("_secret", secretCoordinate.getFullCoordinate())))));
+  }
+
+  @Test
+  public void testWriteDifferentStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConfigPersistence configPersistence = mock(ConfigPersistence.class);
+    final SecretPersistence secretPersistence = mock(SecretPersistence.class);
+    final ConfigRepository configRepository =
+        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
+            mock(Database.class)));
+
+    final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+    final JsonNode oldSecretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
+    assertEquals("{\"age\":\"30\",\"car\":\"null\",\"name\":\"John\"}", oldSecretPayload.toString());
+    final JsonNode newSecretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "abcd")));
+    assertEquals("{\"age\":\"30\",\"car\":\"abcd\",\"name\":\"John\"}", newSecretPayload.toString());
+    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
+        .withDestinationDefinitionId(destinationDefinitionId)
+        .withConfiguration(newSecretPayload);
+
+    final SecretCoordinate oldSecretCoordinate = new SecretCoordinate(
+        "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
+
+    doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
+        Map.of("_secret", oldSecretCoordinate.getFullCoordinate()))))
+        .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+
+    final SecretCoordinate newSecretCoordinate = new SecretCoordinate(
+        "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);
+    doReturn(Optional.of(oldSecretPayload.toString())).when(secretPersistence).read(oldSecretCoordinate);
+    configRepository.writeStagingConfiguration(stagingConfiguration);
+
+    verify(secretPersistence).write(newSecretCoordinate, newSecretPayload.toString());
+    verify(configPersistence).writeConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(),
+        Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(
+            Map.of("_secret", newSecretCoordinate.getFullCoordinate())))));
+  }
+
+  private Map<String, String> sortMap(Map<String, String> originalMap) {
+    return originalMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
 }

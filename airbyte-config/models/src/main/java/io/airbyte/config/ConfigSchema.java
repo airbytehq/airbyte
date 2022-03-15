@@ -69,7 +69,10 @@ public enum ConfigSchema implements AirbyteConfig {
   OPERATOR_DBT_INPUT("OperatorDbtInput.yaml", OperatorDbtInput.class),
   STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml", StandardSyncOutput.class),
   REPLICATION_OUTPUT("ReplicationOutput.yaml", ReplicationOutput.class),
-  STATE("State.yaml", State.class);
+  STATE("State.yaml", State.class),
+
+  //staging
+  STAGING_CONFIGURATION("StagingConfiguration.yaml", StagingConfiguration.class, stagingConfiguration -> stagingConfiguration.getDestinationDefinitionId().toString(), "destinationDefinitionId");
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
 

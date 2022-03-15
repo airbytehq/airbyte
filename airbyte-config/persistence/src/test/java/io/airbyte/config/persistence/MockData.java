@@ -23,6 +23,7 @@ import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -47,6 +48,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class MockData {
@@ -81,8 +83,6 @@ public class MockData {
   private static final UUID ACTOR_CATALOG_ID_3 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_1 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_2 = UUID.randomUUID();
-
-  private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
@@ -145,7 +145,7 @@ public class MockData {
   private static ConnectorSpecification connectorSpecification() {
     return new ConnectorSpecification()
         .withAuthSpecification(new AuthSpecification().withAuthType(AuthType.OAUTH_2_0))
-        .withConnectionSpecification(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConnectionSpecification(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withDocumentationUrl(URI.create("whatever"))
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
@@ -185,14 +185,14 @@ public class MockData {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withSourceId(SOURCE_ID_2);
     final SourceConnection sourceConnection3 = new SourceConnection()
         .withName("source-3")
@@ -210,14 +210,14 @@ public class MockData {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withDestinationId(DESTINATION_ID_2);
     final DestinationConnection destinationConnection3 = new DestinationConnection()
         .withName("destination-3")
@@ -231,12 +231,12 @@ public class MockData {
 
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_2);
@@ -245,12 +245,12 @@ public class MockData {
 
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_2);
@@ -390,16 +390,16 @@ public class MockData {
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
     final StandardSyncState standardSyncState2 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_2)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
     final StandardSyncState standardSyncState3 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_3)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
     final StandardSyncState standardSyncState4 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_4)
-        .withState(new State().withState(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'")));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
   }
 
@@ -432,11 +432,18 @@ public class MockData {
         .withActorId(SOURCE_ID_2)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
-    return Arrays.asList(actorCatalogFetchEvent1);
+    return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
-  public static Instant now() {
-    return NOW;
+  public static List<StagingConfiguration> stagingConfiguration() {
+    final StagingConfiguration stagingConfiguration1 = new StagingConfiguration()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","tesla")));
+    final StagingConfiguration stagingConfiguration2 = new StagingConfiguration()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
+        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","32","car","audi")));
+    return Arrays.asList(stagingConfiguration1, stagingConfiguration2);
   }
+
 
 }

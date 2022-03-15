@@ -124,6 +124,14 @@ create table "public"."operation"(
   constraint "operation_pkey"
     primary key ("id")
 );
+create table "public"."staging_configuration"(
+  "actor_definition_id" uuid not null,
+  "config" jsonb null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
+  constraint "staging_configuration_pkey"
+    primary key ("actor_definition_id")
+);
 create table "public"."state"(
   "id" uuid not null,
   "connection_id" uuid not null,
@@ -200,6 +208,10 @@ alter table "public"."operation"
   add constraint "operation_workspace_id_fkey"
     foreign key ("workspace_id")
     references "public"."workspace" ("id");
+alter table "public"."staging_configuration"
+  add constraint "staging_configuration_actor_definition_id_fkey"
+    foreign key ("actor_definition_id")
+    references "public"."actor_definition" ("id");
 alter table "public"."state"
   add constraint "state_connection_id_fkey"
     foreign key ("connection_id")
@@ -226,6 +238,7 @@ create unique index "connection_operation_pkey" on "public"."connection_operatio
   "operation_id" asc
 );
 create unique index "operation_pkey" on "public"."operation"("id" asc);
+create unique index "staging_configuration_pkey" on "public"."staging_configuration"("actor_definition_id" asc);
 create unique index "state_pkey" on "public"."state"(
   "id" asc, 
   "connection_id" asc

@@ -26,6 +26,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -33,6 +34,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -468,6 +470,51 @@ public class ConfigRepository {
     final var partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), partialDestination);
+  }
+
+  public void writeStagingConfiguration(final StagingConfiguration stagingConfiguration)
+      throws JsonValidationException, IOException {
+    StagingConfiguration stagingConfigForDB = null;
+    if (longLivedSecretPersistence.isPresent()) {
+      final Optional<StagingConfiguration> optionalStagingConfiguration = getOptionalStagingConfiguration(
+          stagingConfiguration.getDestinationDefinitionId());
+      final SecretCoordinateToPayload secretCoordinateToPayload = SecretsHelpers.convertStagingConfigToSecret(stagingConfiguration.getConfiguration().toString(),
+          longLivedSecretPersistence.get(),
+          stagingConfiguration.getDestinationDefinitionId(),
+          UUID::randomUUID,
+          optionalStagingConfiguration.map(StagingConfiguration::getConfiguration).orElse(null));
+      longLivedSecretPersistence.get().write(secretCoordinateToPayload.getSecretCoordinate(), secretCoordinateToPayload.getPayload());
+      stagingConfigForDB = Jsons.clone(stagingConfiguration).withConfiguration(secretCoordinateToPayload.getSecretCoordinateForDB());
+    }
+    if (stagingConfigForDB == null) {
+      stagingConfigForDB = stagingConfiguration;
+    }
+    persistence.writeConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfigForDB.getDestinationDefinitionId().toString(), stagingConfigForDB);
+  }
+
+  public StagingConfiguration getStagingConfigurationWithSecrets(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StagingConfiguration stagingConfiguration = getStagingConfiguration(destinationDefinitionId);
+    if (longLivedSecretPersistence.isPresent()) {
+      final JsonNode secret = SecretsHelpers.decryptStagingConfiguration(stagingConfiguration, longLivedSecretPersistence.get());
+      return Jsons.clone(stagingConfiguration).withConfiguration(secret);
+    }
+
+    return stagingConfiguration;
+  }
+
+  public StagingConfiguration getStagingConfiguration(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    return persistence.getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+  }
+
+  public Optional<StagingConfiguration> getOptionalStagingConfiguration(final UUID destinationDefinitionId)
+      throws JsonValidationException, IOException {
+    try {
+      return Optional.of(persistence.getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class));
+    } catch (ConfigNotFoundException e) {
+      return Optional.empty();
+    }
   }
 
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {

@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,4 +26,7 @@ public class MemorySecretPersistence implements SecretPersistence {
     secretMap.put(coordinate, payload);
   }
 
+  public Map<SecretCoordinate, String> getSecretMap() {
+    return Collections.unmodifiableMap(secretMap);
+  }
 }

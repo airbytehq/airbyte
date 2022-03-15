@@ -17,6 +17,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -65,6 +66,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     standardSync();
     standardSyncState();
     standardActorCatalog();
+    stagingConfiguration();
     deletion();
   }
 
@@ -85,6 +87,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
+    assertFalse(configPersistence.listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class).isEmpty());
 
     for (final SourceOAuthParameter sourceOAuthParameter : MockData.sourceOauthParameters()) {
       configPersistence.deleteConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString());
@@ -95,6 +98,11 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
       configPersistence.deleteConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameter.getOauthParameterId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
+
+    for (final StagingConfiguration stagingConfiguration : MockData.stagingConfiguration()) {
+      configPersistence.deleteConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString());
+    }
+    assertTrue(configPersistence.listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class).isEmpty());
 
     for (final StandardSourceDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
       configPersistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, standardSourceDefinition.getSourceDefinitionId().toString());
@@ -280,7 +288,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
       final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
           ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
       assertEquals(actorCatalog, retrievedActorCatalog);
-    } ;
+    }
     final List<ActorCatalog> actorCatalogs = configPersistence
         .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
     assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());
@@ -298,6 +306,20 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
         .listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class);
     assertEquals(MockData.actorCatalogFetchEvents().size(), actorCatalogFetchEvents.size());
     assertThat(MockData.actorCatalogFetchEvents()).hasSameElementsAs(actorCatalogFetchEvents);
+  }
+
+  public void stagingConfiguration() throws JsonValidationException, IOException, ConfigNotFoundException {
+    for (final StagingConfiguration stagingConfiguration : MockData.stagingConfiguration()) {
+      configPersistence.writeConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(),
+          stagingConfiguration);
+      final StagingConfiguration retrievedStagingConfig = configPersistence.getConfig(
+          ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(), StagingConfiguration.class);
+      assertEquals(stagingConfiguration, retrievedStagingConfig);
+    }
+    final List<StagingConfiguration> stagingConfigurations = configPersistence
+        .listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class);
+    assertEquals(MockData.stagingConfiguration().size(), stagingConfigurations.size());
+    assertThat(MockData.stagingConfiguration()).hasSameElementsAs(stagingConfigurations);
   }
 
 }

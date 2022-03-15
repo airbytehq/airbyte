@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StagingConfiguration;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashMap;
@@ -396,6 +397,67 @@ public class SecretsHelpers {
     }
 
     return new SecretCoordinate(coordinateBase, version);
+  }
+
+  public static SecretCoordinateToPayload convertStagingConfigToSecret(final String newSecret,
+      final ReadOnlySecretPersistence secretReader,
+      final UUID destinationDefinitionId,
+      final Supplier<UUID> uuidSupplier,
+      final @Nullable JsonNode oldStagingConfiguration) {
+    final String oldSecretFullCoordinate = (oldStagingConfiguration!= null && oldStagingConfiguration.has(COORDINATE_FIELD)) ? oldStagingConfiguration.get(COORDINATE_FIELD).asText() : null;
+    final SecretCoordinate coordinateForStagingConfig = getCoordinateForStagingConfig(newSecret,
+        secretReader,
+        destinationDefinitionId,
+        uuidSupplier,
+        oldSecretFullCoordinate);
+    return new SecretCoordinateToPayload(coordinateForStagingConfig, newSecret,
+        Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinateForStagingConfig.getFullCoordinate())));
+  }
+
+  private static SecretCoordinate getCoordinateForStagingConfig(
+      final String newSecret,
+      final ReadOnlySecretPersistence secretReader,
+      final UUID destinationDefinitionId,
+      final Supplier<UUID> uuidSupplier,
+      final @Nullable String oldSecretFullCoordinate) {
+    String coordinateBase = null;
+    Long version = null;
+
+    if (oldSecretFullCoordinate != null) {
+      final var oldCoordinate = SecretCoordinate.fromFullCoordinate(oldSecretFullCoordinate);
+      coordinateBase = oldCoordinate.getCoordinateBase();
+      final var oldSecretValue = secretReader.read(oldCoordinate);
+      if (oldSecretValue.isPresent()) {
+        if (oldSecretValue.get().equals(newSecret)) {
+          version = oldCoordinate.getVersion();
+        } else {
+          version = oldCoordinate.getVersion() + 1;
+        }
+      }
+    }
+
+    if (coordinateBase == null) {
+      // IMPORTANT: format of this cannot be changed without introducing migrations for secrets
+      // persistences
+      coordinateBase = "destination_definition_" + destinationDefinitionId + "_secret_" + uuidSupplier.get();
+    }
+
+    if (version == null) {
+      version = 1L;
+    }
+
+    return new SecretCoordinate(coordinateBase, version);
+  }
+
+  public static JsonNode decryptStagingConfiguration(final StagingConfiguration stagingConfiguration, final ReadOnlySecretPersistence secretReader) {
+    final JsonNode configuration = stagingConfiguration.getConfiguration().deepCopy();
+    final var secretCoordinate = SecretCoordinate.fromFullCoordinate(configuration.get(COORDINATE_FIELD).asText());
+    final var secretValue = secretReader.read(secretCoordinate);
+    if (secretValue.isEmpty()) {
+      throw new RuntimeException("That secret was not found in the store!");
+    }
+
+    return Jsons.deserialize(secretValue.get());
   }
 
 }
