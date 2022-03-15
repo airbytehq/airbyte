@@ -801,6 +801,38 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
+  @DisplayName("When getting first replication job")
+  class GetFirstReplicationJob {
+
+    @Test
+    @DisplayName("Should return nothing if no job exists")
+    public void testGetFirstSyncJobForConnectionIdEmpty() throws IOException {
+      final Optional<Job> actual = jobPersistence.getFirstReplicationJob(CONNECTION_ID);
+
+      assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return the first job")
+    public void testGetFirstSyncJobForConnectionId() throws IOException {
+      final long jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
+      final List<AttemptWithJobInfo> attemptsWithJobInfo = jobPersistence.listAttemptsWithJobInfo(SYNC_JOB_CONFIG.getConfigType(), Instant.EPOCH);
+      final List<Attempt> attempts = Collections.singletonList(attemptsWithJobInfo.get(0).getAttempt());
+
+      final Instant afterNow = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(afterNow);
+      final long jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+
+      final Optional<Job> actual = jobPersistence.getFirstReplicationJob(CONNECTION_ID);
+      final Job expected = createJob(jobId1, SYNC_JOB_CONFIG, JobStatus.SUCCEEDED, attempts, NOW.getEpochSecond());
+
+      assertEquals(Optional.of(expected), actual);
+    }
+
+  }
+
+  @Nested
   @DisplayName("When getting next job")
   class GetNextJob {
 

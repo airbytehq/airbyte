@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -78,8 +76,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
-
-  final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   private UUID connectionId;
 

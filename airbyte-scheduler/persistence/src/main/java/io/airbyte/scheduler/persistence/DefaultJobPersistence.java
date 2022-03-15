@@ -393,7 +393,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final String JobStatusSelect = "SELECT status FROM jobs ";
     return jobDatabase.query(ctx -> ctx
         .fetch(JobStatusSelect + "WHERE " +
-            "CAST(scope AS VARCHAR) = ? AND " +
+            "scope = ? AND " +
             "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
         .stream()
@@ -409,6 +409,21 @@ public class DefaultJobPersistence implements JobPersistence {
             "scope = ? AND " +
             "CAST(jobs.status AS VARCHAR) <> ? " +
             "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.CANCELLED))
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public Optional<Job> getFirstReplicationJob(final UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at ASC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
