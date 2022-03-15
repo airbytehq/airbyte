@@ -19,6 +19,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This is the default implementation of a {@link RecordBufferStorage} to be backward compatible.
+ * Data is being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
+ *
+ * This should be deprecated as we slowly move towards using
+ * {@link SerializedRecordBufferingStrategy} instead.
+ */
 public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRecordBufferingStrategy.class);
@@ -31,7 +38,7 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   private final RecordSizeEstimator recordSizeEstimator;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
-  private VoidCallable onFlushEventHook;
+  private VoidCallable onFlushAllEventHook;
 
   public DefaultRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                         final long maxQueueSizeInBytes) {
@@ -47,7 +54,7 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.bufferSizeInBytes = 0;
     this.recordSizeEstimator = new RecordSizeEstimator();
-    this.onFlushEventHook = null;
+    this.onFlushAllEventHook = null;
   }
 
   @Override
@@ -80,10 +87,11 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
         }
       }
     }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
+    close();
     clear();
 
-    if (onFlushEventHook != null) {
-      onFlushEventHook.call();
+    if (onFlushAllEventHook != null) {
+      onFlushAllEventHook.call();
     }
   }
 
@@ -93,8 +101,8 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   }
 
   @Override
-  public void registerFlushEventHook(final VoidCallable onFlushEventHook) {
-    this.onFlushEventHook = onFlushEventHook;
+  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
+    this.onFlushAllEventHook = onFlushAllEventHook;
   }
 
   @Override

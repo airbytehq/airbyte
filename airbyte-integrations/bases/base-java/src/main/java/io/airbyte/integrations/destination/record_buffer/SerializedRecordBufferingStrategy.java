@@ -9,6 +9,7 @@ import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
 
   private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBuffer;
   private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, RecordBufferImplementation, Exception> onStreamFlush;
-  private VoidCallable onFlushEventHook;
+  private VoidCallable onFlushAllEventHook;
 
   private Map<AirbyteStreamNameNamespacePair, RecordBufferImplementation> allBuffers = new HashMap<>();
   private long totalBufferSizeInBytes;
@@ -39,12 +40,12 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
     this.totalBufferSizeInBytes = 0;
-    this.onFlushEventHook = null;
+    this.onFlushAllEventHook = null;
   }
 
   @Override
-  public void registerFlushEventHook(final VoidCallable onFlushEventHook) {
-    this.onFlushEventHook = onFlushEventHook;
+  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
+    this.onFlushAllEventHook = onFlushAllEventHook;
   }
 
   @Override
@@ -65,37 +66,42 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
     if (streamBuffer != null) {
       final Long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
       totalBufferSizeInBytes += actualMessageSizeInBytes;
-      if (totalBufferSizeInBytes > streamBuffer.getMaxTotalBufferSizeInBytes()
-          || allBuffers.size() > streamBuffer.getMaxConcurrentStreamsInBuffer()) {
+      if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
+          || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
         flushAll();
         totalBufferSizeInBytes = 0;
-      } else if (streamBuffer.getCount() > streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
+      } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
         flushWriter(stream, streamBuffer);
       }
+    } else {
+      throw new RuntimeException(String.format("Failed to create/get streamBuffer for stream %s.%s", stream.getNamespace(), stream.getName()));
     }
   }
 
   @Override
   public void flushWriter(final AirbyteStreamNameNamespacePair stream, final RecordBufferImplementation writer) throws Exception {
-    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getCount()));
-    onStreamFlush.accept(stream, writer);
-    totalBufferSizeInBytes -= writer.getCount();
+    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
+      onStreamFlush.accept(stream, writer);
+    }, Map.of("bufferSizeInBytes", writer.getByteCount()));
+    totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
   }
 
   @Override
   public void flushAll() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
+    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
+      for (final Entry<AirbyteStreamNameNamespacePair, RecordBufferImplementation> entry : allBuffers.entrySet()) {
+        LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
+        onStreamFlush.accept(entry.getKey(), entry.getValue());
+      }
+      close();
+      clear();
+    }, Map.of("bufferSizeInBytes", totalBufferSizeInBytes));
 
-    for (final Entry<AirbyteStreamNameNamespacePair, RecordBufferImplementation> entry : allBuffers.entrySet()) {
-      LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getCount()));
-      onStreamFlush.accept(entry.getKey(), entry.getValue());
-    }
-    close();
-    clear();
-
-    if (onFlushEventHook != null) {
-      onFlushEventHook.call();
+    if (onFlushAllEventHook != null) {
+      onFlushAllEventHook.call();
     }
     totalBufferSizeInBytes = 0;
   }

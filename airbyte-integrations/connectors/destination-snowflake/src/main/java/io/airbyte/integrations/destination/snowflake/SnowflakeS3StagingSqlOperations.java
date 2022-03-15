@@ -7,12 +7,14 @@ package io.airbyte.integrations.destination.snowflake;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -65,7 +67,9 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.createBucketObjectIfNotExists(stageName);
+    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
+        () -> s3StorageOperations.createBucketObjectIfNotExists(stageName),
+    Map.of("stage", stageName));
   }
 
   @Override
@@ -86,7 +90,9 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         generateBucketPath(stageName),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey());
-    Exceptions.toRuntime(() -> database.execute(copyQuery));
+    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
+        () -> Exceptions.toRuntime(() -> database.execute(copyQuery)),
+    Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
@@ -107,12 +113,16 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.dropBucketObject(stageName);
+    AirbyteSentry.executeWithTracing("DropStageIfExists",
+        () -> s3StorageOperations.dropBucketObject(stageName),
+        Map.of("stage", stageName));
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) {
-    s3StorageOperations.cleanUpBucketObjects(stageName, stagedFiles);
+  public void cleanUpStage(final JdbcDatabase database, final String path, final List<String> stagedFiles) {
+    AirbyteSentry.executeWithTracing("CleanStage",
+        () -> s3StorageOperations.cleanUpBucketObjects(path, stagedFiles),
+        Map.of("path", path));
   }
 
 }

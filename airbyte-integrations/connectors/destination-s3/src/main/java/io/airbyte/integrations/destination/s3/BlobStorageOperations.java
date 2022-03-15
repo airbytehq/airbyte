@@ -35,4 +35,5 @@ public interface BlobStorageOperations {
   void dropBucketObject(String stageName);
 
   Boolean isValidData(JsonNode jsonNode);
+
 }

@@ -10,12 +10,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Base implementation of a {@link RecordBufferImplementation}. It is composed of a
+ * {@link RecordBufferStorage} where the actual data is being stored in a serialized format.
+ *
+ * Such data format is defined by concrete implementation inheriting from this base abstract class.
+ * To do so, necessary methods on handling "writer" methods should be defined. This writer would
+ * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
+ * it can be stored in the outputStream of the {@link RecordBufferStorage}.
+ */
 public abstract class BaseRecordBufferImplementation implements RecordBufferImplementation {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseRecordBufferImplementation.class);
@@ -24,30 +32,58 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   private final CountingOutputStream byteCounter;
   private final GzipCompressorOutputStream compressedBuffer;
 
+  private boolean useCompression;
   private InputStream inputStream;
+  private boolean isStarted;
   private boolean isClosed;
 
-  protected BaseRecordBufferImplementation(final RecordBufferStorage bufferStorage, final boolean withCompression) throws Exception {
+  protected BaseRecordBufferImplementation(final RecordBufferStorage bufferStorage) throws Exception {
     this.bufferStorage = bufferStorage;
     byteCounter = new CountingOutputStream(bufferStorage.getOutputStream());
     compressedBuffer = new GzipCompressorOutputStream(byteCounter);
-    if (withCompression) {
-      createWriter(compressedBuffer);
-    } else {
-      createWriter(byteCounter);
-    }
+    useCompression = true;
     inputStream = null;
+    isStarted = false;
     isClosed = false;
   }
 
-  protected abstract void createWriter(OutputStream outputStream) throws IOException, URISyntaxException;
+  /**
+   * Initializes the writer objects such that it can now write to the downstream @param outputStream
+   */
+  protected abstract void createWriter(OutputStream outputStream) throws Exception;
 
+  /**
+   * Transform the @param recordMessage into a serialized form of the data and writes it to the
+   * registered OutputStream provided when {@link BaseRecordBufferImplementation#createWriter} was
+   * called.
+   */
   protected abstract void writeRecord(AirbyteRecordMessage recordMessage) throws IOException;
 
+  /**
+   * Stops the writer from receiving new data and prepares it for being finalized and converted into
+   * an InputStream to read from instead. This is used when flushing the buffer into some other
+   * destination.
+   */
   protected abstract void closeWriter() throws IOException;
+
+  public RecordBufferImplementation withCompression(final boolean useCompression) {
+    if (!isStarted) {
+      this.useCompression = useCompression;
+      return this;
+    }
+    throw new RuntimeException("Options should be configured before starting to write");
+  }
 
   @Override
   public Long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+    if (!isStarted) {
+      if (useCompression) {
+        createWriter(compressedBuffer);
+      } else {
+        createWriter(byteCounter);
+      }
+      isStarted = true;
+    }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
       writeRecord(recordMessage);
@@ -87,7 +123,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   }
 
   @Override
-  public Long getCount() {
+  public Long getByteCount() {
     return byteCounter.getCount();
   }
 

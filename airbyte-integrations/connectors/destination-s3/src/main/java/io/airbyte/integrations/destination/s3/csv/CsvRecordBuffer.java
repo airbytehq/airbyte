@@ -23,18 +23,30 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CsvRecordBuffer extends BaseRecordBufferImplementation {
 
-  private CSVPrinter csvPrinter;
   private final CsvSheetGenerator csvSheetGenerator;
+  private CSVPrinter csvPrinter;
+  private CSVFormat csvFormat;
 
   protected CsvRecordBuffer(final RecordBufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
-    // we always want to compress csv files
-    super(bufferStorage, true);
+    super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
+    this.csvPrinter = null;
+    this.csvFormat = CSVFormat.DEFAULT;
+    // we always want to compress csv files
+    withCompression(true);
+  }
+
+  public CsvRecordBuffer withCsvFormat(final CSVFormat csvFormat) {
+    if (csvPrinter == null) {
+      this.csvFormat = csvFormat;
+      return this;
+    }
+    throw new RuntimeException("Options should be configured before starting to write");
   }
 
   @Override
   protected void createWriter(final OutputStream outputStream) throws IOException {
-    csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT);
+    csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvFormat);
   }
 
   @Override

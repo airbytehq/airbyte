@@ -103,7 +103,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.recordBufferingStrategy = recordBufferingStrategy;
-    recordBufferingStrategy.registerFlushEventHook(this::flushQueueToDestination);
+    recordBufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
   }
 
   @Override

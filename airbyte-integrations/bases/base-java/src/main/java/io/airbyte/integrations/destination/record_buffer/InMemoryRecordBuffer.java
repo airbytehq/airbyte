@@ -15,6 +15,10 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Instead of storing buffered data on disk like the {@link FileRecordBuffer}, this
+ * {@link RecordBufferStorage} accumulates message data in memory instead.
+ */
 public class InMemoryRecordBuffer implements RecordBufferStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBuffer.class);
