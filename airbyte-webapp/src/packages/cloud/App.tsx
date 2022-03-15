@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
+import { BrowserRouter as Router } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 import en from "locales/en.json";
@@ -80,9 +81,11 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <Services>
-                <Routing />
-              </Services>
+              <Router>
+                <Services>
+                  <Routing />
+                </Services>
+              </Router>
             </Suspense>
           </StoreProvider>
         </I18NProvider>
