@@ -11,8 +11,15 @@ import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
 from source_github.streams import (
+    Branches,
+    Collaborators,
     Comments,
+    CommitComments,
     Commits,
+    Deployments,
+    IssueEvents,
+    IssueLabels,
+    IssueMilestones,
     Organizations,
     ProjectCards,
     ProjectColumns,
@@ -20,7 +27,10 @@ from source_github.streams import (
     PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
+    Releases,
     Repositories,
+    Stargazers,
+    Tags,
     Teams,
     Users,
 )
@@ -576,3 +586,64 @@ def test_stream_comments():
         {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:08Z"},
     ]
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
+
+
+@responses.activate
+def test_streams_read_full_refresh():
+
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+    }
+
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-01T00:00:00Z"}
+
+    def get_json_response(cursor_field):
+        cursor_field = cursor_field or "updated_at"
+        return [
+            {"id": 1, cursor_field: "2022-02-01T00:00:00Z"},
+            {"id": 2, cursor_field: "2022-02-02T00:00:00Z"},
+        ]
+
+    def get_records(cursor_field):
+        cursor_field = cursor_field or "updated_at"
+        return [
+            {"id": 1, cursor_field: "2022-02-01T00:00:00Z", "repository": "organization/repository"},
+            {"id": 2, cursor_field: "2022-02-02T00:00:00Z", "repository": "organization/repository"},
+        ]
+
+    for cls, url in [
+        (Releases, "https://api.github.com/repos/organization/repository/releases"),
+        (IssueEvents, "https://api.github.com/repos/organization/repository/issues/events"),
+        (IssueMilestones, "https://api.github.com/repos/organization/repository/milestones"),
+        (CommitComments, "https://api.github.com/repos/organization/repository/comments"),
+        (Deployments, "https://api.github.com/repos/organization/repository/deployments"),
+    ]:
+        stream = cls(**repository_args_with_start_date)
+        responses.add("GET", url, json=get_json_response(stream.cursor_field))
+        records = read_full_refresh(stream)
+        assert records == get_records(stream.cursor_field)[1:2]
+
+    for cls, url in [
+        (Tags, "https://api.github.com/repos/organization/repository/tags"),
+        (IssueLabels, "https://api.github.com/repos/organization/repository/labels"),
+        (Collaborators, "https://api.github.com/repos/organization/repository/collaborators"),
+        (Branches, "https://api.github.com/repos/organization/repository/branches"),
+    ]:
+        stream = cls(**repository_args)
+        responses.add("GET", url, json=get_json_response(stream.cursor_field))
+        records = read_full_refresh(stream)
+        assert records == get_records(stream.cursor_field)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/stargazers",
+        json=[
+            {"starred_at": "2022-02-01T00:00:00Z", "user": {"id": 1}},
+            {"starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}},
+        ],
+    )
+
+    stream = Stargazers(**repository_args_with_start_date)
+    records = read_full_refresh(stream)
+    assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
