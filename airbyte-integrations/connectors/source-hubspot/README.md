@@ -28,10 +28,13 @@ The primary key for the following streams is `id`:
 - workflows
 - quotes
 
+The primary key for the following streams is `canonical-vid`:
+
+- contacts_list_memberships
+
 The following streams do not have a primary key:
 
-- contact_lists
-- contacts_list_memberships
+- contact_lists (The primary key could potentially be a composite key (portalId, listId) - https://legacydocs.hubspot.com/docs/methods/lists/get_lists)
 - deal_pipelines
 - form_submissions
 - line_items

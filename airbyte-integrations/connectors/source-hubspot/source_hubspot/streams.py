@@ -981,6 +981,7 @@ class ContactsListMemberships(Stream):
     data_field = "contacts"
     page_filter = "vidOffset"
     page_field = "vid-offset"
+    primary_key = "canonical-vid"
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
