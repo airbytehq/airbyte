@@ -87,6 +87,10 @@ public class ApiPojoConverters {
         .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
         .withStatus(toPersistenceStatus(update.getStatus()));
 
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
+
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {
       newConnection.withResourceRequirements(resourceRequirementsToInternal(update.getResourceRequirements()));
