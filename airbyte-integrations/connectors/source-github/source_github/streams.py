@@ -5,7 +5,6 @@
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -72,7 +71,7 @@ class GithubStream(HttpStream, ABC):
         elif response.headers.get("Retry-After"):
             time_delay = int(response.headers["Retry-After"])
             self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
-            sleep(time_delay)
+            time.sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:

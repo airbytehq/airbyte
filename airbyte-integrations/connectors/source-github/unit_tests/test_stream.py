@@ -77,6 +77,17 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 
 
 @responses.activate
+@patch("time.sleep")
+def test_retry_after(time_mock):
+    stream = Organizations(organizations=["airbytehq"])
+    responses.add("GET", "https://api.github.com/orgs/airbytehq", json={"login": "airbytehq"}, headers={"Retry-After": "10"})
+    read_full_refresh(stream)
+    assert time_mock.call_args[0][0] == 10
+    assert len(responses.calls) == 1
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+
+
+@responses.activate
 def test_stream_teams_404():
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
