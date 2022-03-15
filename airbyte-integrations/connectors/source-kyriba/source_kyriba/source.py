@@ -68,6 +68,15 @@ class KyribaStream(HttpStream):
             return True
         return response.status_code == 429 or 500 <= response.status_code < 600
 
+    def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
+        '''
+        Kyriba loves to nest fields, but nested fields cannot be used in an
+        incremental cursor. This method grabs the hash where the increment field
+        is nested and puts it at the top level
+        '''
+        nested = data.pop(key)
+        return {**data, **nested}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("results")
 
@@ -122,7 +131,24 @@ class AccountSubStream(HttpSubStream):
         return [response.json()]
 
 
-class CashBalancesEod(AccountSubStream, IncrementalKyribaStream):
+class CashBalancesStream(AccountSubStream):
+    def normalize_balance(self, base: Mapping[str, Any], balance: Mapping[str, Any]) -> Mapping[str, Any]:
+        date_info = balance.pop("balanceDate")
+        return { **base,  **date_info, **balance}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        '''
+        cash balalances are returned as an array over a date range. We need to increment
+        based on the date range and Airbyte does not support incrementing based on nested
+        values, so we need to normalize the data in transit instead of relying on Airbyte's
+        normalization.
+        '''
+        resp = response.json()
+        cash_balances = resp.pop("cashBalance")
+        return [self.normalize_balance(resp, b) for b in cash_balances]
+
+
+class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
     cursor_field = "date"
 
     # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -131,7 +157,7 @@ class CashBalancesEod(AccountSubStream, IncrementalKyribaStream):
         return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_cursor = latest_record["cashBalance"][-1]["balanceDate"].get(self.cursor_field) or ""
+        latest_cursor = latest_record.get(self.cursor_field) or ""
         current_cursor = current_stream_state.get(self.cursor_field) or ""
         return {self.cursor_field: max(current_cursor, latest_cursor)}
 
@@ -173,7 +199,7 @@ class CashBalancesEod(AccountSubStream, IncrementalKyribaStream):
         }
 
 
-class CashBalancesIntraday(AccountSubStream, KyribaStream):
+class CashBalancesIntraday(CashBalancesStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         return self.get_account_uuids()
 
@@ -195,7 +221,15 @@ class CashBalancesIntraday(AccountSubStream, KyribaStream):
         }
 
 
-class BankBalancesEod(AccountSubStream, IncrementalKyribaStream):
+class BankBalancesStream(AccountSubStream):
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # the updatedDateTime is unnecessarily nested under date
+        # Airbyte cannot accomodate nested cursors, so this needs to be fixed
+        results = response.json()
+        return [self.unnest("bankBalance", results)]
+
+
+class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
     cursor_field = "balanceDate"
 
     # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -204,7 +238,7 @@ class BankBalancesEod(AccountSubStream, IncrementalKyribaStream):
         return 100
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_cursor = latest_record["bankBalance"].get(self.cursor_field) or ""
+        latest_cursor = latest_record.get(self.cursor_field) or ""
         current_cursor = current_stream_state.get(self.cursor_field) or ""
         return {self.cursor_field: max(current_cursor, latest_cursor)}
 
@@ -233,7 +267,7 @@ class BankBalancesEod(AccountSubStream, IncrementalKyribaStream):
         }
 
 
-class BankBalancesIntraday(AccountSubStream, KyribaStream):
+class BankBalancesIntraday(BankBalancesStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         return self.get_account_uuids()
 
@@ -254,17 +288,17 @@ class CashFlows(IncrementalKyribaStream):
     def path(self, **kwargs) -> str:
         return "cash-flows"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # the updateDateTime is nested, so we need to adap this method
-        latest_cursor = latest_record["date"].get(self.cursor_field) or ""
-        current_cursor = current_stream_state.get(self.cursor_field) or ""
-        return {self.cursor_field: max(current_cursor, latest_cursor)}
-
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs) or {}
         params["dateType"] = "UPDATE"
         params["start_date"] = self.start_date
         return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # the updatedDateTime is unnecessarily nested under date
+        # Airbyte cannot accomodate nested cursors, so this needs to be fixed
+        results = response.json().get("results")
+        return [self.unnest("date", r) for r in results]
 
 
 # Source

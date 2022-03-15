@@ -2,7 +2,9 @@
   "type": "object",
   "required": [
     "account",
-    "bankBalance"
+    "balanceDate",
+    "amount",
+    "currencyCode"
   ],
   "properties": {
     "account": {
@@ -31,30 +33,24 @@
       },
       "title": "BK-BankAccountModel"
     },
-    "bankBalance": {
-      "type": "object",
-      "properties": {
-        "amount": {
-          "type": "number",
-          "format": "double",
-          "example": 1.123,
-          "description": "End of day balance value."
-        },
-        "balanceDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of the end of day balance."
-        },
-        "currencyCode": {
-          "type": "string",
-          "example": "EUR",
-          "description": "Account currency code.",
-          "minLength": 1,
-          "maxLength": 3
-        }
-      },
-      "title": "BK-BalanceModel"
+    "amount": {
+      "type": "number",
+      "format": "double",
+      "example": 1.123,
+      "description": "End of day balance value."
+    },
+    "balanceDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2019-11-11",
+      "description": "Date of the end of day balance."
+    },
+    "currencyCode": {
+      "type": "string",
+      "example": "EUR",
+      "description": "Account currency code.",
+      "minLength": 1,
+      "maxLength": 3
     }
   },
   "title": "BK-BankStatementBalanceModel",

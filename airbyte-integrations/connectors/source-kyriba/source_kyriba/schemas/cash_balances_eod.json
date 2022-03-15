@@ -27,49 +27,33 @@
       },
       "title": "BK-BankAccountModel"
     },
-    "cashBalance": {
-      "type": "array",
-      "description": "Cash balance.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number",
-            "format": "double",
-            "example": -50000.0,
-            "description": "Cash balance amount of the selected date, Amount can be positive and negative."
-          },
-          "balanceDate": {
-            "type": "object",
-            "properties": {
-              "date": {
-                "type": "string",
-                "format": "date",
-                "example": "2020-05-25",
-                "description": "The date based on which the cash balance is calculated."
-              },
-              "dateType": {
-                "type": "string",
-                "example": "TRANSACTION",
-                "description": "The date type based on which the cash balance is calculated.",
-                "enum": [
-                  "TRANSACTION",
-                  "VALUE"
-                ]
-              }
-            },
-            "title": "BK-BalanceDateModel"
-          },
-          "currencyCode": {
-            "type": "string",
-            "example": "EUR",
-            "description": "Currency code.",
-            "minLength": 1,
-            "maxLength": 3
-          }
-        },
-        "title": "BK-CashBalanceModel"
-      }
+    "amount": {
+      "type": "number",
+      "format": "double",
+      "example": -50000.0,
+      "description": "Cash balance amount of the selected date, Amount can be positive and negative."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "example": "2020-05-25",
+      "description": "The date based on which the cash balance is calculated."
+    },
+    "dateType": {
+      "type": "string",
+      "example": "TRANSACTION",
+      "description": "The date type based on which the cash balance is calculated.",
+      "enum": [
+        "TRANSACTION",
+        "VALUE"
+      ]
+    },
+    "currencyCode": {
+      "type": "string",
+      "example": "EUR",
+      "description": "Currency code.",
+      "minLength": 1,
+      "maxLength": 3
     },
     "cashFlowStatus": {
       "type": "object",
