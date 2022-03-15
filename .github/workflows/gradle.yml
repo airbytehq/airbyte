@@ -36,7 +36,6 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          # Note, the following glob expression within a filters are ORs.
           filters: |
             backend:
               - 'airbyte-!(integrations|frontend|webapp|webapp-e2e-tests)/**'
