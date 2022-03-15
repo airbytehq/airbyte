@@ -34,7 +34,7 @@ public class V0_35_49_001__ChangeDefaultConnectionName extends BaseJavaMigration
     for (final Connection connection : connections) {
       final Actor sourceActor = getActor(connection.getSourceId(), ctx);
       final Actor destinationActor = getActor(connection.getDestinationId(), ctx);
-      final String connectionName = sourceActor.getName() + " -> " + destinationActor.getName();
+      final String connectionName = sourceActor.getName() + " <> " + destinationActor.getName();
 
       ctx.update(DSL.table("connection"))
           .set(name, connectionName)
