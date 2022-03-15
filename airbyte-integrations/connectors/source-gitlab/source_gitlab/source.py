@@ -36,17 +36,19 @@ from .streams import (
     Users,
 )
 
+from .util import get_group_list
 
 class SourceGitlab(AbstractSource):
     def _generate_main_streams(self, config: Mapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
         gids = list(filter(None, config["groups"].split(" ")))
         pids = list(filter(None, config["projects"].split(" ")))
 
-        if not pids and not gids:
-            raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
-
         auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
+
+        if not pids and not gids:
+            gids = get_group_list(**auth_params)
+
         groups = Groups(group_ids=gids, **auth_params)
         if gids:
             projects = GroupProjects(project_ids=pids, parent_stream=groups, **auth_params)
