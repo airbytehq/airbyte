@@ -18,7 +18,7 @@ from requests.auth import AuthBase
 
 
 class IntercomStream(HttpStream, ABC):
-    url_base = "https://api.intercom.io/"
+    url_base = "https://api.intercom.io"
 
     primary_key = "id"
     data_fields = ["data"]
