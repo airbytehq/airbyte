@@ -1204,7 +1204,6 @@ class PropertyHistory(IncrementalStream):
     page_field = "vid-offset"
     page_filter = "vidOffset"
     limit = 100
-    primary_key = "canonical-vid"
 
     def list(self, fields) -> Iterable:
         properties = self._api.get("/properties/v2/contact/properties")
