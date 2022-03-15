@@ -125,7 +125,7 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
   server:
-    image: airbyte/server:dev
+    image: airbyte/server:${VERSION}
     logging: *default-logging
     container_name: airbyte-server
     restart: unless-stopped
