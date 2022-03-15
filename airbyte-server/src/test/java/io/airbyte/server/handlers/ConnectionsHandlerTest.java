@@ -54,7 +54,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.helper.CatalogConverter;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
