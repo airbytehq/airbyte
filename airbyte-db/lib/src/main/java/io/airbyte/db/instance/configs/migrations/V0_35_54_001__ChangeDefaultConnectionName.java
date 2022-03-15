@@ -21,9 +21,9 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_35_49_001__ChangeDefaultConnectionName extends BaseJavaMigration {
+public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_49_001__ChangeDefaultConnectionName.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_54_001__ChangeDefaultConnectionName.class);
 
   public static void defaultConnectionName(final DSLContext ctx) {
     LOGGER.info("Updating connection name column");
