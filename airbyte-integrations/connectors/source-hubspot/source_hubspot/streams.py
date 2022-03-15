@@ -824,7 +824,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 if not next_page_token:
                     pagination_complete = True
                 elif self.state and next_page_token["payload"]["after"] >= 10000:
-                    # Hubspot documentations states that the search endpoints are limited to 10,000 total results 
+                    # Hubspot documentations states that the search endpoints are limited to 10,000 total results
                     # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                     # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
                     # start a new search query with the latest state that has been collected.
