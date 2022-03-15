@@ -4,6 +4,7 @@
 
 import math
 from abc import ABC, abstractmethod
+from itertools import chain
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -183,6 +184,110 @@ class Events(IncrementalStripeStream):
         return "events"
 
 
+class StripeSubStream(StripeStream, ABC):
+    """
+    Research shows that records related to SubStream can be extracted from Parent streams which already
+    contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
+    all item in parent stream, since parent stream returns 100 items per request.
+    Note, in major cases, pagination requests are not performed because sub items are fully reported in parent streams
+
+    For example:
+    Line items are part of each 'invoice' record, so use Invoices stream because
+    it allows bulk extraction:
+        0.1.28 and below - 1 request extracts line items for 1 invoice (+ pagination reqs)
+        0.1.29 and above - 1 request extracts line items for 100 invoices (+ pagination reqs)
+
+    if line items object has indication for next pages ('has_more' attr)
+    then use current stream to extract next pages. In major cases pagination requests
+    are not performed because line items are fully reported in 'invoice' record
+
+    Example for InvoiceLineItems and parent Invoice streams, record from Invoice stream:
+        {
+          "created": 1641038947,    <--- 'Invoice' record
+          "customer": "cus_HezytZRkaQJC8W",
+          "id": "in_1KD6OVIEn5WyEQxn9xuASHsD",    <---- value for 'parent_id' attribute
+          "object": "invoice",
+          "total": 0,
+          ...
+          "lines": {    <---- sub_items_attr
+            "data": [
+              {
+                "id": "il_1KD6OVIEn5WyEQxnm5bzJzuA",    <---- 'Invoice' line item record
+                "object": "line_item",
+                ...
+              },
+              {...}
+            ],
+            "has_more": false,    <---- next pages from 'InvoiceLineItemsPaginated' stream
+            "object": "list",
+            "total_count": 2,
+            "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines"
+          }
+        }
+    """
+
+    filter: Optional[Mapping[str, Any]] = None
+    add_parent_id: bool = False
+
+    @property
+    @abstractmethod
+    def parent(self) -> StripeStream:
+        """
+        :return: parent stream which contains needed records in <sub_items_attr>
+        """
+
+    @property
+    @abstractmethod
+    def parent_id(self) -> str:
+        """
+        :return: string with attribute name
+        """
+
+    @property
+    @abstractmethod
+    def sub_items_attr(self) -> str:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        """
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+
+        # add 'starting_after' param
+        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
+            params["starting_after"] = stream_slice["starting_after"]
+
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+
+        parent_stream = self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+
+            items_obj = record.get(self.sub_items_attr, {})
+            if not items_obj:
+                continue
+
+            items = items_obj.get("data", [])
+
+            # non-generic filter, mainly for BankAccounts stream only
+            if self.filter:
+                items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
+
+            # get next pages
+            items_next_pages = []
+            if items_obj.get("has_more") and items:
+                stream_slice = {self.parent_id: record["id"], "starting_after": items[-1]["id"]}
+                items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
+
+            for item in chain(items, items_next_pages):
+                if self.add_parent_id:
+                    # add reference to parent object when item doesn't have it already
+                    item[self.parent_id] = record["id"]
+                yield item
+
+
 class Invoices(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/invoices/list
@@ -194,20 +299,20 @@ class Invoices(IncrementalStripeStream):
         return "invoices"
 
 
-class InvoiceLineItems(StripeStream):
+class InvoiceLineItems(StripeSubStream):
     """
     API docs: https://stripe.com/docs/api/invoices/invoice_lines
     """
 
     name = "invoice_line_items"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"invoices/{stream_slice['invoice_id']}/lines"
+    parent = Invoices
+    parent_id: str = "invoice_id"
+    sub_items_attr = "lines"
+    add_parent_id = True
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"invoices/{stream_slice[self.parent_id]}/lines"
 
 
 class InvoiceItems(IncrementalStripeStream):
@@ -273,25 +378,24 @@ class Subscriptions(IncrementalStripeStream):
         return params
 
 
-class SubscriptionItems(StripeStream):
+class SubscriptionItems(StripeSubStream):
     """
     API docs: https://stripe.com/docs/api/subscription_items/list
     """
 
     name = "subscription_items"
 
+    parent: StripeStream = Subscriptions
+    parent_id: str = "subscription_id"
+    sub_items_attr: str = "items"
+
     def path(self, **kwargs):
         return "subscription_items"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
-        params["subscription"] = stream_slice["subscription_id"]
+        params["subscription"] = stream_slice[self.parent_id]
         return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for subscriptions in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"subscription_id": subscriptions["id"]}, **kwargs)
 
 
 class Transfers(IncrementalStripeStream):
@@ -327,26 +431,25 @@ class PaymentIntents(IncrementalStripeStream):
         return "payment_intents"
 
 
-class BankAccounts(StripeStream):
+class BankAccounts(StripeSubStream):
     """
     API docs: https://stripe.com/docs/api/customer_bank_accounts/list
     """
 
     name = "bank_accounts"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        customer_id = stream_slice["customer_id"]
-        return f"customers/{customer_id}/sources"
+    parent = Customers
+    parent_id = "customer_id"
+    sub_items_attr = "sources"
+    filter = {"attr": "object", "value": "bank_account"}
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"customers/{stream_slice[self.parent_id]}/sources"
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["object"] = "bank_account"
         return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
 
 
 class CheckoutSessions(StripeStream):

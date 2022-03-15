@@ -3349,11 +3349,9 @@ components:
       description: Indicates where the error originated. If not set, the origin of error is not well known.
       type: string
       enum:
-        - unknown # todo (parker) remove this in favor of leaving the failureOrigin unset
         - source
         - destination
         - replication
-        - replication_worker # todo (parker) remove this in favor of replication
         - persistence
         - normalization
         - dbt
@@ -3361,7 +3359,6 @@ components:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
       enum:
-        - unknown # todo (parker) remove this in favor of leaving the failureType unset
         - config_error
         - system_error
         - manual_cancellation

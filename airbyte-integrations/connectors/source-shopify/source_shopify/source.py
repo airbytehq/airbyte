@@ -189,8 +189,8 @@ class ShopifySubstream(IncrementalShopifyStream):
         Reading the parent stream for slices with structure:
         EXAMPLE: for given nested_record as `id` of Orders,
 
-        Outputs: 
-            [ 
+        Outputs:
+            [
                 {slice_key: 123},
                 {slice_key: 456},
                 {...},
