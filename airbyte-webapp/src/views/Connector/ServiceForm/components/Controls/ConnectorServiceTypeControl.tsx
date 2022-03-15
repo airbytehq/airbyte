@@ -5,7 +5,6 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import {
   ControlLabels,
@@ -33,6 +32,7 @@ import {
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -168,6 +168,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -177,24 +178,15 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
-  const workspace = useCurrentWorkspace();
-  let disallowedOauthConnectors =
+  const disallowedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD !== "false"
+    window.CLOUD === "true"
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
           "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
         ]
       : [];
-  // We want to enable shopify for specific workspaces to allow them to review the integration
-  if (window.CLOUD !== "true") {
-    if (workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9") {
-      disallowedOauthConnectors = disallowedOauthConnectors.filter(
-        (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
-      );
-    }
-  }
   const sortedDropDownData = useMemo(
     () =>
       availableServices
@@ -229,6 +221,14 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
+
   return (
     <>
       <ControlLabels
@@ -252,6 +252,7 @@ const ConnectorServiceTypeControl: React.FC<{
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (
