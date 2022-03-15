@@ -308,39 +308,50 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
         {
             "json": {
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
-                "paging": {"next": {"after": f"{x*100}",}}
+                "paging": {
+                    "next": {
+                        "after": f"{x*100}",
+                    }
+                },
             },
             "status_code": 200,
         }
         for x in range(1, 101)
     ]
-    # After reaching 10K records, it performs a new search query. 
-    responses.extend([
+    # After reaching 10K records, it performs a new search query.
+    responses.extend(
+        [
+            {
+                "json": {
+                    "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
+                    "paging": {
+                        "next": {
+                            "after": f"{x*100}",
+                        }
+                    },
+                },
+                "status_code": 200,
+            }
+            for x in range(1, 10)
+        ]
+    )
+    # Last page... it does not have paging->next->after
+    responses.append(
         {
-            "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
-                "paging": {"next": {"after": f"{x*100}",}}
-            },
+            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)], "paging": {}},
             "status_code": 200,
         }
-        for x in range(1, 10)
-    ])
-    # Last page... it does not have paging->next->after
-    responses.append({
-            "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
-                "paging": {}
-            },
-            "status_code": 200,
-        })
+    )
 
-    properties_response = [{
-        "json": [
-            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-            for property_name in fake_properties_list
-        ],
-        "status_code": 200
-    }]
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
 
     # Create test_stream instance with some state
     test_stream = Companies(**common_params)
@@ -350,8 +361,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
     records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
-    # The stream should not attempt to get more than 10K records. 
+    # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state['updatedAt'] == '2022-03-01T00:00:00+00:00'
-
+    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00+00:00"
