@@ -66,7 +66,7 @@ def test_http_method(patch_base_class):
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, False),
     ],
 )
 def test_should_retry(patch_base_class, http_status, should_retry):

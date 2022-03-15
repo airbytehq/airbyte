@@ -1,7 +1,6 @@
 # Infinicept Source
 
 This is the repository for the Infinicept source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/infinicept).
 
 ## Local development
 
@@ -39,13 +38,9 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/infinicept)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_infinicept/spec.json` file.
+Create a file `secrets/config.json` conforming to the `source_infinicept/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source infinicept test creds`
-and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
