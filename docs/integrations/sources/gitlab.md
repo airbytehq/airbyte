@@ -53,6 +53,8 @@ Log into Gitlab and then generate a [personal access token](https://docs.gitlab.
 
 Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
+**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
+
 ## Additional information
 
 GitLab source is working with GitLab API v4. It can also work with self-hosted GitLab API v4.
