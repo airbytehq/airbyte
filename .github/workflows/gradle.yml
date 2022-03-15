@@ -27,6 +27,8 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       build: ${{ steps.filter.outputs.build }}
       cli: ${{ steps.filter.outputs.cli }}
+      connectors: ${{ steps.filter.outputs.connectors }}
+      db: ${{ steps.filter.outputs.db }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
@@ -39,6 +41,8 @@ jobs:
               - 'airbyte-**/**'
             build:
               - '.github/**'
+              - 'buildSrc/**'
+              - 'tools/**'
             cli:
               - 'airbyte-cli/**'
             connectors:
