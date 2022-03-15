@@ -567,6 +567,7 @@ class ConnectionsHandlerTest {
           .namespaceDefinition(connectionRead.getNamespaceDefinition())
           .namespaceFormat(connectionRead.getNamespaceFormat())
           .prefix(connectionRead.getPrefix())
+          .name(connectionRead.getName())
           .connectionId(connectionRead.getConnectionId())
           .operationIds(connectionRead.getOperationIds())
           .status(ConnectionStatus.DEPRECATED)

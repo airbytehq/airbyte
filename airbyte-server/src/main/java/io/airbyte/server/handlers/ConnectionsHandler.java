@@ -330,6 +330,7 @@ public class ConnectionsHandler {
   public void deleteConnection(final ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .name(connectionRead.getName())
         .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
