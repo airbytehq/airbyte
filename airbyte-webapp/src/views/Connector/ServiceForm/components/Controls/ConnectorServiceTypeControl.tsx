@@ -180,23 +180,19 @@ const ConnectorServiceTypeControl: React.FC<{
   // already leveraging them.
   // TODO End hack
   const workspace = useCurrentWorkspace();
-  let disallowedOauthConnectors =
-    // I would prefer to use windowConfigProvider.cloud but that function is async
-    window.CLOUD === "true"
+  const disallowedOauthConnectors = ([] as string[]).concat(
+    ...// I would prefer to use windowConfigProvider.cloud but that function is async
+    (window.CLOUD === "true"
       ? [
-          "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
-          "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
+          ["200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b"], // Snapchat
+          ["2470e835-feaf-4db6-96f3-70fd645acc77"], // Salesforce Singer
+          // TODO Issue 10817: we need to enable shopify ONLY for this workspace so until Shopify gives us approval to use oauth
+          workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9"
+            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"]
+            : [], // Shopify
         ]
-      : [];
-  // We want to enable shopify for specific workspaces to allow them to review the integration
-  if (window.CLOUD === "true") {
-    if (workspace.workspaceId === "8fda1978-22bc-466c-a9d5-eaf18bb705a9") {
-      disallowedOauthConnectors = disallowedOauthConnectors.filter(
-        (id) => id !== "9da77001-af33-4bcd-be46-6252bf9342b9"
-      );
-    }
-  }
+      : [])
+  );
   const sortedDropDownData = useMemo(
     () =>
       availableServices
