@@ -25,9 +25,29 @@
       "example": "CONFIRMED",
       "description": "Cash flow status"
     },
-    "date": {
-      "description": "Cash flow dates",
-      "$ref": "_definitions.json#/definitions/CashFlowDateModel"
+    "transactionDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-01",
+      "description": "Transaction date"
+    },
+    "valueDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-02",
+      "description": "Value date"
+    },
+    "accountingDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-03",
+      "description": "Accounting date"
+    },
+    "updateDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2020-01-02T13:04:35Z",
+      "description": "Update date time"
     },
     "flowAmount": {
       "description": "Flow amount",
