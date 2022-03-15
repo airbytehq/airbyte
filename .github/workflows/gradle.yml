@@ -8,7 +8,54 @@ on:
       - "gitbook/v1"
 
 jobs:
-  ## Gradle Build (Connectors Base)
+  # COMMON TASKS
+  ensure-images-exist:
+    name: "Ensure all required Docker images exist on Dockerhub"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - name: Check images exist
+        run: ./tools/bin/check_images_exist.sh all
+  # The output of this job is used to trigger the following builds.
+  changes:
+    name: "Detect Modified Files"
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      build: ${{ steps.filter.outputs.build }}
+      cli: ${{ steps.filter.outputs.cli }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'airbyte-**/**'
+            build:
+              - '.github/**'
+            cli:
+              - 'airbyte-cli/**'
+            frontend:
+              - 'airbyte-webapp/**'
+              - 'airbyte-webapp-e2e-tests/**'
+
+  # Uncomment to debug.
+  #  changes-output:
+  #    name: "Debug Change Detection Logic"
+  #    needs: changes
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #      - run: |
+  #          echo '${{ toJSON(needs) }}'
+
+  # Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
@@ -27,17 +74,6 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -137,7 +173,7 @@ jobs:
           label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
-  ## Gradle Build (Platform)
+  # Gradle Build (Platform)
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
@@ -267,6 +303,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+
   platform-new-scheduler-acceptance:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
@@ -345,6 +382,30 @@ jobs:
           SLACK_FOOTER: ""
 
   # In case of self-hosted EC2 errors, remove this block.
+  stop-platform-new-scheduler-acceptance-runner:
+    name: Stop Acceptance Tests (Docker w/ Scheduler v2) Runner
+    timeout-minutes: 10
+    needs:
+      - start-platform-new-scheduler-acceptance-runner # required to get output from the start-runner job
+      - platform-new-scheduler-acceptance # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.3.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
+
+  # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
     timeout-minutes: 10
@@ -369,7 +430,9 @@ jobs:
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
   octavia-cli-build:
+    needs: changes
     runs-on: ubuntu-latest
+    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
@@ -440,6 +503,8 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -515,7 +580,9 @@ jobs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -631,13 +698,16 @@ jobs:
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
         env:
+          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          # GOOGLE_CLOUD_STORAGE_TEST_CREDS can be found in LastPass as "google cloud storage ( gcs ) test creds"
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
           HOME: /home/runner
+          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
@@ -659,6 +729,7 @@ jobs:
         env:
           USER: root
           HOME: /home/runner
+          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
@@ -781,6 +852,7 @@ jobs:
         env:
           USER: root
           HOME: /home/runner
+          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
