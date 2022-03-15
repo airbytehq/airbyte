@@ -2478,7 +2478,7 @@
           description: "Please enter your basic URL from GitLab instance."
         private_token:
           type: "string"
-          title: "Privat Token"
+          title: "Private Token"
           description: "Log into your GitLab account and then generate a personal\
             \ Access Token."
           airbyte_secret: true
