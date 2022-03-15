@@ -312,7 +312,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public StagingConfigurationRead createStagingConfiguration(final StagingConfigurationCreate stagingConfigurationCreate) {
-    return execute(()-> stagingConfigurationHandler.createStagingConfiguration(stagingConfigurationCreate));
+    return execute(() -> stagingConfigurationHandler.createStagingConfiguration(stagingConfigurationCreate));
   }
 
   @Override

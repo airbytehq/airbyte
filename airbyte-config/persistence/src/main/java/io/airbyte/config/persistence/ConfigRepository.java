@@ -478,11 +478,12 @@ public class ConfigRepository {
     if (longLivedSecretPersistence.isPresent()) {
       final Optional<StagingConfiguration> optionalStagingConfiguration = getOptionalStagingConfiguration(
           stagingConfiguration.getDestinationDefinitionId());
-      final SecretCoordinateToPayload secretCoordinateToPayload = SecretsHelpers.convertStagingConfigToSecret(stagingConfiguration.getConfiguration().toString(),
-          longLivedSecretPersistence.get(),
-          stagingConfiguration.getDestinationDefinitionId(),
-          UUID::randomUUID,
-          optionalStagingConfiguration.map(StagingConfiguration::getConfiguration).orElse(null));
+      final SecretCoordinateToPayload secretCoordinateToPayload =
+          SecretsHelpers.convertStagingConfigToSecret(stagingConfiguration.getConfiguration().toString(),
+              longLivedSecretPersistence.get(),
+              stagingConfiguration.getDestinationDefinitionId(),
+              UUID::randomUUID,
+              optionalStagingConfiguration.map(StagingConfiguration::getConfiguration).orElse(null));
       longLivedSecretPersistence.get().write(secretCoordinateToPayload.getSecretCoordinate(), secretCoordinateToPayload.getPayload());
       stagingConfigForDB = Jsons.clone(stagingConfiguration).withConfiguration(secretCoordinateToPayload.getSecretCoordinateForDB());
     }

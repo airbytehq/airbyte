@@ -44,7 +44,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -145,7 +144,7 @@ public class MockData {
   private static ConnectorSpecification connectorSpecification() {
     return new ConnectorSpecification()
         .withAuthSpecification(new AuthSpecification().withAuthType(AuthType.OAUTH_2_0))
-        .withConnectionSpecification(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConnectionSpecification(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withDocumentationUrl(URI.create("whatever"))
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
@@ -185,14 +184,14 @@ public class MockData {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withSourceId(SOURCE_ID_2);
     final SourceConnection sourceConnection3 = new SourceConnection()
         .withName("source-3")
@@ -210,14 +209,14 @@ public class MockData {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withDestinationId(DESTINATION_ID_2);
     final DestinationConnection destinationConnection3 = new DestinationConnection()
         .withName("destination-3")
@@ -231,12 +230,12 @@ public class MockData {
 
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_2);
@@ -245,12 +244,12 @@ public class MockData {
 
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","null")))
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null")))
         .withWorkspaceId(WORKSPACE_ID_1)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_2);
@@ -390,16 +389,16 @@ public class MockData {
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
-        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null"))));
     final StandardSyncState standardSyncState2 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_2)
-        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null"))));
     final StandardSyncState standardSyncState3 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_3)
-        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null"))));
     final StandardSyncState standardSyncState4 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_4)
-        .withState(new State().withState(Jsons.jsonNode(Map.of("name","John","age","30","car","null"))));
+        .withState(new State().withState(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "null"))));
     return Arrays.asList(standardSyncState1, standardSyncState2, standardSyncState3, standardSyncState4);
   }
 
@@ -438,12 +437,11 @@ public class MockData {
   public static List<StagingConfiguration> stagingConfiguration() {
     final StagingConfiguration stagingConfiguration1 = new StagingConfiguration()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","30","car","tesla")));
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "tesla")));
     final StagingConfiguration stagingConfiguration2 = new StagingConfiguration()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
-        .withConfiguration(Jsons.jsonNode(Map.of("name","John","age","32","car","audi")));
+        .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "32", "car", "audi")));
     return Arrays.asList(stagingConfiguration1, stagingConfiguration2);
   }
-
 
 }

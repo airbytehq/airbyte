@@ -6,7 +6,6 @@ package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -438,7 +437,7 @@ class ConfigRepositoryTest {
   @Test
   public void testWriteStagingConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID destinationDefinitionId = UUID.randomUUID();
-    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name","John","age","30","car","tesla")));
+    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "tesla")));
     assertEquals("{\"age\":\"30\",\"car\":\"tesla\",\"name\":\"John\"}", secretPayload.toString());
     final StagingConfiguration stagingConfiguration = new StagingConfiguration()
         .withDestinationDefinitionId(destinationDefinitionId)
@@ -476,7 +475,7 @@ class ConfigRepositoryTest {
 
     doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
         Map.of("_secret", secretCoordinate.getFullCoordinate()))))
-        .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+            .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
 
     doReturn(Optional.of(secretPayload.toString())).when(secretPersistence).read(secretCoordinate);
     configRepository.writeStagingConfiguration(stagingConfiguration);
@@ -509,7 +508,7 @@ class ConfigRepositoryTest {
 
     doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
         Map.of("_secret", oldSecretCoordinate.getFullCoordinate()))))
-        .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+            .when(configPersistence).getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
 
     final SecretCoordinate newSecretCoordinate = new SecretCoordinate(
         "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);

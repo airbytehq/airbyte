@@ -29,4 +29,5 @@ public class MemorySecretPersistence implements SecretPersistence {
   public Map<SecretCoordinate, String> getSecretMap() {
     return Collections.unmodifiableMap(secretMap);
   }
+
 }

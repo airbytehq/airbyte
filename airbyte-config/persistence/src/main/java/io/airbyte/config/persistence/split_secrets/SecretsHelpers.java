@@ -400,11 +400,13 @@ public class SecretsHelpers {
   }
 
   public static SecretCoordinateToPayload convertStagingConfigToSecret(final String newSecret,
-      final ReadOnlySecretPersistence secretReader,
-      final UUID destinationDefinitionId,
-      final Supplier<UUID> uuidSupplier,
-      final @Nullable JsonNode oldStagingConfiguration) {
-    final String oldSecretFullCoordinate = (oldStagingConfiguration!= null && oldStagingConfiguration.has(COORDINATE_FIELD)) ? oldStagingConfiguration.get(COORDINATE_FIELD).asText() : null;
+                                                                       final ReadOnlySecretPersistence secretReader,
+                                                                       final UUID destinationDefinitionId,
+                                                                       final Supplier<UUID> uuidSupplier,
+                                                                       final @Nullable JsonNode oldStagingConfiguration) {
+    final String oldSecretFullCoordinate =
+        (oldStagingConfiguration != null && oldStagingConfiguration.has(COORDINATE_FIELD)) ? oldStagingConfiguration.get(COORDINATE_FIELD).asText()
+            : null;
     final SecretCoordinate coordinateForStagingConfig = getCoordinateForStagingConfig(newSecret,
         secretReader,
         destinationDefinitionId,
@@ -415,11 +417,11 @@ public class SecretsHelpers {
   }
 
   private static SecretCoordinate getCoordinateForStagingConfig(
-      final String newSecret,
-      final ReadOnlySecretPersistence secretReader,
-      final UUID destinationDefinitionId,
-      final Supplier<UUID> uuidSupplier,
-      final @Nullable String oldSecretFullCoordinate) {
+                                                                final String newSecret,
+                                                                final ReadOnlySecretPersistence secretReader,
+                                                                final UUID destinationDefinitionId,
+                                                                final Supplier<UUID> uuidSupplier,
+                                                                final @Nullable String oldSecretFullCoordinate) {
     String coordinateBase = null;
     Long version = null;
 
