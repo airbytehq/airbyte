@@ -2,7 +2,9 @@
   "type": "object",
   "required": [
     "account",
-    "bankBalance"
+    "balanceDate",
+    "amount",
+    "currencyCode"
   ],
   "properties": {
     "account": {
