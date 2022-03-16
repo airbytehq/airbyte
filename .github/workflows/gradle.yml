@@ -504,7 +504,8 @@ jobs:
   start-platform-new-scheduler-acceptance-runner:
     name: "Start Acceptance Tests (Docker w/ Scheduler v2) Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
