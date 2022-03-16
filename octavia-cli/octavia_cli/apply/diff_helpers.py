@@ -3,6 +3,7 @@
 #
 
 import hashlib
+import json
 from typing import Any
 
 import click
@@ -11,23 +12,17 @@ from deepdiff import DeepDiff
 SECRET_MASK = "**********"
 
 
-def compute_checksum(file_path: str) -> str:
-    """Compute SHA256 checksum from a file
+def hash_config(configuration: dict) -> str:
+    """Computes a SHA256 hash from a dictionnary.
 
     Args:
-        file_path (str): Path for the file for which you want to compute a checksum.
+        configuration (dict): The configuration to hash
 
     Returns:
-        str: The computed hash digest
+        str: _description_
     """
-    BLOCK_SIZE = 65536
-    file_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        fb = f.read(BLOCK_SIZE)
-        while len(fb) > 0:
-            file_hash.update(fb)
-            fb = f.read(BLOCK_SIZE)
-    return file_hash.hexdigest()
+    stringified = json.dumps(configuration, sort_keys=True)
+    return hashlib.sha256(stringified.encode("utf-8")).hexdigest()
 
 
 def exclude_secrets_from_diff(obj: Any, path: str) -> bool:

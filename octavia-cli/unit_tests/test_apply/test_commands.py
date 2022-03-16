@@ -61,11 +61,11 @@ def test_apply_with_custom_configuration_file_force(mocker, context_object):
 def test_get_resource_to_apply(mocker, mock_api_client):
     local_files_priorities = [("foo", 2), ("bar", 1)]
     mock_resource_factory = mocker.Mock()
-    mock_resource_factory.side_effect = [mocker.Mock(apply_priority=priority) for _, priority in local_files_priorities]
+    mock_resource_factory.side_effect = [mocker.Mock(APPLY_PRIORITY=priority) for _, priority in local_files_priorities]
     mocker.patch.object(commands, "resource_factory", mock_resource_factory)
 
     resources_to_apply = commands.get_resources_to_apply([f[0] for f in local_files_priorities], mock_api_client, "workspace_id")
-    assert resources_to_apply == sorted(resources_to_apply, key=lambda r: r.apply_priority)
+    assert resources_to_apply == sorted(resources_to_apply, key=lambda r: r.APPLY_PRIORITY)
     assert commands.resource_factory.call_count == len(local_files_priorities)
     commands.resource_factory.assert_has_calls([mocker.call(mock_api_client, "workspace_id", path) for path, _ in local_files_priorities])
 
