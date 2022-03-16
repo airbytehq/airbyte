@@ -37,7 +37,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   // failures,
   // and that the connection's first job is at least that many days old
   @Override
-  public void autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
+  public boolean autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
         final int maxDaysOfOnlyFailedJobs = configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
@@ -45,7 +45,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             input.getCurrTimestamp().minus(maxDaysOfOnlyFailedJobs, ChronoUnit.DAYS));
 
         if (jobStatuses.size() == 0)
-          return;
+          return false;
 
         int numFailures = 0;
 
@@ -56,7 +56,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable())
               break;
           } else if (jobStatus == JobStatus.SUCCEEDED) {
-            return;
+            return false;
           }
         }
 
@@ -69,7 +69,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             final long timeBetweenCurrTimestampAndFirstJob = input.getCurrTimestamp().getEpochSecond()
                 - optionalFirstJob.get().getCreatedAtInSecond();
             if (timeBetweenCurrTimestampAndFirstJob <= TimeUnit.DAYS.toSeconds(maxDaysOfOnlyFailedJobs)) {
-              return;
+              return false;
             }
           }
         }
@@ -77,6 +77,8 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
         standardSync.setStatus(Status.INACTIVE);
         configRepository.writeStandardSync(standardSync);
+
+        return true;
       } catch (final Exception e) {
         throw new RetryableException(e);
       }

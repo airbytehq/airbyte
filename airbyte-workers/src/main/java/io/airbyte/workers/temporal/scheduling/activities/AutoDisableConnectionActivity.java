@@ -32,6 +32,6 @@ public interface AutoDisableConnectionActivity {
    * connection to prevent wasting resources
    */
   @ActivityMethod
-  void autoDisableFailingConnection(AutoDisableConnectionActivityInput input);
+  boolean autoDisableFailingConnection(AutoDisableConnectionActivityInput input);
 
 }
