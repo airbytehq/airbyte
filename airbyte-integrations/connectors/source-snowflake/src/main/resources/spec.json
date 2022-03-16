@@ -9,10 +9,9 @@
       "role",
       "warehouse",
       "database",
-      "schema",
-      "credentials"
+      "schema"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "title": "Authorization Method",
@@ -26,22 +25,22 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
+                "const": "OAuth",
+                "enum": ["OAuth"],
+                "default": "OAuth",
                 "order": 0
               },
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
-                "description": "The Client ID of your Drift developer application.",
+                "description": "The Client ID of your Snowflake developer application.",
                 "airbyte_secret": true,
                 "order": 1
               },
               "client_secret": {
                 "type": "string",
                 "title": "Client Secret",
-                "description": "The Client Secret of your Drift developer application.",
+                "description": "The Client Secret of your Snowflake developer application.",
                 "airbyte_secret": true,
                 "order": 2
               },
@@ -58,12 +57,6 @@
                 "description": "Refresh Token for making authenticated requests.",
                 "airbyte_secret": true,
                 "order": 4
-              },
-              "username": {
-                "type": "string",
-                "title": "username Token",
-                "description": "Refresh Token for making authenticated requests.",
-                "order": 5
               }
             }
           },
@@ -73,26 +66,19 @@
             "required": ["username", "password"],
             "order": 1,
             "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "User",
-                "enum": ["User"],
-                "default": "User",
-                "order": 0
-              },
               "username": {
                 "description": "The username you created to allow Airbyte to access the database.",
                 "examples": ["AIRBYTE_USER"],
                 "type": "string",
                 "title": "Username",
-                "order": 1
+                "order": 0
               },
               "password": {
                 "description": "The password associated with the username.",
                 "type": "string",
                 "airbyte_secret": true,
                 "title": "Password",
-                "order": 2
+                "order": 1
               }
             }
           }
@@ -145,7 +131,7 @@
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_type"],
-    "predicate_value": "Client",
+    "predicate_value": "OAuth",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
         "type": "object",
@@ -168,10 +154,6 @@
           "refresh_token": {
             "type": "string",
             "path_in_connector_config": ["credentials", "refresh_token"]
-          },
-          "username": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "username"]
           }
         }
       },

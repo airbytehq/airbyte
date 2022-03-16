@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.source.snowflake;
 
-import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariConfig;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A token loader to refresh access token every 7 minutes. Snowflake access token expires after 10
@@ -15,17 +17,20 @@ import java.util.concurrent.TimeUnit;
  */
 public class SnowflakeAccessTokenLoader extends Thread {
 
-  private final HikariDataSource hikariDataSource;
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAccessTokenLoader.class);
+  private final HikariConfig hikariDataSource;
 
-  public SnowflakeAccessTokenLoader(HikariDataSource hikariDataSource) {
+  public SnowflakeAccessTokenLoader(HikariConfig hikariDataSource) {
     this.hikariDataSource = hikariDataSource;
   }
 
   @Override
   public void run() {
+    LOGGER.info("SnowflakeAccessTokenLoader started..");
     while (SnowflakeSource.isSourceAlive) {
       var properties = hikariDataSource.getDataSourceProperties();
       try {
+        LOGGER.info("Request access token");
         var token = SnowflakeOAuthUtils.getAccessTokenUsingRefreshToken(
             properties.getProperty("host"), properties.getProperty("client_id"),
             properties.getProperty("client_secret"), properties.getProperty("refresh_token"));
@@ -34,11 +39,13 @@ public class SnowflakeAccessTokenLoader extends Thread {
         throw new RuntimeException(e);
       }
       try {
+        // To refresh token every 7 minutes
         TimeUnit.MINUTES.sleep(7);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
     }
+    LOGGER.info("SnowflakeAccessTokenLoader finished.");
   }
 
 }

@@ -6,10 +6,10 @@ package io.airbyte.integrations.source.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -26,16 +26,14 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
+  private static final HikariConfig hikariConfig = new HikariConfig();
+  private static final SnowflakeAccessTokenLoader tokenLoader = new SnowflakeAccessTokenLoader(hikariConfig);
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
   public static boolean isSourceAlive;
-  private final HikariDataSource dataSource;
-  private static SnowflakeAccessTokenLoader tokenLoader;
 
   public SnowflakeSource() {
     super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(),
         new SnowflakeSourceOperations());
-    dataSource = new HikariDataSource();
-    tokenLoader = new SnowflakeAccessTokenLoader(dataSource);
   }
 
   public static void main(final String[] args) throws Exception {
@@ -51,7 +49,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   @Override
   public JdbcDatabase createDatabase(JsonNode config) throws SQLException {
     final DataSource dataSource = createDataSource(config);
-    var database = new StreamingJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations(),
+    var database = new StreamingJdbcDatabase(dataSource, new SnowflakeSourceOperations(),
         new SnowflakeJdbcStreamingQueryConfiguration());
     quoteString = database.getMetaData().getIdentifierQuoteString();
     return database;
@@ -73,10 +71,13 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     if (config.has("jdbc_url_params")) {
       jdbcUrl.append(config.get("jdbc_url_params").asText());
     }
-    Properties properties = new Properties();
-    var credentials = config.get("credentials");
-    if (credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
+    hikariConfig.setJdbcUrl(jdbcUrl.toString());
+
+    if (config.has("credentials") && config.get("credentials").has("auth_type") && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
+      LOGGER.info("Authorization mode is OAuth");
       try {
+        var credentials = config.get("credentials");
+        Properties properties = new Properties();
         properties.setProperty("client_id", credentials.get("client_id").asText());
         properties.setProperty("client_secret", credentials.get("client_secret").asText());
         properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
@@ -87,23 +88,27 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
         properties.put("authenticator", "oauth");
         properties.put("token", accessToken);
         properties.put("account", config.get("host").asText());
-        dataSource.setDataSourceProperties(properties);
+        hikariConfig.setDataSourceProperties(properties);
         tokenLoader.start();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-    } else {
-      dataSource.setUsername(credentials.get("username").asText());
-      dataSource.setPassword(credentials.get("password").asText());
+    } else if (config.has("credentials") && config.get("credentials").has("password")) {
+      LOGGER.info("Authorization mode is 'Username and password'");
+      var credentials = config.get("credentials");
+      hikariConfig.setUsername(credentials.get("username").asText());
+      hikariConfig.setPassword(credentials.get("password").asText());
+    } else if (config.has("password") && config.has("username")) {
+      LOGGER.info("Authorization mode is deprecated 'Username and password'. Please update your source configuration");
+      hikariConfig.setUsername(config.get("username").asText());
+      hikariConfig.setPassword(config.get("password").asText());
     }
-    dataSource.setJdbcUrl(jdbcUrl.toString());
 
-    return dataSource;
+    return new HikariDataSource(hikariConfig);
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
         config.get("host").asText()));
 
@@ -124,9 +129,10 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
-    var credentials = config.get("credentials");
-    if (credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
+    if (config.has("credentials") && config.get("credentials").has("auth_type") && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
+      // Use OAuth authorization method
       final String accessToken;
+      var credentials = config.get("credentials");
       try {
         accessToken = SnowflakeOAuthUtils.getAccessTokenUsingRefreshToken(
             config.get("host").asText(), credentials.get("client_id").asText(),
@@ -136,18 +142,28 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       }
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("connection_properties",
-              String.join(";", "user=" + credentials.get("username").asText(),
-                  "authenticator=oauth", "token=" + accessToken))
+              String.join(";", "authenticator=oauth", "token=" + accessToken))
           .put("jdbc_url", jdbcUrl.toString());
-      System.out.println(Jsons.jsonNode(configBuilder.build()).asText());
       return Jsons.jsonNode(configBuilder.build());
-    } else {
+    } else if (config.has("credentials") && config.get("credentials").has("username")){
+      // Use Username and password authorization method
+      var credentials = config.get("credentials");
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", credentials.get("username").asText())
           .put("password", credentials.get("password").asText())
           .put("jdbc_url", jdbcUrl.toString());
       LOGGER.info(jdbcUrl.toString());
       return Jsons.jsonNode(configBuilder.build());
+    } else if (config.has("password") && config.has("username")) {
+      // Use deprecated Username and password authorization method
+      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+          .put("username", config.get("username").asText())
+          .put("password", config.get("password").asText())
+          .put("jdbc_url", jdbcUrl.toString());
+      LOGGER.info(jdbcUrl.toString());
+      return Jsons.jsonNode(configBuilder.build());
+    } else {
+      throw new RuntimeException("Invalid authorization credentials");
     }
   }
 

@@ -15,14 +15,18 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeOAuthUtils {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAccessTokenLoader.class);
   private static final String REFRESH_TOKEN_URL = "https://%s/oauth/token-request";
   private static final HttpClient httpClient = HttpClient.newBuilder()
       .version(HttpClient.Version.HTTP_2)
@@ -52,11 +56,13 @@ public class SnowflakeOAuthUtils {
           .uri(URI.create(refreshTokenUri))
           .header("Content-Type", "application/x-www-form-urlencoded")
           .header("Accept", "application/json")
-          .header("Authorization", "Basic " + new String(
-              Base64.getEncoder().encode((clientId + ":" + clientSecret).getBytes())))
+          .header("Authorization", "Basic " +
+              Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(
+                  StandardCharsets.UTF_8)))
           .build();
       final HttpResponse<String> response = httpClient.send(request,
           HttpResponse.BodyHandlers.ofString());
+      LOGGER.info("getAccessTokenUsingRefreshToken response code: " + response.statusCode());
       return Jsons.deserialize(response.body()).get("access_token").asText();
     } catch (final InterruptedException e) {
       throw new IOException("Failed to refreshToken", e);

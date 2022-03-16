@@ -24,11 +24,9 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   protected JdbcDatabase setupDataBase() {
     config = getStaticConfig();
     final DataSource dataSource = createDataSource(getStaticConfig());
-    var db = new StreamingJdbcDatabase(dataSource,
+    return new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
         new SnowflakeJdbcStreamingQueryConfiguration());
-    System.out.println("config = createDatabase");
-    return db;
   }
 
   private HikariDataSource createDataSource(final JsonNode config) {
@@ -53,7 +51,6 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     }
 
     var credentials = config.get("credentials");
-
     try {
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());

@@ -26,10 +26,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     snConfig = Jsons
         .deserialize(IOs.readFile(Path.of("secrets/config.json")));
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
     // due to case sensitiveness in SnowflakeDB
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
@@ -49,7 +45,10 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+  }
 
+  @BeforeEach
+  public void setup() throws Exception {
     super.setup();
   }
 
