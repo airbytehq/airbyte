@@ -45,16 +45,16 @@ This connector outputs the following incremental streams:
 
 ### Notes
 
-1. Only 3 streams from above 12 incremental streams \(`comments`, `commits` and `issues`\) are pure incremental meaning that they:
+1. Only 4 streams from above 17 incremental streams \(`comments`, `commits`, `issues` and `review comments`\) are pure incremental meaning that they:
    * read only new records;
    * output only new records.
 
-     Other 8 incremental streams are also incremental but with one difference, they:
+     Other 13 incremental streams are also incremental but with one difference, they:
 
    * read all records;
    * output only new records.
 
-     Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
+     Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
 2. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 
 ### Features
@@ -77,7 +77,7 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`;
+* `start_date` - start date for 4 incremental streams: `comments`, `commits`, `issues` and `review comments`;
 * `repository` - Space-delimited list of GitHub repositories/organizations which looks like `<owner>/<repo> <organization>/* <organization_new>/* <owner_new>/<repo_new>`.
 
 **Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
