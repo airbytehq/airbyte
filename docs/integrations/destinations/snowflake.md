@@ -111,7 +111,9 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
-* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example - `accountname.us-east-2.aws.snowflakecomputing.com`
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in: 
+   * Example - us-west-1: `xy12345.snowflakecomputing.com`
+   * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
 * **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
 * **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
 * **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
@@ -161,6 +163,22 @@ By default, Airbyte uses [INTERNAL STAGING](https://docs.airbyte.com/integration
 Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging. This is also the recommended way of using the connector. It doesn't require any external resources and is quick to setup and use. 
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
+
+### Azure Blob Storage Staging
+
+For Azure Blob Storage, you will need to create a storage account and container and provide SAS Token to access the container. We recommend creating a container that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
+
+Provide the required Azure Blob info.
+
+* **Endpoint Domain Name**
+    * Leave default value *blob.core.windows.net*  or [map a custom domain](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-custom-domain-name?tabs=azure-portal) to an Azure Blob Storage endpoint.
+* **Azure Blob Storage Account Name**
+    * An Azure storage account contains all of your Azure Storage data objects, including blobs, file shares, queues, tables, and disks. The storage account provides a unique namespace for your Azure Storage data. 
+    * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) to create a storage account.
+* **Azure blob storage container (Bucket) Name**
+    * See [this](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container) to create container with REST API or create container with Azure UI.
+* **SAS Token**
+    * A shared access signature (SAS) enables you to grant limited access to containers and blobs in your storage account. Please pay attention on [read and write permissions](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to use Snowflake staging
 
 ### AWS S3 Staging
 
@@ -224,7 +242,11 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
+| 0.4.19  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699) | Added unit tests                                                                   |
 | 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
+| 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |
 | 0.4.14  | 2022-02-17 | [\#10394](https://github.com/airbytehq/airbyte/pull/10394) | Reduce memory footprint. |
 | 0.4.13  | 2022-02-16 | [\#10212](https://github.com/airbytehq/airbyte/pull/10212) | Execute COPY command in parallel for S3 and GCS staging |
 | 0.4.12  | 2022-02-15 | [\#10342](https://github.com/airbytehq/airbyte/pull/10342) | Use connection pool, and fix connection leak. |

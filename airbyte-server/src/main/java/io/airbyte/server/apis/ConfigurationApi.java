@@ -91,7 +91,10 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -119,7 +122,6 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
@@ -153,6 +155,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
+                          final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final FileTtlManager archiveTtlManager,
@@ -168,7 +172,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final Path workspaceRoot,
                           final HttpClient httpClient,
                           final FeatureFlags featureFlags,
-                          final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                          final EventRunner eventRunner) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -184,24 +188,36 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, temporalWorkerRunFactory, featureFlags);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs, eventRunner, featureFlags);
 
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         workerConfigs);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, connectionsHandler);
+    sourceHandler = new SourceHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);
+    destinationHandler = new DestinationHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient, destinationHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
@@ -215,11 +231,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        temporalWorkerRunFactory);
+        eventRunner);
     healthCheckHandler = new HealthCheckHandler();
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         jobPersistence,
         seed,
         workspaceHelper,

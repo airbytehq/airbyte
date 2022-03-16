@@ -98,6 +98,8 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/Analytics");
+
 describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;

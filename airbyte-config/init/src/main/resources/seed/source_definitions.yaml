@@ -112,14 +112,14 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
 - name: Chartmogul
   sourceDefinitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
   dockerRepository: airbyte/source-chartmogul
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/chartmogul
   icon: chartmogul.svg
   sourceType: api
@@ -203,7 +203,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.36
+  dockerImageTag: 0.2.39
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -245,7 +245,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.19
+  dockerImageTag: 0.2.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -328,7 +328,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.44
+  dockerImageTag: 0.1.47
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -526,6 +526,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
+- name: Orb
+  sourceDefinitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
+  dockerRepository: airbyte/source-orb
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/orb
+  icon: orb.svg
+  sourceType: api
 - sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
   name: Outreach
   dockerRepository: airbyte/source-outreach
@@ -634,7 +641,7 @@
 - name: Recurly
   sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/recurly
   icon: recurly.svg
   sourceType: api
@@ -669,7 +676,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -690,7 +697,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.1.35
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -725,7 +732,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -745,7 +752,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.28
+  dockerImageTag: 0.1.29
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api

@@ -25,8 +25,9 @@ import com.google.api.client.util.Preconditions;
  * <p>
  * - Avoid numbers. This makes the metric confusing to read. Numbers should only be used as a
  * <p>
- * - Add units at name end if applicable. This is especially relevant for time units. versioning
- * tactic and present at the end of the metric.
+ * - Add units at name end if applicable. This is especially relevant for time units.
+ * <p>
+ * - Include the time period in the name if the metric is meant to be run at a certain interval.
  */
 public enum MetricsRegistry {
 
@@ -38,10 +39,18 @@ public enum MetricsRegistry {
       MetricEmittingApps.WORKER,
       "attempt_failed_by_release_stage",
       "increments when an attempt fails. attempts are double counted as this is tagged by release stage."),
+  ATTEMPT_FAILED_BY_FAILURE_ORIGIN(
+      MetricEmittingApps.WORKER,
+      "attempt_failed_by_failure_origin",
+      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin."),
   ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
       "increments when an attempts succeeds. attempts are double counted as this is tagged by release stage."),
+  EST_NUM_METRICS_EMITTED_BY_REPORTER(
+      MetricEmittingApps.METRICS_REPORTER,
+      "est_num_metrics_emitted_by_reporter",
+      "estimated metrics emitted by the reporter in the last interval. this is estimated since the count is not precise."),
   JOB_CANCELLED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "job_cancelled_by_release_stage",
@@ -61,7 +70,28 @@ public enum MetricsRegistry {
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
-      "time taken to create a new kube pod process");
+      "time taken to create a new kube pod process"),
+  NUM_PENDING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_pending_jobs",
+      "number of pending jobs"),
+  NUM_RUNNING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_running_jobs",
+      "number of running jobs"),
+  NUM_ACTIVE_CONN_PER_WORKSPACE(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_active_conn_per_workspace",
+      "number of active connections per workspace"),
+  OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "oldest_pending_job_age_secs",
+      "oldest pending job in seconds"),
+  OLDEST_RUNNING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "oldest_running_job_age_secs",
+      "oldest running job in seconds"),
+  OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
+      "overall_job_runtime_in_last_hour_by_terminal_state_secs",
+      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states.");
 
   public final MetricEmittingApp application;
   public final String metricName;

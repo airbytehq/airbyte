@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,9 +39,9 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             clone.get("port").asText(),
             clone.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
             "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+            + algorithm + " )"));
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -68,9 +69,9 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             clone.get("port").asText(),
             clone.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
             "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+            + algorithm + " )"));
 
     final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());

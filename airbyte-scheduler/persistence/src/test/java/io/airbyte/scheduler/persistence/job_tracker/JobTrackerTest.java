@@ -19,11 +19,14 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
+import io.airbyte.config.Metadata;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -48,10 +51,13 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -77,6 +83,7 @@ class JobTrackerTest {
   private static final long SYNC_DURATION = 9L; // in sync between end and start time
   private static final long SYNC_BYTES_SYNC = 42L;
   private static final long SYNC_RECORDS_SYNC = 4L;
+  private static final long LONG_JOB_ID = 10L; // for sync the job id is a long not a uuid.
 
   private static final ImmutableMap<String, Object> STARTED_STATE_METADATA = ImmutableMap.<String, Object>builder()
       .put("attempt_stage", "STARTED")
@@ -292,6 +299,11 @@ class JobTrackerTest {
   }
 
   @Test
+  void testTrackSyncAttemptWithFailures() throws ConfigNotFoundException, IOException, JsonValidationException {
+    testAsynchronousAttemptWithFailures(ConfigType.SYNC, SYNC_CONFIG_METADATA);
+  }
+
+  @Test
   void testConfigToMetadata() throws IOException {
     final String configJson = MoreResources.readResource("example_config.json");
     final JsonNode config = Jsons.deserialize(configJson);
@@ -320,19 +332,72 @@ class JobTrackerTest {
   }
 
   void testAsynchronousAttempt(final ConfigType configType) throws ConfigNotFoundException, IOException, JsonValidationException {
-    testAsynchronousAttempt(configType, Collections.emptyMap());
+    testAsynchronousAttempt(configType, getJobWithAttemptsMock(configType, LONG_JOB_ID), Collections.emptyMap());
   }
 
   void testAsynchronousAttempt(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // for sync the job id is a long not a uuid.
-    final long jobId = 10L;
+    testAsynchronousAttempt(configType, getJobWithAttemptsMock(configType, LONG_JOB_ID), additionalExpectedMetadata);
+  }
 
-    final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
-    final Job job = getJobWithAttemptsMock(configType, jobId);
+  void testAsynchronousAttemptWithFailures(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final JsonNode configFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", "source");
+        put("failureType", "config_error");
+        put("internalMessage", "Internal config error error msg");
+        put("externalMessage", "Config error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1010);
+      }
+
+    });
+
+    final JsonNode systemFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", "replication");
+        put("failureType", "system_error");
+        put("internalMessage", "Internal system error error msg");
+        put("externalMessage", "System error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1100);
+      }
+
+    });
+
+    final JsonNode unknownFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+
+      {
+        put("failureOrigin", null);
+        put("failureType", null);
+        put("internalMessage", "Internal unknown error error msg");
+        put("externalMessage", "Unknown error related msg");
+        put("metadata", ImmutableMap.of("some", "metadata"));
+        put("retryable", true);
+        put("timestamp", 1110);
+      }
+
+    });
+
+    final Map<String, Object> failureMetadata = ImmutableMap.of(
+        "failure_reasons", Jsons.arrayNode().addAll(Arrays.asList(configFailureJson, systemFailureJson, unknownFailureJson)).toString(),
+        "main_failure_reason", configFailureJson.toString());
+    testAsynchronousAttempt(configType, getJobWithFailuresMock(configType, LONG_JOB_ID),
+        MoreMaps.merge(additionalExpectedMetadata, failureMetadata));
+  }
+
+  void testAsynchronousAttempt(final ConfigType configType, final Job job, final Map<String, Object> additionalExpectedMetadata)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final ImmutableMap<String, Object> metadata = getJobMetadata(configType, LONG_JOB_ID);
     // test when frequency is manual.
     when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
-    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId)).thenReturn(WORKSPACE_ID);
+    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(LONG_JOB_ID)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
@@ -405,9 +470,7 @@ class JobTrackerTest {
     return job;
   }
 
-  private Job getJobWithAttemptsMock(final ConfigType configType, final long jobId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final Job job = getJobMock(configType, jobId);
+  private Attempt getAttemptMock() {
     final Attempt attempt = mock(Attempt.class);
     final JobOutput jobOutput = mock(JobOutput.class);
     final StandardSyncOutput syncOutput = mock(StandardSyncOutput.class);
@@ -420,9 +483,69 @@ class JobTrackerTest {
     when(syncOutput.getStandardSyncSummary()).thenReturn(syncSummary);
     when(jobOutput.getSync()).thenReturn(syncOutput);
     when(attempt.getOutput()).thenReturn(java.util.Optional.of(jobOutput));
-    when(job.getAttempts()).thenReturn(List.of(attempt));
+    return attempt;
+  }
+
+  private Job getJobWithAttemptsMock(final ConfigType configType, final long jobId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return getJobWithAttemptsMock(configType, jobId, List.of(getAttemptMock()));
+  }
+
+  private Job getJobWithAttemptsMock(final ConfigType configType, final long jobId, final List<Attempt> attempts)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final Job job = getJobMock(configType, jobId);
+    when(job.getAttempts()).thenReturn(attempts);
     when(jobPersistence.getJob(jobId)).thenReturn(job);
     return job;
+  }
+
+  private List<Attempt> getAttemptsWithFailuresMock() {
+    final Attempt attemptWithSingleFailure = getAttemptMock();
+    final AttemptFailureSummary singleFailureSummary = mock(AttemptFailureSummary.class);
+    final FailureReason configFailureReason = new FailureReason()
+        .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
+        .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
+        .withRetryable(true)
+        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withExternalMessage("Config error related msg")
+        .withInternalMessage("Internal config error error msg")
+        .withStacktrace("Don't include stacktrace in call to track")
+        .withTimestamp(SYNC_START_TIME + 10);
+    when(singleFailureSummary.getFailures()).thenReturn(List.of(configFailureReason));
+    when(attemptWithSingleFailure.getFailureSummary()).thenReturn(Optional.of(singleFailureSummary));
+
+    final Attempt attemptWithMultipleFailures = getAttemptMock();
+    final AttemptFailureSummary multipleFailuresSummary = mock(AttemptFailureSummary.class);
+    final FailureReason systemFailureReason = new FailureReason()
+        .withFailureOrigin(FailureReason.FailureOrigin.REPLICATION)
+        .withFailureType(FailureReason.FailureType.SYSTEM_ERROR)
+        .withRetryable(true)
+        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withExternalMessage("System error related msg")
+        .withInternalMessage("Internal system error error msg")
+        .withStacktrace("Don't include stacktrace in call to track")
+        .withTimestamp(SYNC_START_TIME + 100);
+    final FailureReason unknownFailureReason = new FailureReason()
+        .withRetryable(true)
+        .withMetadata(new Metadata().withAdditionalProperty("some", "metadata"))
+        .withExternalMessage("Unknown error related msg")
+        .withInternalMessage("Internal unknown error error msg")
+        .withStacktrace("Don't include stacktrace in call to track")
+        .withTimestamp(SYNC_START_TIME + 110);
+    when(multipleFailuresSummary.getFailures()).thenReturn(List.of(systemFailureReason, unknownFailureReason));
+    when(attemptWithMultipleFailures.getFailureSummary()).thenReturn(Optional.of(multipleFailuresSummary));
+
+    final Attempt attemptWithNoFailures = getAttemptMock();
+    when(attemptWithNoFailures.getFailureSummary()).thenReturn(Optional.empty());
+
+    // in non-test cases we shouldn't actually get failures out of order chronologically
+    // this is to verify that we are explicitly sorting the results with tracking failure metadata
+    return List.of(attemptWithMultipleFailures, attemptWithSingleFailure, attemptWithNoFailures);
+  }
+
+  private Job getJobWithFailuresMock(final ConfigType configType, final long jobId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    return getJobWithAttemptsMock(configType, jobId, getAttemptsWithFailuresMock());
   }
 
   private ImmutableMap<String, Object> getJobMetadata(final ConfigType configType, final long jobId) {

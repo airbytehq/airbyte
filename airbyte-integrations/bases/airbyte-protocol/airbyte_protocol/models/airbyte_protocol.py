@@ -226,7 +226,7 @@ class AirbyteMessage(BaseModel):
     log: Optional[AirbyteLogMessage] = Field(None, description="log message: any kind of logging you want the platform to know about.")
     spec: Optional[ConnectorSpecification] = None
     connectionStatus: Optional[AirbyteConnectionStatus] = None
-    catalog: Optional[AirbyteCatalog] = Field(None, description="catalog message: the calalog")
+    catalog: Optional[AirbyteCatalog] = Field(None, description="catalog message: the catalog")
     record: Optional[AirbyteRecordMessage] = Field(None, description="record message: the record")
     state: Optional[AirbyteStateMessage] = Field(
         None, description="schema message: the state. Must be the last message produced. The platform uses this information"

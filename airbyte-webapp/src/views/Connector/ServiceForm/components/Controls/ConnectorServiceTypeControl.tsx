@@ -27,6 +27,12 @@ import {
   IProps as OptionProps,
   OptionView,
 } from "components/base/DropDown/components/Option";
+import {
+  IProps as SingleValueProps,
+  Icon as SingleValueIcon,
+  ItemView as SingleValueView,
+} from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -70,6 +76,15 @@ const Stage = styled.div`
   color: ${({ theme }) => theme.textColor};
 `;
 
+const SingleValueContent = styled(components.SingleValue)`
+  width: 100%;
+  padding-right: 38px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
@@ -88,6 +103,18 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   </>
 );
 
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
+  releaseStage,
+}) =>
+  releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+    <Stage>
+      <FormattedMessage
+        id={`connector.releaseStage.${releaseStage}`}
+        defaultMessage={releaseStage}
+      />
+    </Stage>
+  ) : null;
+
 const Option: React.FC<OptionProps> = (props) => {
   return (
     <components.Option {...props}>
@@ -100,17 +127,23 @@ const Option: React.FC<OptionProps> = (props) => {
           {props.data.img || null}
           <Label>{props.label}</Label>
         </Text>
-        {props.data.releaseStage &&
-        props.data.releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
-          <Stage>
-            <FormattedMessage
-              id={`connector.releaseStage.${props.data.releaseStage}`}
-              defaultMessage={props.data.releaseStage}
-            />
-          </Stage>
-        ) : null}
+        <StageLabel releaseStage={props.data.releaseStage} />
       </OptionView>
     </components.Option>
+  );
+};
+
+const SingleValue: React.FC<SingleValueProps> = (props) => {
+  return (
+    <SingleValueView>
+      {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
+      <div>
+        <SingleValueContent {...props}>
+          {props.data.label}
+          <StageLabel releaseStage={props.data.releaseStage} />
+        </SingleValueContent>
+      </div>
+    </SingleValueView>
   );
 };
 
@@ -135,6 +168,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -150,6 +184,7 @@ const ConnectorServiceTypeControl: React.FC<{
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
+          "9da77001-af33-4bcd-be46-6252bf9342b9", // Shopify
         ]
       : [];
   const sortedDropDownData = useMemo(
@@ -186,6 +221,14 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
+
   return (
     <>
       <ControlLabels
@@ -198,6 +241,7 @@ const ConnectorServiceTypeControl: React.FC<{
           components={{
             MenuList: ConnectorList,
             Option,
+            SingleValue,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
@@ -208,6 +252,7 @@ const ConnectorServiceTypeControl: React.FC<{
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (

@@ -58,11 +58,14 @@ import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -80,7 +83,6 @@ import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
@@ -127,6 +129,8 @@ class SchedulerHandlerTest {
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
+  private SecretsRepositoryReader secretsRepositoryReader;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
   private SynchronousSchedulerClient synchronousSchedulerClient;
@@ -134,7 +138,7 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private JobPersistence jobPersistence;
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private EventRunner eventRunner;
   private FeatureFlags featureFlags;
   private JobConverter jobConverter;
 
@@ -151,9 +155,11 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     synchronousSchedulerClient = mock(SynchronousSchedulerClient.class);
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
     final JobNotifier jobNotifier = mock(JobNotifier.class);
-    temporalWorkerRunFactory = mock(TemporalWorkerRunFactory.class);
+    eventRunner = mock(EventRunner.class);
 
     featureFlags = mock(FeatureFlags.class);
     when(featureFlags.usesNewScheduler()).thenReturn(false);
@@ -162,6 +168,8 @@ class SchedulerHandlerTest {
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
+        secretsRepositoryWriter,
+        secretsRepositoryReader,
         schedulerJobClient,
         synchronousSchedulerClient,
         configurationUpdate,
@@ -172,7 +180,7 @@ class SchedulerHandlerTest {
         mock(OAuthConfigSupplier.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         jobConverter);
   }
@@ -212,7 +220,7 @@ class SchedulerHandlerTest {
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE))
@@ -244,7 +252,7 @@ class SchedulerHandlerTest {
         .withConfiguration(source.getConfiguration());
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
     schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate);
@@ -331,7 +339,7 @@ class SchedulerHandlerTest {
 
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(destination.getConfiguration()),
         any())).thenReturn(destination.getConfiguration());
     schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
@@ -361,7 +369,7 @@ class SchedulerHandlerTest {
         .withConfiguration(destination.getConfiguration());
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(destination.getConfiguration()),
         any())).thenReturn(destination.getConfiguration());
     schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate);
@@ -449,7 +457,7 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
 
@@ -478,7 +486,7 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<AirbyteCatalog>) jobResponse);
-    when(configRepository.statefulSplitEphemeralSecrets(
+    when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
     when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
@@ -622,16 +630,16 @@ class SchedulerHandlerTest {
   void testNewSchedulerSync() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(featureFlags.usesNewScheduler()).thenReturn(true);
 
-    UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = UUID.randomUUID();
 
-    long jobId = 123L;
-    ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+    final long jobId = 123L;
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
         .builder()
         .failingReason(Optional.empty())
         .jobId(Optional.of(jobId))
         .build();
 
-    when(temporalWorkerRunFactory.startNewManualSync(connectionId))
+    when(eventRunner.startNewManualSync(connectionId))
         .thenReturn(manualSyncSubmissionResult);
 
     doReturn(new JobInfoRead())
@@ -639,7 +647,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(temporalWorkerRunFactory).startNewManualSync(connectionId);
+    verify(eventRunner).startNewManualSync(connectionId);
   }
 
   private static List<StandardSyncOperation> getOperations(final StandardSync standardSync) {

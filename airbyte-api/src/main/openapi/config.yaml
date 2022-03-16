@@ -2710,6 +2710,9 @@ components:
           description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
           default: null
           example: "${SOURCE_NAMESPACE}"
+        name:
+          type: string
+          description: Name that will be set to this connection
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2732,6 +2735,9 @@ components:
         - syncCatalog
         - status
       properties:
+        name:
+          type: string
+          description: Name that will be set to the connection
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         namespaceDefinition:
@@ -2797,9 +2803,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          nullable: true
-          allOf:
-            - $ref: "#/components/schemas/ConnectionSchedule"
+          $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2881,6 +2885,7 @@ components:
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
+      nullable: true
       required:
         - units
         - timeUnit
@@ -2911,9 +2916,9 @@ components:
     OperationIdRequestBody:
       type: object
       required:
-        - OperationId
+        - operationId
       properties:
-        OperationId:
+        operationId:
           $ref: "#/components/schemas/OperationId"
     OperationCreate:
       type: object
@@ -3344,11 +3349,9 @@ components:
       description: Indicates where the error originated. If not set, the origin of error is not well known.
       type: string
       enum:
-        - unknown # todo (parker) remove this in favor of leaving the failureOrigin unset
         - source
         - destination
         - replication
-        - replication_worker # todo (parker) remove this in favor of replication
         - persistence
         - normalization
         - dbt
@@ -3356,7 +3359,6 @@ components:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
       enum:
-        - unknown # todo (parker) remove this in favor of leaving the failureType unset
         - config_error
         - system_error
         - manual_cancellation

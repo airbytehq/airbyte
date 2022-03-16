@@ -43,8 +43,11 @@ import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -56,12 +59,11 @@ import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -77,6 +79,7 @@ public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final SchedulerJobClient schedulerJobClient;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
   private final ConfigurationUpdate configurationUpdate;
@@ -88,10 +91,12 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
   private final FeatureFlags featureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
+                          final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final JobPersistence jobPersistence,
@@ -100,13 +105,15 @@ public class SchedulerHandler {
                           final OAuthConfigSupplier oAuthConfigSupplier,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                          final EventRunner eventRunner,
                           final FeatureFlags featureFlags) {
     this(
         configRepository,
+        secretsRepositoryWriter,
+        secretsRepositoryReader,
         schedulerJobClient,
         synchronousSchedulerClient,
-        new ConfigurationUpdate(configRepository),
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
         new JsonSchemaValidator(),
         jobPersistence,
         jobNotifier,
@@ -114,13 +121,15 @@ public class SchedulerHandler {
         oAuthConfigSupplier,
         workerEnvironment,
         logConfigs,
-        temporalWorkerRunFactory,
+        eventRunner,
         featureFlags,
         new JobConverter(workerEnvironment, logConfigs));
   }
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
+                   final SecretsRepositoryWriter secretsRepositoryWriter,
+                   final SecretsRepositoryReader secretsRepositoryReader,
                    final SchedulerJobClient schedulerJobClient,
                    final SynchronousSchedulerClient synchronousSchedulerClient,
                    final ConfigurationUpdate configurationUpdate,
@@ -131,10 +140,11 @@ public class SchedulerHandler {
                    final OAuthConfigSupplier oAuthConfigSupplier,
                    final WorkerEnvironment workerEnvironment,
                    final LogConfigs logConfigs,
-                   final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                   final EventRunner eventRunner,
                    final FeatureFlags featureFlags,
                    final JobConverter jobConverter) {
     this.configRepository = configRepository;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
@@ -145,7 +155,7 @@ public class SchedulerHandler {
     this.oAuthConfigSupplier = oAuthConfigSupplier;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.eventRunner = eventRunner;
     this.featureFlags = featureFlags;
     this.jobConverter = jobConverter;
   }
@@ -162,7 +172,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
         sourceDef.getSpec());
 
@@ -202,7 +212,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
         destDef.getSpec());
 
@@ -243,7 +253,7 @@ public class SchedulerHandler {
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
-    final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
+    final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceCreate.getConnectionConfiguration(),
         sourceDef.getSpec());
 
@@ -399,7 +409,7 @@ public class SchedulerHandler {
   // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     if (featureFlags.usesNewScheduler()) {
-      createNewSchedulerCancellation(jobIdRequestBody.getId());
+      return createNewSchedulerCancellation(jobIdRequestBody.getId());
     }
 
     final long jobId = jobIdRequestBody.getId();
@@ -464,7 +474,7 @@ public class SchedulerHandler {
   private JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
     final Job job = jobPersistence.getJob(id);
 
-    final ManualSyncSubmissionResult cancellationSubmissionResult = temporalWorkerRunFactory.startNewCancelation(UUID.fromString(job.getScope()));
+    final ManualSyncSubmissionResult cancellationSubmissionResult = eventRunner.startNewCancelation(UUID.fromString(job.getScope()));
 
     if (cancellationSubmissionResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
@@ -475,7 +485,7 @@ public class SchedulerHandler {
   }
 
   private JobInfoRead createManualRun(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.startNewManualSync(connectionId);
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.startNewManualSync(connectionId);
 
     if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
@@ -487,7 +497,7 @@ public class SchedulerHandler {
   }
 
   private JobInfoRead resetConnectionWithNewScheduler(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalWorkerRunFactory.resetConnection(connectionId);
+    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.resetConnection(connectionId);
 
     if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());

@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-config:models')
+    implementation project(':airbyte-db:jooq')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-metrics:lib')
 }
 
