@@ -17,10 +17,8 @@ This connector outputs the following full refresh streams:
 * [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
 * [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
 * [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
-* [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 * [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
 * [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
-* [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
 * [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 * [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
@@ -28,32 +26,35 @@ This connector outputs the following full refresh streams:
 This connector outputs the following incremental streams:
 
 * [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-* [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
 * [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
+* [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
+* [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
 * [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
-* [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
 * [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
 * [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
+* [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
+* [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
+* [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 * [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+* [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 * [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
+* [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
-* [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
-* [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 
 ### Notes
 
-1. Only 3 streams from above 12 incremental streams \(`comments`, `commits` and `issues`\) are pure incremental meaning that they:
+1. Only 4 streams from above 17 incremental streams \(`comments`, `commits`, `issues` and `review comments`\) are pure incremental meaning that they:
    * read only new records;
    * output only new records.
 
-     Other 8 incremental streams are also incremental but with one difference, they:
+     Other 13 incremental streams are also incremental but with one difference, they:
 
    * read all records;
    * output only new records.
 
-     Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
+     Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
 2. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 
 ### Features
@@ -76,7 +77,7 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`;
+* `start_date` - start date for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
 * `repository` - Space-delimited list of GitHub repositories/organizations which looks like `<owner>/<repo> <organization>/* <organization_new>/* <owner_new>/<repo_new>`.
 
 **Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
