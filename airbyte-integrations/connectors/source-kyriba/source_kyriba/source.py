@@ -291,7 +291,7 @@ class CashFlows(IncrementalKyribaStream):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs) or {}
         params["dateType"] = "UPDATE"
-        params["start_date"] = self.start_date
+        params["startDate"] = self.start_date
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
