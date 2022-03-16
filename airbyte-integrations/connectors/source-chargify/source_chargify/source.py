@@ -13,7 +13,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import HTTPBasicAuth
 
 
 # Basic full refresh stream
@@ -22,9 +21,8 @@ class ChargifyStream(HttpStream, ABC):
     PER_PAGE = 200
     FIRST_PAGE = 1
 
-    def __init__(self, domain: str, *args, **kwargs):
-        super().__init__(**kwargs)
-
+    def __init__(self, *args, domain: str, **kwargs):
+        super().__init__(*args, **kwargs)
         self._domain = domain
 
     @property
@@ -61,7 +59,6 @@ class ChargifyStream(HttpStream, ABC):
 
 class Customers(ChargifyStream):
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
 
     def path(
@@ -72,7 +69,7 @@ class Customers(ChargifyStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Chargify API: https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgyNzY-list-or-find-customers
-        # it returns an Array of Customers objects.
+        # it returns a generator of Customers objects.
         customers = response.json()
         for customer in customers:
             yield customer["customer"]
@@ -80,7 +77,6 @@ class Customers(ChargifyStream):
 
 class Subscriptions(ChargifyStream):
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -89,7 +85,7 @@ class Subscriptions(ChargifyStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Chargify API: https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgyNzY-list-or-find-customers
-        # it returns an Array of Customers objects.
+        # it returns a generator of Subscriptions objects.
         subscriptions = response.json()
         for subscription in subscriptions:
             yield subscription["subscription"]
@@ -97,19 +93,24 @@ class Subscriptions(ChargifyStream):
 
 # Source
 class SourceChargify(AbstractSource):
+    BASIC_AUTH_PASSWORD = "x"
+
+    def get_basic_auth(self, config: Mapping[str, Any]) -> requests.auth.HTTPBasicAuth:
+        return requests.auth.HTTPBasicAuth(
+            config["api_key"], SourceChargify.BASIC_AUTH_PASSWORD
+        )  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            auth = HTTPBasicAuth(config["api_key"], "X")
-            customers_gen = Customers(config["domain"], authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
+            authenticator = self.get_basic_auth(config)
+            customers_gen = Customers(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)
             next(customers_gen)
+            subcriptions_gen = Subscriptions(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)
+            next(subcriptions_gen)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Chargify API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
-        auth = HTTPBasicAuth(
-            config["api_key"], "X"
-        )  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
-
-        return [Customers(authenticator=auth, domain=config["domain"]), Subscriptions(authenticator=auth, domain=config["domain"])]
+        authenticator = self.get_basic_auth(config)
+        return [Customers(authenticator, domain=config["domain"]), Subscriptions(authenticator, domain=config["domain"])]
