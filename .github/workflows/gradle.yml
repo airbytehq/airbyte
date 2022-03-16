@@ -65,7 +65,6 @@ jobs:
   #          echo '${{ toJSON(needs) }}'
 
   ## BUILDS
-
   octavia-cli-build:
     needs: changes
     runs-on: ubuntu-latest
@@ -135,9 +134,8 @@ jobs:
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
 
-  # Gradle Build (Connectors Base)
+  # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
-
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
     needs: changes
@@ -261,7 +259,6 @@ jobs:
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
   ## Frontend Test
-  ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
@@ -362,12 +359,14 @@ jobs:
           label: ${{ needs.start-frontend-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-frontend-test-runner.outputs.ec2-instance-id }}
 
-  # Gradle Build (Platform)
+  ## FOLLOWING BUILDS ARE ALL PLATFORM BUILDS.
+
+  # Main Platform
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.connectors == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -474,7 +473,6 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
-
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -501,6 +499,7 @@ jobs:
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
+  #
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-new-scheduler-acceptance-runner:
     name: "Start Acceptance Tests (Docker w/ Scheduler v2) Runner"
@@ -620,8 +619,8 @@ jobs:
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
   ## Kube Acceptance Tests
-  # In case of self-hosted EC2 errors, remove this block.
   # Docker acceptance tests run as part of the build job.
+  # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner:
     name: Start Kube Acceptance Test EC2 Runner
     timeout-minutes: 10
@@ -781,8 +780,8 @@ jobs:
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
   ## Kube Acceptance Tests (with scheduler v2 - both temporal changes and container orchestrator)
-  # In case of self-hosted EC2 errors, remove this block.
   # Docker acceptance tests run as part of the build job.
+  # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner-v2:
     name: Start Kube Acceptance Test EC2 Runner
     timeout-minutes: 10
