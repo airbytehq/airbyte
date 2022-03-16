@@ -26,11 +26,11 @@ public class JsonSecretsProcessor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
 
-  public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
+  public static final String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
-  public static String TYPE_FIELD = "type";
-  public static String ARRAY_TYPE_FIELD = "array";
-  public static String ITEMS_FIELD = "items";
+  public static final String TYPE_FIELD = "type";
+  public static final String ARRAY_TYPE_FIELD = "array";
+  public static final String ITEMS_FIELD = "items";
 
   private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
@@ -163,19 +163,25 @@ public class JsonSecretsProcessor {
 
     final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
     for (final String key : Jsons.keys(properties)) {
+      // If the source object doesn't have this key then we have nothing to copy, so we should skip to the
+      // next key.
+      if (!src.has(key)) {
+        continue;
+      }
+
       final JsonNode fieldSchema = properties.get(key);
       // We only copy the original secret if the destination object isn't attempting to overwrite it
       // i.e: if the value of the secret isn't set to the mask
-      if (isSecret(fieldSchema) && src.has(key)) {
-        if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
-          dstCopy.set(key, src.get(key));
-        }
-      }
+      if (isSecret(fieldSchema) && dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
+        dstCopy.set(key, src.get(key));
+      } else if (dstCopy.has(key)) {
+        // If the destination has this key, then we should consider copying it
 
-      final var combinationKey = findJsonCombinationNode(fieldSchema);
-      if (combinationKey.isPresent() && dstCopy.has(key)) {
-        var combinationCopy = dstCopy.get(key);
-        if (src.has(key)) {
+        // Check if this schema is a combination node; if it is, find a matching sub-schema and copy based
+        // on that sub-schema
+        final var combinationKey = findJsonCombinationNode(fieldSchema);
+        if (combinationKey.isPresent()) {
+          var combinationCopy = dstCopy.get(key);
           final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
           for (int i = 0; i < arrayNode.size(); i++) {
             final JsonNode childSchema = arrayNode.get(i);
@@ -189,8 +195,12 @@ public class JsonSecretsProcessor {
               combinationCopy = copySecrets(src.get(key), combinationCopy, childSchema);
             }
           }
+          dstCopy.set(key, combinationCopy);
+        } else {
+          // Otherwise, this is just a plain old json object; recurse into it.
+          final JsonNode copiedField = copySecrets(src.get(key), dstCopy.get(key), fieldSchema);
+          dstCopy.set(key, copiedField);
         }
-        dstCopy.set(key, combinationCopy);
       }
     }
 

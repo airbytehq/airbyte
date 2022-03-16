@@ -192,9 +192,12 @@ class CreditsLedgerEntries(IncrementalOrbStream):
     API Docs: https://docs.withorb.com/reference/view-credits-ledger
     """
 
-    def __init__(self, event_properties_keys: Optional[List[str]] = None, **kwargs):
+    def __init__(
+        self, string_event_properties_keys: Optional[List[str]] = None, numeric_event_properties_keys: Optional[List[str]] = None, **kwargs
+    ):
         super().__init__(**kwargs)
-        self.event_properties_keys = event_properties_keys
+        self.string_event_properties_keys = string_event_properties_keys
+        self.numeric_event_properties_keys = numeric_event_properties_keys
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -306,7 +309,8 @@ class CreditsLedgerEntries(IncrementalOrbStream):
             modify_ledger_entry_schema(ledger_entry=ledger_entry)
 
         # Nothing to extract for each ledger entry
-        if not self.event_properties_keys:
+        merged_properties_keys = (self.string_event_properties_keys or []) + (self.numeric_event_properties_keys or [])
+        if not merged_properties_keys:
             return ledger_entries
 
         # The events endpoint is a `POST` endpoint which expects a list of
@@ -329,7 +333,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         for serialized_event in paginated_events_response_body["data"]:
             event_id = serialized_event["id"]
             desired_properties_subset = {
-                key: value for key, value in serialized_event["properties"].items() if key in self.event_properties_keys
+                key: value for key, value in serialized_event["properties"].items() if key in merged_properties_keys
             }
 
             # This would imply that the endpoint returned an event that wasn't part of the filter
@@ -359,17 +363,20 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         """
         schema = super().get_json_schema()
         dynamic_event_properties_schema = {}
-        if self.event_properties_keys:
-            for property_key in self.event_properties_keys:
-                # Property values are assumed to have string type.
+        if self.string_event_properties_keys:
+            for property_key in self.string_event_properties_keys:
                 dynamic_event_properties_schema[property_key] = {"type": "string"}
+        if self.numeric_event_properties_keys:
+            for property_key in self.numeric_event_properties_keys:
+                dynamic_event_properties_schema[property_key] = {"type": "number"}
 
         schema["properties"]["event"] = {
             "type": ["null", "object"],
             "properties": {
-                "event_id": {"type": "string"},
+                "id": {"type": "string"},
                 "properties": {"type": ["null", "object"], "properties": dynamic_event_properties_schema},
             },
+            "required": ["id"],
         }
 
         return schema
@@ -391,10 +398,23 @@ class SourceOrb(AbstractSource):
         except Exception as e:
             return False, e
 
+    def input_keys_mutually_exclusive(
+        self, string_event_properties_keys: Optional[List[str]] = None, numeric_event_properties_keys: Optional[List[str]] = None
+    ):
+        if string_event_properties_keys is None or numeric_event_properties_keys is None:
+            return True
+        else:
+            return len(set(string_event_properties_keys) & set(numeric_event_properties_keys)) == 0
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
         lookback_window = config.get("lookback_window_days")
-        event_properties_keys = config.get("event_properties_keys")
+        string_event_properties_keys = config.get("string_event_properties_keys")
+        numeric_event_properties_keys = config.get("numeric_event_properties_keys")
+
+        if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
+            raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
+
         start_date_str = config.get("start_date")
         start_date = pendulum.parse(start_date_str) if start_date_str else None
         return [
@@ -405,6 +425,7 @@ class SourceOrb(AbstractSource):
                 authenticator=authenticator,
                 lookback_window_days=lookback_window,
                 start_date=start_date,
-                event_properties_keys=event_properties_keys,
+                string_event_properties_keys=string_event_properties_keys,
+                numeric_event_properties_keys=numeric_event_properties_keys,
             ),
         ]

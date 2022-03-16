@@ -65,12 +65,11 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
    * use for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
    * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourcePerformanceTest.testArgs = Stream.of(
+  @Override
+  protected Stream<Arguments> provideParameters() {
+    return Stream.of(
         Arguments.of("t1000_c240_r200", "t1000_c240_r200", 200, 240, 1000),
         Arguments.of("t25_c8_r50k_s10kb", "t25_c8_r50k_s10kb", 50000, 8, 25),
         Arguments.of("t1000_c8_r10k_s500b", "t1000_c8_r10k_s500b", 10000, 8, 1000));
   }
-
 }

@@ -346,7 +346,7 @@ class JobTrackerTest {
 
       {
         put("failureOrigin", "source");
-        put("failureType", "configError");
+        put("failureType", "config_error");
         put("internalMessage", "Internal config error error msg");
         put("externalMessage", "Config error related msg");
         put("metadata", ImmutableMap.of("some", "metadata"));
@@ -360,7 +360,7 @@ class JobTrackerTest {
 
       {
         put("failureOrigin", "replication");
-        put("failureType", "systemError");
+        put("failureType", "system_error");
         put("internalMessage", "Internal system error error msg");
         put("externalMessage", "System error related msg");
         put("metadata", ImmutableMap.of("some", "metadata"));

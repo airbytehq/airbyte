@@ -84,7 +84,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
-      {
+    {
       "stream": {
         "name": "export_dates",
         "json_schema": {},
