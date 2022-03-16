@@ -83,6 +83,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         throw new RetryableException(e);
       }
     }
+    return true;
   }
 
 }
