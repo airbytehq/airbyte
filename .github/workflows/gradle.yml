@@ -383,10 +383,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
   platform-build:
+    name: "Platform: Build"
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
-    name: "Platform: Build"
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
@@ -499,10 +499,12 @@ jobs:
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
-  #
+  # Scheduler V2
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-new-scheduler-acceptance-runner:
     name: "Start Acceptance Tests (Docker w/ Scheduler v2) Runner"
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -596,13 +598,15 @@ jobs:
           SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-new-scheduler-acceptance-runner:
-    name: Stop Acceptance Tests (Docker w/ Scheduler v2) Runner
+    name: "Stop Acceptance Tests (Docker w/ Scheduler v2) Runner"
     timeout-minutes: 10
     needs:
       - start-platform-new-scheduler-acceptance-runner # required to get output from the start-runner job
       - platform-new-scheduler-acceptance # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-platform-new-scheduler-acceptance-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -622,7 +626,9 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner:
-    name: Start Kube Acceptance Test EC2 Runner
+    name: "Start Kube Acceptance Test EC2 Runner"
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -641,11 +647,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   kube-acceptance-test:
+    name: "Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
-    name: Acceptance Tests (Kube)
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
@@ -757,13 +763,15 @@ jobs:
           CI=true ./tools/bin/gcp_acceptance_tests.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
-    name: Stop Kube Acceptance Test EC2 Runner
+    name: "Stop Kube Acceptance Test EC2 Runner"
     timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
       - kube-acceptance-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-kube-acceptance-test-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -783,7 +791,9 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner-v2:
-    name: Start Kube Acceptance Test EC2 Runner
+    name: "Start Kube Acceptance Test EC2 Runner"
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -802,11 +812,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   kube-acceptance-test-v2:
+    name: "Acceptance Tests (Kube v2)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner-v2 # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
-    name: Acceptance Tests (Kube v2)
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
@@ -885,13 +895,15 @@ jobs:
           path: /tmp/kubernetes_logs/*
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner-v2:
-    name: Stop Kube Acceptance Test EC2 Runner
+    name: "Stop Kube Acceptance Test EC2 Runner"
     timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner-v2 # required to get output from the start-runner job
       - kube-acceptance-test-v2 # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-kube-acceptance-test-runner-v2.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
