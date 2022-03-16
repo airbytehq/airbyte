@@ -54,11 +54,13 @@ public class SnowflakeDatabase {
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
         config.get("host").asText()));
+    final String username = config.get("username").asText();
 
     final Properties properties = new Properties();
 
     final JsonNode credentials = config.get("credentials");
-    if (credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
+    if (credentials != null && credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
+      LOGGER.info("OAuth login mode is used");
       // OAuth login option is selected on UI
       final String accessToken;
       try {
@@ -77,11 +79,20 @@ public class SnowflakeDatabase {
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
       // the username is required for DBT normalization in OAuth connection
-      properties.put("username", config.get("username").asText());
-    } else {
+      properties.put("username", username);
+      SnowflakeDestination.isAlive = true; //is used to enable another thread to refresh oauth token
+
+    } else if(credentials != null && credentials.has("password")) {
+      LOGGER.info("User/password login mode is used");
       // Username and pass login option is selected on UI
-      dataSource.setUsername(config.get("username").asText());
+      dataSource.setUsername(username);
       dataSource.setPassword(credentials.get("password").asText());
+
+    } else {
+      LOGGER.warn("Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
+      // case to keep the backward compatibility
+      dataSource.setUsername(username);
+      dataSource.setPassword(config.get("password").asText());
     }
 
     properties.put("warehouse", config.get("warehouse").asText());
@@ -128,13 +139,15 @@ public class SnowflakeDatabase {
           .map(key -> key + "=" + URLEncoder.encode(requestBody.get(key), StandardCharsets.UTF_8))
           .collect(joining("&")));
 
+      final byte[] authorization = Base64.getEncoder()
+          .encode((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
+
       final HttpRequest request = HttpRequest.newBuilder()
           .POST(bodyPublisher)
           .uri(URI.create(refreshTokenUri))
           .header("Content-Type", "application/x-www-form-urlencoded")
           .header("Accept", "application/json")
-          .header("Authorization", "Basic " + new String(
-              Base64.getEncoder().encode((clientId + ":" + clientSecret).getBytes())))
+          .header("Authorization", "Basic " +  new String(authorization, StandardCharsets.UTF_8))
           .build();
 
       final HttpResponse<String> response = httpClient.send(request,

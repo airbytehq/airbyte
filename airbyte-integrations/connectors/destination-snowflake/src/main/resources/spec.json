@@ -14,8 +14,7 @@
       "warehouse",
       "database",
       "schema",
-      "username",
-      "credentials"
+      "username"
     ],
     "additionalProperties": true,
     "properties": {

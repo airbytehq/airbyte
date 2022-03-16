@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +87,9 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
                                                   final JsonNode oAuthParamConfig)
       throws IOException {
     final var accessTokenUrl = getAccessTokenUrl(inputOAuthConfiguration);
+
+    final byte[] authorization = Base64.getEncoder()
+        .encode((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.getConverter().apply(
@@ -93,8 +97,7 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
         .uri(URI.create(accessTokenUrl))
         .header("Content-Type", tokenReqContentType.getContentType())
         .header("Accept", "application/json")
-        .header("Authorization", "Basic " + new String(
-            Base64.getEncoder().encode((clientId + ":" + clientSecret).getBytes())))
+        .header("Authorization", "Basic " + new String(authorization, StandardCharsets.UTF_8))
         .build();
     try {
       final HttpResponse<String> response = httpClient.send(request,

@@ -14,7 +14,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   @Override
   public void close() throws Exception {
-    isAlive = false;
+    shutDown();
   }
 
   enum DestinationType {
@@ -31,6 +31,10 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     new IntegrationRunner(destination).run(args);
+  }
+
+  private static void shutDown(){
+    isAlive = false;
   }
 
 }
