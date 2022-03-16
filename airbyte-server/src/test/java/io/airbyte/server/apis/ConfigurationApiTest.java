@@ -17,6 +17,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -40,6 +42,8 @@ public class ConfigurationApiTest {
         mock(ConfigRepository.class),
         mock(JobPersistence.class),
         mock(ConfigPersistence.class),
+        mock(SecretsRepositoryReader.class),
+        mock(SecretsRepositoryWriter.class),
         mock(SchedulerJobClient.class),
         mock(SynchronousSchedulerClient.class),
         mock(FileTtlManager.class),
