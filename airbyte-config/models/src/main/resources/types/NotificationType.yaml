@@ -6,3 +6,4 @@ description: Type of notification
 type: string
 enum:
   - slack
+  - email

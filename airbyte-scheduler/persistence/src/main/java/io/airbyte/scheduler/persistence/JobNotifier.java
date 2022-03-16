@@ -23,6 +23,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,7 @@ public class JobNotifier {
 
   public static final String FAILURE_NOTIFICATION = "Failure Notification";
   public static final String SUCCESS_NOTIFICATION = "Success Notification";
+  public static final String CONNECTION_DISABLED_NOTIFICATION = "Connection Disabled Notification";
 
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
@@ -54,6 +57,21 @@ public class JobNotifier {
   }
 
   private void notifyJob(final String reason, final String action, final Job job) {
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      notifyJob(reason, action, job, workspaceId, workspace, workspace.getNotifications());
+    } catch (final Exception e) {
+      LOGGER.error("Unable to read configuration:", e);
+    }
+  }
+
+  private void notifyJob(final String reason,
+                         final String action,
+                         final Job job,
+                         final UUID workspaceId,
+                         final StandardWorkspace workspace,
+                         final List<Notification> notifications) {
     final UUID connectionId = UUID.fromString(job.getScope());
     try {
       final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
@@ -73,12 +91,12 @@ public class JobNotifier {
       final String jobDescription =
           String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
       final String logUrl = connectionPageUrl + connectionId;
-      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      // final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      // final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-      for (final Notification notification : workspace.getNotifications()) {
+      for (final Notification notification : notifications) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
@@ -87,6 +105,8 @@ public class JobNotifier {
               notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
             // flag as slack if the webhook URL is also pointing to slack
             notificationMetadata.put("notification_type", NotificationType.SLACK);
+          } else if (notification.getNotificationType().equals(NotificationType.EMAIL)) {
+            notificationMetadata.put("notification_type", NotificationType.EMAIL);
           } else {
             // Slack Notification type could be "hacked" and re-used for custom webhooks
             notificationMetadata.put("notification_type", "N/A");
@@ -103,11 +123,28 @@ public class JobNotifier {
             if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
+            // alert message currently only supported by email through customer.io
+          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action) && notification.getNotificationType().equals(NotificationType.EMAIL)) {
+            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+            }
           }
         } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to read configuration:", e);
+    }
+  }
+
+  public void notifyJobByEmail(final String reason, final String action, final Job job) {
+    final Notification emailNotification = new Notification();
+    emailNotification.setNotificationType(NotificationType.EMAIL);
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      notifyJob(reason, action, job, workspaceId, workspace, Collections.singletonList(emailNotification));
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
@@ -120,6 +157,10 @@ public class JobNotifier {
   public void successJob(final Job job) {
     notifyJob(null, SUCCESS_NOTIFICATION, job);
   }
+
+  // public void alertJob(final String alertMessage, final Job job) {
+  // notifyJobByEmail(alertMessage, CONNECTION_DISABLED_NOTIFICATION, job);
+  // }
 
   protected NotificationClient getNotificationClient(final Notification notification) {
     return NotificationClient.createNotificationClient(notification);

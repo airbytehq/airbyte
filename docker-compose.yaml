@@ -46,6 +46,8 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_USER=${DATABASE_USER}
+    ports:
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
   scheduler:
@@ -121,6 +123,7 @@ services:
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE=${MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}

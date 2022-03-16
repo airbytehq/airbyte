@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class SlackNotificationClient extends NotificationClient {
   public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifyFailure(renderJobData(
-        "failure_slack_notification_template.txt",
+        "slack/failure_slack_notification_template.txt",
         sourceConnector,
         destinationConnector,
         jobDescription,
@@ -58,11 +59,21 @@ public class SlackNotificationClient extends NotificationClient {
   public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifySuccess(renderJobData(
-        "success_slack_notification_template.txt",
+        "slack/success_slack_notification_template.txt",
         sourceConnector,
         destinationConnector,
         jobDescription,
         logUrl));
+  }
+
+  @Override
+  public boolean notifyConnectionDisabled(final String email,
+                                          final String sourceConnector,
+                                          final String destinationConnector,
+                                          final String jobDescription,
+                                          final String logUrl)
+      throws IOException, InterruptedException {
+    throw new NotImplementedException();
   }
 
   private String renderJobData(final String templateFile,
