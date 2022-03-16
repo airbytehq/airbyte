@@ -56,12 +56,12 @@ public class CsvRecordBufferTest {
 
   @Test
   public void testCompressedCsvWriter() throws Exception {
-    runTest(new InMemoryRecordBuffer(), CSVFormat.newFormat(','), true, 180L, 190L);
+    runTest(new InMemoryRecordBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
   @Test
   public void testCompressedCsvFileWriter() throws Exception {
-    runTest(new FileRecordBuffer(), CSVFormat.newFormat(','), true, 180L, 190L);
+    runTest(new FileRecordBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
   private static void runTest(final RecordBufferStorage buffer,
@@ -81,8 +81,9 @@ public class CsvRecordBufferTest {
       writer.flush();
       // some data are randomized (uuid, timestamp, compression?) so the expected byte count is not always
       // deterministic
-      assertTrue(minExpectedByte < writer.getByteCount() && writer.getByteCount() < maxExpectedByte,
-          String.format("actual size was %d", writer.getByteCount()));
+      assertTrue(minExpectedByte <= writer.getByteCount() && writer.getByteCount() <= maxExpectedByte,
+          String.format("Expected size between %d and %d, but actual size was %d",
+              minExpectedByte, maxExpectedByte, writer.getByteCount()));
       String expectedData = Jsons.serialize(MESSAGE_DATA);
       if (csvFormat.equals(CSVFormat.DEFAULT)) {
         expectedData = "\"" + expectedData.replace("\"", "\"\"") + "\"";
