@@ -297,7 +297,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+//        .withServiceAccount("airbyte-admin") todo: should this be disabled for testing?
+//        .withAutomountServiceAccountToken(true) todo
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
         .withVolumes(volumes)

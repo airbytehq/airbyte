@@ -34,7 +34,7 @@ echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
-sleep 120s
+sleep 120
 
 if [ -n "$CI" ]; then
   bootloader_logs () { kubectl logs pod/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }
@@ -81,3 +81,5 @@ fi
 
 echo "Running e2e tests via gradle..."
 KUBE=true NEW_SCHEDULER=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true CONTAINER_ORCHESTRATOR=true ./gradlew :airbyte-tests:acceptanceTests --scan
+
+# KUBE=true; NEW_SCHEDULER=true; SUB_BUILD=PLATFORM; USE_EXTERNAL_DEPLOYMENT=true; CONTAINER_ORCHESTRATOR=true

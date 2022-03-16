@@ -82,9 +82,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
     return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
+        // todo: can we inject the System.getenv() so we can do this in testing instead?
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        envMap.put("WORKSPACE_ROOT", "/tmp/workspace");
 
         final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
         fileMap.putAll(Map.of(
@@ -140,8 +143,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 fileMap,
                 portMap);
           } catch (final KubernetesClientException e) {
+            // todo: should we log e?
             throw new WorkerException(
-                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.", e);
           }
         }
 

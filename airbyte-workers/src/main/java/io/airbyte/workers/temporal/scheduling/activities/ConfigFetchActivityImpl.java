@@ -66,4 +66,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     return new GetMaxAttemptOutput(configs.getSyncJobMaxAttempts());
   }
 
+  public static void main(String[] args) {
+    // throw new RuntimeException("hi");
+  }
 }

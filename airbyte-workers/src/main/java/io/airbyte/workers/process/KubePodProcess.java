@@ -527,7 +527,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
         exitCodeFuture::complete,
-        exception -> exitCodeFuture.complete(KILLED_EXIT_CODE)));
+        exception -> exitCodeFuture.complete(KILLED_EXIT_CODE))); // todo: is there a way to test that this isn't observing events from other pods?
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -751,7 +751,7 @@ public class KubePodProcess extends Process implements KubePod {
           .withRequests(requestMap)
           .withLimits(limitMap);
     }
-    return null;
+    return new ResourceRequirementsBuilder();
   }
 
 }

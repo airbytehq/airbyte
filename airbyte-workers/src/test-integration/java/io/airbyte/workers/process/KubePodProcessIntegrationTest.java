@@ -12,11 +12,38 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.storage.CloudStorageConfigs;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.DefaultReplicationWorker;
+import io.airbyte.workers.ReplicationWorker;
+import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
+import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.workers.storage.S3DocumentStoreClient;
+import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
@@ -45,6 +72,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.stream.events.Namespace;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
@@ -148,6 +177,19 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testLongSuccessfulSpawning() throws Exception {
+    // start a finite process
+    final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
+    final Process process = getProcess("echo hi; sleep 120; echo hi2");
     process.waitFor();
 
     // the pod should be dead and in a good state
@@ -420,3 +462,6 @@ public class KubePodProcessIntegrationTest {
   }
 
 }
+
+// todo: is there a race condition causing longer running jobs with more messages to fail intermittently
+// todo: should we run a sync (just a sync, locally, using the replication worker and a kube pod process?)
