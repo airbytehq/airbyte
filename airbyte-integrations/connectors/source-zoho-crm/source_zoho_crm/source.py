@@ -1,0 +1,32 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+import logging
+
+from typing import Any, List, Mapping, Tuple, TYPE_CHECKING
+
+from airbyte_cdk.sources import AbstractSource
+from .api import ZohoAPI
+from .streams import ZohoStreamFactory
+
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams import Stream
+
+
+class SourceZohoCrm(AbstractSource):
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        """
+        :param config:  the user-input config object conforming to the connector's spec.json
+        :param logger:  logger object
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        """
+        api = ZohoAPI(config)
+        return api.check_connection()
+
+    def streams(self, config: Mapping[str, Any]) -> List["Stream"]:
+        """
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
+        stream_factory = ZohoStreamFactory(config)
+        return stream_factory.produce()
