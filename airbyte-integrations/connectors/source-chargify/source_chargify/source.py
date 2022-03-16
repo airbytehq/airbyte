@@ -84,7 +84,7 @@ class Subscriptions(ChargifyStream):
         return "subscriptions.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # Chargify API: https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgyNzY-list-or-find-customers
+        # Chargify API: https://developers.chargify.com/docs/api-docs/b3A6MTQxMDgzODk-list-subscriptions
         # it returns a generator of Subscriptions objects.
         subscriptions = response.json()
         for subscription in subscriptions:
