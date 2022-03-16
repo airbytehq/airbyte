@@ -626,9 +626,10 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner:
-    name: "Start Kube Acceptance Test EC2 Runner"
+    name: "Platform: Start Kube Acceptance Test EC2 Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -647,7 +648,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   kube-acceptance-test:
-    name: "Acceptance Tests (Kube)"
+    name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
@@ -763,7 +764,7 @@ jobs:
           CI=true ./tools/bin/gcp_acceptance_tests.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
-    name: "Stop Kube Acceptance Test EC2 Runner"
+    name: "Platform: Stop Kube Acceptance Test EC2 Runner"
     timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
@@ -791,9 +792,10 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner-v2:
-    name: "Start Kube Acceptance Test EC2 Runner"
+    name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -812,7 +814,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   kube-acceptance-test-v2:
-    name: "Acceptance Tests (Kube v2)"
+    name: "Platform: Acceptance Tests (Kube v2)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner-v2 # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }} # run the job on the newly created runner
@@ -895,7 +897,7 @@ jobs:
           path: /tmp/kubernetes_logs/*
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner-v2:
-    name: "Stop Kube Acceptance Test EC2 Runner"
+    name: "Platform: Stop Kube Acceptance Test EC2 Runner"
     timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner-v2 # required to get output from the start-runner job
