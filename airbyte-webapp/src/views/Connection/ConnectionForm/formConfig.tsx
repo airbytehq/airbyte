@@ -287,7 +287,10 @@ const useInitialValues = (
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      schedule: connection.schedule ?? DEFAULT_SCHEDULE,
+      schedule:
+        connection.schedule !== undefined
+          ? connection.schedule
+          : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
