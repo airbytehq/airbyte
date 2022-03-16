@@ -42,6 +42,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -98,7 +99,7 @@ public class SnowflakeDestinationTest {
     final JdbcDatabase mockDb = mock(JdbcDatabase.class);
     final SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
     when(sqlOperations.getStageName(anyString(), anyString())).thenReturn("stage_name");
-    when(sqlOperations.getStagingPath(anyString(), anyString(), anyString(), any())).thenReturn("staging_path");
+    when(sqlOperations.getStagingPath(any(UUID.class), anyString(), anyString(), any())).thenReturn("staging_path");
     final var testMessages = generateTestMessages();
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
     final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
