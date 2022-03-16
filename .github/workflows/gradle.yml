@@ -27,6 +27,8 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       build: ${{ steps.filter.outputs.build }}
       cli: ${{ steps.filter.outputs.cli }}
+      connectors: ${{ steps.filter.outputs.connectors }}
+      db: ${{ steps.filter.outputs.db }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
@@ -34,13 +36,20 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
+          # Note, the following glob expression within a filters are ORs.
           filters: |
             backend:
-              - 'airbyte-**/**'
+              - 'airbyte-!(integrations|webapp|webapp-e2e-tests)/**'
             build:
               - '.github/**'
+              - 'buildSrc/**'
+              - 'tools/**'
             cli:
               - 'airbyte-cli/**'
+            connectors:
+              - 'airbyte-integrations/**'
+            db:
+              - 'airbyte-db/**'
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
@@ -55,10 +64,17 @@ jobs:
   #      - run: |
   #          echo '${{ toJSON(needs) }}'
 
+  ## BUILDS
+
   # Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
+
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
+    needs: changes
+    if: |
+      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true'
+      || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -157,7 +173,9 @@ jobs:
       - start-connectors-base-build-runner # required to get output from the start-runner job
       - build-connectors-base # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-connectors-base-build-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -504,7 +522,9 @@ jobs:
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
+    if: |
+      needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+      || needs.changes.outputs.backend == 'true'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
