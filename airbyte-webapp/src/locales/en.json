@@ -223,7 +223,7 @@
   "onboarding.closeOnboarding": "Close onboarding",
   "onboarding.syncCompleted": "Your first sync has been successfully completed!",
   "onboarding.checkData": "Please check the data at the destination.\nDoes it fit with your expectations?",
-  "onboarding.skipNow": "Skip for now",
+  "onboarding.skipFeedback": "Skip",
   "onboarding.firstSync": "Start your first sync",
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",

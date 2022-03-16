@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.BaseConnector;
@@ -33,6 +34,15 @@ import org.slf4j.LoggerFactory;
 public class S3Destination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3Destination.class);
+  private final S3DestinationConfigFactory configFactory;
+
+  public S3Destination() {
+    this.configFactory = new S3DestinationConfigFactory();
+  }
+
+  public S3Destination(final S3DestinationConfigFactory configFactory) {
+    this.configFactory = configFactory;
+  }
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new S3Destination()).run(args);
@@ -41,8 +51,11 @@ public class S3Destination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final S3DestinationConfig destinationConfig = S3DestinationConfig.getS3DestinationConfig(config);
+      final S3DestinationConfig destinationConfig = this.configFactory.getS3DestinationConfig(config);
       final AmazonS3 s3Client = destinationConfig.getS3Client();
+
+      // Test for listObjects permission
+      testIAMUserHasListObjectPermission(s3Client, destinationConfig.getBucketName());
 
       // Test single upload (for small files) permissions
       testSingleUpload(s3Client, destinationConfig.getBucketName());
@@ -58,6 +71,13 @@ public class S3Destination extends BaseConnector implements Destination {
           .withMessage("Could not connect to the S3 bucket with the provided configuration. \n" + e
               .getMessage());
     }
+  }
+
+  public static void testIAMUserHasListObjectPermission(final AmazonS3 s3Client, final String bucketName) {
+    LOGGER.info("Started testing if IAM user can call listObjects on the destination bucket");
+    final ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withMaxKeys(1);
+    s3Client.listObjects(request);
+    LOGGER.info("Finished checking for listObjects permission");
   }
 
   public static void testSingleUpload(final AmazonS3 s3Client, final String bucketName) {

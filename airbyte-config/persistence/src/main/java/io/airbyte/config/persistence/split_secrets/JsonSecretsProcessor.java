@@ -26,11 +26,11 @@ public class JsonSecretsProcessor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
 
-  public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
+  public static final String AIRBYTE_SECRET_FIELD = "airbyte_secret";
   public static final String PROPERTIES_FIELD = "properties";
-  public static String TYPE_FIELD = "type";
-  public static String ARRAY_TYPE_FIELD = "array";
-  public static String ITEMS_FIELD = "items";
+  public static final String TYPE_FIELD = "type";
+  public static final String ARRAY_TYPE_FIELD = "array";
+  public static final String ITEMS_FIELD = "items";
 
   private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 

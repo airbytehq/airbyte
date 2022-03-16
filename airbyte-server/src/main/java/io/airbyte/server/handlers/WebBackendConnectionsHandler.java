@@ -247,6 +247,7 @@ public class WebBackendConnectionsHandler {
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
+
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
@@ -373,6 +374,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
+    connectionUpdate.name(webBackendConnectionUpdate.getName());
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());

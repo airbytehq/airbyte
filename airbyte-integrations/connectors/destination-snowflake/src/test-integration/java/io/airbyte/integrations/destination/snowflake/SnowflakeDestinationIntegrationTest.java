@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -30,7 +31,7 @@ class SnowflakeDestinationIntegrationTest {
     // schema
     // this connector should be updated with multiple credentials, each with a clear purpose (valid,
     // invalid: insufficient permissions, invalid: wrong password, etc..)
-    final JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
+    final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
     final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
   }
@@ -63,7 +64,7 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   private JsonNode getConfig() throws IOException {
-    final JsonNode config = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
+    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/insert_config.json")));
     final String schemaName = "schemaName with whitespace " + Strings.addRandomSuffix("integration_test", "_", 5);
     ((ObjectNode) config).put("schema", schemaName);
     return config;

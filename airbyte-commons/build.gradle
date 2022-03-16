@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    // Dependencies for this module should be specified in the top-level build.gradle.
+    // Dependencies for this module should be specified in the top-level build.gradle. See readme for more explanation.
 }

@@ -47,6 +47,10 @@ public enum MetricsRegistry {
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
       "increments when an attempts succeeds. attempts are double counted as this is tagged by release stage."),
+  EST_NUM_METRICS_EMITTED_BY_REPORTER(
+      MetricEmittingApps.METRICS_REPORTER,
+      "est_num_metrics_emitted_by_reporter",
+      "estimated metrics emitted by the reporter in the last interval. this is estimated since the count is not precise."),
   JOB_CANCELLED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "job_cancelled_by_release_stage",
