@@ -147,7 +147,7 @@
           "type": "string"
         },
         "portal_invite_last_accepted_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "tax_exempt": {
           "type": "boolean"

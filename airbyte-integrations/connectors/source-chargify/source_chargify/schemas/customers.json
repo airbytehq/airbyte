@@ -2,49 +2,42 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": [
-    "default_subscription_group_uid",
     "portal_invite_last_sent_at",
-    "vat_number",
     "email",
     "created_at",
     "zip",
     "first_name",
-    "country_name",
     "state",
     "city",
-    "parent_id",
-    "locale",
     "portal_customer_created_at",
     "updated_at",
     "country",
-    "portal_invite_last_accepted_at",
     "tax_exempt",
     "id",
-    "reference",
     "last_name",
     "address_2",
     "phone",
     "organization",
     "address",
-    "verified",
-    "cc_emails",
-    "state_name"
+    "cc_emails"
   ],
   "properties": {
     "default_subscription_group_uid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "portal_invite_last_sent_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "vat_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
       "type": "string"
     },
     "created_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "zip": {
       "type": "string"
@@ -53,7 +46,7 @@
       "type": "string"
     },
     "country_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "state": {
       "type": "string"
@@ -62,22 +55,23 @@
       "type": "string"
     },
     "parent_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "locale": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "portal_customer_created_at": {
       "type": "string"
     },
     "updated_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "country": {
       "type": "string"
     },
     "portal_invite_last_accepted_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tax_exempt": {
       "type": "boolean"
@@ -86,7 +80,7 @@
       "type": "integer"
     },
     "reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_name": {
       "type": "string"
@@ -104,13 +98,13 @@
       "type": "string"
     },
     "verified": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cc_emails": {
       "type": "string"
     },
     "state_name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

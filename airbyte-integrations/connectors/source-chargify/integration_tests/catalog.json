@@ -6,83 +6,37 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "first_name": {
-            "type": ["string"]
+          "default_subscription_group_uid": {
+            "type": ["null", "string"]
           },
-          "last_name": {
-            "type": ["string"]
+          "portal_invite_last_sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "vat_number": {
+            "type": ["null", "string"]
           },
           "email": {
-            "type": ["string"],
-            "format": "date-time"
-          },
-          "cc_emails": {
-            "type": ["null", "string"]
-          },
-          "organization": {
-            "type": ["null", "string"]
-          },
-          "reference": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["integer"]
+            "type": "string"
           },
           "created_at": {
-            "type": ["string"],
+            "type": "string",
             "format": "date-time"
-          },
-          "updated_at": {
-            "type": ["string"],
-            "format": "date-time"
-          },
-          "address": {
-            "type": ["null", "string"]
-          },
-          "address_2": {
-            "type": ["null", "string"]
-          },
-          "city": {
-            "type": ["null", "string"]
-          },
-          "state": {
-            "type": ["null", "string"]
-          },
-          "state_name": {
-            "type": ["null", "string"]
           },
           "zip": {
-            "type": ["null", "string"]
+            "type": "string"
           },
-          "country": {
-            "type": ["null", "string"]
+          "first_name": {
+            "type": "string"
           },
           "country_name": {
             "type": ["null", "string"]
           },
-          "phone": {
-            "type": ["null", "string"]
+          "state": {
+            "type": "string"
           },
-          "verified": {
-            "type": ["null", "string"]
-          },
-          "portal_customer_created_at": {
-            "type": ["null", "string"],
-            "format": "date-time"
-          },
-          "portal_invite_last_sent_at": {
-            "type": ["null", "string"],
-            "format": "date-time"
-          },
-          "portal_invite_last_accepted_at": {
-            "type": ["null", "string"],
-            "format": "date-time"
-          },
-          "tax_exempt": {
-            "type": ["boolean"]
-          },
-          "vat_number": {
-            "type": ["null", "string"]
+          "city": {
+            "type": "string"
           },
           "parent_id": {
             "type": ["null", "integer"]
@@ -90,8 +44,51 @@
           "locale": {
             "type": ["null", "string"]
           },
-          "default_subscription_group_uid": {
-            "type": ["null", "integer"]
+          "portal_customer_created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "country": {
+            "type": "string"
+          },
+          "portal_invite_last_accepted_at": {
+            "type": ["null", "string"]
+          },
+          "tax_exempt": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "reference": {
+            "type": ["null", "string"]
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "address_2": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "verified": {
+            "type": ["null", "string"]
+          },
+          "cc_emails": {
+            "type": "string"
+          },
+          "state_name": {
+            "type": ["null", "string"]
           }
         }
       },
