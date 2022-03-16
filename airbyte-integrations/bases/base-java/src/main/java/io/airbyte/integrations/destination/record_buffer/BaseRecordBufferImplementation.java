@@ -30,9 +30,9 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
 
   private final RecordBufferStorage bufferStorage;
   private final CountingOutputStream byteCounter;
-  private final GzipCompressorOutputStream compressedBuffer;
 
   private boolean useCompression;
+  private GzipCompressorOutputStream compressedBuffer;
   private InputStream inputStream;
   private boolean isStarted;
   private boolean isClosed;
@@ -40,8 +40,8 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   protected BaseRecordBufferImplementation(final RecordBufferStorage bufferStorage) throws Exception {
     this.bufferStorage = bufferStorage;
     byteCounter = new CountingOutputStream(bufferStorage.getOutputStream());
-    compressedBuffer = new GzipCompressorOutputStream(byteCounter);
     useCompression = true;
+    compressedBuffer = null;
     inputStream = null;
     isStarted = false;
     isClosed = false;
@@ -78,6 +78,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   public Long accept(final AirbyteRecordMessage recordMessage) throws Exception {
     if (!isStarted) {
       if (useCompression) {
+        compressedBuffer = new GzipCompressorOutputStream(byteCounter);
         createWriter(compressedBuffer);
       } else {
         createWriter(byteCounter);
@@ -114,8 +115,10 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   public void flush() throws IOException {
     if (inputStream == null && !isClosed) {
       closeWriter();
-      // we need to close the gzip stream to finish compression and write trailer data.
-      compressedBuffer.close();
+      if (compressedBuffer != null) {
+        // we need to close the gzip stream to finish compression and write trailer data.
+        compressedBuffer.close();
+      }
       bufferStorage.close();
       inputStream = convertToInputStream();
       LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(byteCounter.getCount()));

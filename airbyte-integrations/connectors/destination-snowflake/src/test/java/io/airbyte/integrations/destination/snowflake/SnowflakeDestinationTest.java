@@ -27,6 +27,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvRecordBuffer;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
@@ -102,7 +103,8 @@ public class SnowflakeDestinationTest {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
     final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
-            sqlOperations, new SnowflakeSQLNameTransformer(), CsvRecordBuffer.createFunction(new S3CsvFormatConfig(config)), config, getCatalog());
+            sqlOperations, new SnowflakeSQLNameTransformer(), CsvRecordBuffer.createFunction(new S3CsvFormatConfig(config), FileRecordBuffer::new),
+            config, getCatalog());
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();

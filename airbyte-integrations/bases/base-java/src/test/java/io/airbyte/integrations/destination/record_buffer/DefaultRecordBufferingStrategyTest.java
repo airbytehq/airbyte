@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.record_buffer;
 
 import static org.mockito.Mockito.mock;
@@ -17,7 +21,8 @@ import org.junit.jupiter.api.Test;
 public class DefaultRecordBufferingStrategyTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.deserialize("{ \"field1\": 10000 }");
-  // MESSAGE_DATA should be 64 bytes long, size the buffer such as it can contain at least 2 message instances
+  // MESSAGE_DATA should be 64 bytes long, size the buffer such as it can contain at least 2 message
+  // instances
   private static final int MAX_QUEUE_SIZE_IN_BYTES = 130;
 
   private final RecordWriter<AirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
@@ -46,6 +51,8 @@ public class DefaultRecordBufferingStrategyTest {
     verify(recordWriter, times(1)).accept(stream2, List.of(message2.getRecord()));
 
     buffering.addRecord(stream2, message4);
+
+    // force flush to terminate test
     buffering.flushAll();
     verify(hook, times(2)).call();
     verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
@@ -55,7 +62,7 @@ public class DefaultRecordBufferingStrategyTest {
     return new AirbyteMessage().withRecord(new AirbyteRecordMessage()
         .withStream(stream.getName())
         .withNamespace(stream.getNamespace())
-        .withData(MESSAGE_DATA)
-    );
+        .withData(MESSAGE_DATA));
   }
+
 }

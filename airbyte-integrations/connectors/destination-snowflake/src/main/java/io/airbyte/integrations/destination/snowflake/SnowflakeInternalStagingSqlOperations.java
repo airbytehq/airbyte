@@ -60,7 +60,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final RecordBufferImplementation recordsData,
                                      final String schema,
-                                     final String stage) throws IOException {
+                                     final String stage)
+      throws IOException {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {

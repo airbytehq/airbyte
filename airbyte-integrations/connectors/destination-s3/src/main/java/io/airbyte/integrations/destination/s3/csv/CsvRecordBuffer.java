@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3.csv;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.BaseRecordBufferImplementation;
-import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
 import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
 import io.airbyte.integrations.destination.record_buffer.RecordBufferStorage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -17,6 +16,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -60,7 +60,9 @@ public class CsvRecordBuffer extends BaseRecordBufferImplementation {
     csvPrinter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> createFunction(final S3CsvFormatConfig config) {
+  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> createFunction(
+                                                                                                                                                  final S3CsvFormatConfig config,
+                                                                                                                                                  final Callable<RecordBufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final CsvSheetGenerator csvSheetGenerator;
       if (config != null) {
@@ -75,7 +77,7 @@ public class CsvRecordBuffer extends BaseRecordBufferImplementation {
       } else {
         csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
       }
-      return new CsvRecordBuffer(new FileRecordBuffer(), csvSheetGenerator);
+      return new CsvRecordBuffer(createStorageFunction.call(), csvSheetGenerator);
     };
   }
 

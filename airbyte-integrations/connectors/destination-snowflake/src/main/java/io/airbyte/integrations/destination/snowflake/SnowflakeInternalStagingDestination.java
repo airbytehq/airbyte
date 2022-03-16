@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvRecordBuffer;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
@@ -94,7 +95,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         getDatabase(config),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
         getNamingResolver(),
-        CsvRecordBuffer.createFunction(new S3CsvFormatConfig(config)),
+        CsvRecordBuffer.createFunction(new S3CsvFormatConfig(config), FileRecordBuffer::new),
         config,
         catalog);
   }

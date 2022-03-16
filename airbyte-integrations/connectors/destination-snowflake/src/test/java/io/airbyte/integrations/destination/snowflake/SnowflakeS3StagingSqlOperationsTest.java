@@ -31,7 +31,9 @@ class SnowflakeS3StagingSqlOperationsTest {
     when(s3Config.getBucketName()).thenReturn("bucket_name");
     when(s3Config.getAccessKeyId()).thenReturn("aws_access_key_id");
     when(s3Config.getSecretAccessKey()).thenReturn("aws_secret_access_key");
-    final String actualCopyQuery = snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
+    final String actualCopyQuery =
+        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
+
 }

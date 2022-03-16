@@ -40,7 +40,7 @@ public class InMemoryRecordBuffer implements RecordBufferStorage {
   private File tempFile;
   private String filename;
 
-  protected InMemoryRecordBuffer() {
+  public InMemoryRecordBuffer() {
     tempFile = null;
     filename = null;
   }
