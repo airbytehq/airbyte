@@ -64,18 +64,18 @@ Depending on the type of engagement, different properties will be set for that o
 #### Requirements
 
 * HubSpot Account
-* Api credentials
-* If using Oauth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
+* API or OAuth2.0 credentials
+* If using OAuth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
 
 {% hint style="info" %} HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day. {% endhint %}
 
-This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an API key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
 ## Rate Limiting & Performance
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-When connector reads the stream using `API Key` that doesn't have neccessary permissions to read particular stream, like `workflows`, which requires to be enabled in order to be processed, the log message returned to the output and sync operation goes on with other streams available.
+Some streams, such as `workflows` need to be enabled before they can be read using a connector authenticated using an `API KEY`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
 Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
@@ -84,7 +84,7 @@ Example of the output message when trying to read `workflows` stream with missin
     "type": "LOG",
     "log": {
         "level": "WARN",
-        "message": 'Stream `workflows` cannot be procced. This hapikey (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
+        "message": 'Stream `workflows` cannot be proceed. This API key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
     }
 }
 ```
