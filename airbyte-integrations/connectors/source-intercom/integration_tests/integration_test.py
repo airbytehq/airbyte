@@ -13,7 +13,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_intercom.source import Companies, ConversationParts, SourceIntercom, VersionApiAuthenticator
+from source_intercom.source import Companies, ConversationParts, Conversations, SourceIntercom, VersionApiAuthenticator
 
 LOGGER = AirbyteLogger()
 # from unittest.mock import Mock
@@ -77,7 +77,6 @@ def test_supported_versions(stream_attributes, version, not_supported_streams, c
                 else:
                     next(records, None)
 
-
 def test_companies_scroll(stream_attributes):
     authenticator = VersionApiAuthenticator(token=stream_attributes["access_token"])
     stream1 = Companies(authenticator=authenticator)
@@ -93,7 +92,7 @@ def test_companies_scroll(stream_attributes):
     # read all records
     records = []
     for slice in stream2.stream_slices(sync_mode=SyncMode.full_refresh):
-        records += list(stream2.read_records(sync_mode=SyncMode, stream_slice=slice))
+        records += list(stream2.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
     assert len(records) == 3
     assert (time.time() - start_time) > 60.0
 
