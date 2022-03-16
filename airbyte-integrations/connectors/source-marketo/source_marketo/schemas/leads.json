@@ -2,10 +2,22 @@
   "type": ["object", "null"],
   "additionalProperties": false,
   "properties": {
-    "company": {
+    "sfdcAccountId": {
       "type": ["string", "null"]
     },
-    "site": {
+    "sfdcContactId": {
+      "type": ["string", "null"]
+    },
+    "sfdcLeadId": {
+      "type": ["string", "null"]
+    },
+    "sfdcLeadOwnerId": {
+      "type": ["string", "null"]
+    },
+    "sfdcType": {
+      "type": ["string", "null"]
+    },
+    "company": {
       "type": ["string", "null"]
     },
     "billingStreet": {
