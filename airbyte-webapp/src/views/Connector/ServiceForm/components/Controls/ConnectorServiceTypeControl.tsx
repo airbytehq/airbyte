@@ -186,6 +186,7 @@ const ConnectorServiceTypeControl: React.FC<{
   // TODO End hack
   const workspace = useCurrentWorkspace();
   const disallowedOauthConnectors =
+    // I would prefer to use windowConfigProvider.cloud but that function is async
     window.CLOUD === "true"
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
