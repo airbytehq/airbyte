@@ -59,6 +59,7 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
         # specific cases
         ("string", "some_field", "test", None, "test"),
         (["null", "number"], "some_field", "123.456", None, 123.456),
+        (["null", "number"], "some_field", "123,123.456", None, 123123.456),
         (["null", "number"], "user_id", "123", None, 123),
         (["null", "string"], "some_field", "123", None, "123"),
         # when string has empty field_value (empty string)
