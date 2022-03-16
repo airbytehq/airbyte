@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from plaid.api import plaid_api
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
 SPEC_ENV_TO_PLAID_ENV = {
     "production": plaid.Environment.Production,
@@ -77,8 +78,6 @@ class IncrementalTransactionStream(PlaidStream):
         return {"date": latest_record.get("date")}
 
     def _get_transactions_response(self, start_date, end_date=datetime.datetime.utcnow().date(), offset=0):
-        from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
-
         options = TransactionsGetRequestOptions()
         options.offset = offset
 
