@@ -275,7 +275,7 @@ class Branches(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-branches
     """
 
-    primary_key = None
+    primary_key = ["repository", "name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
@@ -341,7 +341,7 @@ class Tags(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
     """
 
-    primary_key = None
+    primary_key = ["repository", "name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/tags"
