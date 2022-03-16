@@ -296,6 +296,11 @@ paths:
         - source_definition
       summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation
@@ -654,6 +659,11 @@ paths:
         - destination_definition
       summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation

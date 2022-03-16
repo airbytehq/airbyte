@@ -69,6 +69,7 @@ import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
+import io.airbyte.api.client.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -782,7 +783,7 @@ public class AcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (Exception e) {}
+    } catch (final Exception e) {}
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -1306,7 +1307,8 @@ public class AcceptanceTests {
   }
 
   private UUID getDestinationDefId() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId)).getDestinationDefinitions()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
         .findFirst()
@@ -1436,7 +1438,8 @@ public class AcceptanceTests {
   }
 
   private UUID getPostgresSourceDefinitionId() throws ApiException {
-    return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
+    return apiClient.getSourceDefinitionApi().listSourceDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId)).getSourceDefinitions()
         .stream()
         .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
         .findFirst()
