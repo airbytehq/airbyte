@@ -77,7 +77,7 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `start_date` - start date for 4 incremental streams: `comments`, `commits`, `issues` and `review comments`;
+* `start_date` - start date for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
 * `repository` - Space-delimited list of GitHub repositories/organizations which looks like `<owner>/<repo> <organization>/* <organization_new>/* <owner_new>/<repo_new>`.
 
 **Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
