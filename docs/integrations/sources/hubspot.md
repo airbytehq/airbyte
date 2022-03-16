@@ -89,7 +89,7 @@ Example of the output message when trying to read `workflows` stream with missin
 }
 ```
 
-### Required scopes
+## Required scopes
 
 If you are using Oauth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
 
