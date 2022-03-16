@@ -261,7 +261,7 @@ jobs:
   ## Frontend Test
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
-    name: Start Frontend Test EC2 Runner
+    name: "Frontend: Start Test EC2 Runner"
     needs: changes
     if: |
       needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
@@ -282,9 +282,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   frontend-test:
+    name: "Frontend: Run Test"
     needs: start-frontend-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
-    name: Run Frontend Test
     timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
@@ -335,7 +335,7 @@ jobs:
         run: ./tools/bin/e2e_test.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-frontend-test-runner:
-    name: Stop Frontend Test EC2 Runner
+    name: "Frontend: Stop Test Runner"
     timeout-minutes: 10
     needs:
       - start-frontend-test-runner # required to get output from the start-runner job
@@ -628,8 +628,7 @@ jobs:
   start-kube-acceptance-test-runner:
     name: "Platform: Start Kube Acceptance Test EC2 Runner"
     needs: changes
-    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
-    if: needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -794,8 +793,7 @@ jobs:
   start-kube-acceptance-test-runner-v2:
     name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
     needs: changes
-    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
-    if: needs.changes.outputs.backend == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
