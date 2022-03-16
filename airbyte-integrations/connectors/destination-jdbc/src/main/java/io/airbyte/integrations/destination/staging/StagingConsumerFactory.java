@@ -48,7 +48,7 @@ public class StagingConsumerFactory {
   // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
   // This would also allow other programs/scripts
   // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
-  private final String RANDOM_CONNECTION_ID = UUID.randomUUID().toString();
+  private final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final JdbcDatabase database,

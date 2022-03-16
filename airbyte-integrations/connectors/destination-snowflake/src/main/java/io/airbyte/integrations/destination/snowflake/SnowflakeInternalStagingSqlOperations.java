@@ -42,7 +42,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public String getStagingPath(final String connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
         getStageName(namespace, streamName),
@@ -51,11 +51,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
         writeDatetime.dayOfMonth().get(),
         writeDatetime.hourOfDay().get(),
         connectionId));
-  }
-
-  @Override
-  public void uploadRecordsToStage(final JdbcDatabase database, final File dataFile, final String schemaName, final String path) throws Exception {
-    throw new NotImplementedException("placeholder function is not implemented yet");
   }
 
   @Override

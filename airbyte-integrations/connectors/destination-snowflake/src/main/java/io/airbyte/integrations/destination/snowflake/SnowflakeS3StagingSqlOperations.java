@@ -20,7 +20,6 @@ import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerat
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.NotImplementedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +59,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   @Override
-  public String getStagingPath(final String connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
         connectionId,
@@ -70,11 +68,6 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         writeDatetime.monthOfYear().get(),
         writeDatetime.dayOfMonth().get(),
         writeDatetime.hourOfDay().get()));
-  }
-
-  @Override
-  public void uploadRecordsToStage(final JdbcDatabase database, final File dataFile, final String schemaName, final String path) throws Exception {
-    throw new NotImplementedException("placeholder function is not implemented yet");
   }
 
   @Override
