@@ -42,13 +42,20 @@
       "description": "Bank account",
       "$ref": "_definitions.json#/definitions/ReferenceModel"
     },
-    "flowCode": {
-      "description": "Flow code",
-      "$ref": "_definitions.json#/definitions/ReferenceModel"
-    },
     "budgetCode": {
       "description": "Budget code",
       "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "code": {
+      "type": "string",
+      "example": "CODE_ID",
+      "description": "Code identifier."
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid",
+      "example": "123e4567-e89b-12d3-a456-426655440001",
+      "description": "UUID identifier. Has priority over the code"
     },
     "status": {
       "type": "string",
