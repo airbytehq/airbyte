@@ -296,3 +296,72 @@ def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_c
     all_records = list(source.read(logger, config=oauth_config, catalog=configured_catalog, state=None))
     records = [record for record in all_records if record.type == Type.RECORD]
     assert not records
+
+
+def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
+    """
+    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
+    the CRMSearchStream instance should stop at the 10Kth record
+    """
+
+    responses = [
+        {
+            "json": {
+                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
+                "paging": {
+                    "next": {
+                        "after": f"{x*100}",
+                    }
+                },
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 101)
+    ]
+    # After reaching 10K records, it performs a new search query.
+    responses.extend(
+        [
+            {
+                "json": {
+                    "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
+                    "paging": {
+                        "next": {
+                            "after": f"{x*100}",
+                        }
+                    },
+                },
+                "status_code": 200,
+            }
+            for x in range(1, 10)
+        ]
+    )
+    # Last page... it does not have paging->next->after
+    responses.append(
+        {
+            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)], "paging": {}},
+            "status_code": 200,
+        }
+    )
+
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Companies(**common_params)
+    test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
+
+    # Mocking Request
+    requests_mock.register_uri("POST", test_stream.url, responses)
+    requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    # The stream should not attempt to get more than 10K records.
+    # Instead, it should use the new state to start a new search query.
+    assert len(records) == 11000
+    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00+00:00"

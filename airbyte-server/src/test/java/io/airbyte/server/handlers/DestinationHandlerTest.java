@@ -27,6 +27,8 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -43,6 +45,8 @@ import org.junit.jupiter.api.Test;
 class DestinationHandlerTest {
 
   private ConfigRepository configRepository;
+  private SecretsRepositoryReader secretsRepositoryReader;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
   private StandardDestinationDefinition standardDestinationDefinition;
   private DestinationDefinitionSpecificationRead destinationDefinitionSpecificationRead;
   private DestinationConnection destinationConnection;
@@ -59,6 +63,8 @@ class DestinationHandlerTest {
   @BeforeEach
   void setUp() throws IOException {
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     validator = mock(JsonSchemaValidator.class);
     uuidGenerator = mock(Supplier.class);
     connectionsHandler = mock(ConnectionsHandler.class);
@@ -91,7 +97,14 @@ class DestinationHandlerTest {
     destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
 
     destinationHandler =
-        new DestinationHandler(configRepository, validator, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
+        new DestinationHandler(configRepository,
+            secretsRepositoryReader,
+            secretsRepositoryWriter,
+            validator,
+            connectionsHandler,
+            uuidGenerator,
+            secretsProcessor,
+            configurationUpdate);
   }
 
   @Test
@@ -125,7 +138,7 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
-    verify(configRepository).writeDestinationConnection(destinationConnection, connectorSpecification);
+    verify(secretsRepositoryWriter).writeDestinationConnection(destinationConnection, connectorSpecification);
     verify(secretsProcessor)
         .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
@@ -168,7 +181,7 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
     verify(secretsProcessor).maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
-    verify(configRepository).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
+    verify(secretsRepositoryWriter).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 
@@ -272,7 +285,7 @@ class DestinationHandlerTest {
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationRead.getDestinationId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getDestinationId());
-    when(configRepository.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
+    when(secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getDestinationConnection(clonedConnection.getDestinationId())).thenReturn(clonedConnection);
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionSpecificationRead.getDestinationDefinitionId()))
