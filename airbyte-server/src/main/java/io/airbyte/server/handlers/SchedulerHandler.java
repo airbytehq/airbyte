@@ -85,7 +85,7 @@ import org.slf4j.LoggerFactory;
 public class SchedulerHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
-  private static final HashFunction hashFunction = Hashing.md5();
+  private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
@@ -248,15 +248,14 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final String configHash = hashFunction.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
+    final String configHash = HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
         Charsets.UTF_8)).toString();
     final String connectorVersion = sourceDef.getDockerImageTag();
     final Optional<ActorCatalog> currentCatalog =
         configRepository.getSourceCatalog(discoverSchemaRequestBody.getSourceId(), configHash, connectorVersion);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<AirbyteCatalog> response;
-      response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
+      final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), configHash, connectorVersion);
       return discoverJobToOutput(response);
     }
