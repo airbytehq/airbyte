@@ -2014,11 +2014,22 @@ components:
       required:
         - name
         - webhook
+        - notificationType
+        - defaultNotification
+        - tombstone
       properties:
         name:
           type: string
         webhook:
           type: string
+        defaultNotification:
+          type: boolean
+          default: false
+        notificationType:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+        tombstone:
+          type: boolean
+          default: false
     WorkspaceIdRequestBody:
       type: object
       required:

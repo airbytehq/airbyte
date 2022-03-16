@@ -114,13 +114,17 @@ create table "public"."connection_operation"(
 create table "public"."notification_config"(
   "id" uuid not null,
   "name" varchar(256) not null,
-  "webhook" varchar(516) not null
+  "webhook" varchar(516) not null,
+  "default_notification" bool not null,
+  "notification_type" varchar(256) not null,
+  "tombstone" bool not null
 );
 create table "public"."notification_connection"(
   "connection_id" uuid null,
-  "notification_id" uuid null,
+  "notification_id" uuid not null,
   "on_success" bool not null,
-  "on_failure" bool not null
+  "on_failure" bool not null,
+  "tombstone" bool not null
 );
 create table "public"."operation"(
   "id" uuid not null,

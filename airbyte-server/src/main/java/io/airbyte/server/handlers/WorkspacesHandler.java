@@ -175,16 +175,37 @@ public class WorkspacesHandler {
   public NotificationRead createNotification(final NotificationCreate notification) throws JsonValidationException, IOException {
     final String name = notification.getName();
     final String webhook = notification.getWebhook();
+    final Boolean defaultNotification = notification.getDefaultNotification();
 
     final StandardNotification newNotification = new StandardNotification()
         .withNotificationId(uuidSupplier.get())
         .withName(name)
-        .withWebhook(webhook);
+        .withWebhook(webhook)
+        .withDefaultNotification(defaultNotification);
 
     configRepository.writeStandardNotification(newNotification);
 
+    // if (defaultNotification) {
+    // final StandardNotificationConnection workspaceNotification = new
+    // StandardNotificationConnection();
+    // configRepository.writeStandardNotificationConnection(workspaceNotification);
+    // }
+
     return new NotificationRead().status(StatusEnum.SUCCEEDED);
   }
+
+  // public void deleteNotification(final NotificationIdRequestBody notificationIdRequestBody)
+  // throws JsonValidationException, IOException, ConfigNotFoundException {
+  // // get existing implementation
+  // final StandardNotification persistedNotification =
+  // configRepository.getStandardNotification(notificationIdRequestBody.getNotificationId(), false);
+  //
+  // // need to implement a list of all connections with that connection
+  // // tombstone them too
+  //
+  // persistedNotification.withTombstone(true);
+  // configRepository.writeStandardNotification(persistedNotification);
+  // }
 
   public NotificationRead tryNotification(final Notification notification) {
     try {

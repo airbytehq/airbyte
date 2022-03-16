@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardNotificationConfiguration.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardNotification.yaml
 title: StandardNotification
 description: notification configuration
 type: object
@@ -8,6 +8,8 @@ required:
   - notificationId
   - name
   - webhook
+  - defaultNotification
+  - tombstone
 additionalProperties: false
 properties:
   notificationId:
@@ -17,8 +19,13 @@ properties:
     type: string
   webhook:
     type: string
-#  tombstone:
-#    description:
-#      if not set or false, the configuration is active. if true, then this
-#      configuration is permanently off.
-#    type: boolean
+  notificationType:
+    type: string
+  defaultNotification:
+    type: boolean
+    description: if set true the webhook will be triggered to all connections
+  tombstone:
+    description:
+      if not set or false, the configuration is active. if true, then this
+      configuration is permanently off.
+    type: boolean

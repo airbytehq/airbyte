@@ -1,0 +1,29 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardNotificationConnection.yaml
+title: StandardNotificationConnection
+description: notification connection link
+type: object
+required:
+  - notificationId
+  - connectionId
+  - onSuccess
+  - onFailure
+  - tombstone
+additionalProperties: false
+properties:
+  notificationId:
+    type: string
+    format: uuid
+  connectionId:
+    type: string
+    format: uuid
+  onSuccess:
+    type: boolean
+  onFailure:
+    type: boolean
+  tombstone:
+    description:
+      if not set or false, the configuration is active. if true, then this
+      configuration is permanently off.
+    type: boolean
