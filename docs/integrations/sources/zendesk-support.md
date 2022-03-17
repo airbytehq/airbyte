@@ -97,6 +97,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version  | Date       | Pull Request | Subject                                                |
 |:---------|:-----------| :-----       |:-------------------------------------------------------|
+| `0.2.2`  | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records
 | `0.2.1`  | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method
 | `0.2.0`  | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456) | Update source to use future requests                   |
 | `0.1.12` | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785) | Add log message                                        |
