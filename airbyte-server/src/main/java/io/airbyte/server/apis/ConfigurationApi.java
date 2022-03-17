@@ -23,6 +23,7 @@ import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -465,6 +466,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+  }
+
+  @Override
+  public DestinationDefinitionOptInReadList listDestinationDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return null;
   }
 
   @Override

@@ -703,6 +703,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/list_opt_in:
+    post:
+      tags:
+        - destination_definition
+      summary: List all opt-in destinationDefinitions along with the current workspace's opt-in statuses
+      operationId: listDestinationDefinitionOptIns
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionOptInReadList"
   /v1/destination_definitions/get:
     post:
       tags:
@@ -2514,6 +2532,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationDefinitionRead"
+    DestinationDefinitionOptInRead:
+      type: object
+      required:
+        - destinationDefinition
+        - optIn
+      properties:
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
+        optIn:
+          type: boolean
+    DestinationDefinitionOptInReadList:
+      type: object
+      required:
+        - destinationDefinitionOptIns
+      properties:
+        destinationDefinitionOptIns:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationDefinitionOptInRead"
     # DESTINATION DEFINITION SPECIFICATION
     DestinationDefinitionSpecification:
       description: The specification for what values are required to configure the destinationDefinition.

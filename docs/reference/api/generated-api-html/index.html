@@ -262,6 +262,7 @@ font-style: italic;
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
   <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
+  <li><a href="#listDestinationDefinitionOptIns"><code><span class="http-method">post</span> /v1/destination_definitions/list_opt_in</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
   <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
   <li><a href="#updateDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update</code></a></li>
@@ -2788,6 +2789,126 @@ font-style: italic;
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listDestinationDefinitionOptIns"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_opt_in</code></pre></div>
+    <div class="method-summary">List all opt-in destinationDefinitions along with the current workspace's opt-in statuses (<span class="nickname">listDestinationDefinitionOptIns</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionOptInReadList">DestinationDefinitionOptInReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinitionOptIns" : [ {
+    "optIn" : true,
+    "destinationDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }
+  }, {
+    "optIn" : true,
+    "destinationDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionOptInReadList">DestinationDefinitionOptInReadList</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listDestinationDefinitions"/>
@@ -8459,6 +8580,8 @@ font-style: italic;
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionIdRequestBody"><code>DestinationDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#DestinationDefinitionOptInRead"><code>DestinationDefinitionOptInRead</code> - </a></li>
+    <li><a href="#DestinationDefinitionOptInReadList"><code>DestinationDefinitionOptInReadList</code> - </a></li>
     <li><a href="#DestinationDefinitionRead"><code>DestinationDefinitionRead</code> - </a></li>
     <li><a href="#DestinationDefinitionReadList"><code>DestinationDefinitionReadList</code> - </a></li>
     <li><a href="#DestinationDefinitionSpecificationRead"><code>DestinationDefinitionSpecificationRead</code> - </a></li>
@@ -8935,6 +9058,21 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationDefinitionOptInRead"><code>DestinationDefinitionOptInRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionRead">DestinationDefinitionRead</a></span>  </div>
+<div class="param">optIn </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationDefinitionOptInReadList"><code>DestinationDefinitionOptInReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionOptIns </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionOptInRead">array[DestinationDefinitionOptInRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
