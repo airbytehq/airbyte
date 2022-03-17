@@ -14,8 +14,10 @@ import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -97,8 +99,12 @@ public class SourceDefinitionsHandler {
     return LocalDate.parse(standardSourceDefinition.getReleaseDate());
   }
 
-  public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
-    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
+  public SourceDefinitionReadList listSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toSourceDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicSourceDefinitions(false),
+        configRepository.listGrantedSourceDefinitions(
+            workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
   private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {

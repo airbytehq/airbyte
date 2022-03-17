@@ -14,8 +14,10 @@ import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -101,8 +103,12 @@ public class DestinationDefinitionsHandler {
     return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
-  public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
-    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
+  public DestinationDefinitionReadList listDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toDestinationDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicDestinationDefinitions(false),
+        configRepository.listGrantedDestinationDefinitions(
+            workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
   private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {

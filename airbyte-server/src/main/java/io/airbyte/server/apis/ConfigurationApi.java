@@ -312,7 +312,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionReadList listSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(sourceDefinitionsHandler::listSourceDefinitions);
+    return execute(() -> sourceDefinitionsHandler.listSourceDefinitions(workspaceIdRequestBody));
   }
 
   @Override
@@ -474,7 +474,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitions(workspaceIdRequestBody));
   }
 
   @Override

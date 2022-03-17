@@ -23,6 +23,7 @@ import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -60,6 +61,7 @@ class SourceDefinitionsHandlerTest {
   private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
   private SourceHandler sourceHandler;
+  private UUID workspaceId;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,6 +71,7 @@ class SourceDefinitionsHandlerTest {
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
     sourceHandler = mock(SourceHandler.class);
+    workspaceId = UUID.randomUUID();
 
     sourceDefinition = generateSourceDefinition();
 
@@ -100,7 +103,8 @@ class SourceDefinitionsHandlerTest {
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
     final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
 
-    when(configRepository.listStandardSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition, sourceDefinition2));
+    when(configRepository.listPublicSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition));
+    when(configRepository.listGrantedSourceDefinitions(workspaceId, false)).thenReturn(Lists.newArrayList(sourceDefinition2));
 
     final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
@@ -128,7 +132,8 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
+    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId));
 
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
