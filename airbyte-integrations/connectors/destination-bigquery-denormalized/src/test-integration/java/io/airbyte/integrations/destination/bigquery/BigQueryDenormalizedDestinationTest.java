@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,9 +74,6 @@ class BigQueryDenormalizedDestinationTest {
   private static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
   private static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
   private static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
-  private static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
-  private static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
-  private static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
   private static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
   private JsonNode config;
@@ -121,9 +117,6 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS5.getRecord().setNamespace(datasetId);
     MESSAGE_USERS6.getRecord().setNamespace(datasetId);
     MESSAGE_USERS7.getRecord().setNamespace(datasetId);
-    MESSAGE_USERS8.getRecord().setNamespace(datasetId);
-    MESSAGE_USERS9.getRecord().setNamespace(datasetId);
-    MESSAGE_USERS10.getRecord().setNamespace(datasetId);
     EMPTY_MESSAGE.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -246,76 +239,6 @@ class BigQueryDenormalizedDestinationTest {
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
-  }
-
-  @Test
-  void testAnyOf() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
-
-    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
-
-    consumer.accept(MESSAGE_USERS8);
-    consumer.close();
-
-    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode expectedUsersJson = MESSAGE_USERS8.getRecord().getData();
-    assertEquals(usersActual.size(), 1);
-    final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "id"), extractJsonValues(expectedUsersJson, "id"));
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "type"), extractJsonValues(expectedUsersJson, "type"));
-    assertEquals(extractJsonValues(resultJson, "email"), extractJsonValues(expectedUsersJson, "email"));
-    assertEquals(extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), extractJsonValues(expectedUsersJson, "team_ids"));
-    assertEquals(extractJsonValues(resultJson, "admin_ids"), extractJsonValues(expectedUsersJson, "admin_ids"));
-    assertEquals(extractJsonValues(resultJson, "job_title"), extractJsonValues(expectedUsersJson, "job_title"));
-    assertEquals(extractJsonValues(resultJson, "has_inbox_seat"), extractJsonValues(expectedUsersJson, "has_inbox_seat"));
-    assertEquals(extractJsonValues(resultJson, "away_mode_enabled"), extractJsonValues(expectedUsersJson, "away_mode_enabled"));
-    assertEquals(extractJsonValues(resultJson, "away_mode_reassign"), extractJsonValues(expectedUsersJson, "away_mode_reassign"));
-  }
-
-  @Test
-  void testAnyOfWithNull() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
-
-    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
-
-    consumer.accept(MESSAGE_USERS9);
-    consumer.close();
-
-    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode expectedUsersJson = MESSAGE_USERS9.getRecord().getData();
-    assertEquals(usersActual.size(), 1);
-    final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), Collections.emptySet());
-    assertEquals(extractJsonValues(resultJson, "avatar"), extractJsonValues(expectedUsersJson, "avatar"));
-  }
-
-  @Test
-  void testAnyOfWithEmptyList() throws Exception {
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getAnyOfSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
-
-    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
-
-    consumer.accept(MESSAGE_USERS10);
-    consumer.close();
-
-    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode expectedUsersJson = MESSAGE_USERS10.getRecord().getData();
-    assertEquals(usersActual.size(), 1);
-    final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "team_ids"), extractJsonValues(expectedUsersJson, "team_ids"));
   }
 
   @Test
