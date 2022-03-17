@@ -43,9 +43,6 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), REPLICATION_TYPES,
             input.getCurrTimestamp().minus(maxDaysOfOnlyFailedJobs, ChronoUnit.DAYS));
 
-        // do not take into account cancelled jobs
-        jobStatuses.stream().filter(jobStatus -> jobStatus.equals(JobStatus.CANCELLED));
-
         int numFailures = 0;
 
         // jobs are sorted from most recent to least recent
