@@ -96,7 +96,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
-| 0.2.23  | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212) | Improve docs for BETA                                                                       |
+| 0.2.23  | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212) | Improve documentation and spec for Beta                                                                    |
 | 0.2.22  | 2022-03-10 | [10878](https://github.com/airbytehq/airbyte/pull/10878) | Fix error handling for unavailable streams with 404 status code                                            |
 | 0.2.21  | 2022-03-04 | [10749](https://github.com/airbytehq/airbyte/pull/10749) | Add new stream `ProjectCards`                                                                              |
 | 0.2.20  | 2022-02-16 | [10385](https://github.com/airbytehq/airbyte/pull/10385) | Add new stream `Deployments`, `ProjectColumns`, `PullRequestCommits`                                       |
