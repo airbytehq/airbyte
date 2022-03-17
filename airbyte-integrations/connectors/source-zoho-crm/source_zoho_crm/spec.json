@@ -50,6 +50,12 @@
         "type": "string",
         "description": "Please choose the environment",
         "enum": ["Production", "Developer", "Sandbox"]
+      },
+      "start_datetime": {
+        "title": "Sync starting point",
+        "type": ["null" ,"string"],
+        "description": "Set the moment to start syncing from",
+        "format": "date-time"
       }
     }
   }

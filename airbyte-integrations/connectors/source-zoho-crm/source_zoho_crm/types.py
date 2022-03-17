@@ -13,7 +13,7 @@ class Schema:
     properties: Dict[str, Any]
     schema: str = "http://json-schema.org/draft-07/schema#"
     type: str = "object"
-    additionalProperties: Any = False
+    additionalProperties: Any = True
     required: Optional[List[str]] = dataclasses.field(default_factory=list)
 
 
@@ -183,19 +183,21 @@ class ModuleMeta(FromDictMixin):
     api_name: str
     module_name: str
     api_supported: bool
-    per_page: Optional[int] = dataclasses.field(default=None)
-    filter_status: Optional[bool] = dataclasses.field(default=None)
     fields: Optional[Iterable[FieldMeta]] = dataclasses.field(default_factory=list)
 
     @property
     def schema(self):
-        if not self.fields or self.per_page is None:
+        if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
         required = ["id"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {
             "id": {
                 "type": "str"
+            },
+            "Modified_Time": {
+                "type": "str",
+                "format": "date-time"
             },
             **field_to_properties
         }

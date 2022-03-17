@@ -1,4 +1,5 @@
 import concurrent.futures
+import datetime
 import logging
 import requests
 from abc import ABC
@@ -15,10 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class ZohoCrmStream(HttpStream, ABC):
-    json_schema = {}
-    _path = ""
+    json_schema: Dict[Any, Any] = {}
+    _path: str = ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if response.status_code != 200:
+            return None
         pagination = response.json()["info"]
         if not pagination["more_records"]:
             return None
@@ -32,7 +35,8 @@ class ZohoCrmStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["data"]
+        data = response.json()["data"] if response.status_code == 200 else []
+        yield from data
 
     def path(self, *args, **kwargs) -> str:
         return self._path
@@ -41,9 +45,51 @@ class ZohoCrmStream(HttpStream, ABC):
         return self.json_schema
 
 
+class IncrementalZohoCrmStream(ZohoCrmStream):
+    cursor_field = "Modified_Time"
+
+    def __init__(
+        self,
+        authenticator: "requests.auth.AuthBase" = None,
+        start_datetime: Optional[datetime.datetime] = None
+    ):
+        super().__init__(authenticator)
+        self._start_datetime = start_datetime
+        self._cursor_value = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.start_date}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        record = None
+        for record in super().read_records(*args, **kwargs):
+            yield record
+        if record:
+            self.state = record[self.cursor_field]
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        last_modified = stream_state.get(self.cursor_field, self._start_datetime)
+        # since API filters inclusively, we add 1 sec to prevent duplicate reads
+        last_modified_dt = datetime.datetime.fromisoformat(last_modified)
+        last_modified_dt += datetime.timedelta(seconds=1)
+        last_modified = last_modified_dt.isoformat("T", "seconds")
+        return {"If-Modified-Since": last_modified}
+
+
 class ZohoStreamFactory:
-    def __init__(self, config):
+    def __init__(self, config: Mapping[str, Any]):
         self.api = ZohoAPI(config)
+        self._config = config
 
     def _init_modules_meta(self) -> List[ModuleMeta]:
         response = self.api.modules_settings()
@@ -96,17 +142,24 @@ class ZohoStreamFactory:
             except (IncompleteMetaDataException, UnknownDataTypeException):
                 continue
 
-            cls = type(
+            stream_params = {
+                "url_base": f"{self.api.api_url}",
+                "_path": f"/crm/v2/{module.api_name}",
+                "json_schema": schema,
+                "primary_key": "id"
+            }
+            full_refresh_stream = type(
                 f"{module.api_name}ZohoCRMStream",
                 (ZohoCrmStream,),
-                {
-                    "url_base": f"{self.api.api_url}",
-                    "_path": f"/crm/v2/{module.api_name}",
-                    "json_schema": schema,
-                    "primary_key": None
-                }
+                stream_params
             )
-            # TODO: add Incremental streams
-            # TODO: process rate limits and backoff policy
-            streams.extend([cls(self.api.authenticator)])
+            incremental_stream = type(
+                f"Incremental{module.api_name}ZohoCRMStream",
+                (IncrementalZohoCrmStream,),
+                stream_params
+            )
+            streams.extend([
+                full_refresh_stream(self.api.authenticator),
+                incremental_stream(self.api.authenticator, start_datetime=self._config.get("start_datetime"))
+            ])
         return streams
