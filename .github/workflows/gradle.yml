@@ -45,7 +45,8 @@ jobs:
               - 'buildSrc/**'
               - 'tools/**'
             cli:
-              - 'airbyte-cli/**'
+              - 'airbyte-api/**'
+              - 'octavia-cli/**'
             connectors:
               - 'airbyte-integrations/**'
             db:

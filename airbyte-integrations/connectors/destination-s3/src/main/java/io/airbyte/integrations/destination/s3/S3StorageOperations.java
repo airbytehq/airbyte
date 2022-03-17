@@ -110,13 +110,9 @@ public class S3StorageOperations implements BlobStorageOperations {
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean hasFailed = false;
-    try {
-      final List<MultiPartOutputStream> outputStreams = uploadManager.getMultiPartOutputStreams();
-      try (final MultiPartOutputStream outputStream = outputStreams.get(0)) {
-        try (final InputStream dataStream = recordsData.getInputStream()) {
-          dataStream.transferTo(outputStream);
-        }
-      }
+    try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+        final InputStream dataStream = recordsData.getInputStream()) {
+      dataStream.transferTo(outputStream);
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", bucketPath, e);
       hasFailed = true;
