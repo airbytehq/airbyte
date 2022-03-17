@@ -19,7 +19,6 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
