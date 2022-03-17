@@ -233,7 +233,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             # start_time must be more than 60 seconds ago
             start_time = now - 61
         params["start_time"] = start_time
-
+        
         return params
 
     def read_records(
@@ -351,12 +351,17 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
             self.prev_start_time = start_time
             return {self.cursor_field: start_time}
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
+        if stream_state:
+            # use the state value if exists
+            parsed_state = calendar.timegm(pendulum.parse(stream_state.get(self.cursor_field)).utctimetuple())
+        else:
+            # for full-refresh use start_date
+            parsed_state = calendar.timegm(pendulum.parse(self._start_date).utctimetuple())
         if self.cursor_field:
-            params = {
-                "start_time": next_page_token.get(self.cursor_field, calendar.timegm(pendulum.parse(self._start_date).utctimetuple()))
-            }
+            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         else:
             params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
         return params
@@ -385,32 +390,54 @@ class Tickets(SourceZendeskSupportStream):
         return params
 
 
-class TicketComments(SourceZendeskSupportStream):
-    """TicketComments stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/
-    ZenDesk doesn't provide API for loading of all comments by one direct endpoints.
-    Thus at first we loads all updated tickets and after this tries to load all created/updated
-    comments per every ticket"""
+class TicketComments(SourceZendeskSupportCursorPaginationStream):
+    """Incremental TicketComments from TicketEvent Export stream:
+    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
+    """
 
-    # Tickets can be removed throughout synchronization. The ZendDesk API will return a response
-    # with 404 code if a ticket is not exists. But it shouldn't break loading of other comments.
-    # raise_on_http_errors = False
-
-    parent = Tickets
     cursor_field = "created_at"
+    response_list_name = "ticket_events"
+    # nested property inside of `response_list_name`
+    responce_target_entity = "child_events"
+    # list of nested entities to include in event from record 
+    list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
 
-    response_list_name = "comments"
-
-    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        ticket_id = stream_slice["id"]
-        return f"tickets/{ticket_id}/comments"
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        tickets_stream = self.parent(start_date=self._start_date, subdomain=self._subdomain, authenticator=self._session.auth)
-        for ticket in tickets_stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state):
-            if ticket["comment_count"]:
-                yield {"id": ticket["id"], "child_count": ticket["comment_count"]}
+    def path(self, **kwargs) -> str:
+        return f"incremental/ticket_events"
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Returns next_page_token based on `end_of_stream` parameter inside of response
+        """
+        next_page_token = super().next_page_token(response)
+        end_of_stream = response.json().get("end_of_stream", False)        
+        return None if end_of_stream else next_page_token
+    
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, next_page_token, **kwargs)
+        # we need to sideload the comments body, to include them into response
+        # https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
+        params["include"] = "comment_events"
+        return params
+        
+    def update_event_props(self, record: dict = None, event: dict = None, props: list = None) -> MutableMapping[str, Any]:
+        """Update the event mapping with the specified fields from record entity"""
+        for prop in props:
+            target_prop = record.get(prop)
+            event[prop] = target_prop if target_prop else None
+        return event
+    
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = response.json().get(self.response_list_name) or []
+        current_state = stream_state.get(self.cursor_field, {})
+        for record in records:
+            for event in record.get(self.responce_target_entity):
+                if event.get("event_type") == "Comment":
+                    updated_state = event.get(self.cursor_field)
+                    # update event with record entities
+                    event = self.update_event_props(record, event, self.list_entities_from_event)      
+                    if not current_state or updated_state > current_state:
+                        yield event
 
 
 class Groups(SourceZendeskSupportStream):
