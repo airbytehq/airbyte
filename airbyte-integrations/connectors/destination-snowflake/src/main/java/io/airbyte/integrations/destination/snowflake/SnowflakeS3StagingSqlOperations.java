@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
+import javax.validation.constraints.Max;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
-  public static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
+  private static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
       + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
       + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') ";
 
@@ -45,28 +46,33 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
+        nameTransformer.convertStreamName(streamName)
+    ));
   }
 
   @Override
   public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
-    return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
-        connectionId,
+    return nameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
         getStageName(namespace, streamName),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),
         writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get()));
+        writeDatetime.hourOfDay().get(),
+        connectionId));
   }
 
   @Override
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final SerializableBuffer recordsData,
                                      final String schemaName,
-                                     final String path)
+                                     final String stageName,
+                                     final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, path);
+    AirbyteSentry.executeWithTracing("UploadRecordsToStage",
+        () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
+        Map.of("stage", stageName, "path", stagingPath));
+    return recordsData.getFilename();
   }
 
   @Override
@@ -79,31 +85,33 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   @Override
   public void copyIntoTmpTableFromStage(final JdbcDatabase database,
                                         final String stageName,
+                                        final String stagingPath,
                                         final List<String> stagedFiles,
                                         final String dstTableName,
                                         final String schemaName) {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stageName, schemaName);
+    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
+    // Print actual SQL query if user needs to manually force reload from staging
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stageName, stagedFiles, dstTableName, schemaName))),
-        Map.of("schema", schemaName, "stage", stageName, "table", dstTableName));
+        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName))),
+        Map.of("schema", schemaName, "path", stagingPath, "table", dstTableName));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
-  protected String getCopyQuery(final String stageName, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
+  protected String getCopyQuery(final String stageName, final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
     return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
         schemaName,
         dstTableName,
-        generateBucketPath(stageName),
+        generateBucketPath(stageName, stagingPath),
         s3Config.getAccessKeyId(),
         s3Config.getSecretAccessKey());
   }
 
-  private String generateBucketPath(final String stage) {
-    return "s3://" + s3Config.getBucketName() + "/" + stage;
+  private String generateBucketPath(final String stageName, final String stagingPath) {
+    return "s3://" + s3Config.getBucketName() + "/" + stagingPath;
   }
 
   private String generateFilesList(final List<String> files) {
-    if (files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
+    if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
       // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
       final StringJoiner joiner = new StringJoiner(",");
       files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
@@ -121,10 +129,10 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String path, final List<String> stagedFiles) {
+  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) {
     AirbyteSentry.executeWithTracing("CleanStage",
-        () -> s3StorageOperations.cleanUpBucketObjects(path, stagedFiles),
-        Map.of("path", path));
+        () -> s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles),
+        Map.of("stage", stageName));
   }
 
 }

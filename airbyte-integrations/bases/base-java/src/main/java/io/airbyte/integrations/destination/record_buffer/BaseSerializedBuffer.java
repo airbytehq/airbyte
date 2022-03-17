@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base implementation of a {@link SerializableBuffer}. It is composed of a
- * {@link BufferStorage} where the actual data is being stored in a serialized format.
+ * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage}
+ * where the actual data is being stored in a serialized format.
  *
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
@@ -54,8 +54,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   /**
    * Transform the @param recordMessage into a serialized form of the data and writes it to the
-   * registered OutputStream provided when {@link BaseSerializedBuffer#createWriter} was
-   * called.
+   * registered OutputStream provided when {@link BaseSerializedBuffer#createWriter} was called.
    */
   protected abstract void writeRecord(AirbyteRecordMessage recordMessage) throws IOException;
 

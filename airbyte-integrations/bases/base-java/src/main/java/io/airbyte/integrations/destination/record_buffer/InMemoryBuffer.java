@@ -16,9 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Instead of storing buffered data on disk like the {@link FileBuffer}, this
- * {@link BufferStorage} accumulates message data in-memory instead. Thus, a bigger
- * heap size would be required.
+ * Instead of storing buffered data on disk like the {@link FileBuffer}, this {@link BufferStorage}
+ * accumulates message data in-memory instead. Thus, a bigger heap size would be required.
  */
 public class InMemoryBuffer implements BufferStorage {
 

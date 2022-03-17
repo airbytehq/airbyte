@@ -34,8 +34,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private final ConfiguredAirbyteCatalog catalog;
 
   public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
-                                           final ConfiguredAirbyteCatalog catalog,
-                                           final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush) {
+                                     final ConfiguredAirbyteCatalog catalog,
+                                     final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;

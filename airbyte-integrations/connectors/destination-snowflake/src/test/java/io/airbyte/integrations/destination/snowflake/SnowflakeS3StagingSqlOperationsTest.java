@@ -17,6 +17,7 @@ class SnowflakeS3StagingSqlOperationsTest {
 
   public static final String SCHEMA_NAME = "schemaName";
   public static final String STAGE_NAME = "stageName";
+  public static final String STAGE_PATH = "stagePath";
   private final AmazonS3 s3Client = mock(AmazonS3.class);
   private final S3DestinationConfig s3Config = mock(S3DestinationConfig.class);
 
@@ -32,7 +33,7 @@ class SnowflakeS3StagingSqlOperationsTest {
     when(s3Config.getAccessKeyId()).thenReturn("aws_access_key_id");
     when(s3Config.getSecretAccessKey()).thenReturn("aws_secret_access_key");
     final String actualCopyQuery =
-        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
+        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 

@@ -20,11 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the default implementation of a {@link BufferStorage} to be backward compatible.
- * Data is being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
+ * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is
+ * being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
  *
- * This should be deprecated as we slowly move towards using
- * {@link SerializedBufferingStrategy} instead.
+ * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy}
+ * instead.
  */
 public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
@@ -41,13 +41,13 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private VoidCallable onFlushAllEventHook;
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
-                                        final long maxQueueSizeInBytes) {
+                                         final long maxQueueSizeInBytes) {
     this(recordWriter, null, maxQueueSizeInBytes);
   }
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
-                                        final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
-                                        final long maxQueueSizeInBytes) {
+                                         final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
+                                         final long maxQueueSizeInBytes) {
     this.recordWriter = recordWriter;
     this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
 

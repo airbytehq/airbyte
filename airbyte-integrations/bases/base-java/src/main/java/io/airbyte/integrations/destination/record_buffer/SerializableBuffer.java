@@ -14,11 +14,11 @@ import java.io.InputStream;
  * {@link SerializedBufferingStrategy}.
  *
  * It encapsulates the actual implementation of a buffer: both the medium storage (usually defined
- * as part of {@link BufferStorage}. and the format of the serialized data when it is written
- * to the buffer.
+ * as part of {@link BufferStorage}. and the format of the serialized data when it is written to the
+ * buffer.
  *
- * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive
- * from when implementing a new format of buffer. The storage aspects are normally provided through
+ * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive from
+ * when implementing a new format of buffer. The storage aspects are normally provided through
  * composition of {@link BufferStorage}.
  *
  */

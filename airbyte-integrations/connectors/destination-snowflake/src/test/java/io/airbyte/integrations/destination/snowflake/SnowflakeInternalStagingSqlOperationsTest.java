@@ -11,8 +11,10 @@ import org.junit.jupiter.api.Test;
 
 class SnowflakeInternalStagingSqlOperationsTest {
 
-  public static final String SCHEMA_NAME = "schemaName";
-  public static final String STAGE_NAME = "stageName";
+  private static final String SCHEMA_NAME = "schemaName";
+  private static final String STAGE_NAME = "stageName";
+  private static final String STAGE_PATH = "stagePath";
+
   private final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations =
       new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
 
@@ -26,11 +28,11 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   @Test
   void copyIntoTmpTableFromStage() {
-    final String expectedQuery = "COPY INTO schemaName.tableName FROM @stageName file_format = " +
+    final String expectedQuery = "COPY INTO schemaName.tableName FROM @stageName/stagePath file_format = " +
         "(type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') " +
         "files = ('filename1','filename2') ;";
     final String actualCopyQuery =
-        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
+        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 

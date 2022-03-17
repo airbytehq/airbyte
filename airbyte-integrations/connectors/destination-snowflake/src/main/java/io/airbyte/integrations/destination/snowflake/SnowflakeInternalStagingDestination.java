@@ -95,7 +95,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         getDatabase(config),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(config), FileBuffer::new),
+        CsvSerializedBuffer.createFunction(null, FileBuffer::new),
         config,
         catalog);
   }

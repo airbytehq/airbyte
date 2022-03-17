@@ -104,9 +104,9 @@ public class SnowflakeDestinationTest {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
     final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
-            sqlOperations, new SnowflakeSQLNameTransformer(), CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(config), FileBuffer::new),
+            sqlOperations, new SnowflakeSQLNameTransformer(), CsvSerializedBuffer.createFunction(null, FileBuffer::new),
             config, getCatalog());
-    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyList(), anyString(), anyString());
+    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
     for (final AirbyteMessage m : testMessages) {

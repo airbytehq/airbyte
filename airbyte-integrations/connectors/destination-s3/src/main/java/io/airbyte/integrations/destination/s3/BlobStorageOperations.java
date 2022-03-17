@@ -11,28 +11,28 @@ import org.joda.time.DateTime;
 
 public interface BlobStorageOperations {
 
-  String getBucketName(String namespace, String bucketName);
+  String getBucketObjectName(String namespace, String streamName);
 
-  String getBucketPath(String namespace, String bucketName, DateTime writeDatetime);
+  String getBucketObjectPath(final String prefix, String namespace, String streamName, DateTime writeDatetime);
 
   /**
-   * Create a storage bucket where to store data in the destination
+   * Create a storage object where to store data in the destination for a @param streamName using location of @param objectPath
    */
-  void createBucketObjectIfNotExists(String bucketName) throws Exception;
+  void createBucketObjectIfNotExists(String streamName) throws Exception;
 
   /**
    * Upload the data files into the storage area.
    *
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String bucketPath) throws Exception;
+  String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String streamName, String objectPath) throws Exception;
 
   /**
    * Remove files that were just stored in the bucket
    */
-  void cleanUpBucketObjects(String bucketPath, List<String> stagedFiles) throws Exception;
+  void cleanUpBucketObject(String streamName, List<String> stagedFiles) throws Exception;
 
-  void dropBucketObject(String stageName);
+  void dropBucketObject(String streamName);
 
   boolean isValidData(JsonNode jsonNode);
 

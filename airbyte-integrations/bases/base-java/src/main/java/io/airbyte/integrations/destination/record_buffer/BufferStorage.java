@@ -14,8 +14,8 @@ import java.io.OutputStream;
  * could be a file, in-memory or some other objects.
  *
  * However, in order to be used as part of the {@link SerializableBuffer}, this
- * {@link BufferStorage} should implement some methods used to determine how to write into
- * and read from the storage once we are done buffering
+ * {@link BufferStorage} should implement some methods used to determine how to write into and read
+ * from the storage once we are done buffering
  *
  * Some easy methods for manipulating the storage viewed as a file or InputStream are therefore
  * required.

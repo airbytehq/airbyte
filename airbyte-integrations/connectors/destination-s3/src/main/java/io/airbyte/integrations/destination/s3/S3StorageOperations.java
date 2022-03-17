@@ -43,17 +43,17 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String getBucketName(final String namespace, final String bucketName) {
+  public String getBucketObjectName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(bucketName)));
+        nameTransformer.convertStreamName(streamName)));
   }
 
   @Override
-  public String getBucketPath(final String namespace, final String bucketName, final DateTime writeDatetime) {
-    // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
-    return nameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/",
-        getBucketName(namespace, bucketName),
+  public String getBucketObjectPath(final String prefix, final String namespace, final String streamName, final DateTime writeDatetime) {
+    return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
+        prefix,
+        getBucketObjectName(namespace, streamName),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),
         writeDatetime.dayOfMonth().get(),
@@ -61,35 +61,35 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public void createBucketObjectIfNotExists(final String bucketName) {
+  public void createBucketObjectIfNotExists(final String objectPath) {
     final String bucket = s3Config.getBucketName();
     if (!s3Client.doesBucketExistV2(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
     }
-    if (!s3Client.doesObjectExist(bucket, bucketName)) {
-      LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, bucketName);
-      s3Client.putObject(bucket, bucketName.endsWith("/") ? bucketName : bucketName + "/", "");
-      LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, bucketName);
+    if (!s3Client.doesObjectExist(bucket, objectPath)) {
+      LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, objectPath);
+      s3Client.putObject(bucket, objectPath.endsWith("/") ? objectPath : objectPath + "/", "");
+      LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
   }
 
   @Override
-  public String uploadRecordsToBucket(final SerializableBuffer recordsData, final String namespace, final String bucketPath)
+  public String uploadRecordsToBucket(final SerializableBuffer recordsData, final String namespace, final String streamName, final String objectPath)
       throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
       try {
-        loadDataIntoBucket(bucketPath, recordsData);
+        loadDataIntoBucket(objectPath, recordsData);
         succeeded = true;
       } catch (final Exception e) {
-        LOGGER.error("Failed to upload records into storage {}", bucketPath, e);
+        LOGGER.error("Failed to upload records into storage {}", objectPath, e);
         exceptionsThrown.add(e);
       }
       if (!succeeded) {
-        LOGGER.info("Retrying to upload records into storage {} ({}/{}})", bucketPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
+        LOGGER.info("Retrying to upload records into storage {} ({}/{}})", objectPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();
       }
@@ -100,10 +100,10 @@ public class S3StorageOperations implements BlobStorageOperations {
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoBucket(final String bucketPath, final SerializableBuffer recordsData) throws IOException {
+  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String objectKey = String.format("%s%s", bucketPath, recordsData.getFilename());
+    final String objectKey = String.format("%s%s", objectPath, recordsData.getFilename());
     final StreamTransferManager uploadManager = S3StreamTransferManagerHelper
         .getDefault(bucket, objectKey, s3Client, partSize)
         .checkIntegrity(true)
@@ -114,7 +114,7 @@ public class S3StorageOperations implements BlobStorageOperations {
         final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
     } catch (final Exception e) {
-      LOGGER.error("Failed to load data into storage {}", bucketPath, e);
+      LOGGER.error("Failed to load data into storage {}", objectPath, e);
       hasFailed = true;
       throw new RuntimeException(e);
     } finally {
@@ -131,19 +131,19 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public void dropBucketObject(final String bucketPath) {
-    LOGGER.info("Dropping bucket object {}...", bucketPath);
+  public void dropBucketObject(final String streamName) {
+    LOGGER.info("Dropping bucket object {}...", streamName);
     final String bucket = s3Config.getBucketName();
-    if (s3Client.doesObjectExist(bucket, bucketPath)) {
-      s3Client.deleteObject(bucket, bucketPath);
+    if (s3Client.doesObjectExist(bucket, streamName)) {
+      s3Client.deleteObject(bucket, streamName);
     }
-    LOGGER.info("Bucket object {} has been deleted...", bucketPath);
+    LOGGER.info("Bucket object {} has been deleted...", streamName);
   }
 
   @Override
-  public void cleanUpBucketObjects(final String bucketPath, final List<String> stagedFiles) {
+  public void cleanUpBucketObject(final String objectPath, final List<String> stagedFiles) {
     final String bucket = s3Config.getBucketName();
-    ObjectListing objects = s3Client.listObjects(bucket, bucketPath);
+    ObjectListing objects = s3Client.listObjects(bucket, objectPath);
     while (objects.getObjectSummaries().size() > 0) {
       final List<KeyVersion> toDelete = objects.getObjectSummaries()
           .stream()
@@ -151,7 +151,7 @@ public class S3StorageOperations implements BlobStorageOperations {
           .filter(obj -> stagedFiles.isEmpty() || stagedFiles.contains(obj.getKey()))
           .toList();
       s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(toDelete));
-      LOGGER.info("Storage bucket {} has been cleaned-up ({} objects were deleted)...", bucketPath, toDelete.size());
+      LOGGER.info("Storage bucket {} has been cleaned-up ({} objects were deleted)...", objectPath, toDelete.size());
       if (objects.isTruncated()) {
         objects = s3Client.listNextBatchOfObjects(objects);
       } else {
