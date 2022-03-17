@@ -405,7 +405,7 @@ class TicketComments(SourceZendeskSupportCursorPaginationStream):
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
 
     def path(self, **kwargs) -> str:
-        return f"incremental/ticket_events"
+        return "incremental/ticket_events"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
