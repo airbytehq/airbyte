@@ -255,6 +255,7 @@ public class KubePodProcessIntegrationTest {
   }
 
   @Test
+  @Timeout(20)
   public void testDeletingPodImmediatelyAfterCompletion() throws Exception {
     // start a process that requests
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -262,6 +263,7 @@ public class KubePodProcessIntegrationTest {
     final Process process = getProcess(Map.of("uuid", uuid.toString()), "sleep 1 && exit 10");
 
     final var pod = fabricClient.pods().list().getItems().stream()
+        .filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
         .filter(p -> p.getMetadata().getLabels().containsKey("uuid") && p.getMetadata().getLabels().get("uuid").equals(uuid.toString()))
         .collect(Collectors.toList()).get(0);
     fabricClient.resource(pod).watch(new ExitCodeWatcher(
