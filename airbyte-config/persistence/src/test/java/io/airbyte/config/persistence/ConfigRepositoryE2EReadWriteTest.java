@@ -156,4 +156,16 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
   }
 
+  @Test
+  public void testListPublicSourceDefinitions() throws IOException {
+    final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
+    assertEquals(List.of(MockData.standardSourceDefinitions().get(0)), actualDefinitions);
+  }
+
+  @Test
+  public void testListPublicDestinationDefinitions() throws IOException {
+    final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
+    assertEquals(List.of(MockData.standardDestinationDefinitions().get(0)), actualDefinitions);
+  }
+
 }
