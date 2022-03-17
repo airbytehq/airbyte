@@ -53,26 +53,18 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     return StandardSyncInput.class;
   }
 
+  @Override
   public Optional<String> runJob() throws Exception {
     final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final StandardSyncInput syncInput = readInput();
 
     final IntegrationLauncherConfig sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-            Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
-            IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-            Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
-            IntegrationLauncherConfig.class);
-
-    return runJob(jobRunConfig, syncInput, sourceLauncherConfig, destinationLauncherConfig);
-  }
-
-  public Optional<String> runJob(
-          final JobRunConfig jobRunConfig,
-          final StandardSyncInput syncInput,
-          final IntegrationLauncherConfig sourceLauncherConfig,
-          final IntegrationLauncherConfig destinationLauncherConfig) throws Exception {
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     log.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(

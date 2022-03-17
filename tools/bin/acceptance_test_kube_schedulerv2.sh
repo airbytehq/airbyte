@@ -81,5 +81,3 @@ fi
 
 echo "Running e2e tests via gradle..."
 KUBE=true NEW_SCHEDULER=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true CONTAINER_ORCHESTRATOR=true ./gradlew :airbyte-tests:acceptanceTests --scan
-
-# KUBE=true; NEW_SCHEDULER=true; SUB_BUILD=PLATFORM; USE_EXTERNAL_DEPLOYMENT=true; CONTAINER_ORCHESTRATOR=true
