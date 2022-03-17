@@ -1000,6 +1000,29 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-chargify:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/chargify"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Chargify Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "domain"
+      additionalProperties: false
+      properties:
+        api_key:
+          type: "string"
+          description: "Chargify API Key."
+          airbyte_secret: true
+        domain:
+          type: "string"
+          description: "Chargify domain. Normally this domain follows the following\
+            \ format companyname.chargify.com"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
