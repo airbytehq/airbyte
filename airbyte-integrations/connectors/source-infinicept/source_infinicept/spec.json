@@ -1,0 +1,31 @@
+{
+  "documentationUrl": "https://viewthespace.atlassian.net/browse/INFORM-2951",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Infinicept Spec",
+    "type": "object",
+    "required": ["x-AuthenticationKeyId", "x-AuthenticationKeyValue"],
+    "additionalProperties": false,
+    "properties": {
+      "x-AuthenticationKeyId": {
+        "type": "string",
+        "description": "Authentication Key ID"
+      },
+      "x-AuthenticationKeyValue": {
+        "type": "string",
+        "description": "Authentication Key Value"
+      },
+      "tenantIdList": {
+        "title": "Tenant ID List",
+        "type": "array",
+        "description": "Comma separated list of Tenant Ids to extract from",
+        "examples": ["315", "325"],
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true
+      }
+    }
+  }
+}

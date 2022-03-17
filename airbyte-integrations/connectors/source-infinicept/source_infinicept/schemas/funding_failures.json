@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "sourceDataEventId": {
+      "type": ["null", "integer"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "fee": {
+      "type": ["null", "number"]
+    },
+    "submittedDate": {
+      "type": ["null", "string"]
+    },
+    "returnedDate": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "integer"]
+    },
+    "reasonCode": {
+      "type": ["null", "string"]
+    },
+    "reasonDescription": {
+      "type": ["null", "string"]
+    },
+    "providerReasonCode": {
+      "type": ["null", "string"]
+    },
+    "providerReasonDescription": {
+      "type": ["null", "string"]
+    },
+    "depositId": {
+      "type": ["null", "integer"]
+    },
+    "submerchantDepositId": {
+      "type": ["null", "integer"]
+    },
+    "submerchantId": {
+      "type": ["null", "integer"]
+    },
+    "processorMid": {
+      "type": ["null", "string"]
+    },
+    "accountNumber": {
+      "type": ["null", "string"]
+    },
+    "submerchantName": {
+      "type": ["null", "string"]
+    },
+    "submerchantDbaName": {
+      "type": ["null", "string"]
+    },
+    "corrections": {
+      "type": "object",
+      "properties": {
+        "addendaInfo": {
+          "type": ["null", "string"]
+        },
+        "correctAccountNumber": {
+          "type": ["null", "string"]
+        },
+        "correctRoutingNumber": {
+          "type": ["null", "string"]
+        },
+        "correctTransactionCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "transactionDate": {
+            "type": ["null", "string"]
+          },
+          "arn": {
+            "type": ["null", "string"]
+          },
+          "authorizedDate": {
+            "type": ["null", "string"]
+          },
+          "authorizationCode": {
+            "type": ["null", "string"]
+          },
+          "authorizationSource": {
+            "type": ["null", "string"]
+          },
+          "authorizationResponse": {
+            "type": ["null", "string"]
+          },
+          "authorizationAmount": {
+            "type": ["null", "number"]
+          },
+          "transactionAmount": {
+            "type": ["null", "number"]
+          },
+          "submerchantBatchId": {
+            "type": ["null", "string"]
+          },
+          "currency": {
+            "type": ["null", "string"]
+          },
+          "cardBin": {
+            "type": ["null", "string"]
+          },
+          "cardLastFour": {
+            "type": ["null", "string"]
+          },
+          "cardtype": {
+            "type": ["null", "string"]
+          },
+          "network": {
+            "type": ["null", "integer"]
+          },
+          "cardPresenttype": {
+            "type": ["null", "integer"]
+          },
+          "issuingBankID": {
+            "type": ["null", "string"]
+          },
+          "interchangeFee": {
+            "type": ["null", "number"]
+          },
+          "networkFees": {
+            "type": ["null", "number"]
+          },
+          "processorFee": {
+            "type": ["null", "number"]
+          },
+          "assessmentFee": {
+            "type": ["null", "number"]
+          },
+          "payfacFee": {
+            "type": ["null", "number"]
+          },
+          "chargebackFee": {
+            "type": ["null", "number"]
+          },
+          "commissionFee": {
+            "type": ["null", "number"]
+          },
+          "sourceDataEventId": {
+            "type": ["null", "integer"]
+          },
+          "processorMID": {
+            "type": ["null", "string"]
+          },
+          "transactiontype": {
+            "type": ["null", "integer"]
+          },
+          "onHold": {
+            "type": ["null", "boolean"]
+          },
+          "terminalId": {
+            "type": ["null", "string"]
+          },
+          "fundingStatus": {
+            "type": ["null", "integer"]
+          },
+          "feeFundingStatus": {
+            "type": ["null", "integer"]
+          },
+          "processorTransactionID": {
+            "type": ["null", "string"]
+          },
+          "submerchantName": {
+            "type": ["null", "string"]
+          },
+          "submerchantId": {
+            "type": ["null", "integer"]
+          },
+          "submerchantDbaName": {
+            "type": ["null", "string"]
+          },
+          "submerchantStatus": {
+            "type": ["null", "integer"]
+          },
+          "processedDate": {
+            "type": ["null", "string"]
+          },
+          "settlementDate": {
+            "type": ["null", "string"]
+          },
+          "extendedData": {
+            "type": ["null", "string"]
+          },
+          "interchangeCode": {
+            "type": ["null", "string"]
+          },
+          "interchangeLevel": {
+            "type": ["null", "string"]
+          },
+          "feeSettlementDate": {
+            "type": ["null", "string"]
+          },
+          "gatewayReferenceId": {
+            "type": ["null", "string"]
+          },
+          "partnerReferenceId": {
+            "type": ["null", "string"]
+          },
+          "tipAmount": {
+            "type": ["null", "number"]
+          },
+          "totalAssessedFees": {
+            "type": ["null", "number"]
+          },
+          "totalFees": {
+            "type": ["null", "number"]
+          },
+          "netAmount": {
+            "type": ["null", "number"]
+          },
+          "depositIds": {
+            "type": "array",
+            "items": {
+              "type": ["null", "integer"]
+            }
+          },
+          "feeProfiletype": {
+            "type": ["null", "integer"]
+          },
+          "feeBillingtype": {
+            "type": ["null", "integer"]
+          },
+          "merchantIdentifiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": ["null", "string"]
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": ["null", "array"]
+          },
+          "adjustmentId": {
+            "type": ["null", "string"]
+          },
+          "isForced": {
+            "type": ["null", "string"]
+          },
+          "cardExpirationDate": {
+            "type": ["null", "string"]
+          },
+          "eCheck": {
+            "type": ["null", "string"]
+          },
+          "achReturnFee": {
+            "type": ["null", "number"]
+          },
+          "transactionSettledDate": {
+            "type": ["null", "string"]
+          },
+          "transactionDiscretionaryFields": {
+            "type": ["null", "array"]
+          },
+          "isExternallyFunded": {
+            "type": ["null", "boolean"]
+          },
+          "fundingReturnMessage": {
+            "type": ["null", "string"]
+          },
+          "fundingReturnDate": {
+            "type": ["null", "string"]
+          },
+          "submerchantDepositIds": {
+            "type": "array",
+            "items": {
+              "type": ["null", "integer"]
+            }
+          }
+        }
+      }
+    },
+    "tenant_id": {
+      "type": "string"
+    }
+  }
+}
