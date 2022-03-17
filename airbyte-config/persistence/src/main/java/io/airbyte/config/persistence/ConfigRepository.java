@@ -415,6 +415,20 @@ public class ConfigRepository {
     return Map.entry(actorDefinition, granted);
   }
 
+  public void writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
+    database.query(ctx -> ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
+        .set(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID, actorDefinitionId)
+        .set(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID, workspaceId)
+        .execute());
+  }
+
+  public void deleteActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
+    database.query(ctx -> ctx.deleteFrom(ACTOR_DEFINITION_WORKSPACE_GRANT)
+        .where(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
+        .and(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
+        .execute());
+  }
+
   /**
    * Returns source with a given id. Does not contain secrets. To hydrate with secrets see { @link
    * SecretsRepositoryReader#getSourceConnectionWithSecrets(final UUID sourceId) }.
