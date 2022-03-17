@@ -34,18 +34,17 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   // - fails jobs consecutively and hits the `configs.getMaxFailedJobsInARowBeforeConnectionDisable()`
   // limit
   // - all the jobs in the past `configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable()` days are
-  // failures,
-  // and that the connection's first job is at least that many days old
+  // failures, and that the connection's first job is at least that many days old
   @Override
-  public boolean autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
+  public AutoDisableConnectionOutput autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
         final int maxDaysOfOnlyFailedJobs = configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
         final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), REPLICATION_TYPES,
             input.getCurrTimestamp().minus(maxDaysOfOnlyFailedJobs, ChronoUnit.DAYS));
 
-        if (jobStatuses.size() == 0)
-          return false;
+        // do not take into account cancelled jobs
+        jobStatuses.stream().filter(jobStatus -> jobStatus.equals(JobStatus.CANCELLED));
 
         int numFailures = 0;
 
@@ -56,20 +55,27 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable())
               break;
           } else if (jobStatus == JobStatus.SUCCEEDED) {
-            return false;
+            return new AutoDisableConnectionOutput(false);
           }
         }
 
-        // if failures are under the max failed limit but are the only jobs in the last max days limit,
-        // check to make sure that the connection is at least that many days old (based from created at
-        // of first job)
+        // if the jobs in the last 14 days don't include any succeeded or failed jobs (e.g. only cancelled
+        // jobs), do not auto-disable
+        if (numFailures == 0) {
+          return new AutoDisableConnectionOutput(false);
+        }
+
+        // if the very first job of a connection fails, it will hit the condition of "only failed jobs in
+        // the past `maxDaysOfOnlyFailedJobs` days", to avoid this behavior, we ensure that this condition
+        // is only taken into account if the connection has a job that's at least `maxDaysOfOnlyFailedJobs`
+        // days old
         if (numFailures != configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
           final Optional<Job> optionalFirstJob = jobPersistence.getFirstReplicationJob(input.getConnectionId());
           if (optionalFirstJob.isPresent()) {
             final long timeBetweenCurrTimestampAndFirstJob = input.getCurrTimestamp().getEpochSecond()
                 - optionalFirstJob.get().getCreatedAtInSecond();
             if (timeBetweenCurrTimestampAndFirstJob <= TimeUnit.DAYS.toSeconds(maxDaysOfOnlyFailedJobs)) {
-              return false;
+              return new AutoDisableConnectionOutput(false);
             }
           }
         }
@@ -77,13 +83,11 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
         standardSync.setStatus(Status.INACTIVE);
         configRepository.writeStandardSync(standardSync);
-
-        return true;
       } catch (final Exception e) {
         throw new RetryableException(e);
       }
     }
-    return true;
+    return new AutoDisableConnectionOutput(true);
   }
 
 }

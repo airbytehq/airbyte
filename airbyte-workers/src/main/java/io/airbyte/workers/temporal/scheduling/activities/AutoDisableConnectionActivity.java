@@ -26,12 +26,21 @@ public interface AutoDisableConnectionActivity {
 
   }
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class AutoDisableConnectionOutput {
+
+    private boolean disabled;
+
+  }
+
   /**
    * Disable a connection if no successful sync jobs in the last MAX_FAILURE_JOBS_IN_A_ROW job
    * attempts or the last MAX_DAYS_OF_STRAIGHT_FAILURE days (minimum 1 job attempt): disable
    * connection to prevent wasting resources
    */
   @ActivityMethod
-  boolean autoDisableFailingConnection(AutoDisableConnectionActivityInput input);
+  AutoDisableConnectionOutput autoDisableFailingConnection(AutoDisableConnectionActivityInput input);
 
 }

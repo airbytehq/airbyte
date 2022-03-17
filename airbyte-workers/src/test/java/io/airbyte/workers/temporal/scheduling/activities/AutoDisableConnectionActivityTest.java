@@ -19,6 +19,7 @@ import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -84,7 +85,8 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
     Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
 
-    autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isTrue();
     Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
   }
 
@@ -99,7 +101,8 @@ class AutoDisableConnectionActivityTest {
         CURR_INSTANT.minus(DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE, ChronoUnit.DAYS))).thenReturn(jobStatuses);
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
 
-    autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isFalse();
     Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
   }
 
@@ -109,7 +112,8 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, REPLICATION_TYPES,
         CURR_INSTANT.minus(DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE, ChronoUnit.DAYS))).thenReturn(Collections.emptyList());
 
-    autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isFalse();
     Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
   }
 
@@ -131,7 +135,8 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
 
-    autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isTrue();
     Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
   }
 
@@ -149,7 +154,23 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(CURR_INSTANT.getEpochSecond());
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
 
-    autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isFalse();
+    Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
+  }
+
+  @Test
+  @DisplayName("Test that the connection is _not_ disabled after only cancelled jobs")
+  public void testIgnoreOnlyCancelledRuns() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final int maxDaysOfOnlyFailedJobsBeforeConnectionDisable = 1;
+
+    Mockito.when(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable()).thenReturn(maxDaysOfOnlyFailedJobsBeforeConnectionDisable);
+    Mockito.when(mJobPersistence.listJobStatusWithConnection(CONNECTION_ID, REPLICATION_TYPES,
+        CURR_INSTANT.minus(maxDaysOfOnlyFailedJobsBeforeConnectionDisable, ChronoUnit.DAYS)))
+        .thenReturn(Collections.singletonList(JobStatus.CANCELLED));
+
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    Assertions.assertThat(output.isDisabled()).isFalse();
     Assertions.assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
   }
 
