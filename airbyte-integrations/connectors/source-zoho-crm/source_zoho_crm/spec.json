@@ -5,7 +5,7 @@
     "title": "Zoho Crm Configuration",
     "type": "object",
     "required": [
-      "credentials", "environment", "dc_region"
+      "credentials", "environment", "dc_region", "edition"
     ],
     "additionalProperties": false,
     "properties": {
@@ -56,6 +56,13 @@
         "type": ["null" ,"string"],
         "description": "Set the moment to start syncing from",
         "format": "date-time"
+      },
+      "edition": {
+        "title": "Zoho CRM Edition",
+        "type": "string",
+        "description": "Choose your Edition of Zoho CRM to determine API Concurrency Limits",
+        "enum": ["Free", "Standard", "Professional", "Enterprise", "Ultimate"],
+        "default": "Free"
       }
     }
   }

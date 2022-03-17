@@ -1,6 +1,7 @@
 import concurrent.futures
 import datetime
 import logging
+import math
 import requests
 from abc import ABC
 from dataclasses import asdict
@@ -133,8 +134,14 @@ class ZohoStreamFactory:
             self._populate_module_meta(module)
             self._populate_fields_meta(module)
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(modules)) as executor:
-            executor.map(lambda module: populate_module(module), modules)
+        def chunk(max_len, lst):
+            for i in range(math.ceil(len(lst) / max_len)):
+                yield lst[i * max_len: (i + 1) * max_len]
+
+        max_concurrent_request = self.api.max_concurrent_requests
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_request) as executor:
+            for batch in chunk(max_concurrent_request, modules):
+                executor.map(lambda module: populate_module(module), batch)
 
         for module in modules:
             try:

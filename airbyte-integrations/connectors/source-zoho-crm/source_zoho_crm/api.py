@@ -26,6 +26,13 @@ class ZohoAPI:
         "developer": "developer",
         "sandbox": "sandbox"
     })
+    _CONCURRENCY_API_LIMITS = MappingProxyType({
+        "Free":	5,
+        "Standard":	10,
+        "Professional":	15,
+        "Enterprise": 20,
+        "Ultimate":	25
+    })
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config
@@ -47,6 +54,10 @@ class ZohoAPI:
     @property
     def _access_url(self) -> str:
         return self._DC_REGION_TO_ACCESS_URL[self.config["dc_region"].upper()]
+
+    @property
+    def max_concurrent_requests(self) -> int:
+        return self._CONCURRENCY_API_LIMITS[self.config["edition"]]
 
     @property
     def api_url(self) -> str:
