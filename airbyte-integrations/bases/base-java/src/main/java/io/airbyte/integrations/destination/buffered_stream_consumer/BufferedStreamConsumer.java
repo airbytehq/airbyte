@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * they often have additional temporary stores. The common pattern for staging destination is that
  * flush pushes the data into a staging area in cloud storage and then close copies from staging to
  * a temporary table AND then copies from the temporary table into the final table. This abstraction
- * is blind to that detail as it implementation detail of how staging destinations implement close.
+ * is blind to the detail of how staging destinations implement their close.
  * </p>
  */
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
