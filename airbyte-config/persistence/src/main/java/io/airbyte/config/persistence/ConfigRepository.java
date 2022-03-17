@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.jooq.impl.DSL.asterisk;
@@ -50,12 +51,15 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,6 +180,14 @@ public class ConfigRepository {
     return sourceDefinitions;
   }
 
+  public List<StandardSourceDefinition> listPublicSourceDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.source,
+        DbConverter::buildStandardSourceDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
+  }
+
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
@@ -235,6 +247,14 @@ public class ConfigRepository {
     }
 
     return destinationDefinitions;
+  }
+
+  public List<StandardDestinationDefinition> listPublicDestinationDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.destination,
+        DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -297,6 +317,28 @@ public class ConfigRepository {
       persistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
     }
     persistence.deleteConfig(definitionType, definitionId.toString());
+  }
+
+  private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
+    if (includeTombstones) {
+      return DSL.trueCondition();
+    } else {
+      return tombstoneField.eq(false);
+    }
+  }
+
+  private <T> List<T> listStandardActorDefinitions(final ActorType actorType,
+                                                   final Function<Record, T> recordToActorDefinition,
+                                                   final Condition... conditions)
+      throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
+        .where(conditions)
+        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .fetch());
+
+    return records.stream()
+        .map(recordToActorDefinition)
+        .toList();
   }
 
   /**
