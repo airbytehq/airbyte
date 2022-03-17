@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import java.io.File;
 import java.util.UUID;
 import org.joda.time.DateTime;
 

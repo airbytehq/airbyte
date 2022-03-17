@@ -106,17 +106,13 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean hasFailed = false;
-    try {
-      final List<MultiPartOutputStream> outputStreams = uploadManager.getMultiPartOutputStreams();
-      try (final MultiPartOutputStream outputStream = outputStreams.get(0)) {
-        try (final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
-          final CsvSheetGenerator csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
-          createStageIfNotExists(database, stage);
-          for (final AirbyteRecordMessage recordMessage : records) {
-            final var id = UUID.randomUUID();
-            csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
-          }
-        }
+    try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+        final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
+      final CsvSheetGenerator csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
+      createStageIfNotExists(database, stage);
+      for (final AirbyteRecordMessage recordMessage : records) {
+        final var id = UUID.randomUUID();
+        csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
       }
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into stage {}", stage, e);
