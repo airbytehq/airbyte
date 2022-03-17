@@ -355,7 +355,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void deleteSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
-
+    execute(() -> {
+      sourceDefinitionsHandler.deleteSourceDefinitionOptIn(sourceDefinitionOptInUpdate);
+      return null;
+    });
   }
 
   // SOURCE SPECIFICATION
@@ -517,7 +520,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void deleteDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
-
+    execute(() -> {
+      destinationDefinitionsHandler.deleteDestinationDefinitionOptIn(destinationDefinitionOptInUpdate);
+      return null;
+    });
   }
 
   // DESTINATION SPECIFICATION

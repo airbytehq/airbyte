@@ -229,6 +229,17 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("deleteDestinationDefinitionOptIn should attempt to delete a ActorDefinitionWorkspaceGrant")
+  void testDeleteDestinationDefinitionOptIn() throws IOException {
+    destinationDefinitionsHandler.deleteDestinationDefinitionOptIn(new DestinationDefinitionOptInUpdate()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId());
+  }
+
+  @Test
   @DisplayName("getDestinationDefinition should return the right destination")
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))

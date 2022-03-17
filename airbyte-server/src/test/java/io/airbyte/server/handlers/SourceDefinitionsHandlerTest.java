@@ -228,6 +228,17 @@ class SourceDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("deleteSourceDefinitionOptIn should attempt to delete a ActorDefinitionWorkspaceGrant")
+  void testDeleteSourceDefinitionOptIn() throws IOException {
+    sourceDefinitionsHandler.deleteSourceDefinitionOptIn(new SourceDefinitionOptInUpdate()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId());
+  }
+
+  @Test
   @DisplayName("getSourceDefinition should return the right source")
   void testGetSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))

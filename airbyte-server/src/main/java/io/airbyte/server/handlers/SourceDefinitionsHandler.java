@@ -152,6 +152,13 @@ public class SourceDefinitionsHandler {
         .optIn(true);
   }
 
+  public void deleteSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionOptInUpdate.getWorkspaceId(),
+        sourceDefinitionOptInUpdate.getSourceDefinitionId());
+  }
+
   private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();

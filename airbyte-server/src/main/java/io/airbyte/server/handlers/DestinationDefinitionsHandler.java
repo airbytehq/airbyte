@@ -156,6 +156,13 @@ public class DestinationDefinitionsHandler {
         .optIn(true);
   }
 
+  public void deleteDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        destinationDefinitionOptInUpdate.getWorkspaceId(),
+        destinationDefinitionOptInUpdate.getDestinationDefinitionId());
+  }
+
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
