@@ -322,6 +322,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/list_opt_in:
+    post:
+      tags:
+        - source_definition
+      summary: List all opt-in sourceDefinitions along with the current workspace's opt-in statuses
+      operationId: listSourceDefinitionOptIns
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionOptInReadList"
   /v1/source_definitions/get:
     post:
       tags:
@@ -2190,6 +2208,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionRead"
+    SourceDefinitionOptInRead:
+      type: object
+      required:
+        - sourceDefinition
+        - optIn
+      properties:
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        optIn:
+          type: boolean
+    SourceDefinitionOptInReadList:
+      type: object
+      required:
+        - sourceDefinitionOptIns
+      properties:
+        sourceDefinitionOptIns:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceDefinitionOptInRead"
     # SOURCE SPECIFICATION
     SourceDefinitionSpecification:
       description: The specification for what values are required to configure the sourceDefinition.

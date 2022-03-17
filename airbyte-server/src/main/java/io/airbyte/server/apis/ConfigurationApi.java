@@ -58,6 +58,7 @@ import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInReadList;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -312,6 +313,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
     return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+  }
+
+  @Override
+  public SourceDefinitionOptInReadList listSourceDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return null;
   }
 
   @Override

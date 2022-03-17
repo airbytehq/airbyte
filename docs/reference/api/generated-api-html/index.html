@@ -336,6 +336,7 @@ font-style: italic;
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
+  <li><a href="#listSourceDefinitionOptIns"><code><span class="http-method">post</span> /v1/source_definitions/list_opt_in</code></a></li>
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
   <li><a href="#updateSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update</code></a></li>
   </ul>
@@ -6140,6 +6141,126 @@ font-style: italic;
         <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="listSourceDefinitionOptIns"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_opt_in</code></pre></div>
+    <div class="method-summary">List all opt-in sourceDefinitions along with the current workspace's opt-in statuses (<span class="nickname">listSourceDefinitionOptIns</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionOptInReadList">SourceDefinitionOptInReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinitionOptIns" : [ {
+    "sourceDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "optIn" : true
+  }, {
+    "sourceDefinition" : {
+      "resourceRequirements" : {
+        "default" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        },
+        "jobSpecific" : [ {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        }, {
+          "resourceRequirements" : {
+            "cpu_limit" : "cpu_limit",
+            "memory_request" : "memory_request",
+            "memory_limit" : "memory_limit",
+            "cpu_request" : "cpu_request"
+          }
+        } ]
+      },
+      "documentationUrl" : "https://openapi-generator.tech",
+      "dockerImageTag" : "dockerImageTag",
+      "releaseDate" : "2000-01-23",
+      "dockerRepository" : "dockerRepository",
+      "name" : "name",
+      "icon" : "icon",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "optIn" : true
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionOptInReadList">SourceDefinitionOptInReadList</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listSourceDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -8398,6 +8519,8 @@ font-style: italic;
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
     <li><a href="#SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#SourceDefinitionOptInRead"><code>SourceDefinitionOptInRead</code> - </a></li>
+    <li><a href="#SourceDefinitionOptInReadList"><code>SourceDefinitionOptInReadList</code> - </a></li>
     <li><a href="#SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a></li>
     <li><a href="#SourceDefinitionReadList"><code>SourceDefinitionReadList</code> - </a></li>
     <li><a href="#SourceDefinitionSpecificationRead"><code>SourceDefinitionSpecificationRead</code> - </a></li>
@@ -9334,6 +9457,21 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDefinitionOptInRead"><code>SourceDefinitionOptInRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionRead">SourceDefinitionRead</a></span>  </div>
+<div class="param">optIn </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDefinitionOptInReadList"><code>SourceDefinitionOptInReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionOptIns </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionOptInRead">array[SourceDefinitionOptInRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
