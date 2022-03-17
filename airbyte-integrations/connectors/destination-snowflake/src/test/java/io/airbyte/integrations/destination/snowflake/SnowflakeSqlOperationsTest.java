@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,4 +52,5 @@ class SnowflakeSqlOperationsTest {
     snowflakeSqlOperations.insertRecordsInternal(db, List.of(new AirbyteRecordMessage()), SCHEMA_NAME, TABLE_NAME);
     verify(db, times(1)).execute(any(CheckedConsumer.class));
   }
+
 }
