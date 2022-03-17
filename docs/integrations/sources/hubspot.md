@@ -59,9 +59,9 @@ Depending on the type of engagement, different properties will be set for that o
 
 **Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
-## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
+## Getting Started
 
-#### Requirements
+#### Requirements \(Airbyte Open-Source\)
 
 * HubSpot Account
 * API or OAuth2.0 credentials
@@ -72,6 +72,16 @@ HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 {% endhint %}
 
 To obtain the API key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an API key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+
+#### Requirements \(Airbyte Cloud\)
+
+* HubSpot Account
+* OAuth2.0 credentials
+* [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
+
+{% hint style="info" %}
+HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+{% endhint %}
 
 ## Rate Limiting & Performance
 
@@ -121,7 +131,6 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.49  | 2022-03-17 | [11218](https://github.com/airbytehq/airbyte/pull/11218) | Anchor hyperlink in input configuration                                                                                                        |
 | 0.1.48  | 2022-03-16 | [11105](https://github.com/airbytehq/airbyte/pull/11105) | Fix float numbers, upd docs                                                                                                                    |
 | 0.1.47  | 2022-03-15 | [11121](https://github.com/airbytehq/airbyte/pull/11121) | Add partition keys where appropriate                                                                                                           |
 | 0.1.46  | 2022-03-14 | [10700](https://github.com/airbytehq/airbyte/pull/10700) | Handle 10k+ records reading in Hubspot streams                                                                                                 |
