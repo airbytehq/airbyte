@@ -7003,12 +7003,6 @@
                 \ AWS."
               default: ""
               type: "string"
-            use_aws_default_credential_provider_chain:
-              title: "Use Aws default credential provider chain"
-              description: "Use default AWS credential provider chain (such as EC2\ 
-                \ instance profile). Leave the Access Key ID and Secret Access Key\
-                \ blank if setting this to true."
-              type: "boolean"
             use_ssl:
               title: "Use Ssl"
               description: "Is remote server using secure SSL/TLS connection"
