@@ -8,14 +8,10 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 
-public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> implements AutoCloseable {
+public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
-  public static boolean isAlive;
+  public static boolean isAlive; // used for refresh Oauth token thread
 
-  @Override
-  public void close() throws Exception {
-    shutDown();
-  }
 
   enum DestinationType {
     COPY_S3,
@@ -31,9 +27,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     new IntegrationRunner(destination).run(args);
-  }
-
-  private static void shutDown(){
     isAlive = false;
   }
 

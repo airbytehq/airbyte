@@ -21,6 +21,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +60,8 @@ public class SnowflakeDatabase {
     final Properties properties = new Properties();
 
     final JsonNode credentials = config.get("credentials");
-    if (credentials != null && credentials.has("auth_type") && "Client".equals(credentials.get("auth_type").asText())) {
+    if (credentials != null && credentials.has("auth_type") && "Client".equals(
+        credentials.get("auth_type").asText())) {
       LOGGER.info("OAuth login mode is used");
       // OAuth login option is selected on UI
       final String accessToken;
@@ -82,14 +84,15 @@ public class SnowflakeDatabase {
       properties.put("username", username);
       SnowflakeDestination.isAlive = true; //is used to enable another thread to refresh oauth token
 
-    } else if(credentials != null && credentials.has("password")) {
+    } else if (credentials != null && credentials.has("password")) {
       LOGGER.info("User/password login mode is used");
       // Username and pass login option is selected on UI
       dataSource.setUsername(username);
       dataSource.setPassword(credentials.get("password").asText());
 
     } else {
-      LOGGER.warn("Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
+      LOGGER.warn(
+          "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
       // case to keep the backward compatibility
       dataSource.setUsername(username);
       dataSource.setPassword(config.get("password").asText());
@@ -125,9 +128,9 @@ public class SnowflakeDatabase {
   }
 
   private static String getAccessTokenUsingRefreshToken(final String hostName,
-                                                        final String clientId,
-                                                        final String clientSecret,
-                                                        final String refreshCode)
+      final String clientId,
+      final String clientSecret,
+      final String refreshCode)
       throws IOException {
     final var refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName);
     final Map<String, String> requestBody = new HashMap<>();
@@ -147,7 +150,7 @@ public class SnowflakeDatabase {
           .uri(URI.create(refreshTokenUri))
           .header("Content-Type", "application/x-www-form-urlencoded")
           .header("Accept", "application/json")
-          .header("Authorization", "Basic " +  new String(authorization, StandardCharsets.UTF_8))
+          .header("Authorization", "Basic " + new String(authorization, StandardCharsets.UTF_8))
           .build();
 
       final HttpResponse<String> response = httpClient.send(request,
@@ -173,6 +176,7 @@ public class SnowflakeDatabase {
   private static class DbConfigurationLoader extends Thread {
 
     private final HikariDataSource hikariDataSource;
+    LocalTime timeToCountFrom = LocalTime.now();
 
     public DbConfigurationLoader(HikariDataSource hikariDataSource) {
       this.hikariDataSource = hikariDataSource;
@@ -181,19 +185,27 @@ public class SnowflakeDatabase {
     @Override
     public void run() {
       LOGGER.info("Refresh token thread's started");
+
       while (SnowflakeDestination.isAlive) {
-        var properties = hikariDataSource.getDataSourceProperties();
-        try {
-          var token = getAccessTokenUsingRefreshToken(properties.getProperty("host"),
-              properties.getProperty("client_id"), properties.getProperty("client_secret"),
-              properties.getProperty("refresh_token"));
-          properties.setProperty("token", token);
-          LOGGER.info("New refresh token has been obtained");
-        } catch (IOException e) {
-          LOGGER.error("Failed to obtain a fresh accessToken:" + e);
+        // refresh token every 7 minutes
+        if (LocalTime.now().plusMinutes(PAUSE_BETWEEN_TOKEN_REFRESH_MIN).isAfter(timeToCountFrom)) {
+          var properties = hikariDataSource.getDataSourceProperties();
+          try {
+            var token = getAccessTokenUsingRefreshToken(properties.getProperty("host"),
+                properties.getProperty("client_id"), properties.getProperty("client_secret"),
+                properties.getProperty("refresh_token"));
+            properties.setProperty("token", token);
+
+            timeToCountFrom = LocalTime.now();
+            LOGGER.info("New refresh token has been obtained");
+          } catch (IOException e) {
+            LOGGER.error("Failed to obtain a fresh accessToken:" + e);
+          }
         }
+
+        // made some pause to do not use much resources, but if set it higher - then some processes will fail by timeout errors
         try {
-          TimeUnit.MINUTES.sleep(PAUSE_BETWEEN_TOKEN_REFRESH_MIN);
+          TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
