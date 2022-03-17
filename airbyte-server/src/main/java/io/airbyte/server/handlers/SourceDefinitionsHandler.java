@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInReadList;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
@@ -35,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -116,6 +118,23 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionReadList listLatestSourceDefinitions() {
     return toSourceDefinitionReadList(getLatestSources());
+  }
+
+  public SourceDefinitionOptInReadList listSourceDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardSourceDefinition, Boolean>> standardSourceDefinitionBooleanMap =
+        configRepository.listGrantableSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toSourceDefinitionOptInReadList(standardSourceDefinitionBooleanMap);
+  }
+
+  private static SourceDefinitionOptInReadList toSourceDefinitionOptInReadList(
+                                                                               final List<Entry<StandardSourceDefinition, Boolean>> defs) {
+    final List<SourceDefinitionOptInRead> reads = defs.stream()
+        .map(entry -> new SourceDefinitionOptInRead()
+            .sourceDefinition(buildSourceDefinitionRead(entry.getKey()))
+            .optIn(entry.getValue()))
+        .collect(Collectors.toList());
+    return new SourceDefinitionOptInReadList().sourceDefinitionOptIns(reads);
   }
 
   private List<StandardSourceDefinition> getLatestSources() {

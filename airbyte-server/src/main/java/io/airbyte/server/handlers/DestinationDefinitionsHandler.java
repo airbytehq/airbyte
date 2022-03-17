@@ -9,6 +9,7 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
@@ -35,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -120,6 +122,23 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return toDestinationDefinitionReadList(getLatestDestinations());
+  }
+
+  public DestinationDefinitionOptInReadList listDestinationDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardDestinationDefinition, Boolean>> standardDestinationDefinitionBooleanMap =
+        configRepository.listGrantableDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toDestinationDefinitionOptInReadList(standardDestinationDefinitionBooleanMap);
+  }
+
+  private static DestinationDefinitionOptInReadList toDestinationDefinitionOptInReadList(
+                                                                                         final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
+    final List<DestinationDefinitionOptInRead> reads = defs.stream()
+        .map(entry -> new DestinationDefinitionOptInRead()
+            .destinationDefinition(buildDestinationDefinitionRead(entry.getKey()))
+            .optIn(entry.getValue()))
+        .collect(Collectors.toList());
+    return new DestinationDefinitionOptInReadList().destinationDefinitionOptIns(reads);
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {

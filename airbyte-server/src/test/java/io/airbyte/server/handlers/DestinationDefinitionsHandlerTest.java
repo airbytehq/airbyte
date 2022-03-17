@@ -16,6 +16,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInRead;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
@@ -42,6 +44,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,6 +142,56 @@ class DestinationDefinitionsHandlerTest {
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
         actualDestinationDefinitionReadList.getDestinationDefinitions());
+  }
+
+  @Test
+  @DisplayName("listDestinationDefinitionOptIns should return the right list")
+  void testListDestinationDefinitionOptIns() throws IOException, URISyntaxException {
+    final StandardDestinationDefinition destinationDefinition2 = generateDestinationDefinition();
+
+    when(configRepository.listGrantableDestinationDefinitions(workspaceId, false)).thenReturn(
+        Lists.newArrayList(
+            Map.entry(destinationDefinition, false),
+            Map.entry(destinationDefinition2, true)));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition2.getDestinationDefinitionId())
+        .name(destinationDefinition2.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead1 =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead1).optIn(false);
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead2 =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead2).optIn(true);
+
+    final DestinationDefinitionOptInReadList actualDestinationDefinitionOptInReadList =
+        destinationDefinitionsHandler.listDestinationDefinitionOptIns(new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(
+        Lists.newArrayList(expectedDestinationDefinitionOptInRead1, expectedDestinationDefinitionOptInRead2),
+        actualDestinationDefinitionOptInReadList.getDestinationDefinitionOptIns());
   }
 
   @Test
