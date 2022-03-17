@@ -186,6 +186,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .icon(destination.getIcon())
+        .workspaceId(workspaceId)
         .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
@@ -208,7 +209,11 @@ class DestinationDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardDestinationDefinition(destination
         .withReleaseDate(null)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM));
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        destination.getDestinationDefinitionId(),
+        workspaceId);
   }
 
   @Test

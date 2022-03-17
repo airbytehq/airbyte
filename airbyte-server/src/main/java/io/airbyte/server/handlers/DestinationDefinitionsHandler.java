@@ -152,10 +152,13 @@ public class DestinationDefinitionsHandler {
         .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
+    configRepository.writeActorDefinitionWorkspaceGrant(id, destinationDefCreate.getWorkspaceId());
 
     return buildDestinationDefinitionRead(destinationDefinition);
   }

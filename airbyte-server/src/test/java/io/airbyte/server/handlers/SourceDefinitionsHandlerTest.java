@@ -184,6 +184,7 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .icon(sourceDefinition.getIcon())
+        .workspaceId(workspaceId)
         .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
@@ -204,8 +205,13 @@ class SourceDefinitionsHandlerTest {
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository)
-        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+    verify(configRepository).writeStandardSourceDefinition(sourceDefinition
+        .withReleaseDate(null)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        sourceDefinition.getSourceDefinitionId(),
+        workspaceId);
   }
 
   @Test

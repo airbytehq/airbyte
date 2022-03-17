@@ -145,10 +145,13 @@ public class SourceDefinitionsHandler {
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
+    configRepository.writeActorDefinitionWorkspaceGrant(id, sourceDefinitionCreate.getWorkspaceId());
 
     return buildSourceDefinitionRead(sourceDefinition);
   }
