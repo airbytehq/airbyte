@@ -91,8 +91,6 @@ public class JobNotifier {
       final String jobDescription =
           String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
       final String logUrl = connectionPageUrl + connectionId;
-      // final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      // final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
@@ -157,10 +155,6 @@ public class JobNotifier {
   public void successJob(final Job job) {
     notifyJob(null, SUCCESS_NOTIFICATION, job);
   }
-
-  // public void alertJob(final String alertMessage, final Job job) {
-  // notifyJobByEmail(alertMessage, CONNECTION_DISABLED_NOTIFICATION, job);
-  // }
 
   protected NotificationClient getNotificationClient(final Notification notification) {
     return NotificationClient.createNotificationClient(notification);

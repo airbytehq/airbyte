@@ -52,9 +52,6 @@ public class EmailNotificationClient extends NotificationClient {
                                           final String jobDescription,
                                           final String logUrl)
       throws IOException, InterruptedException {
-    // send email with template, probably more details about the connection other than ID (what else
-    // does it need?)
-    //
     final String templatePath = "customerio/auto_disable_notification_template.json";
     // email set twice, first to specify who to send to, and second to re-use as an identifier
     return notifyTemplateMessage(templatePath, email, email, sourceConnector, destinationConnector, jobDescription, logUrl);
