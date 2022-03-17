@@ -13,7 +13,6 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -75,4 +74,5 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
   protected Stream<Arguments> provideParameters() {
     return Stream.of(Arguments.of("postgres", "\"your_schema_name\"", 100, 2, 240, 1000));
   }
+
 }
