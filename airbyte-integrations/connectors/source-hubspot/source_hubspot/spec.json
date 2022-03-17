@@ -47,7 +47,7 @@
               },
               "client_id": {
                 "title": "Client ID",
-                "description": "The Client ID of your HubSpot developer application. See our <a href=\"https://docs.airbyte.com/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this id.",
+                "description": "The Client ID of your HubSpot developer application. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this id.",
                 "type": "string",
                 "examples": [
                   "123456789000"
@@ -55,7 +55,7 @@
               },
               "client_secret": {
                 "title": "Client Secret",
-                "description": "The Client Secret of your HubSpot developer application. See our <a href=\"https://docs.airbyte.com/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this secret.",
+                "description": "The Client Secret of your HubSpot developer application. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this secret.",
                 "type": "string",
                 "examples": [
                   "secret"
@@ -64,7 +64,7 @@
               },
               "refresh_token": {
                 "title": "Refresh Token",
-                "description": "Refresh Token to renew the expired Access Token. See our <a href=\"https://docs.airbyte.com/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help generating the token.",
+                "description": "Refresh Token to renew the expired Access Token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help generating the token.",
                 "type": "string",
                 "examples": [
                   "refresh_token"
@@ -94,7 +94,7 @@
               },
               "api_key": {
                 "title": "API key",
-                "description": "HubSpot API Key. See our <a href=\"https://docs.airbyte.com/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this key.",
+                "description": "HubSpot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot#getting-started-airbyte-open-source-airbyte-cloud\">docs</a> if you need help finding this key.",
                 "type": "string",
                 "airbyte_secret": true
               }
