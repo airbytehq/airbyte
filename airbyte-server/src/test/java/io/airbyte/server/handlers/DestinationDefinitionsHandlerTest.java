@@ -18,6 +18,7 @@ import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionOptInRead;
 import io.airbyte.api.model.DestinationDefinitionOptInReadList;
+import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
@@ -192,6 +193,39 @@ class DestinationDefinitionsHandlerTest {
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionOptInRead1, expectedDestinationDefinitionOptInRead2),
         actualDestinationDefinitionOptInReadList.getDestinationDefinitionOptIns());
+  }
+
+  @Test
+  @DisplayName("createDestinationDefinitionOptIn should correctly create a DestinationDefinitionOptInRead")
+  void testCreateDestinationDefinitionOptIn() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(destinationDefinition);
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead).optIn(true);
+
+    final DestinationDefinitionOptInRead actualDestinationDefinitionOptInRead =
+        destinationDefinitionsHandler.createDestinationDefinitionOptIn(new DestinationDefinitionOptInUpdate()
+            .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+            .workspaceId(workspaceId));
+
+    assertEquals(expectedDestinationDefinitionOptInRead, actualDestinationDefinitionOptInRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId());
   }
 
   @Test

@@ -337,7 +337,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionOptInRead createSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
-    return null;
+    return execute(() -> sourceDefinitionsHandler.createSourceDefinitionOptIn(sourceDefinitionOptInUpdate));
   }
 
   @Override
@@ -499,7 +499,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionOptInRead createDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.createDestinationDefinitionOptIn(destinationDefinitionOptInUpdate));
   }
 
   @Override

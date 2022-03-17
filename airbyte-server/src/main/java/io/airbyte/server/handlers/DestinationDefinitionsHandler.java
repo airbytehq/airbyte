@@ -9,7 +9,9 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInRead;
 import io.airbyte.api.model.DestinationDefinitionOptInReadList;
+import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
@@ -139,6 +141,19 @@ public class DestinationDefinitionsHandler {
             .optIn(entry.getValue()))
         .collect(Collectors.toList());
     return new DestinationDefinitionOptInReadList().destinationDefinitionOptIns(reads);
+  }
+
+  public DestinationDefinitionOptInRead createDestinationDefinitionOptIn(
+                                                                         final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionOptInUpdate.getDestinationDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        destinationDefinitionOptInUpdate.getWorkspaceId(),
+        destinationDefinitionOptInUpdate.getDestinationDefinitionId());
+    return new DestinationDefinitionOptInRead()
+        .destinationDefinition(buildDestinationDefinitionRead(standardDestinationDefinition))
+        .optIn(true);
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {

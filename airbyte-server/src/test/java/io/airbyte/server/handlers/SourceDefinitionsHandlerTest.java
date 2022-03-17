@@ -20,6 +20,7 @@ import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionOptInRead;
 import io.airbyte.api.model.SourceDefinitionOptInReadList;
+import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
@@ -191,6 +192,39 @@ class SourceDefinitionsHandlerTest {
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionOptInRead1, expectedSourceDefinitionOptInRead2),
         actualSourceDefinitionOptInReadList.getSourceDefinitionOptIns());
+  }
+
+  @Test
+  @DisplayName("createSourceDefinitionOptIn should correctly create a SourceDefinitionOptInRead")
+  void testCreateSourceDefinitionOptIn() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionOptInRead expectedSourceDefinitionOptInRead =
+        new SourceDefinitionOptInRead().sourceDefinition(expectedSourceDefinitionRead).optIn(true);
+
+    final SourceDefinitionOptInRead actualSourceDefinitionOptInRead =
+        sourceDefinitionsHandler.createSourceDefinitionOptIn(new SourceDefinitionOptInUpdate()
+            .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+            .workspaceId(workspaceId));
+
+    assertEquals(expectedSourceDefinitionOptInRead, actualSourceDefinitionOptInRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId());
   }
 
   @Test

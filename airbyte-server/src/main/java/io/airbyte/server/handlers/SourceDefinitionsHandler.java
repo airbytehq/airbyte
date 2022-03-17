@@ -10,7 +10,9 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInRead;
 import io.airbyte.api.model.SourceDefinitionOptInReadList;
+import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
@@ -135,6 +137,19 @@ public class SourceDefinitionsHandler {
             .optIn(entry.getValue()))
         .collect(Collectors.toList());
     return new SourceDefinitionOptInReadList().sourceDefinitionOptIns(reads);
+  }
+
+  public SourceDefinitionOptInRead createSourceDefinitionOptIn(
+                                                               final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionOptInUpdate.getSourceDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        sourceDefinitionOptInUpdate.getWorkspaceId(),
+        sourceDefinitionOptInUpdate.getSourceDefinitionId());
+    return new SourceDefinitionOptInRead()
+        .sourceDefinition(buildSourceDefinitionRead(standardSourceDefinition))
+        .optIn(true);
   }
 
   private List<StandardSourceDefinition> getLatestSources() {
