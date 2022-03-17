@@ -41,22 +41,6 @@ public class Exceptions {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
   }
 
-  /**
-   * Return a Runnable that logs anonymous function exceptions.
-   *
-   * @param voidCallable
-   * @return
-   */
-  public static Runnable toSwallowExceptionRunnable(final Procedure voidCallable) {
-    return () -> {
-      try {
-        voidCallable.call();
-      } catch (Exception e) {
-        log.error("Exception: ", e);
-      }
-    };
-  }
-
   public static void toIllegalState(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, IllegalStateException::new);
   }

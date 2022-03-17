@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -25,11 +24,8 @@ import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.AirbyteCatalog;
 import io.airbyte.api.client.model.AirbyteStream;
-import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
-import io.airbyte.api.client.model.AirbyteStreamConfiguration;
 import io.airbyte.api.client.model.AttemptInfoRead;
 import io.airbyte.api.client.model.AttemptStatus;
-import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
@@ -37,7 +33,6 @@ import io.airbyte.api.client.model.ConnectionSchedule;
 import io.airbyte.api.client.model.ConnectionState;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionUpdate;
-import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
@@ -338,193 +333,205 @@ public class AcceptanceTests {
     assertNotNull(spec.getConnectionSpecification());
   }
 
-//  @Test
-//  @Order(1)
-//  @DisabledIfEnvironmentVariable(named = "KUBE",
-//                                 matches = "true")
-//  public void testCreateDestination() throws ApiException {
-//    final UUID destinationDefId = getDestinationDefId();
-//    final JsonNode destinationConfig = getDestinationDbConfig();
-//    final String name = "AccTestDestinationDb-" + UUID.randomUUID();
-//
-//    final DestinationRead createdDestination = createDestination(
-//        name,
-//        workspaceId,
-//        destinationDefId,
-//        destinationConfig);
-//
-//    assertEquals(name, createdDestination.getName());
-//    assertEquals(destinationDefId, createdDestination.getDestinationDefinitionId());
-//    assertEquals(workspaceId, createdDestination.getWorkspaceId());
-//    assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
-//  }
-//
-//  @Test
-//  @Order(2)
-//  @DisabledIfEnvironmentVariable(named = "KUBE",
-//                                 matches = "true")
-//  public void testDestinationCheckConnection() throws ApiException {
-//    final UUID destinationId = createDestination().getDestinationId();
-//
-//    final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
-//        .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
-//        .getStatus();
-//
-//    assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
-//  }
-//
-//  @Test
-//  @Order(3)
-//  @DisabledIfEnvironmentVariable(named = "KUBE",
-//                                 matches = "true")
-//  public void testCreateSource() throws ApiException {
-//    final String dbName = "acc-test-db";
-//    final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
-//    final JsonNode sourceDbConfig = getSourceDbConfig();
-//
-//    final SourceRead response = createSource(
-//        dbName,
-//        workspaceId,
-//        postgresSourceDefinitionId,
-//        sourceDbConfig);
-//
-//    final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
-//    // expect replacement of secret with magic string.
-//    ((ObjectNode) expectedConfig).put("password", "**********");
-//    assertEquals(dbName, response.getName());
-//    assertEquals(workspaceId, response.getWorkspaceId());
-//    assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
-//    assertEquals(expectedConfig, response.getConnectionConfiguration());
-//  }
-//
-//  @Test
-//  @Order(4)
-//  @DisabledIfEnvironmentVariable(named = "KUBE",
-//                                 matches = "true")
-//  public void testSourceCheckConnection() throws ApiException {
-//    final UUID sourceId = createPostgresSource().getSourceId();
-//
-//    final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
-//
-//    assertEquals(
-//        CheckConnectionRead.StatusEnum.SUCCEEDED,
-//        checkConnectionRead.getStatus(),
-//        checkConnectionRead.getMessage());
-//  }
-//
-//  @Test
-//  @Order(5)
-//  public void testDiscoverSourceSchema() throws ApiException {
-//    final UUID sourceId = createPostgresSource().getSourceId();
-//
-//    final AirbyteCatalog actual = discoverSourceSchema(sourceId);
-//
-//    final Map<String, Map<String, DataType>> fields = ImmutableMap.of(
-//        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
-//        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
-//    final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
-//        .put("type", "object")
-//        .put("properties", fields)
-//        .build());
-//    final AirbyteStream stream = new AirbyteStream()
-//        .name(STREAM_NAME)
-//        .namespace("public")
-//        .jsonSchema(jsonSchema)
-//        .defaultCursorField(Collections.emptyList())
-//        .sourceDefinedPrimaryKey(Collections.emptyList())
-//        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
-//    final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
-//        .syncMode(SyncMode.FULL_REFRESH)
-//        .cursorField(Collections.emptyList())
-//        .destinationSyncMode(DestinationSyncMode.APPEND)
-//        .primaryKey(Collections.emptyList())
-//        .aliasName(STREAM_NAME.replace(".", "_"))
-//        .selected(true);
-//    final AirbyteCatalog expected = new AirbyteCatalog()
-//        .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-//            .stream(stream)
-//            .config(streamConfig)));
-//
-//    assertEquals(expected, actual);
-//  }
-//
-//  @Test
-//  @Order(6)
-//  @DisabledIfEnvironmentVariable(named = "KUBE",
-//                                 matches = "true")
-//  public void testCreateConnection() throws ApiException {
-//    final UUID sourceId = createPostgresSource().getSourceId();
-//    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-//    final UUID destinationId = createDestination().getDestinationId();
-//    final UUID operationId = createOperation().getOperationId();
-//    final String name = "test-connection-" + UUID.randomUUID();
-//    final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
-//    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-//    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-//    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-//    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule);
-//
-//    assertEquals(sourceId, createdConnection.getSourceId());
-//    assertEquals(destinationId, createdConnection.getDestinationId());
-//    assertEquals(1, createdConnection.getOperationIds().size());
-//    assertEquals(operationId, createdConnection.getOperationIds().get(0));
-//    assertEquals(catalog, createdConnection.getSyncCatalog());
-//    assertEquals(schedule, createdConnection.getSchedule());
-//    assertEquals(name, createdConnection.getName());
-//  }
-//
-//  @Test
-//  @Order(7)
-//  public void testManualSync() throws Exception {
-//    final String connectionName = "test-connection";
-//    final UUID sourceId = createPostgresSource().getSourceId();
-//    final UUID destinationId = createDestination().getDestinationId();
-//    final UUID operationId = createOperation().getOperationId();
-//    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-//    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-//    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-//    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-//    final UUID connectionId =
-//        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-//    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-//    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-//    assertSourceAndDestinationDbInSync(false);
-//  }
-//
-//  @Test
-//  @Order(8)
-//  public void testCancelSync() throws Exception {
-//    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
-//
-//    final SourceRead source = createSource(
-//        "E2E Test Source -" + UUID.randomUUID(),
-//        workspaceId,
-//        sourceDefinition.getSourceDefinitionId(),
-//        Jsons.jsonNode(ImmutableMap.builder()
-//            .put("type", "INFINITE_FEED")
-//            .put("message_interval", 1000)
-//            .put("max_records", Duration.ofMinutes(5).toSeconds())
-//            .build()));
-//
-//    final String connectionName = "test-connection";
-//    final UUID sourceId = source.getSourceId();
-//    final UUID destinationId = createDestination().getDestinationId();
-//    final UUID operationId = createOperation().getOperationId();
-//    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-//    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-//    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-//    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-//    final UUID connectionId =
-//        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-//    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-//
-//    // wait to get out of PENDING
-//    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
-//    assertEquals(JobStatus.RUNNING, jobRead.getStatus());
-//
-//    final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
-//    assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
-//  }
+  // @Test
+  // @Order(1)
+  // @DisabledIfEnvironmentVariable(named = "KUBE",
+  // matches = "true")
+  // public void testCreateDestination() throws ApiException {
+  // final UUID destinationDefId = getDestinationDefId();
+  // final JsonNode destinationConfig = getDestinationDbConfig();
+  // final String name = "AccTestDestinationDb-" + UUID.randomUUID();
+  //
+  // final DestinationRead createdDestination = createDestination(
+  // name,
+  // workspaceId,
+  // destinationDefId,
+  // destinationConfig);
+  //
+  // assertEquals(name, createdDestination.getName());
+  // assertEquals(destinationDefId, createdDestination.getDestinationDefinitionId());
+  // assertEquals(workspaceId, createdDestination.getWorkspaceId());
+  // assertEquals(getDestinationDbConfigWithHiddenPassword(),
+  // createdDestination.getConnectionConfiguration());
+  // }
+  //
+  // @Test
+  // @Order(2)
+  // @DisabledIfEnvironmentVariable(named = "KUBE",
+  // matches = "true")
+  // public void testDestinationCheckConnection() throws ApiException {
+  // final UUID destinationId = createDestination().getDestinationId();
+  //
+  // final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
+  // .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
+  // .getStatus();
+  //
+  // assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
+  // }
+  //
+  // @Test
+  // @Order(3)
+  // @DisabledIfEnvironmentVariable(named = "KUBE",
+  // matches = "true")
+  // public void testCreateSource() throws ApiException {
+  // final String dbName = "acc-test-db";
+  // final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
+  // final JsonNode sourceDbConfig = getSourceDbConfig();
+  //
+  // final SourceRead response = createSource(
+  // dbName,
+  // workspaceId,
+  // postgresSourceDefinitionId,
+  // sourceDbConfig);
+  //
+  // final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
+  // // expect replacement of secret with magic string.
+  // ((ObjectNode) expectedConfig).put("password", "**********");
+  // assertEquals(dbName, response.getName());
+  // assertEquals(workspaceId, response.getWorkspaceId());
+  // assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
+  // assertEquals(expectedConfig, response.getConnectionConfiguration());
+  // }
+  //
+  // @Test
+  // @Order(4)
+  // @DisabledIfEnvironmentVariable(named = "KUBE",
+  // matches = "true")
+  // public void testSourceCheckConnection() throws ApiException {
+  // final UUID sourceId = createPostgresSource().getSourceId();
+  //
+  // final CheckConnectionRead checkConnectionRead =
+  // apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
+  //
+  // assertEquals(
+  // CheckConnectionRead.StatusEnum.SUCCEEDED,
+  // checkConnectionRead.getStatus(),
+  // checkConnectionRead.getMessage());
+  // }
+  //
+  // @Test
+  // @Order(5)
+  // public void testDiscoverSourceSchema() throws ApiException {
+  // final UUID sourceId = createPostgresSource().getSourceId();
+  //
+  // final AirbyteCatalog actual = discoverSourceSchema(sourceId);
+  //
+  // final Map<String, Map<String, DataType>> fields = ImmutableMap.of(
+  // COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
+  // COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
+  // final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
+  // .put("type", "object")
+  // .put("properties", fields)
+  // .build());
+  // final AirbyteStream stream = new AirbyteStream()
+  // .name(STREAM_NAME)
+  // .namespace("public")
+  // .jsonSchema(jsonSchema)
+  // .defaultCursorField(Collections.emptyList())
+  // .sourceDefinedPrimaryKey(Collections.emptyList())
+  // .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  // final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
+  // .syncMode(SyncMode.FULL_REFRESH)
+  // .cursorField(Collections.emptyList())
+  // .destinationSyncMode(DestinationSyncMode.APPEND)
+  // .primaryKey(Collections.emptyList())
+  // .aliasName(STREAM_NAME.replace(".", "_"))
+  // .selected(true);
+  // final AirbyteCatalog expected = new AirbyteCatalog()
+  // .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
+  // .stream(stream)
+  // .config(streamConfig)));
+  //
+  // assertEquals(expected, actual);
+  // }
+  //
+  // @Test
+  // @Order(6)
+  // @DisabledIfEnvironmentVariable(named = "KUBE",
+  // matches = "true")
+  // public void testCreateConnection() throws ApiException {
+  // final UUID sourceId = createPostgresSource().getSourceId();
+  // final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+  // final UUID destinationId = createDestination().getDestinationId();
+  // final UUID operationId = createOperation().getOperationId();
+  // final String name = "test-connection-" + UUID.randomUUID();
+  // final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
+  // final SyncMode syncMode = SyncMode.FULL_REFRESH;
+  // final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+  // catalog.getStreams().forEach(s ->
+  // s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+  // final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId,
+  // List.of(operationId), catalog, schedule);
+  //
+  // assertEquals(sourceId, createdConnection.getSourceId());
+  // assertEquals(destinationId, createdConnection.getDestinationId());
+  // assertEquals(1, createdConnection.getOperationIds().size());
+  // assertEquals(operationId, createdConnection.getOperationIds().get(0));
+  // assertEquals(catalog, createdConnection.getSyncCatalog());
+  // assertEquals(schedule, createdConnection.getSchedule());
+  // assertEquals(name, createdConnection.getName());
+  // }
+  //
+  // @Test
+  // @Order(7)
+  // public void testManualSync() throws Exception {
+  // final String connectionName = "test-connection";
+  // final UUID sourceId = createPostgresSource().getSourceId();
+  // final UUID destinationId = createDestination().getDestinationId();
+  // final UUID operationId = createOperation().getOperationId();
+  // final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+  // final SyncMode syncMode = SyncMode.FULL_REFRESH;
+  // final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+  // catalog.getStreams().forEach(s ->
+  // s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+  // final UUID connectionId =
+  // createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog,
+  // null).getConnectionId();
+  // final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new
+  // ConnectionIdRequestBody().connectionId(connectionId));
+  // waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+  // assertSourceAndDestinationDbInSync(false);
+  // }
+  //
+  // @Test
+  // @Order(8)
+  // public void testCancelSync() throws Exception {
+  // final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+  //
+  // final SourceRead source = createSource(
+  // "E2E Test Source -" + UUID.randomUUID(),
+  // workspaceId,
+  // sourceDefinition.getSourceDefinitionId(),
+  // Jsons.jsonNode(ImmutableMap.builder()
+  // .put("type", "INFINITE_FEED")
+  // .put("message_interval", 1000)
+  // .put("max_records", Duration.ofMinutes(5).toSeconds())
+  // .build()));
+  //
+  // final String connectionName = "test-connection";
+  // final UUID sourceId = source.getSourceId();
+  // final UUID destinationId = createDestination().getDestinationId();
+  // final UUID operationId = createOperation().getOperationId();
+  // final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+  // final SyncMode syncMode = SyncMode.FULL_REFRESH;
+  // final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+  // catalog.getStreams().forEach(s ->
+  // s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+  // final UUID connectionId =
+  // createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog,
+  // null).getConnectionId();
+  // final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new
+  // ConnectionIdRequestBody().connectionId(connectionId));
+  //
+  // // wait to get out of PENDING
+  // final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(),
+  // connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+  // assertEquals(JobStatus.RUNNING, jobRead.getStatus());
+  //
+  // final var resp = apiClient.getJobsApi().cancelJob(new
+  // JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+  // assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
+  // }
 
   @Test
   @Order(9)

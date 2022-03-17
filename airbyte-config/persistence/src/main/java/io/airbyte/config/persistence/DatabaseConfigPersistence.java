@@ -1668,17 +1668,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalog>> actorCatalogWithMetadata = listActorCatalogWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG.name(),
-          standardSyncStateWithMetadata
+          actorCatalogWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalogFetchEvent>> actorCatalogFetchEventWithMetadata = listActorCatalogFetchEventWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogFetchEventWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT.name(),
-          standardSyncStateWithMetadata
+          actorCatalogFetchEventWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));

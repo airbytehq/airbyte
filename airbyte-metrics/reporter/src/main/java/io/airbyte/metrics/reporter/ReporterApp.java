@@ -20,7 +20,7 @@ public class ReporterApp {
 
   public static Database configDatabase;
 
-  public static void main(final String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException {
     final Configs configs = new EnvConfigs();
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));

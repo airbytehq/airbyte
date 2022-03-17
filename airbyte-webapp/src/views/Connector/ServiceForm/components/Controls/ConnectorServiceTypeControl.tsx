@@ -6,13 +6,7 @@ import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
 
-import {
-  ControlLabels,
-  defaultDataItemSort,
-  DropDown,
-  DropDownRow,
-  ImageBlock,
-} from "components";
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
 import {
@@ -32,6 +26,8 @@ import {
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { naturalComparator } from "utils/objects";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -85,6 +81,16 @@ const SingleValueContent = styled(components.SingleValue)`
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+
+/**
+ * Can be used to overwrite the alphabetical order of connectors in the select.
+ * A higher positive number will put the given connector to the top of the list
+ * a low negative number to the end of it.
+ */
+const ORDER_OVERWRITE: Record<string, number> = {
+  // Push Google Sheets connector to top
+  "71607ba1-c0ac-4799-8049-7f4b90dd50f7": 1,
+};
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
@@ -167,6 +173,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -197,7 +204,14 @@ const ConnectorServiceTypeControl: React.FC<{
           img: <ImageBlock img={item.icon} />,
           releaseStage: item.releaseStage,
         }))
-        .sort(defaultDataItemSort),
+        .sort((a, b) => {
+          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
+          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          // If they have different priority use the higher priority first, otherwise use the label
+          return priorityA !== priorityB
+            ? priorityB - priorityA
+            : naturalComparator(a.label, b.label);
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
@@ -218,6 +232,14 @@ const ConnectorServiceTypeControl: React.FC<{
     },
     [setValue, onChangeServiceType]
   );
+
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
 
   return (
     <>
@@ -242,6 +264,7 @@ const ConnectorServiceTypeControl: React.FC<{
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (

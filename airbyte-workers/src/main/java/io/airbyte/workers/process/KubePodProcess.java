@@ -102,6 +102,7 @@ public class KubePodProcess extends Process implements KubePod {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
+  public static final String MAIN_CONTAINER_NAME = "main";
   private static final String INIT_CONTAINER_NAME = "init";
   private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
@@ -120,7 +121,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
-  public static final String MAIN_CONTAINER_NAME = "main";
+
   private static final int STDIN_REMOTE_PORT = 9001;
 
   // 143 is the typical SIGTERM exit code.
@@ -150,10 +151,10 @@ public class KubePodProcess extends Process implements KubePod {
   private final CompletableFuture<Integer> exitCodeFuture;
   private final Watch podWatch;
 
-  public static String getPodIP(final KubernetesClient client, final String podName, final String namespace) {
-    final var pod = client.pods().inNamespace(namespace).withName(podName).get();
+  public static String getPodIP(final KubernetesClient client, final String podName, final String podNamespace) {
+    final var pod = client.pods().inNamespace(podNamespace).withName(podName).get();
     if (pod == null) {
-      throw new RuntimeException("Error: unable to find pod!");
+      throw new RuntimeException(prependPodInfo("Error: unable to find pod!", podNamespace, podName));
     }
     return pod.getStatus().getPodIP();
   }
@@ -527,7 +528,14 @@ public class KubePodProcess extends Process implements KubePod {
 
     podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
         exitCodeFuture::complete,
-        exception -> exitCodeFuture.complete(KILLED_EXIT_CODE))); // todo: is there a way to test that this isn't observing events from other pods?
+        exception -> {
+          LOGGER.info(prependPodInfo(
+              String.format("Unable to find pod to retrieve exit value. Defaulting to  value %s. This is expected if the job was cancelled.",
+                  KILLED_EXIT_CODE),
+              namespace, podName));
+
+          exitCodeFuture.complete(KILLED_EXIT_CODE);
+        }));
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -623,13 +631,16 @@ public class KubePodProcess extends Process implements KubePod {
    */
   @Override
   public void destroy() {
-    LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
+    final String podName = podDefinition.getMetadata().getName();
+    final String podNamespace = podDefinition.getMetadata().getNamespace();
+
+    LOGGER.info(prependPodInfo("Destroying Kube process.", podNamespace, podName));
     try {
       fabricClient.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
       exitCodeFuture.complete(KILLED_EXIT_CODE);
     } finally {
       close();
-      LOGGER.info("Destroyed Kube process: {}", podDefinition.getMetadata().getName());
+      LOGGER.info(prependPodInfo("Destroyed Kube process.", podNamespace, podName));
     }
   }
 
@@ -678,7 +689,7 @@ public class KubePodProcess extends Process implements KubePod {
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
-    LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
+    LOGGER.info(prependPodInfo("Closed", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
   }
 
   public static boolean isTerminal(final Pod pod) {
@@ -706,10 +717,15 @@ public class KubePodProcess extends Process implements KubePod {
       try {
         return exitCodeFuture.get();
       } catch (InterruptedException | ExecutionException e) {
-        throw new RuntimeException(e);
+        throw new RuntimeException(
+            prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
+                podDefinition.getMetadata().getNamespace(),
+                podDefinition.getMetadata().getName()));
       }
     } else {
-      throw new IllegalThreadStateException("Kube pod process has not exited yet.");
+      throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.",
+          podDefinition.getMetadata().getNamespace(),
+          podDefinition.getMetadata().getName()));
     }
   }
 
@@ -726,7 +742,10 @@ public class KubePodProcess extends Process implements KubePod {
     // down after Kubernetes resources are shut down, regardless of Kube termination status.
     close();
 
-    LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
+    LOGGER.info(prependPodInfo("Closed all resources for pod",
+        podDefinition.getMetadata().getNamespace(),
+        podDefinition.getMetadata().getName()));
+
     return returnCode;
   }
 
@@ -752,6 +771,10 @@ public class KubePodProcess extends Process implements KubePod {
           .withLimits(limitMap);
     }
     return new ResourceRequirementsBuilder();
+  }
+
+  private static String prependPodInfo(final String message, final String podNamespace, final String podName) {
+    return String.format("(pod: %s / %s) - %s", podNamespace, podName, message);
   }
 
 }
