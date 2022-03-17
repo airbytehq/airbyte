@@ -61,18 +61,18 @@ Depending on the type of engagement, different properties will be set for that o
 
 ## Getting Started
 
-#### Requirements \(Airbyte Open-Source\)
+### Requirements \(Airbyte Open-Source\)
 
 * HubSpot Account
 * API or OAuth2.0 Credentials (See below)
 
-##### Using API Credentials
+#### Using API Credentials
 
 * API Key
 
 To obtain the API key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an API key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
-##### Using OAuth2.0 Credentials
+#### Using OAuth2.0 Credentials
 
 * Client ID
 * Client Secret
@@ -85,7 +85,7 @@ See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-qui
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 {% endhint %}
 
-#### Requirements \(Airbyte Cloud\)
+### Requirements \(Airbyte Cloud\)
 
 * HubSpot Account
 * Client ID
