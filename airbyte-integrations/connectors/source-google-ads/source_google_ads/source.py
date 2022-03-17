@@ -21,6 +21,7 @@ from .streams import (
     AdGroupAdReport,
     AdGroupAds,
     AdGroups,
+    CampaignLabels,
     Campaigns,
     ClickView,
     DisplayKeywordPerformanceReport,
@@ -115,6 +116,7 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_stream_config),
             Accounts(**incremental_stream_config),
             Campaigns(**incremental_stream_config),
+            CampaignLabels(google_api),
             ClickView(**incremental_stream_config),
         ]
 
