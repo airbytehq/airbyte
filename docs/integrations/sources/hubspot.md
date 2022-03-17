@@ -57,7 +57,7 @@ Depending on the type of engagement, different properties will be set for that o
 * A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column.
 * A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
+**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
 ## Getting Started
 
@@ -103,7 +103,7 @@ Example of the output message when trying to read `workflows` stream with missin
 
 ## Required scopes
 
-If you are using Oauth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
+If you are using OAuth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
 
 | Stream | Required Scope |
 | :--- | :--- |
@@ -157,7 +157,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.26  | 2021-11-30 | [8329](https://github.com/airbytehq/airbyte/pull/8329)   | Removed 'skip_dynamic_fields' config param                                                                                                     |
 | 0.1.25  | 2021-11-23 | [8216](https://github.com/airbytehq/airbyte/pull/8216)   | Add skip dynamic fields for testing only                                                                                                       |
 | 0.1.24  | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683)   | Fix name issue 'Hubspot' -> 'HubSpot'                                                                                                          |
-| 0.1.23  | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730)   | Fix oAuth flow schema                                                                                                                          |
+| 0.1.23  | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730)   | Fix OAuth flow schema                                                                                                                          |
 | 0.1.22  | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562)   | Migrate Hubspot source to CDK structure                                                                                                        |
 | 0.1.21  | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405)   | Change of package `import` from `urllib` to `urllib.parse`                                                                                     |
 | 0.1.20  | 2021-10-26 | [7393](https://github.com/airbytehq/airbyte/pull/7393)   | Hotfix for `split_properties` function, add the length of separator symbol `,`(`%2C` in HTTP format) to the checking of the summary URL length |
