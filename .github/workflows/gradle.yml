@@ -39,7 +39,7 @@ jobs:
           # Note, the following glob expression within a filters are ORs.
           filters: |
             backend:
-              - 'airbyte-!(integrations|webapp|webapp-e2e-tests)/**'
+              - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
@@ -48,6 +48,7 @@ jobs:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
+              - 'airbyte-cdk/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'
