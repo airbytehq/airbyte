@@ -114,6 +114,8 @@
 
   "signup.password.minLength": "Password should be at least 6 characters",
   "email.duplicate": "Email already exists",
+  "email.notfound": "Email not found",
+  "email.disabled": "Your account is disabled",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password"
 }

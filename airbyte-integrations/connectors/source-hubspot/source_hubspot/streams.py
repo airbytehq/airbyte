@@ -425,6 +425,7 @@ class Stream(HttpStream, ABC):
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_name.endswith("_id") else target_type
+            field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
             # do not cast empty strings, return None instead to be properly casted.
