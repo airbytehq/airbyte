@@ -12,9 +12,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * High-level interface used by
  * {@link io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}
  *
- * A Record buffer strategy relies on the capacity available of underlying
+ * A Record buffering strategy relies on the capacity available of underlying
  * {@link SerializableBuffer} to determine what to do when consuming a new
- * {@link AirbyteMessage} into the buffer. And when to
+ * {@link AirbyteMessage} into the buffer. It also defines when to flush
+ * such buffers and how to empty them once they fill up.
  *
  */
 public interface BufferingStrategy extends AutoCloseable {
