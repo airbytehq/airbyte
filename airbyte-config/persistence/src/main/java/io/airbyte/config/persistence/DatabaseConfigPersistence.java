@@ -27,7 +27,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
@@ -344,7 +343,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSourceDefinition>> standardSourceDefinitions = new ArrayList<>();
 
     for (final Record record : result) {
-      final StandardSourceDefinition standardSourceDefinition = buildStandardSourceDefinition(record);
+      final StandardSourceDefinition standardSourceDefinition = DbConverter.buildStandardSourceDefinition(record);
       standardSourceDefinitions.add(new ConfigWithMetadata<>(
           record.get(ACTOR_DEFINITION.ID).toString(),
           ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
@@ -353,29 +352,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardSourceDefinition));
     }
     return standardSourceDefinitions;
-  }
-
-  private StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
-    return new StandardSourceDefinition()
-        .withSourceDefinitionId(record.get(ACTOR_DEFINITION.ID))
-        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
-        .withIcon(record.get(ACTOR_DEFINITION.ICON))
-        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
-        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
-        .withName(record.get(ACTOR_DEFINITION.NAME))
-        .withSourceType(record.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
-        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
-        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
-        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
-        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
-        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardSourceDefinition.ReleaseStage.class).orElseThrow())
-        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
-        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
-            ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<StandardDestinationDefinition>> listStandardDestinationDefinitionWithMetadata() throws IOException {
@@ -395,7 +371,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitions = new ArrayList<>();
 
     for (final Record record : result) {
-      final StandardDestinationDefinition standardDestinationDefinition = buildStandardDestinationDefinition(record);
+      final StandardDestinationDefinition standardDestinationDefinition = DbConverter.buildStandardDestinationDefinition(record);
       standardDestinationDefinitions.add(new ConfigWithMetadata<>(
           record.get(ACTOR_DEFINITION.ID).toString(),
           ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
@@ -404,27 +380,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardDestinationDefinition));
     }
     return standardDestinationDefinitions;
-  }
-
-  private StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {
-    return new StandardDestinationDefinition()
-        .withDestinationDefinitionId(record.get(ACTOR_DEFINITION.ID))
-        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
-        .withIcon(record.get(ACTOR_DEFINITION.ICON))
-        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
-        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
-        .withName(record.get(ACTOR_DEFINITION.NAME))
-        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
-        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
-        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
-        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
-        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
-        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
-        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
-            ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<SourceConnection>> listSourceConnectionWithMetadata() throws IOException {
