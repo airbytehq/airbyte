@@ -11,10 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,8 +26,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
+import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -125,10 +123,8 @@ public class SnowflakeDestinationTest {
     return Stream.of(
         arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
-        arguments("insert_config.json", DestinationType.INTERNAL_STAGING)
-    );
+        arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
-
 
   private List<AirbyteMessage> generateTestMessages() {
     return IntStream.range(0, 3)
