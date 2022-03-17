@@ -25,8 +25,9 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
 
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-LAST_END_TIME_KEY = "_last_end_time"
+DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+LAST_END_TIME_KEY: str = "_last_end_time"
+END_OF_STREAM_KEY: str = "end_of_stream"
 
 
 class SourceZendeskException(Exception):
@@ -233,7 +234,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             # start_time must be more than 60 seconds ago
             start_time = now - 61
         params["start_time"] = start_time
-        
+
         return params
 
     def read_records(
@@ -351,8 +352,9 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
             self.prev_start_time = start_time
             return {self.cursor_field: start_time}
 
-
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         if stream_state:
             # use the state value if exists
@@ -399,34 +401,36 @@ class TicketComments(SourceZendeskSupportCursorPaginationStream):
     response_list_name = "ticket_events"
     # nested property inside of `response_list_name`
     responce_target_entity = "child_events"
-    # list of nested entities to include in event from record 
+    # list of nested entities to include in event from record
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
 
     def path(self, **kwargs) -> str:
         return f"incremental/ticket_events"
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         next_page_token = super().next_page_token(response)
-        end_of_stream = response.json().get("end_of_stream", False)        
+        end_of_stream = response.json().get(END_OF_STREAM_KEY, False)
         return None if end_of_stream else next_page_token
-    
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, next_page_token, **kwargs)
         # we need to sideload the comments body, to include them into response
         # https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
         params["include"] = "comment_events"
         return params
-        
+
     def update_event_props(self, record: dict = None, event: dict = None, props: list = None) -> MutableMapping[str, Any]:
         """Update the event mapping with the specified fields from record entity"""
         for prop in props:
             target_prop = record.get(prop)
             event[prop] = target_prop if target_prop else None
         return event
-    
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         records = response.json().get(self.response_list_name) or []
         current_state = stream_state.get(self.cursor_field, {})
@@ -435,7 +439,7 @@ class TicketComments(SourceZendeskSupportCursorPaginationStream):
                 if event.get("event_type") == "Comment":
                     updated_state = event.get(self.cursor_field)
                     # update event with record entities
-                    event = self.update_event_props(record, event, self.list_entities_from_event)      
+                    event = self.update_event_props(record, event, self.list_entities_from_event)
                     if not current_state or updated_state > current_state:
                         yield event
 
