@@ -1407,7 +1407,8 @@ public class AcceptanceTests {
         .name("E2E Test Source")
         .dockerRepository("airbyte/source-e2e-test")
         .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+        .documentationUrl(URI.create("https://example.com"))
+        .workspaceId(workspaceId));
   }
 
   private DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
@@ -1415,7 +1416,8 @@ public class AcceptanceTests {
         .name("E2E Test Destination")
         .dockerRepository("airbyte/destination-e2e-test")
         .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+        .documentationUrl(URI.create("https://example.com"))
+        .workspaceId(workspaceId));
   }
 
   private SourceRead createPostgresSource() throws ApiException {

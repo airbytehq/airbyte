@@ -2118,11 +2118,14 @@ components:
     SourceDefinitionCreate:
       type: object
       required:
+        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
@@ -2402,11 +2405,14 @@ components:
     DestinationDefinitionCreate:
       type: object
       required:
+        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
