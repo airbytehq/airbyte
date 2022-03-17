@@ -56,7 +56,7 @@ class MySqlStressTest extends JdbcStressTest {
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
         .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
+        .put("password", TEST_PASSWORD.call())
         .build());
 
     database = Databases.createDatabase(
