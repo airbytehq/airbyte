@@ -57,7 +57,7 @@ Depending on the type of engagement, different properties will be set for that o
 * A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column.
 * A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
+**Note**: HubSpot API currently only supports `quotes` endpoint using API KEY, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
 ## Getting Started
 
@@ -70,7 +70,7 @@ Depending on the type of engagement, different properties will be set for that o
 
 * API Key
 
-To obtain the API key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an API key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
+To obtain the API key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; API KEY. If you already have an API KEY you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
 #### Using OAuth2.0 Credentials
 
@@ -81,9 +81,7 @@ To obtain the API key for the account, go to settings -&gt; integrations \(under
 
 See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart) if you need help finding these fields
 
-{% hint style="info" %}
-HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+{% hint style="info" %} HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day. {% endhint %}
 
 ### Requirements \(Airbyte Cloud\)
 
@@ -95,9 +93,7 @@ HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 
 See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart) if you need help finding these fields
 
-{% hint style="info" %}
-HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+{% hint style="info" %} HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day. {% endhint %}
 
 ## Rate Limiting & Performance
 
@@ -105,14 +101,14 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 Some streams, such as `workflows` need to be enabled before they can be read using a connector authenticated using an `API KEY`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
-Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
+Example of the output message when trying to read `workflows` stream with missing permissions for the `API KEY`:
 
 ```text
 {
     "type": "LOG",
     "log": {
         "level": "WARN",
-        "message": 'Stream `workflows` cannot be proceed. This API key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
+        "message": 'Stream `workflows` cannot be proceed. This API KEY (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
     }
 }
 ```
