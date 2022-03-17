@@ -53,7 +53,7 @@
       },
       "start_datetime": {
         "title": "Sync starting point",
-        "type": ["null" ,"string"],
+        "type": ["null", "string"],
         "description": "Set the moment to start syncing from",
         "format": "date-time"
       },

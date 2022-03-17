@@ -52,10 +52,11 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def __init__(
         self,
         authenticator: "requests.auth.AuthBase" = None,
-        start_datetime: Optional[datetime.datetime] = None
+        config: Mapping[str, Any] = None
     ):
         super().__init__(authenticator)
-        self._start_datetime = start_datetime
+        self._config = config
+        self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
         self._cursor_value = None
 
     @property
@@ -63,7 +64,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: self.start_date}
+            return {self.cursor_field: self._start_datetime}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -155,18 +156,12 @@ class ZohoStreamFactory:
                 "json_schema": schema,
                 "primary_key": "id"
             }
-            full_refresh_stream = type(
-                f"{module.api_name}ZohoCRMStream",
-                (ZohoCrmStream,),
-                stream_params
-            )
             incremental_stream = type(
                 f"Incremental{module.api_name}ZohoCRMStream",
                 (IncrementalZohoCrmStream,),
                 stream_params
             )
-            streams.extend([
-                full_refresh_stream(self.api.authenticator),
-                incremental_stream(self.api.authenticator, start_datetime=self._config.get("start_datetime"))
-            ])
+            streams.append(
+                incremental_stream(self.api.authenticator, config=self._config)
+            )
         return streams
