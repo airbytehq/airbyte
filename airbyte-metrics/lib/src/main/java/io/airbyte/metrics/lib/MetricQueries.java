@@ -10,13 +10,19 @@ import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.DSLContext;
 
 /**
- * Keep track of all metric queries.
+ * This class centralises metrics queries. These queries power metrics that require some sort of
+ * data access or calculation.
+ * <p>
+ * Simple metrics that require no calculation need not be tracked here.
  */
 @Slf4j
 public class MetricQueries {
@@ -68,18 +74,18 @@ public class MetricQueries {
     final var readableTimeField = "run_duration";
     final var durationSecField = "run_duration_secs";
     final var query = String.format("""
-                                    with
-                                    oldest_job as (
+                                    WITH
+                                    oldest_job AS (
                                     SELECT id,
                                            age(current_timestamp, created_at) AS %s
                                     FROM jobs
                                     WHERE status = '%s'
                                     ORDER BY run_duration DESC
                                     LIMIT 1)
-                                    select id,
+                                    SELECT id,
                                            run_duration,
                                            extract(epoch from run_duration) as %s
-                                    from oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
+                                    FROM oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
     final var res = ctx.fetch(query);
     // unfortunately there are no good Jooq methods for retrieving a single record of a single column
     // forcing the List cast.
@@ -95,6 +101,40 @@ public class MetricQueries {
 
     // as double can have rounding errors, round down to remove noise.
     return duration.get(0).longValue();
+  }
+
+  public static List<Long> numberOfActiveConnPerWorkspace(DSLContext ctx) {
+    final var countField = "num_conn";
+    final var query = String.format("""
+                                    SELECT workspace_id, count(c.id) as %s
+                                        FROM actor
+                                            INNER JOIN workspace ws ON actor.workspace_id = ws.id
+                                            INNER JOIN connection c ON actor.id = c.source_id
+                                        WHERE ws.tombstone = false
+                                          AND actor.tombstone = false AND actor.actor_type = 'source'
+                                            AND c.status = 'active'
+                                        GROUP BY workspace_id;""", countField);
+    return ctx.fetch(query).getValues(countField, long.class);
+  }
+
+  public static List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour(DSLContext ctx) {
+    final var statusField = "status";
+    final var timeField = "sec";
+    final var query =
+        String.format("""
+                      SELECT %s, extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
+                      WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
+                        AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');""", statusField, timeField);
+    final var statuses = ctx.fetch(query).getValues(statusField, JobStatus.class);
+    final var times = ctx.fetch(query).getValues(timeField, double.class);
+
+    final var pairedRes = new ArrayList<Pair<JobStatus, Double>>();
+    for (int i = 0; i < statuses.size(); i++) {
+      final var pair = new ImmutablePair<>(statuses.get(i), times.get(i));
+      pairedRes.add(pair);
+    }
+
+    return pairedRes;
   }
 
 }

@@ -3,24 +3,27 @@
 #
 
 
+import backoff
+import pendulum as pendulum
+import requests
 import sys
 import time
 import urllib.parse
 from abc import ABC, abstractmethod
-from functools import lru_cache, partial
-from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-
-import backoff
-import pendulum as pendulum
-import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import \
+    Oauth2Authenticator
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
+from functools import lru_cache, partial
+from http import HTTPStatus
 from requests import codes
-from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, \
+    Optional, Tuple, Union
+
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, \
+    HubspotRateLimited, HubspotTimeout
 
 # The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
 # so it was decided to limit the length of the `properties` parameter to 15000 characters.
@@ -181,13 +184,13 @@ class API:
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(
-        self, url: str, params: MutableMapping[str, Any] = None
+            self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
         return self._parse_and_handle_errors(response), response
 
     def post(
-        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+            self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
@@ -221,11 +224,11 @@ class Stream(HttpStream, ABC):
         """Default URL to read from"""
 
     def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            *,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.url
 
@@ -242,7 +245,7 @@ class Stream(HttpStream, ABC):
             return float(response.headers.get("Retry-After", 3))
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {
             "Content-Type": "application/json",
@@ -256,11 +259,11 @@ class Stream(HttpStream, ABC):
         return json_schema
 
     def handle_request(
-        self,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        params: Mapping[str, Any] = None,
+            self,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            params: Mapping[str, Any] = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -290,11 +293,11 @@ class Stream(HttpStream, ABC):
         return response
 
     def _read_stream_records(
-        self,
-        properties_list: List[str],
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            properties_list: List[str],
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[dict, Any]:
 
         # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
@@ -321,11 +324,11 @@ class Stream(HttpStream, ABC):
         return stream_records, response
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
@@ -422,6 +425,7 @@ class Stream(HttpStream, ABC):
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_name.endswith("_id") else target_type
+            field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
             # do not cast empty strings, return None instead to be properly casted.
@@ -483,10 +487,10 @@ class Stream(HttpStream, ABC):
             yield record
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         default_params = {self.limit_field: self.limit}
         params = {**default_params}
@@ -498,12 +502,12 @@ class Stream(HttpStream, ABC):
         return self._api._parse_and_handle_errors(response)
 
     def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         response = self._parse_response(response)
 
@@ -630,11 +634,11 @@ class IncrementalStream(Stream, ABC):
         """Name of the field associated with the state"""
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         latest_cursor = None
@@ -687,7 +691,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         chunk_size = pendulum.duration(days=30)
         slices = []
@@ -709,10 +713,10 @@ class IncrementalStream(Stream, ABC):
         return slices
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if stream_slice:
@@ -721,7 +725,6 @@ class IncrementalStream(Stream, ABC):
 
 
 class CRMSearchStream(IncrementalStream, ABC):
-
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
@@ -733,9 +736,9 @@ class CRMSearchStream(IncrementalStream, ABC):
         return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
-        self,
-        include_archived_only: bool = False,
-        **kwargs,
+            self,
+            include_archived_only: bool = False,
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self._state = None
@@ -744,7 +747,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(fixed_retry_after=1, max_tries=3)
     def search(
-        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+            self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
         # We can safely retry this POST call, because it's a search operation.
         # Given Hubspot does not return any Retry-After header (https://developers.hubspot.com/docs/api/crm/search)
@@ -753,16 +756,17 @@ class CRMSearchStream(IncrementalStream, ABC):
         return self._api.post(url=url, data=data, params=params)
 
     def _process_search(
-        self,
-        properties_list: List[str],
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            properties_list: List[str],
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[dict, requests.Response]:
         stream_records = {}
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
@@ -779,11 +783,11 @@ class CRMSearchStream(IncrementalStream, ABC):
         return stream_records, raw_response
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
@@ -822,16 +826,23 @@ class CRMSearchStream(IncrementalStream, ABC):
                 next_page_token = self.next_page_token(raw_response)
                 if not next_page_token:
                     pagination_complete = True
+                elif self.state and next_page_token["payload"]["after"] >= 10000:
+                    # Hubspot documentations states that the search endpoints are limited to 10,000 total results
+                    # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+                    # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+                    # start a new search query with the latest state that has been collected.
+                    self._update_state(latest_cursor=latest_cursor)
+                    next_page_token = None
 
             self._update_state(latest_cursor=latest_cursor)
             # Always return an empty generator just in case no records were ever yielded
             yield from []
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"archived": str(self._include_archived_only).lower(), "associations": self.associations, "limit": self.limit}
         if next_page_token:
@@ -848,6 +859,11 @@ class CRMSearchStream(IncrementalStream, ABC):
             payload["after"] = int(response["paging"]["next"]["after"])
 
             return {"params": params, "payload": payload}
+
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
 
 
 class CRMObjectStream(Stream):
@@ -886,10 +902,10 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         super().__init__(**kwargs)
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = IncrementalStream.request_params(
             self, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -903,11 +919,11 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         return params
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         records = IncrementalStream.read_records(
             self,
@@ -930,13 +946,14 @@ class Campaigns(Stream):
     data_field = "campaigns"
     limit = 500
     updated_at_field = "lastUpdatedTime"
+    primary_key = "id"
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
@@ -973,6 +990,7 @@ class ContactsListMemberships(Stream):
     data_field = "contacts"
     page_filter = "vidOffset"
     page_field = "vid-offset"
+    primary_key = "canonical-vid"
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -986,42 +1004,14 @@ class ContactsListMemberships(Stream):
                 yield {"canonical-vid": canonical_vid, **item}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params.update({"showListMemberships": True})
         return params
-
-
-class DealStageHistoryStream(Stream):
-    """Deal stage history, API v1
-    Deal stage history is exposed by the v1 API, but not the v3 API.
-    The v1 endpoint requires the contacts scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
-    """
-
-    url = "/deals/v1/deal/paged"
-    more_key = "hasMore"
-    data_field = "deals"
-    updated_at_field = "timestamp"
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in super()._transform(records):
-            dealstage = record.get("properties", {}).get("dealstage", {})
-            updated_at = dealstage.get(self.updated_at_field)
-            if updated_at:
-                yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        return {"propertiesWithHistory": "dealstage"}
 
 
 class Deals(CRMSearchStream):
@@ -1030,27 +1020,7 @@ class Deals(CRMSearchStream):
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies"]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._stage_history = DealStageHistoryStream(**kwargs)
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        history_by_id = {}
-        for record in self._stage_history.read_records(sync_mode):
-            if all(field in record for field in ("id", "dealstage")):
-                history_by_id[record["id"]] = record["dealstage"]
-
-        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            if record.get("id") and int(record["id"]) in history_by_id:
-                record["dealstage"] = history_by_id[int(record["id"])]
-            yield record
+    primary_key = "id"
 
 
 class DealPipelines(Stream):
@@ -1062,6 +1032,7 @@ class DealPipelines(Stream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "pipelineId"
 
 
 class TicketPipelines(Stream):
@@ -1073,6 +1044,7 @@ class TicketPipelines(Stream):
     url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class EmailEvents(IncrementalStream):
@@ -1085,6 +1057,7 @@ class EmailEvents(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "created"
     created_at_field = "created"
+    primary_key = "id"
 
 
 class Engagements(IncrementalStream):
@@ -1098,6 +1071,7 @@ class Engagements(IncrementalStream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
+    primary_key = "id"
 
     @property
     def url(self):
@@ -1109,10 +1083,10 @@ class Engagements(IncrementalStream):
         yield from super()._transform({**record.pop("engagement"), **record} for record in records)
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {self.limit_field: self.limit}
         if self.state:
@@ -1130,6 +1104,7 @@ class Forms(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class FormSubmissions(Stream):
@@ -1143,11 +1118,11 @@ class FormSubmissions(Stream):
     updated_at_field = "updatedAt"
 
     def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            *,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"{self.url}/{stream_slice['form_id']}"
 
@@ -1167,7 +1142,7 @@ class FormSubmissions(Stream):
             yield record
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         seen = set()
@@ -1180,11 +1155,11 @@ class FormSubmissions(Stream):
         return slices
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record["formId"] = stream_slice["form_id"]
@@ -1201,6 +1176,7 @@ class MarketingEmails(Stream):
     limit = 250
     updated_at_field = "updated"
     created_at_field = "created"
+    primary_key = "id"
 
 
 class Owners(Stream):
@@ -1211,6 +1187,7 @@ class Owners(Stream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class PropertyHistory(IncrementalStream):
@@ -1277,67 +1254,80 @@ class Workflows(Stream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+    primary_key = "id"
 
 
 class Companies(CRMSearchStream):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
+    primary_key = "id"
 
 
 class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
+    primary_key = "id"
 
 
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
+    primary_key = "id"
 
 
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
+    primary_key = "id"
 
 
 class Products(CRMObjectIncrementalStream):
     entity = "product"
+    primary_key = "id"
 
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
+    primary_key = "id"
 
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
+    primary_key = "id"

@@ -952,7 +952,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.9"
+- dockerImage: "airbyte/source-chargebee:0.1.11"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -1000,7 +1000,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chartmogul:0.1.0"
+- dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
     connectionSpecification:
@@ -1009,6 +1009,8 @@
       type: "object"
       required:
       - "api_key"
+      - "start_date"
+      - "interval"
       additionalProperties: false
       properties:
         api_key:
@@ -1024,6 +1026,17 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 1
+        interval:
+          type: "string"
+          description: "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\"\
+            >Metrics</a> require intervals to cluster data."
+          enum:
+          - "day"
+          - "week"
+          - "month"
+          - "quarter"
+          default: "month"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1648,7 +1661,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.37"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.39"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -1724,6 +1737,7 @@
                 description: "The name value of insight"
                 type: "string"
               fields:
+                title: "Fields"
                 description: "A list of chosen fields for fields parameter"
                 default: []
                 type: "array"
@@ -1863,6 +1877,7 @@
                   - "website_purchase_roas"
                   - "wish_bid"
               breakdowns:
+                title: "Breakdowns"
                 description: "A list of chosen breakdowns for breakdowns"
                 default: []
                 type: "array"
@@ -1896,6 +1911,7 @@
                   - "title_asset"
                   - "video_asset"
               action_breakdowns:
+                title: "Action Breakdowns"
                 description: "A list of chosen action_breakdowns for action_breakdowns"
                 default: []
                 type: "array"
@@ -1914,6 +1930,40 @@
                   - "action_type"
                   - "action_video_sound"
                   - "action_video_type"
+              time_increment:
+                title: "Time Increment"
+                description: "Time window in days by which to aggregate statistics.\
+                  \ The sync will be chunked into N day intervals, where N is the\
+                  \ number of days you specified. For example, if you set this value\
+                  \ to 7, then all statistics will be reported as 7-day aggregates\
+                  \ by starting from the start_date. If the start and end dates are\
+                  \ October 1st and October 30th, then the connector will output 5\
+                  \ records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days\
+                  \ only)."
+                default: 1
+                exclusiveMaximum: 90
+                exclusiveMinimum: 0
+                type: "integer"
+              start_date:
+                title: "Start Date"
+                description: "The date from which you'd like to replicate data for\
+                  \ this stream, in the format YYYY-MM-DDT00:00:00Z."
+                pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+                examples:
+                - "2017-01-25T00:00:00Z"
+                type: "string"
+                format: "date-time"
+              end_date:
+                title: "End Date"
+                description: "The date until which you'd like to replicate data for\
+                  \ this stream, in the format YYYY-MM-DDT00:00:00Z. All data generated\
+                  \ between the start date and this date will be replicated. Not setting\
+                  \ this option will result in always syncing the latest data."
+                pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+                examples:
+                - "2017-01-26T00:00:00Z"
+                type: "string"
+                format: "date-time"
             required:
             - "name"
       required:
@@ -2307,7 +2357,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.19"
+- dockerImage: "airbyte/source-github:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -3281,7 +3331,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.44"
+- dockerImage: "airbyte/source-hubspot:0.1.48"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -5782,6 +5832,60 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-orb:0.1.1"
+  spec:
+    documentationUrl: "https://docs.withorb.com/"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Orb Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: false
+      properties:
+        api_key:
+          type: "string"
+          title: "Orb API Key"
+          description: "Orb API Key, issued from the Orb admin console."
+          airbyte_secret: true
+          order: 1
+        start_date:
+          type: "string"
+          title: "Start Date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2022-03-01T00:00:00Z. Any\
+            \ data with created_at before this data will not be synced."
+          examples:
+          - "2022-03-01T00:00:00Z"
+          order: 2
+        lookback_window_days:
+          type: "integer"
+          title: "Lookback Window (in days)"
+          default: 0
+          minimum: 0
+          description: "When set to N, the connector will always refresh resources\
+            \ created within the past N days. By default, updated objects that are\
+            \ not newly created are not incrementally synced."
+          order: 3
+        string_event_properties_keys:
+          type: "array"
+          items:
+            type: "string"
+          title: "Event properties keys (string values)"
+          description: "Property key names to extract from all events, in order to\
+            \ enrich ledger entries corresponding to an event deduction."
+          order: 4
+        numeric_event_properties_keys:
+          type: "array"
+          items:
+            type: "string"
+          title: "Event properties keys (numeric values)"
+          description: "Property key names to extract from all events, in order to\
+            \ enrich ledger entries corresponding to an event deduction."
+          order: 5
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-outreach:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/outreach"
@@ -6604,7 +6708,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recurly:0.3.2"
+- dockerImage: "airbyte/source-recurly:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
     connectionSpecification:
@@ -6615,19 +6719,29 @@
       - "api_key"
       additionalProperties: false
       properties:
-        begin_time:
-          type: "string"
-          description: "ISO8601 timestamp from which the replication from Recurly\
-            \ API will start from."
-          examples:
-          - "2021-12-01T00:00:00"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
         api_key:
           type: "string"
           title: "API Key"
           airbyte_secret: true
           description: "Recurly API Key. See the  <a href=\"https://docs.airbyte.com/integrations/sources/recurly\"\
             >docs</a> for more information on how to generate this key."
+          order: 1
+        begin_time:
+          type: "string"
+          description: "ISO8601 timestamp from which the replication from Recurly\
+            \ API will start from."
+          examples:
+          - "2021-12-01T00:00:00"
+          pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          order: 2
+        end_time:
+          type: "string"
+          description: "ISO8601 timestamp to which the replication from Recurly API\
+            \ will stop. Records after that date won't be imported."
+          examples:
+          - "2021-12-01T00:00:00"
+          pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7293,7 +7407,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.33"
+- dockerImage: "airbyte/source-shopify:0.1.35"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -7308,19 +7422,13 @@
         shop:
           type: "string"
           title: "Shopify Store"
-          description: "The name of the shopify store. For https://EXAMPLE.myshopify.com,\
-            \ the shop name is 'EXAMPLE'."
-        start_date:
-          type: "string"
-          title: "Start Date"
-          description: "The date you would like to replicate data from. Format: YYYY-MM-DD.\
-            \ Any data before this date will not be replicated."
-          examples:
-          - "2021-01-01"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: "The name of your Shopify store found in the URL. For example,\
+            \ if your URL was https://NAME.myshopify.com, then the name would be 'NAME'."
+          order: 1
         credentials:
           title: "Shopify Authorization Method"
           type: "object"
+          order: 2
           oneOf:
           - type: "object"
             title: "OAuth2.0"
@@ -7368,6 +7476,15 @@
                 description: "The API Password for your private application in the\
                   \ `Shopify` store."
                 airbyte_secret: true
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "The date you would like to replicate data from. Format: YYYY-MM-DD.\
+            \ Any data before this date will not be replicated."
+          examples:
+          - "2021-01-01"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7662,7 +7779,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.9"
+- dockerImage: "airbyte/source-snowflake:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -7974,7 +8091,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.28"
+- dockerImage: "airbyte/source-stripe:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -8765,7 +8882,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.0"
+- dockerImage: "airbyte/source-zendesk-support:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -8775,8 +8892,7 @@
       required:
       - "start_date"
       - "subdomain"
-      - "auth_method"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         start_date:
           type: "string"
@@ -8789,25 +8905,49 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         subdomain:
           type: "string"
-          description: "The subdomain for your Zendesk Support"
-        auth_method:
+          title: "Subdomain"
+          description: "Identifier of your Zendesk Subdomain, like: https://{MY_SUBDOMAIN}.zendesk.com/,\
+            \ where MY_SUBDOMAIN is the value of your subdomain"
+        credentials:
           title: "Authorization Method"
           type: "object"
-          default: "api_token"
-          description: "Zendesk service provides 2 auth method: API token and OAuth2.\
-            \ Now only the first one is available. Another one will be added in the\
-            \ future."
+          description: "Zendesk service provides two authentication methods. Choose\
+            \ between: `OAuth2.0` or `API token`."
           oneOf:
+          - title: "OAuth2.0"
+            type: "object"
+            required:
+            - "access_token"
+            additionalProperties: true
+            properties:
+              credentials:
+                type: "string"
+                const: "oauth2.0"
+                enum:
+                - "oauth2.0"
+                default: "oauth2.0"
+                order: 0
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "The value of the API token generated. See the <a href=\"\
+                  https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
+                  \ for more information."
+                airbyte_secret: true
           - title: "API Token"
             type: "object"
             required:
             - "email"
             - "api_token"
-            additionalProperties: false
+            additionalProperties: true
             properties:
-              auth_method:
+              credentials:
                 type: "string"
                 const: "api_token"
+                enum:
+                - "api_token"
+                default: "api_token"
+                order: 0
               email:
                 title: "Email"
                 type: "string"
@@ -8819,25 +8959,55 @@
                   https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
                   \ for more information."
                 airbyte_secret: true
-          - title: "OAuth2.0"
-            type: "object"
-            required:
-            - "access_token"
-            additionalProperties: false
-            properties:
-              auth_method:
-                type: "string"
-                const: "access_token"
-              access_token:
-                title: "Access Token"
-                type: "string"
-                description: "The value of the Access token generated. See the <a\
-                  \ href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\"\
-                  >docs</a> for more information."
-                airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "credentials"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            subdomain:
+              type: "string"
+              path_in_connector_config:
+              - "subdomain"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-zendesk-talk:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-talk"

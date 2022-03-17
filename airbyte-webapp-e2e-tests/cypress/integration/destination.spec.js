@@ -1,4 +1,8 @@
 describe("Destination main actions", () => {
+  beforeEach(() => {
+    cy.initialSetupCompleted();
+  });
+
   it("Create new destination", () => {
     cy.createTestDestination("Test destination cypress");
 
