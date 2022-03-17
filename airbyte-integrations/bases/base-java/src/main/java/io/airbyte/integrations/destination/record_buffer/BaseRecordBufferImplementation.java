@@ -75,7 +75,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   }
 
   @Override
-  public Long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -126,7 +126,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   }
 
   @Override
-  public Long getByteCount() {
+  public long getByteCount() {
     return byteCounter.getCount();
   }
 
@@ -139,11 +139,11 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
     }
   }
 
-  public Long getMaxTotalBufferSizeInBytes() {
+  public long getMaxTotalBufferSizeInBytes() {
     return bufferStorage.getMaxTotalBufferSizeInBytes();
   }
 
-  public Long getMaxPerStreamBufferSizeInBytes() {
+  public long getMaxPerStreamBufferSizeInBytes() {
     return bufferStorage.getMaxPerStreamBufferSizeInBytes();
   }
 

@@ -161,7 +161,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public Boolean isValidData(final JsonNode jsonNode) {
+  public boolean isValidData(final JsonNode jsonNode) {
     return true;
   }
 

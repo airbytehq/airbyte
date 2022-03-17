@@ -63,18 +63,17 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
         throw new RuntimeException(e);
       }
     });
-    if (streamBuffer != null) {
-      final Long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
-      totalBufferSizeInBytes += actualMessageSizeInBytes;
-      if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
-          || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
-        flushAll();
-        totalBufferSizeInBytes = 0;
-      } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
-        flushWriter(stream, streamBuffer);
-      }
-    } else {
+    if (streamBuffer == null) {
       throw new RuntimeException(String.format("Failed to create/get streamBuffer for stream %s.%s", stream.getNamespace(), stream.getName()));
+    }
+    final long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
+    totalBufferSizeInBytes += actualMessageSizeInBytes;
+    if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
+        || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
+      flushAll();
+      totalBufferSizeInBytes = 0;
+    } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
+      flushWriter(stream, streamBuffer);
     }
   }
 

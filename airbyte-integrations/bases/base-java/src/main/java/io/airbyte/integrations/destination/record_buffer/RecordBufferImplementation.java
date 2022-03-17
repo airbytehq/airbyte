@@ -27,7 +27,7 @@ public interface RecordBufferImplementation extends AutoCloseable {
   /**
    * Adds a @param recordMessage to the buffer and @return how many bytes were written to the buffer.
    */
-  Long accept(AirbyteRecordMessage recordMessage) throws Exception;
+  long accept(AirbyteRecordMessage recordMessage) throws Exception;
 
   /**
    * Flush a buffer implementation.
@@ -39,7 +39,7 @@ public interface RecordBufferImplementation extends AutoCloseable {
    * flush events were triggered, the amount of bytes accumulated would also have been decreased
    * accordingly. This method @return such statistics.
    */
-  Long getByteCount();
+  long getByteCount();
 
   /**
    * @return the filename representation of this buffer.
@@ -67,12 +67,12 @@ public interface RecordBufferImplementation extends AutoCloseable {
   /**
    * @return How much storage should be used overall by all buffers
    */
-  Long getMaxTotalBufferSizeInBytes();
+  long getMaxTotalBufferSizeInBytes();
 
   /**
    * @return How much storage should be used for a particular stream at a time before flushing it
    */
-  Long getMaxPerStreamBufferSizeInBytes();
+  long getMaxPerStreamBufferSizeInBytes();
 
   /**
    * @return How many concurrent buffers can be handled at once in parallel
