@@ -59,7 +59,9 @@ import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInRead;
 import io.airbyte.api.model.SourceDefinitionOptInReadList;
+import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -332,6 +334,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionOptInRead createSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+    return null;
+  }
+
+  @Override
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
     return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
   }
@@ -342,6 +349,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
       return null;
     });
+  }
+
+  @Override
+  public void deleteSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+
   }
 
   // SOURCE SPECIFICATION

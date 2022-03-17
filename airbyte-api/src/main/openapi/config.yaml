@@ -340,6 +340,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionOptInReadList"
+  /v1/source_definitions/grant_definition:
+    post:
+      tags:
+        - source_definition
+      summary: Opt in to a non-public, non-custom sourceDefinition
+      operationId: createSourceDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionOptInRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/revoke_definition:
+    post:
+      tags:
+        - source_definition
+      summary: Opt out of a non-public, non-custom sourceDefinition
+      operationId: deleteSourceDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/get:
     post:
       tags:
@@ -2245,6 +2287,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionOptInRead"
+    SourceDefinitionOptInUpdate:
+      type: object
+      required:
+        - sourceDefinitionId
+        - workspaceId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SOURCE SPECIFICATION
     SourceDefinitionSpecification:
       description: The specification for what values are required to configure the sourceDefinition.

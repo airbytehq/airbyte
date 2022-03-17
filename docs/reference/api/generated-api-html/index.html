@@ -334,7 +334,9 @@ font-style: italic;
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
+  <li><a href="#createSourceDefinitionOptIn"><code><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></a></li>
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
+  <li><a href="#deleteSourceDefinitionOptIn"><code><span class="http-method">post</span> /v1/source_definitions/revoke_definition</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
   <li><a href="#listSourceDefinitionOptIns"><code><span class="http-method">post</span> /v1/source_definitions/list_opt_in</code></a></li>
@@ -6025,6 +6027,96 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="createSourceDefinitionOptIn"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></pre></div>
+    <div class="method-summary">Opt in to a non-public, non-custom sourceDefinition (<span class="nickname">createSourceDefinitionOptIn</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionOptInUpdate <a href="#SourceDefinitionOptInUpdate">SourceDefinitionOptInUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionOptInRead">SourceDefinitionOptInRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinition" : {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "optIn" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionOptInRead">SourceDefinitionOptInRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="deleteSourceDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6042,6 +6134,54 @@ font-style: italic;
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">SourceDefinitionIdRequestBody <a href="#SourceDefinitionIdRequestBody">SourceDefinitionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteSourceDefinitionOptIn"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/revoke_definition</code></pre></div>
+    <div class="method-summary">Opt out of a non-public, non-custom sourceDefinition (<span class="nickname">deleteSourceDefinitionOptIn</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionOptInUpdate <a href="#SourceDefinitionOptInUpdate">SourceDefinitionOptInUpdate</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -8644,6 +8784,7 @@ font-style: italic;
     <li><a href="#SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a></li>
     <li><a href="#SourceDefinitionOptInRead"><code>SourceDefinitionOptInRead</code> - </a></li>
     <li><a href="#SourceDefinitionOptInReadList"><code>SourceDefinitionOptInReadList</code> - </a></li>
+    <li><a href="#SourceDefinitionOptInUpdate"><code>SourceDefinitionOptInUpdate</code> - </a></li>
     <li><a href="#SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a></li>
     <li><a href="#SourceDefinitionReadList"><code>SourceDefinitionReadList</code> - </a></li>
     <li><a href="#SourceDefinitionSpecificationRead"><code>SourceDefinitionSpecificationRead</code> - </a></li>
@@ -9610,6 +9751,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionOptIns </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionOptInRead">array[SourceDefinitionOptInRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDefinitionOptInUpdate"><code>SourceDefinitionOptInUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
