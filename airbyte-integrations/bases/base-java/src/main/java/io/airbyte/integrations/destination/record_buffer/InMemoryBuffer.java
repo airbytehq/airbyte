@@ -16,12 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Instead of storing buffered data on disk like the {@link FileRecordBuffer}, this
- * {@link RecordBufferStorage} accumulates message data in memory instead.
+ * Instead of storing buffered data on disk like the {@link FileBuffer}, this
+ * {@link BufferStorage} accumulates message data in-memory instead. Thus, a bigger
+ * heap size would be required.
  */
-public class InMemoryRecordBuffer implements RecordBufferStorage {
+public class InMemoryBuffer implements BufferStorage {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBuffer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryBuffer.class);
 
   // The per stream size limit is following recommendations from:
   // https://docs.snowflake.com/en/user-guide/data-load-considerations-prepare.html#general-file-sizing-recommendations
@@ -40,7 +41,7 @@ public class InMemoryRecordBuffer implements RecordBufferStorage {
   private File tempFile;
   private String filename;
 
-  public InMemoryRecordBuffer() {
+  public InMemoryBuffer() {
     tempFile = null;
     filename = null;
   }
@@ -85,12 +86,12 @@ public class InMemoryRecordBuffer implements RecordBufferStorage {
   }
 
   @Override
-  public Long getMaxTotalBufferSizeInBytes() {
+  public long getMaxTotalBufferSizeInBytes() {
     return MAX_TOTAL_BUFFER_SIZE_BYTES;
   }
 
   @Override
-  public Long getMaxPerStreamBufferSizeInBytes() {
+  public long getMaxPerStreamBufferSizeInBytes() {
     return MAX_PER_STREAM_BUFFER_SIZE_BYTES;
   }
 

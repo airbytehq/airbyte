@@ -23,7 +23,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SerializedRecordBufferingStrategyTest {
+public class SerializedBufferingStrategyTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.deserialize("{ \"field1\": 10000 }");
   private static final String STREAM_1 = "stream1";
@@ -37,14 +37,14 @@ public class SerializedRecordBufferingStrategyTest {
   private static final long MAX_PER_STREAM_BUFFER_SIZE_BYTES = 21L;
 
   private final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, RecordBufferImplementation, Exception> perStreamFlushHook =
+  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> perStreamFlushHook =
       mock(CheckedBiConsumer.class);
   private final VoidCallable flushAllHook = mock(VoidCallable.class);
 
-  private final RecordBufferImplementation recordWriter1 = mock(RecordBufferImplementation.class);
-  private final RecordBufferImplementation recordWriter2 = mock(RecordBufferImplementation.class);
-  private final RecordBufferImplementation recordWriter3 = mock(RecordBufferImplementation.class);
-  private final RecordBufferImplementation recordWriter4 = mock(RecordBufferImplementation.class);
+  private final SerializableBuffer recordWriter1 = mock(SerializableBuffer.class);
+  private final SerializableBuffer recordWriter2 = mock(SerializableBuffer.class);
+  private final SerializableBuffer recordWriter3 = mock(SerializableBuffer.class);
+  private final SerializableBuffer recordWriter4 = mock(SerializableBuffer.class);
 
   @BeforeEach
   public void setup() throws Exception {
@@ -54,7 +54,7 @@ public class SerializedRecordBufferingStrategyTest {
     setupMock(recordWriter4);
   }
 
-  private void setupMock(final RecordBufferImplementation mockObject) throws Exception {
+  private void setupMock(final SerializableBuffer mockObject) throws Exception {
     when(mockObject.accept(any())).thenReturn(10L);
     when(mockObject.getByteCount()).thenReturn(10L);
     when(mockObject.getMaxTotalBufferSizeInBytes()).thenReturn(MAX_TOTAL_BUFFER_SIZE_BYTES);
@@ -64,7 +64,7 @@ public class SerializedRecordBufferingStrategyTest {
 
   @Test
   public void testPerStreamThresholdFlush() throws Exception {
-    final SerializedRecordBufferingStrategy buffering = new SerializedRecordBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
+    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, null);
     // To test per stream threshold, we are sending multiple test messages on a single stream
@@ -107,7 +107,7 @@ public class SerializedRecordBufferingStrategyTest {
 
   @Test
   public void testTotalStreamThresholdFlush() throws Exception {
-    final SerializedRecordBufferingStrategy buffering = new SerializedRecordBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
+    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, "namespace");
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, "namespace");
@@ -151,7 +151,7 @@ public class SerializedRecordBufferingStrategyTest {
 
   @Test
   public void testConcurrentStreamThresholdFlush() throws Exception {
-    final SerializedRecordBufferingStrategy buffering = new SerializedRecordBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
+    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace1");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, "namespace2");
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, null);
@@ -193,7 +193,7 @@ public class SerializedRecordBufferingStrategyTest {
 
   @Test
   public void testCreateBufferFailure() {
-    final SerializedRecordBufferingStrategy buffering = new SerializedRecordBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
+    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook);
     final AirbyteStreamNameNamespacePair stream = new AirbyteStreamNameNamespacePair("unknown_stream", "namespace1");
     assertThrows(RuntimeException.class, () -> buffering.addRecord(stream, generateMessage(stream)));
   }
@@ -205,7 +205,7 @@ public class SerializedRecordBufferingStrategyTest {
         .withData(MESSAGE_DATA));
   }
 
-  private CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBufferFunction() {
+  private CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBufferFunction() {
     return (stream, catalog) -> switch (stream.getName()) {
       case STREAM_1 -> recordWriter1;
       case STREAM_2 -> recordWriter2;

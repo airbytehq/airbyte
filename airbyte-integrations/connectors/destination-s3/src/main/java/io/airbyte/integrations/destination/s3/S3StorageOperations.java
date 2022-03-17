@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +76,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String uploadRecordsToBucket(final RecordBufferImplementation recordsData, final String namespace, final String bucketPath)
+  public String uploadRecordsToBucket(final SerializableBuffer recordsData, final String namespace, final String bucketPath)
       throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
@@ -100,7 +100,7 @@ public class S3StorageOperations implements BlobStorageOperations {
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoBucket(final String bucketPath, final RecordBufferImplementation recordsData) throws IOException {
+  private void loadDataIntoBucket(final String bucketPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String objectKey = String.format("%s%s", bucketPath, recordsData.getFilename());

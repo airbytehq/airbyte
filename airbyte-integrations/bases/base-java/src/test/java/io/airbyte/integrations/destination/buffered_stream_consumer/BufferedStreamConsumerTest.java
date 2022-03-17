@@ -21,7 +21,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.record_buffer.DefaultRecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -81,7 +81,7 @@ public class BufferedStreamConsumerTest {
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        new DefaultRecordBufferingStrategy(recordWriter, 1_000),
+        new InMemoryRecordBufferingStrategy(recordWriter, 1_000),
         onClose,
         CATALOG,
         isValidRecord);
@@ -163,7 +163,7 @@ public class BufferedStreamConsumerTest {
     final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        new DefaultRecordBufferingStrategy(recordWriter, 10_000),
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
         onClose,
         CATALOG,
         isValidRecord);
@@ -310,13 +310,13 @@ public class BufferedStreamConsumerTest {
   }
 
   private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
-    List<AirbyteMessage> output = Lists.newArrayList();
+    final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
-      JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
-      long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
+      final JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
+      final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
-      AirbyteMessage airbyteMessage = new AirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage()
               .withStream(STREAM_NAME)

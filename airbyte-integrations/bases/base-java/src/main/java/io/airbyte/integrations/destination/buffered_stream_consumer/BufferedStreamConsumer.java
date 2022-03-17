@@ -13,7 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -79,7 +79,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final RecordBufferingStrategy recordBufferingStrategy;
+  private final BufferingStrategy bufferingStrategy;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -89,7 +89,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
-                                final RecordBufferingStrategy recordBufferingStrategy,
+                                final BufferingStrategy bufferingStrategy,
                                 final CheckedConsumer<Boolean, Exception> onClose,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
@@ -102,8 +102,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
-    this.recordBufferingStrategy = recordBufferingStrategy;
-    recordBufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
+    this.bufferingStrategy = bufferingStrategy;
+    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
   }
 
   @Override
@@ -134,7 +134,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      recordBufferingStrategy.addRecord(stream, message);
+      bufferingStrategy.addRecord(stream, message);
     } else if (message.getType() == Type.STATE) {
       pendingState = message;
     } else {
@@ -168,9 +168,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
-      recordBufferingStrategy.flushAll();
+      bufferingStrategy.flushAll();
     }
-    recordBufferingStrategy.close();
+    bufferingStrategy.close();
 
     try {
       // if no state was emitted (i.e. full refresh), if there were still no failures, then we can

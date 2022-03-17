@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.record_buffer.DefaultRecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -54,7 +54,7 @@ public class CopyConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
-        new DefaultRecordBufferingStrategy(
+        new InMemoryRecordBufferingStrategy(
             recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
             removeStagingFilePrinter(pairToCopier),
             DEFAULT_MAX_BATCH_SIZE_BYTES),
@@ -107,7 +107,7 @@ public class CopyConsumerFactory {
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
     return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
-      String currentFileName = pairToCopier.get(pair).getCurrentFile();
+      final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
       }

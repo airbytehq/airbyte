@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.List;
 import org.joda.time.DateTime;
 
@@ -25,7 +25,7 @@ public interface BlobStorageOperations {
    *
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToBucket(RecordBufferImplementation recordsData, String namespace, String bucketPath) throws Exception;
+  String uploadRecordsToBucket(SerializableBuffer recordsData, String namespace, String bucketPath) throws Exception;
 
   /**
    * Remove files that were just stored in the bucket

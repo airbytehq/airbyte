@@ -11,10 +11,10 @@ import java.io.OutputStream;
 
 /**
  * This interface abstract the actual object that is used to store incoming data being buffered. It
- * could be a file or in-memory or some other objects.
+ * could be a file, in-memory or some other objects.
  *
- * However, in order to be used as part of the {@link RecordBufferImplementation}, this
- * RecordBufferStorage should implement some methods used to determine how to write into the storage
+ * However, in order to be used as part of the {@link SerializableBuffer}, this
+ * {@link BufferStorage} should implement some methods used to determine how to write into
  * and read from the storage once we are done buffering
  *
  * Some easy methods for manipulating the storage viewed as a file or InputStream are therefore
@@ -23,7 +23,7 @@ import java.io.OutputStream;
  * Depending on the implementation of the storage medium, it would also determine what storage
  * limits are possible.
  */
-public interface RecordBufferStorage {
+public interface BufferStorage {
 
   /**
    * Builds a new outputStream on which to write the data for storage.
@@ -36,7 +36,7 @@ public interface RecordBufferStorage {
 
   /**
    * Once buffering has reached some limits, the storage stream should be turned into an InputStream.
-   * This method should assume we are not going to write to buffer anymore and it is safe to convert
+   * This method should assume we are not going to write to buffer anymore, and it is safe to convert
    * to some other format to be read from now.
    */
   InputStream convertToInputStream() throws IOException;
@@ -59,12 +59,12 @@ public interface RecordBufferStorage {
   /**
    * @return How much storage should be used overall by all buffers
    */
-  Long getMaxTotalBufferSizeInBytes();
+  long getMaxTotalBufferSizeInBytes();
 
   /**
    * @return How much storage should be used for a particular stream at a time before flushing it
    */
-  Long getMaxPerStreamBufferSizeInBytes();
+  long getMaxPerStreamBufferSizeInBytes();
 
   /**
    * @return How many concurrent buffers can be handled at once in parallel

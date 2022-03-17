@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
@@ -27,7 +27,7 @@ public interface StagingOperations extends SqlOperations {
    *
    * @return the name of the file that was uploaded.
    */
-  String uploadRecordsToStage(JdbcDatabase database, RecordBufferImplementation recordsData, String schemaName, String path) throws Exception;
+  String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String path) throws Exception;
 
   /**
    * Load the data stored in the stage area into a temporary table in the destination

@@ -10,19 +10,19 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A RecordBufferImplementation is designed to be used as part of a
- * {@link SerializedRecordBufferingStrategy}.
+ * A {@link SerializableBuffer} is designed to be used as part of a
+ * {@link SerializedBufferingStrategy}.
  *
  * It encapsulates the actual implementation of a buffer: both the medium storage (usually defined
- * as part of {@link RecordBufferStorage}. and the format of the serialized data when it is written
+ * as part of {@link BufferStorage}. and the format of the serialized data when it is written
  * to the buffer.
  *
- * A {@link BaseRecordBufferImplementation} is provided and should be the expected class to derive
+ * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive
  * from when implementing a new format of buffer. The storage aspects are normally provided through
- * composition of {@link RecordBufferStorage}.
+ * composition of {@link BufferStorage}.
  *
  */
-public interface RecordBufferImplementation extends AutoCloseable {
+public interface SerializableBuffer extends AutoCloseable {
 
   /**
    * Adds a @param recordMessage to the buffer and @return how many bytes were written to the buffer.

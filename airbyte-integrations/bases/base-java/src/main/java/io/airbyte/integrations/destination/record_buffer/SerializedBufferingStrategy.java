@@ -21,21 +21,21 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SerializedRecordBufferingStrategy implements RecordBufferingStrategy {
+public class SerializedBufferingStrategy implements BufferingStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SerializedRecordBufferingStrategy.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferingStrategy.class);
 
-  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBuffer;
-  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, RecordBufferImplementation, Exception> onStreamFlush;
+  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
+  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush;
   private VoidCallable onFlushAllEventHook;
 
-  private Map<AirbyteStreamNameNamespacePair, RecordBufferImplementation> allBuffers = new HashMap<>();
+  private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
   private long totalBufferSizeInBytes;
   private final ConfiguredAirbyteCatalog catalog;
 
-  public SerializedRecordBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBuffer,
+  public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                            final ConfiguredAirbyteCatalog catalog,
-                                           final CheckedBiConsumer<AirbyteStreamNameNamespacePair, RecordBufferImplementation, Exception> onStreamFlush) {
+                                           final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
@@ -51,7 +51,7 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
   @Override
   public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
 
-    final RecordBufferImplementation streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
+    final SerializableBuffer streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
       LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
           stream.getName(),
           FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
@@ -78,7 +78,7 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
   }
 
   @Override
-  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final RecordBufferImplementation writer) throws Exception {
+  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       onStreamFlush.accept(stream, writer);
@@ -91,7 +91,7 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
   public void flushAll() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Entry<AirbyteStreamNameNamespacePair, RecordBufferImplementation> entry : allBuffers.entrySet()) {
+      for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
         LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
         onStreamFlush.accept(entry.getKey(), entry.getValue());
       }
@@ -114,7 +114,7 @@ public class SerializedRecordBufferingStrategy implements RecordBufferingStrateg
   @Override
   public void close() throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    for (final Entry<AirbyteStreamNameNamespacePair, RecordBufferImplementation> entry : allBuffers.entrySet()) {
+    for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
       try {
         LOGGER.info("Closing buffer for stream {}", entry.getKey().getName());
         entry.getValue().close();

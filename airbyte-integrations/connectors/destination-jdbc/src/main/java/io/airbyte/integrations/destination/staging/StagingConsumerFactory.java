@@ -18,8 +18,8 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
-import io.airbyte.integrations.destination.record_buffer.SerializedRecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -57,14 +57,14 @@ public class StagingConsumerFactory {
                                        final JdbcDatabase database,
                                        final StagingOperations sqlOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> onCreateBuffer,
+                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
-        new SerializedRecordBufferingStrategy(onCreateBuffer, catalog,
+        new SerializedBufferingStrategy(onCreateBuffer, catalog,
             flushBufferFunction(database, sqlOperations, writeConfigs, catalog)),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
@@ -141,7 +141,7 @@ public class StagingConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, RecordBufferImplementation, Exception> flushBufferFunction(
+  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
                                                                                                                        final JdbcDatabase database,
                                                                                                                        final StagingOperations stagingSqlOperations,
                                                                                                                        final List<WriteConfig> writeConfigs,

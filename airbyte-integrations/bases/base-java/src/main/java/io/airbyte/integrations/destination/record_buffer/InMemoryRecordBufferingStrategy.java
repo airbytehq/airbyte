@@ -20,15 +20,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the default implementation of a {@link RecordBufferStorage} to be backward compatible.
+ * This is the default implementation of a {@link BufferStorage} to be backward compatible.
  * Data is being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
  *
  * This should be deprecated as we slowly move towards using
- * {@link SerializedRecordBufferingStrategy} instead.
+ * {@link SerializedBufferingStrategy} instead.
  */
-public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
+public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRecordBufferingStrategy.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
 
   private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new HashMap<>();
   private final RecordWriter<AirbyteRecordMessage> recordWriter;
@@ -40,12 +40,12 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   private long bufferSizeInBytes;
   private VoidCallable onFlushAllEventHook;
 
-  public DefaultRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
+  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                         final long maxQueueSizeInBytes) {
     this(recordWriter, null, maxQueueSizeInBytes);
   }
 
-  public DefaultRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
+  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                         final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
                                         final long maxQueueSizeInBytes) {
     this.recordWriter = recordWriter;
@@ -71,7 +71,7 @@ public class DefaultRecordBufferingStrategy implements RecordBufferingStrategy {
   }
 
   @Override
-  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final RecordBufferImplementation writer) throws Exception {
+  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing single stream {}: {} records", stream, streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
   }

@@ -12,9 +12,9 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.record_buffer.FileRecordBuffer;
-import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBuffer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferStorage;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.File;
@@ -27,7 +27,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.Test;
 
-public class CsvRecordBufferTest {
+public class CsvSerializedBufferTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.jsonNode(Map.of(
       "field1", 10000,
@@ -46,32 +46,32 @@ public class CsvRecordBufferTest {
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {
-    runTest(new InMemoryRecordBuffer(), CSVFormat.DEFAULT, false, 395L, 405L);
+    runTest(new InMemoryBuffer(), CSVFormat.DEFAULT, false, 395L, 405L);
   }
 
   @Test
   public void testUncompressedCsvWriter() throws Exception {
-    runTest(new InMemoryRecordBuffer(), CSVFormat.newFormat(','), false, 355L, 365L);
+    runTest(new InMemoryBuffer(), CSVFormat.newFormat(','), false, 355L, 365L);
   }
 
   @Test
   public void testCompressedCsvWriter() throws Exception {
-    runTest(new InMemoryRecordBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
+    runTest(new InMemoryBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
   @Test
   public void testCompressedCsvFileWriter() throws Exception {
-    runTest(new FileRecordBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
+    runTest(new FileBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
-  private static void runTest(final RecordBufferStorage buffer,
+  private static void runTest(final BufferStorage buffer,
                               final CSVFormat csvFormat,
                               final boolean withCompression,
                               final Long minExpectedByte,
                               final Long maxExpectedByte)
       throws Exception {
     final File outputFile = buffer.getFile();
-    try (final CsvRecordBuffer writer = (CsvRecordBuffer) CsvRecordBuffer
+    try (final CsvSerializedBuffer writer = (CsvSerializedBuffer) CsvSerializedBuffer
         .createFunction(null, () -> buffer)
         .apply(streamPair, catalog)) {
       writer.withCsvFormat(csvFormat);

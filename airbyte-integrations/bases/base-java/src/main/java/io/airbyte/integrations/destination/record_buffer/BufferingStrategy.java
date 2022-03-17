@@ -13,11 +13,11 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * {@link io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer}
  *
  * A Record buffer strategy relies on the capacity available of underlying
- * {@link RecordBufferImplementation} to determine what to do when consuming a new
+ * {@link SerializableBuffer} to determine what to do when consuming a new
  * {@link AirbyteMessage} into the buffer. And when to
  *
  */
-public interface RecordBufferingStrategy extends AutoCloseable {
+public interface BufferingStrategy extends AutoCloseable {
 
   /**
    * Add a new message to the buffer while consuming streams
@@ -27,7 +27,7 @@ public interface RecordBufferingStrategy extends AutoCloseable {
   /**
    * Flush buffered messages in a writer from a particular stream
    */
-  void flushWriter(AirbyteStreamNameNamespacePair stream, RecordBufferImplementation writer) throws Exception;
+  void flushWriter(AirbyteStreamNameNamespacePair stream, SerializableBuffer writer) throws Exception;
 
   /**
    * Flush all writers that were buffering message data so far.

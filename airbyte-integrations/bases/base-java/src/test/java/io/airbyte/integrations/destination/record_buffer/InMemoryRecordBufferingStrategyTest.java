@@ -18,7 +18,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class DefaultRecordBufferingStrategyTest {
+public class InMemoryRecordBufferingStrategyTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.deserialize("{ \"field1\": 10000 }");
   // MESSAGE_DATA should be 64 bytes long, size the buffer such as it can contain at least 2 message
@@ -29,7 +29,7 @@ public class DefaultRecordBufferingStrategyTest {
 
   @Test
   public void testBuffering() throws Exception {
-    final DefaultRecordBufferingStrategy buffering = new DefaultRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
+    final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair("stream1", "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair("stream2", null);
     final AirbyteMessage message1 = generateMessage(stream1);

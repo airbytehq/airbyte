@@ -15,9 +15,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileRecordBuffer implements RecordBufferStorage {
+public class FileBuffer implements BufferStorage {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileRecordBuffer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileBuffer.class);
 
   // The per stream size limit is following recommendations from:
   // https://docs.snowflake.com/en/user-guide/data-load-considerations-prepare.html#general-file-sizing-recommendations
@@ -36,7 +36,7 @@ public class FileRecordBuffer implements RecordBufferStorage {
   private File tempFile;
   private OutputStream outputStream;
 
-  public FileRecordBuffer() {
+  public FileBuffer() {
     tempFile = null;
     outputStream = null;
   }
@@ -80,12 +80,12 @@ public class FileRecordBuffer implements RecordBufferStorage {
   }
 
   @Override
-  public Long getMaxTotalBufferSizeInBytes() {
+  public long getMaxTotalBufferSizeInBytes() {
     return MAX_TOTAL_BUFFER_SIZE_BYTES;
   }
 
   @Override
-  public Long getMaxPerStreamBufferSizeInBytes() {
+  public long getMaxPerStreamBufferSizeInBytes() {
     return MAX_PER_STREAM_BUFFER_SIZE_BYTES;
   }
 

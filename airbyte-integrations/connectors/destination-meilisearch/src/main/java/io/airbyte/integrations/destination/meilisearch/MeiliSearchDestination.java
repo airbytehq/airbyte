@@ -17,7 +17,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
-import io.airbyte.integrations.destination.record_buffer.DefaultRecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -99,7 +99,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     return new BufferedStreamConsumer(
         outputRecordCollector,
         () -> LOGGER.info("Starting write to MeiliSearch."),
-        new DefaultRecordBufferingStrategy(recordWriterFunction(indexNameToIndex), MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(indexNameToIndex), MAX_BATCH_SIZE_BYTES),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
         (data) -> true);

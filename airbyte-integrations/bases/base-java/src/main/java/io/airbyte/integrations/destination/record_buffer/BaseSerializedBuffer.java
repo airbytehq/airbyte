@@ -16,19 +16,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base implementation of a {@link RecordBufferImplementation}. It is composed of a
- * {@link RecordBufferStorage} where the actual data is being stored in a serialized format.
+ * Base implementation of a {@link SerializableBuffer}. It is composed of a
+ * {@link BufferStorage} where the actual data is being stored in a serialized format.
  *
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
  * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
- * it can be stored in the outputStream of the {@link RecordBufferStorage}.
+ * it can be stored in the outputStream of the {@link BufferStorage}.
  */
-public abstract class BaseRecordBufferImplementation implements RecordBufferImplementation {
+public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseRecordBufferImplementation.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseSerializedBuffer.class);
 
-  private final RecordBufferStorage bufferStorage;
+  private final BufferStorage bufferStorage;
   private final CountingOutputStream byteCounter;
 
   private boolean useCompression;
@@ -37,7 +37,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
   private boolean isStarted;
   private boolean isClosed;
 
-  protected BaseRecordBufferImplementation(final RecordBufferStorage bufferStorage) throws Exception {
+  protected BaseSerializedBuffer(final BufferStorage bufferStorage) throws Exception {
     this.bufferStorage = bufferStorage;
     byteCounter = new CountingOutputStream(bufferStorage.getOutputStream());
     useCompression = true;
@@ -54,7 +54,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
 
   /**
    * Transform the @param recordMessage into a serialized form of the data and writes it to the
-   * registered OutputStream provided when {@link BaseRecordBufferImplementation#createWriter} was
+   * registered OutputStream provided when {@link BaseSerializedBuffer#createWriter} was
    * called.
    */
   protected abstract void writeRecord(AirbyteRecordMessage recordMessage) throws IOException;
@@ -66,7 +66,7 @@ public abstract class BaseRecordBufferImplementation implements RecordBufferImpl
    */
   protected abstract void closeWriter() throws IOException;
 
-  public RecordBufferImplementation withCompression(final boolean useCompression) {
+  public SerializableBuffer withCompression(final boolean useCompression) {
     if (!isStarted) {
       this.useCompression = useCompression;
       return this;

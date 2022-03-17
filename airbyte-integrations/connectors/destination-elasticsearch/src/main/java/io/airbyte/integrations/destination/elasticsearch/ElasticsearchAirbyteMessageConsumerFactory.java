@@ -13,7 +13,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
-import io.airbyte.integrations.destination.record_buffer.DefaultRecordBufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -40,26 +40,26 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
    */
   private static final Map<String, String> tempIndices = new HashMap<>();
 
-  public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
-                                              ElasticsearchConnection connection,
-                                              List<ElasticsearchWriteConfig> writeConfigs,
-                                              ConfiguredAirbyteCatalog catalog) {
+  public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
+                                              final ElasticsearchConnection connection,
+                                              final List<ElasticsearchWriteConfig> writeConfigs,
+                                              final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(connection, writeConfigs),
-        new DefaultRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
         onCloseFunction(connection),
         catalog,
         isValidFunction(connection));
   }
 
   // is there any json node that wont fit in the index?
-  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(ElasticsearchConnection connection) {
+  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final ElasticsearchConnection connection) {
     return jsonNode -> true;
   }
 
-  private static CheckedConsumer<Boolean, Exception> onCloseFunction(ElasticsearchConnection connection) {
+  private static CheckedConsumer<Boolean, Exception> onCloseFunction(final ElasticsearchConnection connection) {
 
     return (hasFailed) -> {
       if (!tempIndices.isEmpty() && !hasFailed) {
@@ -70,12 +70,12 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
-                                                                         ElasticsearchConnection connection,
-                                                                         List<ElasticsearchWriteConfig> writeConfigs) {
+                                                                         final ElasticsearchConnection connection,
+                                                                         final List<ElasticsearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());
-      var optConfig = writeConfigs.stream()
+      final var optConfig = writeConfigs.stream()
           .filter(c -> Objects.equals(c.getStreamName(), pair.getName()) &&
               Objects.equals(c.getNamespace(), pair.getNamespace()))
           .findFirst();
@@ -83,14 +83,14 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
         throw new Exception(String.format("missing write config: %s", pair));
       }
       final var config = optConfig.get();
-      BulkResponse response;
+      final BulkResponse response;
       if (config.useTempIndex()) {
         response = connection.indexDocuments(config.getTempIndexName(), records, config);
       } else {
         response = connection.indexDocuments(config.getIndexName(), records, config);
       }
       if (Objects.nonNull(response) && response.errors()) {
-        String msg = String.format("failed to write bulk records: %s", mapper.valueToTree(response));
+        final String msg = String.format("failed to write bulk records: %s", mapper.valueToTree(response));
         throw new Exception(msg);
       } else {
         log.info("bulk write took: {}ms", response.took());
@@ -98,9 +98,9 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     };
   }
 
-  private static VoidCallable onStartFunction(ElasticsearchConnection connection, List<ElasticsearchWriteConfig> writeConfigs) {
+  private static VoidCallable onStartFunction(final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
     return () -> {
-      for (var config : writeConfigs) {
+      for (final var config : writeConfigs) {
         if (config.useTempIndex()) {
           tempIndices.put(config.getTempIndexName(), config.getIndexName());
           connection.deleteIndexIfPresent(config.getTempIndexName());

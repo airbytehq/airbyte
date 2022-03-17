@@ -8,7 +8,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -59,7 +59,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   @Override
   public String uploadRecordsToStage(final JdbcDatabase database,
-                                     final RecordBufferImplementation recordsData,
+                                     final SerializableBuffer recordsData,
                                      final String schema,
                                      final String stage)
       throws IOException {
@@ -83,7 +83,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoStage(final JdbcDatabase database, final String stage, final RecordBufferImplementation recordsData) throws Exception {
+  private void loadDataIntoStage(final JdbcDatabase database, final String stage, final SerializableBuffer recordsData) throws Exception {
     database.execute(
         String.format("PUT file://%s @%s PARALLEL = %d", recordsData.getFile().getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
     // TODO: check if data was successfully loaded into stage

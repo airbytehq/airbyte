@@ -9,7 +9,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.staging.StagingOperations;
@@ -62,7 +62,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public String uploadRecordsToStage(final JdbcDatabase database,
-                                     final RecordBufferImplementation recordsData,
+                                     final SerializableBuffer recordsData,
                                      final String schemaName,
                                      final String path)
       throws Exception {

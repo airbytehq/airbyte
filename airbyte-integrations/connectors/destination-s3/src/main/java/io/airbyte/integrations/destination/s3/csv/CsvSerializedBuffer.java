@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.s3.csv;
 
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.record_buffer.BaseRecordBufferImplementation;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferImplementation;
-import io.airbyte.integrations.destination.record_buffer.RecordBufferStorage;
+import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
@@ -21,13 +21,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 
-public class CsvRecordBuffer extends BaseRecordBufferImplementation {
+public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   private final CsvSheetGenerator csvSheetGenerator;
   private CSVPrinter csvPrinter;
   private CSVFormat csvFormat;
 
-  protected CsvRecordBuffer(final RecordBufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
+  protected CsvSerializedBuffer(final BufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
     this.csvPrinter = null;
@@ -36,7 +36,7 @@ public class CsvRecordBuffer extends BaseRecordBufferImplementation {
     withCompression(true);
   }
 
-  public CsvRecordBuffer withCsvFormat(final CSVFormat csvFormat) {
+  public CsvSerializedBuffer withCsvFormat(final CSVFormat csvFormat) {
     if (csvPrinter == null) {
       this.csvFormat = csvFormat;
       return this;
@@ -60,9 +60,9 @@ public class CsvRecordBuffer extends BaseRecordBufferImplementation {
     csvPrinter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, RecordBufferImplementation, Exception> createFunction(
+  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(
                                                                                                                                                   final S3CsvFormatConfig config,
-                                                                                                                                                  final Callable<RecordBufferStorage> createStorageFunction) {
+                                                                                                                                                  final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final CsvSheetGenerator csvSheetGenerator;
       if (config != null) {
@@ -77,7 +77,7 @@ public class CsvRecordBuffer extends BaseRecordBufferImplementation {
       } else {
         csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
       }
-      return new CsvRecordBuffer(createStorageFunction.call(), csvSheetGenerator);
+      return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator);
     };
   }
 
