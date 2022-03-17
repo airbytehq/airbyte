@@ -367,6 +367,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             : Enums.toEnum(record.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
         .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
         .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
+        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
+        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
         .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardSourceDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
@@ -414,6 +416,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withName(record.get(ACTOR_DEFINITION.NAME))
         .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
         .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
+        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
+        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
         .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
@@ -840,6 +844,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE, standardSourceDefinition.getReleaseStage() == null ? null
                 : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
@@ -867,6 +873,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone() != null && standardSourceDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE,
                 standardSourceDefinition.getReleaseStage() == null ? null
                     : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
@@ -908,6 +916,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE, standardDestinationDefinition.getReleaseStage() == null ? null
                 : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
@@ -931,6 +941,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone() != null && standardDestinationDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE,
                 standardDestinationDefinition.getReleaseStage() == null ? null
                     : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
@@ -1752,6 +1764,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     .withDockerRepository(row.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
                     .withDocumentationUrl(row.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
                     .withName(row.get(ACTOR_DEFINITION.NAME))
+                    .withPublic(row.get(ACTOR_DEFINITION.PUBLIC))
+                    .withCustom(row.get(ACTOR_DEFINITION.CUSTOM))
                     .withSourceType(row.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
                         : Enums.toEnum(row.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
                     .withSpec(Jsons.deserialize(row.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class)));
@@ -1763,6 +1777,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     .withDockerRepository(row.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
                     .withDocumentationUrl(row.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
                     .withName(row.get(ACTOR_DEFINITION.NAME))
+                    .withPublic(row.get(ACTOR_DEFINITION.PUBLIC))
+                    .withCustom(row.get(ACTOR_DEFINITION.CUSTOM))
                     .withSpec(Jsons.deserialize(row.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class)));
               } else {
                 throw new RuntimeException("Unknown Actor Type " + row.get(ACTOR_DEFINITION.ACTOR_TYPE));
