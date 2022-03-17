@@ -93,9 +93,11 @@ public class ConfigRepository {
     final Result<Record> result;
     if (includeTombstone) {
       result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE)
           .where(WORKSPACE.SLUG.eq(slug))).fetch();
     } else {
       result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE)
           .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
 
