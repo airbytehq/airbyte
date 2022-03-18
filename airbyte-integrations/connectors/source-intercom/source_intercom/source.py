@@ -286,6 +286,11 @@ class Conversations(IncrementalIntercomStream):
 
     data_fields = ["conversations"]
 
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token, **kwargs)
+        params.update({"order": "desc", "sort": self.cursor_field})
+        return params
+
     # We're sorting by desc. Once we hit the first page with an out-of-date result we can stop.
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self.has_old_records:
