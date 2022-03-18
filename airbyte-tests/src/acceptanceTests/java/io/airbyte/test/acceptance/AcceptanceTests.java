@@ -289,20 +289,22 @@ public class AcceptanceTests {
       destinationPsql.stop();
     }
 
-    for (final UUID sourceId : sourceIds) {
-      deleteSource(sourceId);
+    for (final UUID operationId : operationIds) {
+      deleteOperation(operationId);
     }
 
     for (final UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
 
+    for (final UUID sourceId : sourceIds) {
+      deleteSource(sourceId);
+    }
+
     for (final UUID destinationId : destinationIds) {
       deleteDestination(destinationId);
     }
-    for (final UUID operationId : operationIds) {
-      deleteOperation(operationId);
-    }
+
   }
 
   @Test
