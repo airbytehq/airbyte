@@ -242,6 +242,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.21  | 2022-03-18 | [\#11071](https://github.com/airbytehq/airbyte/pull/11071) | Switch to compressed on-disk buffering before staging to s3/internal stage |
 | 0.4.21  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
 | 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
 | 0.4.19  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699) | Added unit tests                                                                   |

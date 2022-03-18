@@ -65,4 +65,5 @@ class SnowflakeInternalStagingSqlOperationsTest {
     final String actualRemoveQuery = snowflakeStagingSqlOperations.getRemoveQuery(STAGE_NAME);
     assertEquals(expectedQuery, actualRemoveQuery);
   }
+
 }
