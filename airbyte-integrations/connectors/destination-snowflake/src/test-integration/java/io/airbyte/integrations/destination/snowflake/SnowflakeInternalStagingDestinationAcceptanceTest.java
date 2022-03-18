@@ -18,8 +18,8 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
 
   public JsonNode getStaticConfig() {
     final JsonNode internalStagingConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(internalStagingConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(internalStagingConfig));
+    Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(internalStagingConfig));
+    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(internalStagingConfig));
     return internalStagingConfig;
   }
 

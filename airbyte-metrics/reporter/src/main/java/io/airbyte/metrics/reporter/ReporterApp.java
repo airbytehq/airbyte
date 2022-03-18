@@ -11,65 +11,33 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.metrics.lib.MetricQueries;
-import io.airbyte.metrics.lib.MetricsRegistry;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReporterApp {
 
-  public static void main(final String[] args) throws IOException, InterruptedException {
+  public static Database configDatabase;
+
+  public static void main(final String[] args) throws IOException {
     final Configs configs = new EnvConfigs();
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));
 
-    final Database configDatabase = new ConfigsDatabaseInstance(
+    configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
 
-    final var pollers = Executors.newScheduledThreadPool(4);
+    final var toEmits = ToEmit.values();
+    final var pollers = Executors.newScheduledThreadPool(toEmits.length);
 
-    log.info("Starting pollers..");
-    pollers.scheduleAtFixedRate(() -> {
-      try {
-        final var pendingJobs = configDatabase.query(MetricQueries::numberOfPendingJobs);
-        DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
-      } catch (final SQLException e) {
-        e.printStackTrace();
-      }
-    }, 0, 15, TimeUnit.SECONDS);
-    pollers.scheduleAtFixedRate(() -> {
-      try {
-        final var runningJobs = configDatabase.query(MetricQueries::numberOfRunningJobs);
-        DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
-      } catch (final SQLException e) {
-        e.printStackTrace();
-      }
-    }, 0, 15, TimeUnit.SECONDS);
-    pollers.scheduleAtFixedRate(() -> {
-      try {
-        final var age = configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
-        DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
-      } catch (final SQLException e) {
-        e.printStackTrace();
-      }
-    }, 0, 15, TimeUnit.SECONDS);
-    pollers.scheduleAtFixedRate(() -> {
-      try {
-        final var age = configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
-        DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
-      } catch (final SQLException e) {
-        e.printStackTrace();
-      }
-    }, 0, 15, TimeUnit.SECONDS);
-
-    Thread.sleep(1000_000 * 1000);
+    log.info("Scheduling {} metrics for emission..", toEmits.length);
+    for (ToEmit toEmit : toEmits) {
+      pollers.scheduleAtFixedRate(toEmit.emitRunnable, 0, toEmit.period, toEmit.timeUnit);
+    }
   }
 
 }

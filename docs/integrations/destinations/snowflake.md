@@ -164,6 +164,22 @@ Internal named stages are storage location objects within a Snowflake database/s
 
 **Operating on a stage also requires the USAGE privilege on the parent database and schema.**
 
+### Azure Blob Storage Staging
+
+For Azure Blob Storage, you will need to create a storage account and container and provide SAS Token to access the container. We recommend creating a container that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
+
+Provide the required Azure Blob info.
+
+* **Endpoint Domain Name**
+    * Leave default value *blob.core.windows.net*  or [map a custom domain](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-custom-domain-name?tabs=azure-portal) to an Azure Blob Storage endpoint.
+* **Azure Blob Storage Account Name**
+    * An Azure storage account contains all of your Azure Storage data objects, including blobs, file shares, queues, tables, and disks. The storage account provides a unique namespace for your Azure Storage data. 
+    * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) to create a storage account.
+* **Azure blob storage container (Bucket) Name**
+    * See [this](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container) to create container with REST API or create container with Azure UI.
+* **SAS Token**
+    * A shared access signature (SAS) enables you to grant limited access to containers and blobs in your storage account. Please pay attention on [read and write permissions](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to use Snowflake staging
+
 ### AWS S3 Staging
 
 For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
@@ -226,6 +242,8 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
+| 0.4.19  | 2022-03-11 | [10699](https://github.com/airbytehq/airbyte/pull/10699) | Added unit tests                                                                   |
 | 0.4.17  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.4.16  | 2022-02-25 | [\#10627](https://github.com/airbytehq/airbyte/pull/10627) | Add try catch to make sure all handlers are closed |
 | 0.4.15  | 2022-02-22 | [\#10459](https://github.com/airbytehq/airbyte/pull/10459) | Add FailureTrackingAirbyteMessageConsumer |

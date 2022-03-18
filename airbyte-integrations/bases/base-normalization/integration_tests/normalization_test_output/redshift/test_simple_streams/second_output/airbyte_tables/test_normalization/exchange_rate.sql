@@ -5,6 +5,7 @@
     
     
       compound sortkey(_airbyte_emitted_at)
+    
   as (
     
 with __dbt__cte__exchange_rate_ab1 as (

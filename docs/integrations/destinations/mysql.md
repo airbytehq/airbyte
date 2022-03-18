@@ -36,6 +36,11 @@ To use the MySQL destination, you'll need:
 * To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
 * To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above.
 
+#### Troubleshooting
+
+Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
+To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
+
 #### Network Access
 
 Make sure your MySQL database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
