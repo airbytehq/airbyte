@@ -11,6 +11,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -143,7 +144,52 @@ public class ConfigRepository {
   }
 
   public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    database.transaction(ctx -> {
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(WORKSPACE)
+          .where(WORKSPACE.ID.eq(workspace.getWorkspaceId())));
+      if (isExistingConfig) {
+        ctx.update(WORKSPACE)
+            .set(WORKSPACE.ID, workspace.getWorkspaceId())
+            .set(WORKSPACE.CUSTOMER_ID, workspace.getCustomerId())
+            .set(WORKSPACE.NAME, workspace.getName())
+            .set(WORKSPACE.SLUG, workspace.getSlug())
+            .set(WORKSPACE.EMAIL, workspace.getEmail())
+            .set(WORKSPACE.INITIAL_SETUP_COMPLETE, workspace.getInitialSetupComplete())
+            .set(WORKSPACE.ANONYMOUS_DATA_COLLECTION, workspace.getAnonymousDataCollection())
+            .set(WORKSPACE.SEND_NEWSLETTER, workspace.getNews())
+            .set(WORKSPACE.SEND_SECURITY_UPDATES, workspace.getSecurityUpdates())
+            .set(WORKSPACE.DISPLAY_SETUP_WIZARD, workspace.getDisplaySetupWizard())
+            .set(WORKSPACE.TOMBSTONE, workspace.getTombstone() != null && workspace.getTombstone())
+            .set(WORKSPACE.NOTIFICATIONS, JSONB.valueOf(Jsons.serialize(workspace.getNotifications())))
+            .set(WORKSPACE.FIRST_SYNC_COMPLETE, workspace.getFirstCompletedSync())
+            .set(WORKSPACE.FEEDBACK_COMPLETE, workspace.getFeedbackDone())
+            .set(WORKSPACE.UPDATED_AT, timestamp)
+            .where(WORKSPACE.ID.eq(workspace.getWorkspaceId()))
+            .execute();
+      } else {
+        ctx.insertInto(WORKSPACE)
+            .set(WORKSPACE.ID, workspace.getWorkspaceId())
+            .set(WORKSPACE.CUSTOMER_ID, workspace.getCustomerId())
+            .set(WORKSPACE.NAME, workspace.getName())
+            .set(WORKSPACE.SLUG, workspace.getSlug())
+            .set(WORKSPACE.EMAIL, workspace.getEmail())
+            .set(WORKSPACE.INITIAL_SETUP_COMPLETE, workspace.getInitialSetupComplete())
+            .set(WORKSPACE.ANONYMOUS_DATA_COLLECTION, workspace.getAnonymousDataCollection())
+            .set(WORKSPACE.SEND_NEWSLETTER, workspace.getNews())
+            .set(WORKSPACE.SEND_SECURITY_UPDATES, workspace.getSecurityUpdates())
+            .set(WORKSPACE.DISPLAY_SETUP_WIZARD, workspace.getDisplaySetupWizard())
+            .set(WORKSPACE.TOMBSTONE, workspace.getTombstone() != null && workspace.getTombstone())
+            .set(WORKSPACE.NOTIFICATIONS, JSONB.valueOf(Jsons.serialize(workspace.getNotifications())))
+            .set(WORKSPACE.FIRST_SYNC_COMPLETE, workspace.getFirstCompletedSync())
+            .set(WORKSPACE.FEEDBACK_COMPLETE, workspace.getFeedbackDone())
+            .set(WORKSPACE.CREATED_AT, timestamp)
+            .set(WORKSPACE.UPDATED_AT, timestamp)
+            .execute();
+      }
+      return null;
+    });
   }
 
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
