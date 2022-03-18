@@ -12,7 +12,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -33,7 +32,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected Database setupDatabase(String dbName) {
+  protected Database setupDatabase(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -70,10 +69,9 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
    * - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be
    * names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourceFillDbWithTestData.testArgs = Stream.of(
-        Arguments.of("your_db_name", "dbo", 100, 2, 240, 1000) // "dbo" is a default schema name in MsSQl DB
+  @Override
+  protected Stream<Arguments> provideParameters() {
+    return Stream.of(Arguments.of("your_db_name", "dbo", 100, 2, 240, 1000) // "dbo" is a default schema name in MsSQl DB
     );
   }
 

@@ -100,7 +100,15 @@ class GithubStream(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if e.response.status_code == requests.codes.FORBIDDEN:
+            if e.response.status_code == requests.codes.NOT_FOUND:
+                # A lot of streams are not available for repositories owned by a user instead of an organization.
+                if isinstance(self, Organizations):
+                    error_msg = (
+                        f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+                    )
+                else:
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.FORBIDDEN:
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -116,30 +124,10 @@ class GithubStream(HttpStream, ABC):
                     error_msg = (
                         f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
                     )
-            elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
-                # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
-                # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for organization `{stream_slice['organization']}`."
-            elif e.response.status_code == requests.codes.NOT_FOUND and "/repos?" in error_msg:
-                # `Repositories` stream is not available for repositories not in an organization.
-                # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/<org_name>/repos?per_page=100" error.
-                error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
-            elif e.response.status_code == requests.codes.GONE and "/projects?" in error_msg:
+            elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
                 error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.NOT_FOUND and "/orgs/" in error_msg:
-                # Some streams are not available for repositories owned by a user instead of an organization.
-                # Handle "404 Client Error: Not Found" errors
-                if isinstance(self, Repositories):
-                    error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
-                elif isinstance(self, Users):
-                    error_msg = f"Syncing `Users` stream isn't available for organization `{stream_slice['organization']}`."
-                elif isinstance(self, Organizations):
-                    error_msg = f"Syncing `Organizations` stream isn't available for organization `{stream_slice['organization']}`."
-                else:
-                    self.logger.error(f"Undefined error while reading records: {error_msg}")
-                    raise e
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
@@ -886,7 +874,7 @@ class ProjectColumns(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"], "project_id": str(record["id"])}
+                yield {"repository": record["repository"], "project_id": record["id"]}
 
     def read_records(
         self,
@@ -905,7 +893,7 @@ class ProjectColumns(GithubStream):
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             repository = stream_slice["repository"]
-            project_id = stream_slice["project_id"]
+            project_id = str(stream_slice["project_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
@@ -913,7 +901,7 @@ class ProjectColumns(GithubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
-        project_id = latest_record["project_id"]
+        project_id = str(latest_record["project_id"])
         updated_state = latest_record[self.cursor_field]
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
         if stream_state_value:
@@ -924,4 +912,76 @@ class ProjectColumns(GithubStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, stream_slice=stream_slice)
         record["project_id"] = stream_slice["project_id"]
+        return record
+
+
+class ProjectCards(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/projects#list-project-cards
+    """
+
+    cursor_field = "updated_at"
+
+    def __init__(self, parent: HttpStream, start_date: str, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+        self._start_date = start_date
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"projects/columns/{stream_slice['column_id']}/cards"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record[self.cursor_field] > starting_point:
+                yield record
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            repository = stream_slice["repository"]
+            project_id = str(stream_slice["project_id"])
+            column_id = str(stream_slice["column_id"])
+            stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
+        return self._start_date
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        project_id = str(latest_record["project_id"])
+        column_id = str(latest_record["column_id"])
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[
+            self.cursor_field
+        ] = updated_state
+        return current_stream_state
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["project_id"] = stream_slice["project_id"]
+        record["column_id"] = stream_slice["column_id"]
         return record

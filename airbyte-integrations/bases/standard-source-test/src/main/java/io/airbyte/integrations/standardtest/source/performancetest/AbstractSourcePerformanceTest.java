@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePerformanceTest {
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
-  protected static Stream<Arguments> testArgs;
   private static final String ID_COLUMN_NAME = "id";
   protected JsonNode config;
 
@@ -55,27 +54,6 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {}
 
-  @ParameterizedTest
-  @MethodSource("provideParameters")
-  public void testPerformance(String dbName,
-                              String schemaName,
-                              int numberOfDummyRecords,
-                              int numberOfColumns,
-                              int numberOfStreams)
-      throws Exception {
-
-    setupDatabase(dbName);
-
-    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
-        numberOfColumns);
-    Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    Map<String, Integer> checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null,
-        mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
-
-  }
-
   /**
    * This is a data provider for performance tests, Each argument's group would be ran as a separate
    * test. Set the "testArgs" in test class of your DB in @BeforeTest method.
@@ -91,8 +69,27 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
    * Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
    * Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000) );
    */
-  private static Stream<Arguments> provideParameters() {
-    return testArgs;
+  protected abstract Stream<Arguments> provideParameters();
+
+  @ParameterizedTest
+  @MethodSource("provideParameters")
+  public void testPerformance(final String dbName,
+                              final String schemaName,
+                              final int numberOfDummyRecords,
+                              final int numberOfColumns,
+                              final int numberOfStreams)
+      throws Exception {
+
+    setupDatabase(dbName);
+
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog(schemaName, numberOfStreams,
+        numberOfColumns);
+    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap = runReadVerifyNumberOfReceivedMsgs(catalog, null,
+        mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+
   }
 
   /**
@@ -107,7 +104,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
 
   protected void validateNumberOfReceivedMsgs(final Map<String, Integer> checkStatusMap) {
     // Iterate through all streams map and check for streams where
-    Map<String, Integer> failedStreamsMap = checkStatusMap.entrySet().stream()
+    final Map<String, Integer> failedStreamsMap = checkStatusMap.entrySet().stream()
         .filter(el -> el.getValue() != 0).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     if (!failedStreamsMap.isEmpty()) {
@@ -118,7 +115,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
 
   protected Map<String, Integer> prepareMapWithExpectedRecords(final int streamNumber,
                                                                final int expectedRecordsNumberInEachStream) {
-    Map<String, Integer> resultMap = new HashMap<>(); // streamName&expected records in stream
+    final Map<String, Integer> resultMap = new HashMap<>(); // streamName&expected records in stream
 
     for (int currentStream = 0; currentStream < streamNumber; currentStream++) {
       final String streamName = String.format(getTestStreamNameTemplate(), currentStream);
@@ -135,12 +132,12 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
   protected ConfiguredAirbyteCatalog getConfiguredCatalog(final String nameSpace,
                                                           final int numberOfStreams,
                                                           final int numberOfColumns) {
-    List<ConfiguredAirbyteStream> streams = new ArrayList<>();
+    final List<ConfiguredAirbyteStream> streams = new ArrayList<>();
 
     for (int currentStream = 0; currentStream < numberOfStreams; currentStream++) {
 
       // CREATE TABLE test.test_1_int(id INTEGER PRIMARY KEY, test_column int)
-      List<Field> fields = new ArrayList<>();
+      final List<Field> fields = new ArrayList<>();
 
       fields.add(Field.of(getIdColumnName(), JsonSchemaType.NUMBER));
       for (int currentColumnNumber = 0;
@@ -149,7 +146,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
         fields.add(Field.of(getTestColumnName() + currentColumnNumber, JsonSchemaType.STRING));
       }
 
-      AirbyteStream airbyteStream = CatalogHelpers
+      final AirbyteStream airbyteStream = CatalogHelpers
           .createAirbyteStream(String.format(getTestStreamNameTemplate(), currentStream),
               nameSpace, fields)
           .withSourceDefinedCursor(true)
@@ -157,7 +154,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceBasePe
           .withSupportedSyncModes(
               Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
 
-      ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
+      final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
           .withSyncMode(SyncMode.INCREMENTAL)
           .withCursorField(Lists.newArrayList(getIdColumnName()))
           .withDestinationSyncMode(DestinationSyncMode.APPEND)

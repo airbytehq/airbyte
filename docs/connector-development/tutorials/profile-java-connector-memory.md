@@ -10,8 +10,9 @@ The example focuses on docker deployment, because it is more straightforward. It
 
 ## Step-by-Step
 1. Enable JMX in `airbyte-integrations/connectors/<connector-name>/build.gradle`, and expose it on port 6000. The port is chosen arbitrary, and can be port number that's available.
+    - `<connector-name>` examples: `source-mysql`, `source-github`,  `destination-snowflake`.
 
-    ```gradle
+    ```groovy
     application {
       mainClass = 'io.airbyte.integrations.<connector-main-class>'
       applicationDefaultJvmArgs = [
