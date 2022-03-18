@@ -13,6 +13,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping,
 
 import backoff
 import pendulum as pendulum
+from pytest import param
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
@@ -267,6 +268,7 @@ class Stream(HttpStream, ABC):
         if params:
             request_params.update(params)
 
+        logger.info(f'next_page_request: {next_page_token} - params: {request_params}')
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
@@ -1065,7 +1067,6 @@ class Engagements(IncrementalStream):
 
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
-    limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
@@ -1085,11 +1086,17 @@ class Engagements(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {self.limit_field: self.limit}
+        params = {"count": 250}
+        if next_page_token:
+            params["offset"] = next_page_token["offset"]
         if self.state:
-            params["since"] = int(self._state.timestamp() * 1000)
+            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
-
+    
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
 
 class Forms(Stream):
     """Marketing Forms, API v3
