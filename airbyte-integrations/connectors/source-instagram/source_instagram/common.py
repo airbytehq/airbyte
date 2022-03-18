@@ -7,9 +7,11 @@ import sys
 import urllib.parse as urlparse
 
 import backoff
-from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
+
+logger = AirbyteLogger()
 
 
 class InstagramAPIException(Exception):
@@ -66,12 +68,9 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
 
 def remove_params_from_url(url, params):
-    parsed_url = urlparse.urlparse(url)
-    res_query = []
-    for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
-
-    parse_result = parsed_url._replace(query="&".join(res_query))
-    return urlparse.urlunparse(parse_result)
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
+    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    return urlparse.urlunparse(
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+    )
