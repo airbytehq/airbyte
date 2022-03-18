@@ -23,6 +23,9 @@ import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInRead;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
+import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -58,6 +61,9 @@ import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInRead;
+import io.airbyte.api.model.SourceDefinitionOptInReadList;
+import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -305,13 +311,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // SOURCE
 
   @Override
-  public SourceDefinitionReadList listSourceDefinitions() {
-    return execute(sourceDefinitionsHandler::listSourceDefinitions);
+  public SourceDefinitionReadList listSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> sourceDefinitionsHandler.listSourceDefinitions(workspaceIdRequestBody));
   }
 
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
     return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+  }
+
+  @Override
+  public SourceDefinitionOptInReadList listSourceDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> sourceDefinitionsHandler.listSourceDefinitionOptIns(workspaceIdRequestBody));
   }
 
   @Override
@@ -325,6 +336,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionOptInRead createSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+    return execute(() -> sourceDefinitionsHandler.createSourceDefinitionOptIn(sourceDefinitionOptInUpdate));
+  }
+
+  @Override
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
     return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
   }
@@ -333,6 +349,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     execute(() -> {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
+      return null;
+    });
+  }
+
+  @Override
+  public void deleteSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+    execute(() -> {
+      sourceDefinitionsHandler.deleteSourceDefinitionOptIn(sourceDefinitionOptInUpdate);
       return null;
     });
   }
@@ -452,13 +476,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // DESTINATION
 
   @Override
-  public DestinationDefinitionReadList listDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+  public DestinationDefinitionReadList listDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitions(workspaceIdRequestBody));
   }
 
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+  }
+
+  @Override
+  public DestinationDefinitionOptInReadList listDestinationDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitionOptIns(workspaceIdRequestBody));
   }
 
   @Override
@@ -472,6 +501,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationDefinitionOptInRead createDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
+    return execute(() -> destinationDefinitionsHandler.createDestinationDefinitionOptIn(destinationDefinitionOptInUpdate));
+  }
+
+  @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
   }
@@ -480,6 +514,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     execute(() -> {
       destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
+      return null;
+    });
+  }
+
+  @Override
+  public void deleteDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
+    execute(() -> {
+      destinationDefinitionsHandler.deleteDestinationDefinitionOptIn(destinationDefinitionOptInUpdate);
       return null;
     });
   }

@@ -6,7 +6,9 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
@@ -31,6 +33,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -154,6 +158,68 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+  }
+
+  @Test
+  public void testListPublicSourceDefinitions() throws IOException {
+    final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
+    assertEquals(List.of(MockData.standardSourceDefinitions().get(0)), actualDefinitions);
+  }
+
+  @Test
+  public void testSourceDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSourceDefinition grantableDefinition1 = MockData.standardSourceDefinitions().get(1);
+    final StandardSourceDefinition grantableDefinition2 = MockData.standardSourceDefinitions().get(2);
+    final StandardSourceDefinition customDefinition = MockData.standardSourceDefinitions().get(3);
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getSourceDefinitionId(), workspaceId);
+    final List<StandardSourceDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardSourceDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
+
+    configRepository.deleteActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
+    final List<StandardSourceDefinition> actualGrantedDefinitions2 = configRepository
+        .listGrantedSourceDefinitions(workspaceId, false);
+    assertEquals(List.of(grantableDefinition1), actualGrantedDefinitions2);
+  }
+
+  @Test
+  public void testListPublicDestinationDefinitions() throws IOException {
+    final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
+    assertEquals(List.of(MockData.standardDestinationDefinitions().get(0)), actualDefinitions);
+  }
+
+  @Test
+  public void testDestinationDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardDestinationDefinition grantableDefinition1 = MockData.standardDestinationDefinitions().get(1);
+    final StandardDestinationDefinition grantableDefinition2 = MockData.standardDestinationDefinitions().get(2);
+    final StandardDestinationDefinition customDefinition = MockData.standardDestinationDefinitions().get(3);
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getDestinationDefinitionId(), workspaceId);
+    final List<StandardDestinationDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardDestinationDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
+
+    configRepository.deleteActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
+    final List<StandardDestinationDefinition> actualGrantedDefinitions2 = configRepository
+        .listGrantedDestinationDefinitions(workspaceId, false);
+    assertEquals(List.of(grantableDefinition1), actualGrantedDefinitions2);
   }
 
 }

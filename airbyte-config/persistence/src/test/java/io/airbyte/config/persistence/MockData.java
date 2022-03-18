@@ -56,8 +56,12 @@ public class MockData {
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_2 = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID_3 = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID_4 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_2 = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID_3 = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID_4 = UUID.randomUUID();
   private static final UUID SOURCE_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_ID_2 = UUID.randomUUID();
   private static final UUID SOURCE_ID_3 = UUID.randomUUID();
@@ -129,6 +133,8 @@ public class MockData {
         .withIcon("icon-1")
         .withSpec(connectorSpecification)
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
@@ -138,8 +144,32 @@ public class MockData {
         .withDockerRepository("repository-2")
         .withDocumentationUrl("documentation-url-2")
         .withIcon("icon-2")
-        .withTombstone(false);
-    return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2);
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+    final StandardSourceDefinition standardSourceDefinition3 = new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID_3)
+        .withSourceType(SourceType.DATABASE)
+        .withName("random-source-3")
+        .withDockerImageTag("tag-3")
+        .withDockerRepository("repository-3")
+        .withDocumentationUrl("documentation-url-3")
+        .withIcon("icon-3")
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+    final StandardSourceDefinition standardSourceDefinition4 = new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID_4)
+        .withSourceType(SourceType.DATABASE)
+        .withName("random-source-4")
+        .withDockerImageTag("tag-4")
+        .withDockerRepository("repository-4")
+        .withDocumentationUrl("documentation-url-4")
+        .withIcon("icon-4")
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true);
+    return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2, standardSourceDefinition3, standardSourceDefinition4);
   }
 
   private static ConnectorSpecification connectorSpecification() {
@@ -166,6 +196,8 @@ public class MockData {
         .withIcon("icon-3")
         .withSpec(connectorSpecification)
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
@@ -175,8 +207,33 @@ public class MockData {
         .withDocumentationUrl("documentation-url-4")
         .withIcon("icon-4")
         .withSpec(connectorSpecification)
-        .withTombstone(false);
-    return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2);
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+    final StandardDestinationDefinition standardDestinationDefinition3 = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_3)
+        .withName("random-destination-3")
+        .withDockerImageTag("tag-33")
+        .withDockerRepository("repository-33")
+        .withDocumentationUrl("documentation-url-33")
+        .withIcon("icon-3")
+        .withSpec(connectorSpecification)
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+    final StandardDestinationDefinition standardDestinationDefinition4 = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_4)
+        .withName("random-destination-4")
+        .withDockerImageTag("tag-44")
+        .withDockerRepository("repository-44")
+        .withDocumentationUrl("documentation-url-44")
+        .withIcon("icon-4")
+        .withSpec(connectorSpecification)
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true);
+    return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2, standardDestinationDefinition3,
+        standardDestinationDefinition4);
   }
 
   public static List<SourceConnection> sourceConnections() {

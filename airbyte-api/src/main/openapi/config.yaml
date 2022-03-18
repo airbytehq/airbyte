@@ -296,6 +296,11 @@ paths:
         - source_definition
       summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation
@@ -317,6 +322,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/list_opt_in:
+    post:
+      tags:
+        - source_definition
+      summary: List all opt-in sourceDefinitions along with the current workspace's opt-in statuses
+      operationId: listSourceDefinitionOptIns
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionOptInReadList"
+  /v1/source_definitions/grant_definition:
+    post:
+      tags:
+        - source_definition
+      summary: Opt in to a non-public, non-custom sourceDefinition
+      operationId: createSourceDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionOptInRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/revoke_definition:
+    post:
+      tags:
+        - source_definition
+      summary: Opt out of a non-public, non-custom sourceDefinition
+      operationId: deleteSourceDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/get:
     post:
       tags:
@@ -654,6 +719,11 @@ paths:
         - destination_definition
       summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation
@@ -675,6 +745,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/list_opt_in:
+    post:
+      tags:
+        - destination_definition
+      summary: List all opt-in destinationDefinitions along with the current workspace's opt-in statuses
+      operationId: listDestinationDefinitionOptIns
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionOptInReadList"
+  /v1/destination_definitions/grant_definition:
+    post:
+      tags:
+        - destination_definition
+      summary: Opt in to a non-public, non-custom destinationDefinition
+      operationId: createDestinationDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionOptInUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionOptInRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/revoke_definition:
+    post:
+      tags:
+        - destination_definition
+      summary: Opt out of a non-public, non-custom destinationDefinition
+      operationId: deleteDestinationDefinitionOptIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionOptInUpdate"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/get:
     post:
       tags:
@@ -2108,11 +2238,14 @@ components:
     SourceDefinitionCreate:
       type: object
       required:
+        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
@@ -2177,6 +2310,35 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionRead"
+    SourceDefinitionOptInRead:
+      type: object
+      required:
+        - sourceDefinition
+        - optIn
+      properties:
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        optIn:
+          type: boolean
+    SourceDefinitionOptInReadList:
+      type: object
+      required:
+        - sourceDefinitionOptIns
+      properties:
+        sourceDefinitionOptIns:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceDefinitionOptInRead"
+    SourceDefinitionOptInUpdate:
+      type: object
+      required:
+        - sourceDefinitionId
+        - workspaceId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SOURCE SPECIFICATION
     SourceDefinitionSpecification:
       description: The specification for what values are required to configure the sourceDefinition.
@@ -2392,11 +2554,14 @@ components:
     DestinationDefinitionCreate:
       type: object
       required:
+        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
@@ -2461,6 +2626,35 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationDefinitionRead"
+    DestinationDefinitionOptInRead:
+      type: object
+      required:
+        - destinationDefinition
+        - optIn
+      properties:
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
+        optIn:
+          type: boolean
+    DestinationDefinitionOptInReadList:
+      type: object
+      required:
+        - destinationDefinitionOptIns
+      properties:
+        destinationDefinitionOptIns:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationDefinitionOptInRead"
+    DestinationDefinitionOptInUpdate:
+      type: object
+      required:
+        - destinationDefinitionId
+        - workspaceId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # DESTINATION DEFINITION SPECIFICATION
     DestinationDefinitionSpecification:
       description: The specification for what values are required to configure the destinationDefinition.

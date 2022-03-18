@@ -9,13 +9,18 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInRead;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
+import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.ReleaseStage;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -33,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -101,8 +107,12 @@ public class DestinationDefinitionsHandler {
     return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
-  public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
-    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
+  public DestinationDefinitionReadList listDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toDestinationDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicDestinationDefinitions(false),
+        configRepository.listGrantedDestinationDefinitions(
+            workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
   private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
@@ -114,6 +124,43 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return toDestinationDefinitionReadList(getLatestDestinations());
+  }
+
+  public DestinationDefinitionOptInReadList listDestinationDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardDestinationDefinition, Boolean>> standardDestinationDefinitionBooleanMap =
+        configRepository.listGrantableDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toDestinationDefinitionOptInReadList(standardDestinationDefinitionBooleanMap);
+  }
+
+  private static DestinationDefinitionOptInReadList toDestinationDefinitionOptInReadList(
+                                                                                         final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
+    final List<DestinationDefinitionOptInRead> reads = defs.stream()
+        .map(entry -> new DestinationDefinitionOptInRead()
+            .destinationDefinition(buildDestinationDefinitionRead(entry.getKey()))
+            .optIn(entry.getValue()))
+        .collect(Collectors.toList());
+    return new DestinationDefinitionOptInReadList().destinationDefinitionOptIns(reads);
+  }
+
+  public DestinationDefinitionOptInRead createDestinationDefinitionOptIn(
+                                                                         final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionOptInUpdate.getDestinationDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        destinationDefinitionOptInUpdate.getWorkspaceId(),
+        destinationDefinitionOptInUpdate.getDestinationDefinitionId());
+    return new DestinationDefinitionOptInRead()
+        .destinationDefinition(buildDestinationDefinitionRead(standardDestinationDefinition))
+        .optIn(true);
+  }
+
+  public void deleteDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        destinationDefinitionOptInUpdate.getWorkspaceId(),
+        destinationDefinitionOptInUpdate.getDestinationDefinitionId());
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {
@@ -146,10 +193,13 @@ public class DestinationDefinitionsHandler {
         .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
+    configRepository.writeActorDefinitionWorkspaceGrant(id, destinationDefCreate.getWorkspaceId());
 
     return buildDestinationDefinitionRead(destinationDefinition);
   }

@@ -18,11 +18,15 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionOptInRead;
+import io.airbyte.api.model.SourceDefinitionOptInReadList;
+import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -42,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +65,7 @@ class SourceDefinitionsHandlerTest {
   private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
   private SourceHandler sourceHandler;
+  private UUID workspaceId;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,6 +75,7 @@ class SourceDefinitionsHandlerTest {
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
     sourceHandler = mock(SourceHandler.class);
+    workspaceId = UUID.randomUUID();
 
     sourceDefinition = generateSourceDefinition();
 
@@ -100,7 +107,8 @@ class SourceDefinitionsHandlerTest {
   void testListSourceDefinitions() throws JsonValidationException, IOException, URISyntaxException {
     final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
 
-    when(configRepository.listStandardSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition, sourceDefinition2));
+    when(configRepository.listPublicSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition));
+    when(configRepository.listGrantedSourceDefinitions(workspaceId, false)).thenReturn(Lists.newArrayList(sourceDefinition2));
 
     final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
@@ -128,11 +136,106 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
+    final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId));
 
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
         actualSourceDefinitionReadList.getSourceDefinitions());
+  }
+
+  @Test
+  @DisplayName("listSourceDefinitionOptIns should return the right list")
+  void testListSourceDefinitionOptIns() throws IOException, URISyntaxException {
+    final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
+
+    when(configRepository.listGrantableSourceDefinitions(workspaceId, false)).thenReturn(
+        Lists.newArrayList(
+            Map.entry(sourceDefinition, false),
+            Map.entry(sourceDefinition2, true)));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
+        .name(sourceDefinition2.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionOptInRead expectedSourceDefinitionOptInRead1 =
+        new SourceDefinitionOptInRead().sourceDefinition(expectedSourceDefinitionRead1).optIn(false);
+
+    final SourceDefinitionOptInRead expectedSourceDefinitionOptInRead2 =
+        new SourceDefinitionOptInRead().sourceDefinition(expectedSourceDefinitionRead2).optIn(true);
+
+    final SourceDefinitionOptInReadList actualSourceDefinitionOptInReadList = sourceDefinitionsHandler.listSourceDefinitionOptIns(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(
+        Lists.newArrayList(expectedSourceDefinitionOptInRead1, expectedSourceDefinitionOptInRead2),
+        actualSourceDefinitionOptInReadList.getSourceDefinitionOptIns());
+  }
+
+  @Test
+  @DisplayName("createSourceDefinitionOptIn should correctly create a SourceDefinitionOptInRead")
+  void testCreateSourceDefinitionOptIn() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionOptInRead expectedSourceDefinitionOptInRead =
+        new SourceDefinitionOptInRead().sourceDefinition(expectedSourceDefinitionRead).optIn(true);
+
+    final SourceDefinitionOptInRead actualSourceDefinitionOptInRead =
+        sourceDefinitionsHandler.createSourceDefinitionOptIn(new SourceDefinitionOptInUpdate()
+            .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+            .workspaceId(workspaceId));
+
+    assertEquals(expectedSourceDefinitionOptInRead, actualSourceDefinitionOptInRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId());
+  }
+
+  @Test
+  @DisplayName("deleteSourceDefinitionOptIn should attempt to delete a ActorDefinitionWorkspaceGrant")
+  void testDeleteSourceDefinitionOptIn() throws IOException {
+    sourceDefinitionsHandler.deleteSourceDefinitionOptIn(new SourceDefinitionOptInUpdate()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId());
   }
 
   @Test
@@ -179,6 +282,7 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(sourceDefinition.getDockerImageTag())
         .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
         .icon(sourceDefinition.getIcon())
+        .workspaceId(workspaceId)
         .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
@@ -199,8 +303,13 @@ class SourceDefinitionsHandlerTest {
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository)
-        .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+    verify(configRepository).writeStandardSourceDefinition(sourceDefinition
+        .withReleaseDate(null)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        sourceDefinition.getSourceDefinitionId(),
+        workspaceId);
   }
 
   @Test

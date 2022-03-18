@@ -16,12 +16,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionOptInRead;
+import io.airbyte.api.model.DestinationDefinitionOptInReadList;
+import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.ReleaseStage;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -41,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +64,7 @@ class DestinationDefinitionsHandlerTest {
   private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
   private DestinationHandler destinationHandler;
+  private UUID workspaceId;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,6 +75,7 @@ class DestinationDefinitionsHandlerTest {
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
     destinationHandler = mock(DestinationHandler.class);
+    workspaceId = UUID.randomUUID();
 
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(
         configRepository,
@@ -101,7 +108,8 @@ class DestinationDefinitionsHandlerTest {
   void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestinationDefinition();
 
-    when(configRepository.listStandardDestinationDefinitions(false)).thenReturn(Lists.newArrayList(destinationDefinition, destination2));
+    when(configRepository.listPublicDestinationDefinitions(false)).thenReturn(Lists.newArrayList(destinationDefinition));
+    when(configRepository.listGrantedDestinationDefinitions(workspaceId, false)).thenReturn(Lists.newArrayList(destination2));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
         .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
@@ -129,11 +137,106 @@ class DestinationDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination2.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listDestinationDefinitions();
+    final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listDestinationDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId));
 
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
         actualDestinationDefinitionReadList.getDestinationDefinitions());
+  }
+
+  @Test
+  @DisplayName("listDestinationDefinitionOptIns should return the right list")
+  void testListDestinationDefinitionOptIns() throws IOException, URISyntaxException {
+    final StandardDestinationDefinition destinationDefinition2 = generateDestinationDefinition();
+
+    when(configRepository.listGrantableDestinationDefinitions(workspaceId, false)).thenReturn(
+        Lists.newArrayList(
+            Map.entry(destinationDefinition, false),
+            Map.entry(destinationDefinition2, true)));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition2.getDestinationDefinitionId())
+        .name(destinationDefinition2.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead1 =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead1).optIn(false);
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead2 =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead2).optIn(true);
+
+    final DestinationDefinitionOptInReadList actualDestinationDefinitionOptInReadList =
+        destinationDefinitionsHandler.listDestinationDefinitionOptIns(new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(
+        Lists.newArrayList(expectedDestinationDefinitionOptInRead1, expectedDestinationDefinitionOptInRead2),
+        actualDestinationDefinitionOptInReadList.getDestinationDefinitionOptIns());
+  }
+
+  @Test
+  @DisplayName("createDestinationDefinitionOptIn should correctly create a DestinationDefinitionOptInRead")
+  void testCreateDestinationDefinitionOptIn() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(destinationDefinition);
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionOptInRead expectedDestinationDefinitionOptInRead =
+        new DestinationDefinitionOptInRead().destinationDefinition(expectedDestinationDefinitionRead).optIn(true);
+
+    final DestinationDefinitionOptInRead actualDestinationDefinitionOptInRead =
+        destinationDefinitionsHandler.createDestinationDefinitionOptIn(new DestinationDefinitionOptInUpdate()
+            .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+            .workspaceId(workspaceId));
+
+    assertEquals(expectedDestinationDefinitionOptInRead, actualDestinationDefinitionOptInRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId());
+  }
+
+  @Test
+  @DisplayName("deleteDestinationDefinitionOptIn should attempt to delete a ActorDefinitionWorkspaceGrant")
+  void testDeleteDestinationDefinitionOptIn() throws IOException {
+    destinationDefinitionsHandler.deleteDestinationDefinitionOptIn(new DestinationDefinitionOptInUpdate()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        workspaceId,
+        destinationDefinition.getDestinationDefinitionId());
   }
 
   @Test
@@ -181,6 +284,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .icon(destination.getIcon())
+        .workspaceId(workspaceId)
         .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
@@ -203,7 +307,11 @@ class DestinationDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardDestinationDefinition(destination
         .withReleaseDate(null)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM));
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        destination.getDestinationDefinitionId(),
+        workspaceId);
   }
 
   @Test
