@@ -858,17 +858,12 @@ public abstract class DestinationAcceptanceTest {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    messages.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace);
-          }
-        });
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+    runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messagesWithNewNamespace, defaultSchema);
   }
 
   /**
@@ -898,24 +893,15 @@ public abstract class DestinationAcceptanceTest {
 
     final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
-    final var ns1Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns1Messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    ns1Msgs.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace1);
-          }
-        });
-    final var ns2Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1);
+    final var ns2Messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    ns2Msgs.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace2);
-          }
-        });
-    final var allMessages = new ArrayList<>(ns1Msgs);
-    allMessages.addAll(ns2Msgs);
+    final var ns2MessagesAtNamespace2 = getRecordMessagesWithNewNamespace(ns2Messages, namespace2);
+
+    final var allMessages = new ArrayList<>(ns1MessagesAtNamespace1);
+    allMessages.addAll(ns2MessagesAtNamespace2);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
@@ -957,16 +943,11 @@ public abstract class DestinationAcceptanceTest {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    messages.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace);
-          }
-        });
+    final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace);
 
     final JsonNode config = getConfig();
     try {
-      runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+      runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false);
     } catch (final Exception e) {
       throw new IOException(String.format(
           "[Test Case %s] Destination failed to sync data to namespace %s, see \"namespace_test_cases.json for details\"",
@@ -1452,6 +1433,18 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config));
+  }
+
+  /**
+   * Mutate the input airbyte record message namespace.
+   */
+  private static List<AirbyteMessage> getRecordMessagesWithNewNamespace(final List<AirbyteMessage> airbyteMessages, final String namespace) {
+    airbyteMessages.forEach(message -> {
+      if (message.getRecord() != null) {
+        message.getRecord().setNamespace(namespace);
+      }
+    });
+    return airbyteMessages;
   }
 
 }
