@@ -501,6 +501,5 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
     records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
     # The stream should not attempt to get more than 10K records.
-    # Instead, it should use the new state to start a new search query.
     assert len(records) == 10000
     assert test_stream.state["lastUpdated"] == +1641234595252
