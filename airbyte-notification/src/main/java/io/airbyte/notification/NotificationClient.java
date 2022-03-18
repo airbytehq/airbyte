@@ -31,11 +31,18 @@ public abstract class NotificationClient {
                                            String logUrl)
       throws IOException, InterruptedException;
 
-  public abstract boolean notifyConnectionDisabled(String email,
+  public abstract boolean notifyConnectionDisabled(String receiverEmail,
                                                    String sourceConnector,
                                                    String destinationConnector,
                                                    String jobDescription,
                                                    String logUrl)
+      throws IOException, InterruptedException;
+
+  public abstract boolean notifyConnectionDisableWarning(String receiverEmail,
+                                                         String sourceConnector,
+                                                         String destinationConnector,
+                                                         String jobDescription,
+                                                         String logUrl)
       throws IOException, InterruptedException;
 
   public abstract boolean notifySuccess(String message) throws IOException, InterruptedException;
@@ -45,7 +52,7 @@ public abstract class NotificationClient {
   public static NotificationClient createNotificationClient(final Notification notification) {
     return switch (notification.getNotificationType()) {
       case SLACK -> new SlackNotificationClient(notification);
-      case EMAIL -> new EmailNotificationClient(notification);
+      case CUSTOMERIO -> new CustomeriolNotificationClient(notification);
       default -> throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     };
   }

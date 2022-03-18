@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-class EmailNotificationClientTest {
+class CustomerioNotificationClientTest {
 
   private static final String API_KEY = "api-key";
-  private static final String URI_BASE = "https://api.test.com";
+  private static final String URI_BASE = "https://customer.io";
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final StandardWorkspace WORKSPACE = new StandardWorkspace()
       .withWorkspaceId(WORKSPACE_ID)
@@ -45,8 +45,8 @@ class EmailNotificationClientTest {
   // this test does _not_ check the body of the request.
   @Test
   void notifyConnectionDisabled() throws IOException, InterruptedException {
-    final EmailNotificationClient emailNotificationClient = new EmailNotificationClient(new Notification()
-        .withNotificationType(NotificationType.EMAIL), API_KEY, URI_BASE, mHttpClient);
+    final CustomeriolNotificationClient customeriolNotificationClient = new CustomeriolNotificationClient(new Notification()
+        .withNotificationType(NotificationType.CUSTOMERIO), API_KEY, URI_BASE, mHttpClient);
 
     final HttpRequest expectedRequest = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(""))
@@ -60,7 +60,7 @@ class EmailNotificationClientTest {
     Mockito.when(httpResponse.statusCode()).thenReturn(200);
 
     final boolean result =
-        emailNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT);
+        customeriolNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT);
     Mockito.verify(mHttpClient).send(expectedRequest, HttpResponse.BodyHandlers.ofString());
 
     assertTrue(result);

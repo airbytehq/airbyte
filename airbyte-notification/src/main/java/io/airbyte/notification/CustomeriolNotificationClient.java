@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Notification client that uses customer.io API send emails.
  */
-public class EmailNotificationClient extends NotificationClient {
+public class CustomeriolNotificationClient extends NotificationClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EmailNotificationClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CustomeriolNotificationClient.class);
 
   // Once the configs are editable through the UI, these should be stored in
-  // airbyte-config/models/src/main/resources/types/EmailNotificationConfiguration.yaml
+  // airbyte-config/models/src/main/resources/types/CustomerioNotificationConfiguration.yaml
   // - SENDER_EMAIL
   // - receiver email
   // - customer.io identifier email
@@ -32,27 +32,31 @@ public class EmailNotificationClient extends NotificationClient {
   private static final String SENDER_EMAIL = "Airbyte Notification <no-reply@airbyte.io>";
   private static final String TRANSACTION_MESSAGE_ID = "6";
 
-  private static final String CUSTOMERIO_API_ENDPOINT = "https://api.customer.io/v1/send/email";
+  private static final String CUSTOMERIO_EMAIL_API_ENDPOINT = "https://api.customer.io/v1/send/email";
   private static final String AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_notification_template.json";
+  private static final String AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_warning_notification_template.json";
 
   private final HttpClient httpClient;
   private final String apiToken;
-  private final String apiEndpoint;
+  private final String emailApiEndpoint;
 
-  public EmailNotificationClient(final Notification notification) {
+  public CustomeriolNotificationClient(final Notification notification) {
     super(notification);
     this.apiToken = System.getenv("CUSTOMERIO_API_KEY");
-    this.apiEndpoint = CUSTOMERIO_API_ENDPOINT;
+    this.emailApiEndpoint = CUSTOMERIO_EMAIL_API_ENDPOINT;
     this.httpClient = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_2)
         .build();
   }
 
   @VisibleForTesting
-  public EmailNotificationClient(final Notification notification, final String apiToken, final String apiEndpoint, final HttpClient httpClient) {
+  public CustomeriolNotificationClient(final Notification notification,
+                                       final String apiToken,
+                                       final String emailApiEndpoint,
+                                       final HttpClient httpClient) {
     super(notification);
     this.apiToken = apiToken;
-    this.apiEndpoint = apiEndpoint;
+    this.emailApiEndpoint = emailApiEndpoint;
     this.httpClient = httpClient;
   }
 
@@ -77,7 +81,20 @@ public class EmailNotificationClient extends NotificationClient {
       throws IOException, InterruptedException {
     final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
         receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
-    return notifyMessage(requestBody);
+    return notifyByEmail(requestBody);
+  }
+
+  @Override
+  public boolean notifyConnectionDisableWarning(
+                                                final String receiverEmail,
+                                                final String sourceConnector,
+                                                final String destinationConnector,
+                                                final String jobDescription,
+                                                final String logUrl)
+      throws IOException, InterruptedException {
+    final String requestBody = renderTemplate(AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
+        receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
+    return notifyByEmail(requestBody);
   }
 
   @Override
@@ -90,10 +107,10 @@ public class EmailNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
-  private boolean notifyMessage(final String requestBody) throws IOException, InterruptedException {
+  private boolean notifyByEmail(final String requestBody) throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-        .uri(URI.create(apiEndpoint))
+        .uri(URI.create(emailApiEndpoint))
         .header("Content-Type", "application/json")
         .header("Authorization", "Bearer " + apiToken)
         .build();
@@ -116,7 +133,6 @@ public class EmailNotificationClient extends NotificationClient {
     return httpStatusCode / 100 == 2;
   }
 
-  @VisibleForTesting
   public String renderTemplate(final String templateFile, final String... data) throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, data);

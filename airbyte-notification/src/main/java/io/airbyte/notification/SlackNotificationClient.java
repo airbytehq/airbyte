@@ -67,11 +67,22 @@ public class SlackNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyConnectionDisabled(final String email,
+  public boolean notifyConnectionDisabled(final String receiverEmail,
                                           final String sourceConnector,
                                           final String destinationConnector,
                                           final String jobDescription,
                                           final String logUrl)
+      throws IOException, InterruptedException {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public boolean notifyConnectionDisableWarning(
+                                                final String receiverEmail,
+                                                final String sourceConnector,
+                                                final String destinationConnector,
+                                                final String jobDescription,
+                                                final String logUrl)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }

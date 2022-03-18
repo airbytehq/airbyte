@@ -35,6 +35,7 @@ public class JobNotifier {
 
   public static final String FAILURE_NOTIFICATION = "Failure Notification";
   public static final String SUCCESS_NOTIFICATION = "Success Notification";
+  public static final String CONNECTION_DISABLED_WARNING_NOTIFICATION = "Connection Disabled Warning Notification";
   public static final String CONNECTION_DISABLED_NOTIFICATION = "Connection Disabled Notification";
 
   private final String connectionPageUrl;
@@ -103,8 +104,8 @@ public class JobNotifier {
               notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
             // flag as slack if the webhook URL is also pointing to slack
             notificationMetadata.put("notification_type", NotificationType.SLACK);
-          } else if (notification.getNotificationType().equals(NotificationType.EMAIL)) {
-            notificationMetadata.put("notification_type", NotificationType.EMAIL);
+          } else if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+            notificationMetadata.put("notification_type", NotificationType.CUSTOMERIO);
           } else {
             // Slack Notification type could be "hacked" and re-used for custom webhooks
             notificationMetadata.put("notification_type", "N/A");
@@ -122,9 +123,14 @@ public class JobNotifier {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
             // alert message currently only supported by email through customer.io
-          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action) && notification.getNotificationType().equals(NotificationType.EMAIL)) {
+          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action) && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
             if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+            }
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)
+              && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+              LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
             }
           }
         } catch (final Exception e) {
@@ -138,7 +144,7 @@ public class JobNotifier {
 
   public void notifyJobByEmail(final String reason, final String action, final Job job) {
     final Notification emailNotification = new Notification();
-    emailNotification.setNotificationType(NotificationType.EMAIL);
+    emailNotification.setNotificationType(NotificationType.CUSTOMERIO);
     try {
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
