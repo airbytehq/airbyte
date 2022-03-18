@@ -13,7 +13,6 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping,
 
 import backoff
 import pendulum as pendulum
-from pytest import param
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
