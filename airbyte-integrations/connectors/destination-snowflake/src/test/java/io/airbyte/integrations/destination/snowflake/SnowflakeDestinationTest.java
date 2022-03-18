@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
@@ -26,6 +27,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -100,8 +103,9 @@ public class SnowflakeDestinationTest {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
     final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory()
         .create(Destination::defaultOutputRecordCollector, mockDb,
-            sqlOperations, new SnowflakeSQLNameTransformer(), config, getCatalog());
-    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyString());
+            sqlOperations, new SnowflakeSQLNameTransformer(), CsvSerializedBuffer.createFunction(null, FileBuffer::new),
+            config, getCatalog());
+    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
     for (final AirbyteMessage m : testMessages) {
@@ -109,7 +113,7 @@ public class SnowflakeDestinationTest {
     }
     assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
 
-    verify(sqlOperations, times(1)).cleanUpStage(any(), anyString());
+    verify(sqlOperations, times(1)).cleanUpStage(any(), anyString(), anyList());
   }
 
   @ParameterizedTest
