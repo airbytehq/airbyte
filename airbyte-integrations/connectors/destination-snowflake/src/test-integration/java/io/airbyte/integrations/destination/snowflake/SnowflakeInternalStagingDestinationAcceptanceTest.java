@@ -14,23 +14,11 @@ import java.util.Optional;
 
 public class SnowflakeInternalStagingDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
-  private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
-
   public JsonNode getStaticConfig() {
     final JsonNode internalStagingConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
     Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(internalStagingConfig));
     Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(internalStagingConfig));
     return internalStagingConfig;
-  }
-
-  @Override
-  protected boolean supportNamespaceTest() {
-    return true;
-  }
-
-  @Override
-  protected Optional<NamingConventionTransformer> getNameTransformer() {
-    return Optional.of(NAME_TRANSFORMER);
   }
 
 }
