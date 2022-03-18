@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
@@ -88,7 +89,15 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     return new StagingConsumerFactory().create(outputRecordCollector, getDatabase(config),
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()), getNamingResolver(), config, catalog);
+        new SnowflakeInternalStagingSqlOperations(getNamingResolver()), getNamingResolver(), config, getNormalizedCatalog(catalog));
+  }
+
+  protected ConfiguredAirbyteCatalog getNormalizedCatalog(final ConfiguredAirbyteCatalog catalog) {
+    catalog.getStreams().forEach(e -> {
+      final AirbyteStream stream = e.getStream();
+      stream.setNamespace(getNamingResolver().getIdentifier(stream.getNamespace()));
+    });
+    return catalog;
   }
 
 }
