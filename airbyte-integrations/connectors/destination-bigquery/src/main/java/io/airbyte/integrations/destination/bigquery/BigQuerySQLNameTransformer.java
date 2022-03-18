@@ -10,10 +10,14 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {
-    String result = super.convertStreamName(input);
+    if (input == null) {
+      return null;
+    }
+
+    final String result = super.convertStreamName(input);
     if (!result.substring(0, 1).matches("[A-Za-z_]")) {
       // has to start with a letter or _
-      result = "_" + result;
+      return "_" + result;
     }
     return result;
   }
