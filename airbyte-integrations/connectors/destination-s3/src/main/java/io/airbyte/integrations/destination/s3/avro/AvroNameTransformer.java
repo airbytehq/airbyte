@@ -14,20 +14,17 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  public String getIdentifier(final String name) {
-    return replaceForbiddenCharacters(checkFirsCharInStreamName(convertStreamName(name)));
-  }
-
-  private String checkFirsCharInStreamName(final String name) {
-    if (name.substring(0, 1).matches("[A-Za-z_]")) {
-      return name;
-    } else {
-      return "_" + name;
+  public String convertStreamName(final String input) {
+    if (input == null) {
+      return null;
     }
-  }
 
-  private String replaceForbiddenCharacters(final String name) {
-    return name.replace("-", "_");
+    final String normalizedName = super.convertStreamName(input);
+    if (normalizedName.substring(0, 1).matches("[A-Za-z_]")) {
+      return normalizedName;
+    } else {
+      return "_" + normalizedName;
+    }
   }
 
 }
