@@ -399,7 +399,7 @@ public class ConnectionManagerWorkflowTest {
                   && changedStateEvent.isValue())
           .isEmpty();
 
-      Mockito.verify(mConnectionDeletionActivity, Mockito.atLeast(1)).deleteConnection(Mockito.any());
+      Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
     }
 
   }
