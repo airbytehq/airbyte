@@ -95,25 +95,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     CHECK_INTERVAL_SECONDS = 30
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
-    # Async report generation time is 15 minutes according to docs:
-    # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
-    #Maximum number of retries that Airbyte attempt to fetch data.
-    REPORT_GENERATION_MAX_RETRIES = 5
 
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        if(config and config.report_wait_timeout and config.report_wait_timeout > 30):
-            self.REPORT_WAIT_TIMEOUT = timedelta(minutes=config.report_wait_timeout).total_seconds
-        if(config and config.report_generation_max_retries and config.report_generation_max_retries > 5):
-            self.REPORT_GENERATION_MAX_RETRIES = config.report_generation_max_retries
-
+        self.report_wait_timeout = timedelta(minutes=config.report_wait_timeout).total_seconds
+        self.report_generation_maximum_retries = config.report_generation_max_retries
         # Set start date from config file, should be in UTC timezone.
         self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
         super().__init__(config, profiles)
@@ -162,7 +154,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return backoff.on_exception(
                 backoff.constant,
                 RetryableException,
-                max_time = self.REPORT_WAIT_TIMEOUT
+                max_time = self.report_wait_timeout
             )(func)(self, *args, **kwargs)
         return wrapped
         
@@ -171,7 +163,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return backoff.on_exception(
                 backoff.expo,
                 ReportGenerationFailure,
-                max_tries = self.REPORT_GENERATION_MAX_RETRIES
+                max_tries = self.report_generation_maximum_retries
             )(func)(self, *args, **kwargs)
         return wrapped
 
