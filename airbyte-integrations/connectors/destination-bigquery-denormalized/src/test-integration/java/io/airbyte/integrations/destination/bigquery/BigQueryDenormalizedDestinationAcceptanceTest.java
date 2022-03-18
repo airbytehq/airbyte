@@ -59,17 +59,17 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  protected static final String CONFIG_DATASET_ID = "dataset_id";
+  private static final String CONFIG_DATASET_ID = "dataset_id";
   protected static final String CONFIG_PROJECT_ID = "project_id";
-  protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  protected static final String CONFIG_CREDS = "credentials_json";
-  protected static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  private static final String CONFIG_CREDS = "credentials_json";
+  private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
-  protected BigQuery bigquery;
-  protected Dataset dataset;
-  protected boolean tornDown;
-  protected JsonNode config;
-  protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private BigQuery bigquery;
+  private Dataset dataset;
+  private boolean tornDown;
+  private JsonNode config;
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
