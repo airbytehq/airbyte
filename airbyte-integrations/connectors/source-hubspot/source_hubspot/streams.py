@@ -268,7 +268,6 @@ class Stream(HttpStream, ABC):
         if params:
             request_params.update(params)
 
-        logger.info(f'next_page_request: {next_page_token} - params: {request_params}')
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
