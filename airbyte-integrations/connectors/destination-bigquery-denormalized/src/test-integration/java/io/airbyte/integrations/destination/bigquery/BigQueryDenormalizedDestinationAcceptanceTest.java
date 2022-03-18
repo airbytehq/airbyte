@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -56,19 +57,19 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
   private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  private static final String CONFIG_DATASET_ID = "dataset_id";
-  private static final String CONFIG_PROJECT_ID = "project_id";
-  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  private static final String CONFIG_CREDS = "credentials_json";
-  private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  protected static final String CONFIG_DATASET_ID = "dataset_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
+  protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  protected static final String CONFIG_CREDS = "credentials_json";
+  protected static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private boolean tornDown;
-  private JsonNode config;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected boolean tornDown;
+  protected JsonNode config;
+  protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -186,6 +187,21 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     }
   }
 
+  protected JsonNode createConfig() throws IOException {
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(CONFIG_PROJECT_ID, projectId)
+        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .build());
+  }
+
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
@@ -194,23 +210,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    config = createConfig();
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
 
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
-
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
-        .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
-        .build());
-
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
         .setCredentials(credentials)
@@ -237,7 +240,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
