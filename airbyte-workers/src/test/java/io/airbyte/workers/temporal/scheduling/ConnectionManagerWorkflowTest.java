@@ -753,7 +753,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
 
-      Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).attemptFailure(Mockito.any());
+      Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).attemptFailureWithAttemptNumber(Mockito.any());
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).jobFailure(Mockito.any());
       Mockito.verify(mAutoDisableConnectionActivity)
           .autoDisableFailingConnection(new AutoDisableConnectionActivityInput(connectionId, Mockito.any()));
