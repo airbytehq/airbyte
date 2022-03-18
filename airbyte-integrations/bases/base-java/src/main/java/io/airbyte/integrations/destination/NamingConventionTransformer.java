@@ -22,8 +22,8 @@ public interface NamingConventionTransformer {
   String getIdentifier(String name);
 
   /**
-   * Handle naming conversions of an input name to output a valid namespace
-   * for the desired destination.
+   * Handle naming conversions of an input name to output a valid namespace for the desired
+   * destination.
    */
   String getNamespace(String namespace);
 
