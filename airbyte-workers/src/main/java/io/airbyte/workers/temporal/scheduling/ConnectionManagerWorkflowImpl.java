@@ -96,6 +96,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       if (workflowState.isDeleted()) {
+        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
         return;
       }
@@ -138,7 +139,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
       if (workflowState.isDeleted()) {
-        deleteConnectionBeforeTerminatingTheWorkflow();
+        log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
         return;
       }
 
