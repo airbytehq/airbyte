@@ -26,6 +26,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -40,6 +41,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -52,6 +54,7 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -78,7 +81,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
   }
@@ -91,6 +94,16 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   @Override
   protected boolean implementsNamespaces() {
     return true;
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
   }
 
   @Override
