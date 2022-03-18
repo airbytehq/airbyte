@@ -84,11 +84,12 @@ public class StagingConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
 
       final String streamName = abStream.getName();
+      final String namespace = abStream.getNamespace() == null ? null : namingResolver.getIdentifier(abStream.getNamespace());
       final String tableName = namingResolver.getRawTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(streamName, namespace, outputSchema, tmpTableName, tableName, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
 
       return writeConfig;
