@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -29,9 +30,9 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   @Test
   void putFileToStage() {
-    final String expectedQuery = "PUT file://" + FILE_PATH + " @" + STAGE_NAME + "/" + STAGE_PATH + " PARALLEL = 12;";
+    final String expectedQuery = "PUT file://" + FILE_PATH + " @" + STAGE_NAME + "/" + STAGE_PATH + " PARALLEL =";
     final String actualPutQuery = snowflakeStagingSqlOperations.getPutQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
-    assertEquals(expectedQuery, actualPutQuery);
+    assertTrue(actualPutQuery.startsWith(expectedQuery));
   }
 
   @Test

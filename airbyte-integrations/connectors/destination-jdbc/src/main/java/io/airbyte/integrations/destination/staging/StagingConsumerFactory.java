@@ -116,7 +116,7 @@ public class StagingConsumerFactory {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
         final String tmpTable = writeConfig.getTmpTableName();
-        final String stageName = stagingOperations.getStageName(schema, writeConfig.getOutputTableName());
+        final String stageName = stagingOperations.getStageName(schema, stream);
         final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
 
         LOGGER.info("Preparing staging area in destination started for schema {} stream {}: tmp table: {}, stage: {}",
@@ -160,7 +160,7 @@ public class StagingConsumerFactory {
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
-      final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
+      final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
       final String stagingPath =
           stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
       try (writer) {
@@ -186,7 +186,7 @@ public class StagingConsumerFactory {
           final String streamName = writeConfig.getStreamName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
-          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
+          final String stageName = stagingOperations.getStageName(schemaName, streamName);
           final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, streamName, writeConfig.getWriteDatetime());
           LOGGER.info("Copying stream {} of schema {} into tmp table {} to final table {} from stage path {} with {} file(s) [{}]",
               streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
@@ -222,8 +222,7 @@ public class StagingConsumerFactory {
             tmpTableName);
 
         stagingOperations.dropTableIfExists(database, schemaName, tmpTableName);
-        final String outputTableName = writeConfig.getOutputTableName();
-        final String stageName = stagingOperations.getStageName(schemaName, outputTableName);
+        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
         LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
             stageName);
         stagingOperations.dropStageIfExists(database, stageName);
