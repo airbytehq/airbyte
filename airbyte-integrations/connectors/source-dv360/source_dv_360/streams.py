@@ -1,6 +1,6 @@
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, Optional, Tuple, MutableMapping
 from xmlrpc.client import Boolean
 from airbyte_cdk.sources.streams import Stream
 import json
@@ -12,7 +12,7 @@ import io
 import csv
 import requests
 from .fields import API_REPORT_BUILDER_MAPPING, sanitize
-
+from airbyte_cdk.models import SyncMode
 
 REPORT_TYPE_MAPPING = {
     "audience_composition": "TYPE_AUDIENCE_COMPOSITION",
@@ -22,6 +22,34 @@ REPORT_TYPE_MAPPING = {
     "unique_reach_audience": "TYPE_REACH_AUDIENCE"
 }
 
+def chunk_date_range(
+  start_date: str,
+  field: str,
+  end_date: str = None,
+  range_days: int = None,
+) -> Iterable[Mapping[str, any]]:
+  """
+  Passing optional parameter end_date for testing
+  Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
+  The return value is a list of dicts {'date': str} which can be used directly with the Slack API
+  """
+  intervals = []
+  end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
+  start_date = pendulum.parse(start_date)
+
+  # As in to return some state when state in abnormal
+  if start_date > end_date:
+    start_date = end_date
+
+  while start_date < end_date:
+    intervals.append(
+      {
+        "start_date": start_date.to_date_string(),
+        "end_date": end_date.to_date_string(),
+      }
+    )
+    start_date = start_date.add(days=range_days)
+  return intervals
 
 class DBM:
   QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json" #Template for creating the query object
@@ -48,7 +76,6 @@ class DBM:
     end_date_ms = str(int(end_date.timestamp() * 1000))
     
     return start_date_ms, end_date_ms
-
 
   @staticmethod
   def get_fields_from_schema(schema: Mapping[str, Any], catalog_fields: List[str]) -> List[str]:
@@ -129,6 +156,7 @@ class DBM:
 
     # get dates in ms
     start_date_ms, end_date_ms = DBM.get_date_params_ms(start_date, end_date)
+
     DBM.set_partner_filter(query_body, partner_id) #Set partner Id in the filter
     query_body["metadata"]["title"] = report_name
     query_body["params"]["type"] = REPORT_TYPE_MAPPING[report_name] #get the report type from the mapping
@@ -139,7 +167,7 @@ class DBM:
     query_body["reportDataEndTimeMs"] = end_date_ms
     return query_body
 
-  def convert_schema_into_query(self, schema: Mapping[str, Any], report_name: str, catalog_fields: List[str], partner_id: str, filters:List[dict], start_date: str, end_date: str = None) -> str:
+  def convert_schema_into_query(self, schema: Mapping[str, Any], report_name: str, catalog_fields: List[str], partner_id: str, filters:List[dict], start_date: str, end_date: str) -> str:
     """
     Create and run a query from the given schema
     :param report_name: Name of the report
@@ -151,7 +179,6 @@ class DBM:
     :return the query object created according to the template
     """
     fields = self.get_fields_from_schema(schema,catalog_fields)
-    start_date, end_date = DBM.ge
     query = self.create_query_object(
       report_name = report_name,
       dimensions = self.get_dimensions_from_fields(fields),
@@ -159,10 +186,10 @@ class DBM:
       start_date = start_date,
       end_date = end_date,
       partner_id = partner_id,
-      filters = filters if filters else [],
+      filters = filters or [],
     )
-    create_query =self.service.queries().createquery(body=query).execute() #Create query
-    get_query=self.service.queries().getquery(queryId=create_query.get('queryId')).execute() #get the query which will include the report url
+    create_query = self.service.queries().createquery(body=query).execute() #Create query
+    get_query = self.service.queries().getquery(queryId=create_query.get('queryId')).execute() #get the query which will include the report url
     return get_query
 
 
@@ -179,9 +206,6 @@ class DBMStream(Stream, ABC):
     self._partner_id = partner_id
     self._filters = filters
 
-  def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-    yield {}
-
   def get_query(self, catalog_fields: List[str], stream_slice:Mapping[str, Any]) -> Iterable[Mapping]:
     """
     Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
@@ -193,7 +217,7 @@ class DBMStream(Stream, ABC):
     start_date=self._start_date, end_date=self._end_date, partner_id = self._partner_id)
     return query
 
-  def read_records(self,catalog_fields: List[str],stream_slice: Mapping[str, Any]=None, sync_mode=None):
+  def read_records(self,catalog_fields: List[str],stream_slice: Mapping[str, Any]=None, sync_mode= None):
     """
     Get the report from the url specified in the created query. The report is in csv form, with 
     additional meta data below the data that need to be remove.
@@ -201,7 +225,7 @@ class DBMStream(Stream, ABC):
 
     :return a generator of dict rows from the file
     """
-    query = self.get_query(catalog_fields=catalog_fields,stream_slice=stream_slice) # create and run the query
+    query = self.get_query(catalog_fields = catalog_fields, stream_slice = stream_slice) # create and run the query
     report_url = query['metadata']['googleCloudStoragePathForLatestReport'] # Take the url of the generated report
     with io.StringIO(requests.get(report_url).text) as csv_response:
       header = csv_response.readline().split(',') #get the header of the file
@@ -233,16 +257,60 @@ class DBMIncrementalStream(DBMStream, ABC):
   def __init__(self, credentials: Credentials, partner_id: str, filters:List[dict], start_date: str, end_date: str=None):
     super().__init__(credentials, partner_id, filters, start_date, end_date)
 
+  def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    """
+    Update stream state from latest record
+    """
+    current_stream_state = current_stream_state or {}
+    record_value = latest_record[self.cursor_field]
+    state_value = current_stream_state.get(self.cursor_field) or record_value
+    max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
+    return {
+      self.cursor_field: max_cursor.to_date_string(),
+    }
 
   def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    """
+    Slice the stream by date periods.
+    """
     stream_state = stream_state or {}
-    if stream_state.get(self._partner_id):
-      start_date = stream_state[self._partner_id].get(self.cursor_field) or self._start_date
-    else:
-      start_date = self._start_date
-    end_date = self._end_date
+    start_date = stream_state.get(self.cursor_field) or self._start_date
+    date_chunks = chunk_date_range(
+      start_date = start_date,
+      end_date = self._end_date,
+      field = self.cursor_field,
+      range_days = self.range_days,
+    )
+    for chunk in date_chunks:
+      yield chunk
 
+  def read_records(
+    self,
+    sync_mode: SyncMode,
+    catalog_fields: List[str],
+    cursor_field: List[str] = None,
+    stream_slice: Mapping[str, Any] = None,
+    stream_state: Mapping[str, Any] = None,
+  ) -> Iterable[Mapping[str, Any]]:
+    """
+    This method is overridden to update `start_date` key in the `stream_slice` with the latest read record's cursor value.
+    """
+    state = stream_state or {}
+    records = super().read_records(catalog_fields = catalog_fields, sync_mode = sync_mode, stream_slice = stream_slice)
+    for record in records:
+      state = self.get_updated_state(state, record)
+      yield record
 
+  def get_query(self, catalog_fields: List[str], stream_slice:Mapping[str, Any]) -> Iterable[Mapping]:
+    """
+    Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
+    :param catalog_fields: A list of fields provided in the configured catalog
+
+    :return the created query
+    """
+    query = self.dbm.convert_schema_into_query(schema = self.get_json_schema(),catalog_fields = catalog_fields, filters = self._filters,report_name= self.name,
+    start_date = stream_slice.get("start_date"), end_date = stream_slice.get("end_date"), partner_id = self._partner_id)
+    return query
 
 class AudienceComposition(DBMStream):
   """
@@ -268,7 +336,7 @@ class UniqueReachAudience(DBMStream):
   """
   primary_key = None
 
-class Reach(DBMStream):
+class Reach(DBMIncrementalStream):
   """
   Reach stream
   """
