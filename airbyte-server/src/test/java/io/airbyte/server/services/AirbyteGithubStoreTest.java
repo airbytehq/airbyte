@@ -23,8 +23,8 @@ public class AirbyteGithubStoreTest {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(1);
 
-  private static MockWebServer webServer;
-  private static AirbyteGithubStore githubStore;
+  private MockWebServer webServer;
+  private AirbyteGithubStore githubStore;
 
   @BeforeEach
   public void setUp() {
