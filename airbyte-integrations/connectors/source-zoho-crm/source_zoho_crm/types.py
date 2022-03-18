@@ -57,8 +57,14 @@ class ZohoDataType(ZohoBaseType):
     boolean = "boolean"
     lookup = "lookup"
     ownerlookup = "ownerlookup"
+    autonumber = "autonumber"
+    multiselectpicklist = "multiselectpicklist"
     RRULE = "RRULE"
     ALARM = "ALARM"
+
+    @classmethod
+    def numeric_string_types(cls):
+        return cls.autonumber, cls.bigint
 
 
 class FromDictMixin:
@@ -99,6 +105,11 @@ class FieldMeta(FromDictMixin):
     def _default_type_kwargs(self):
         return {"title": self.display_label}
 
+    def _picklist_items(self):
+        if not self.pick_list_values:
+            return []
+        return [pick_item.actual_value for pick_item in self.pick_list_values]
+
     def _boolean_field(self):
         return {
             "type": ["null", "boolean"],
@@ -127,25 +138,32 @@ class FieldMeta(FromDictMixin):
            **self._default_type_kwargs()
         }
         if self.data_type == ZohoDataType.website:
-            typedef["format"] = "hostname"
+            typedef["format"] = "uri"
         elif self.data_type == ZohoDataType.email:
             typedef["format"] = "email"
         elif self.data_type == ZohoDataType.date:
             typedef["format"] = "date"
         elif self.data_type == ZohoDataType.datetime:
             typedef["format"] = "date-time"
-        elif self.data_type == ZohoDataType.bigint:
+        elif self.data_type in ZohoDataType.numeric_string_types():
             typedef["airbyte_type"] = "big_integer"
         elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
-            typedef["enum"] = [pick_item.actual_value for pick_item in self.pick_list_values]
+            typedef["enum"] = self._picklist_items()
         return typedef
 
     def _jsonarray_field(self):
         typedef = {"type": "array", **self._default_type_kwargs()}
-        if self.data_type in (ZohoDataType.text, ZohoDataType.bigint):
-            typedef["items"] = {"type": ["null", "string"]}
-            if self.data_type == ZohoDataType.bigint:
+        if self.data_type in (ZohoDataType.text, *ZohoDataType.numeric_string_types()):
+            typedef["items"] = {"type": "string"}
+            if self.data_type in ZohoDataType.numeric_string_types():
                 typedef["items"]["airbyte_type"] = "big_integer"
+        if self.data_type == ZohoDataType.multiselectpicklist:
+            typedef["minItems"] = 1
+            typedef["uniqueItems"] = True
+            items = {"type": "string"}
+            if self.pick_list_values:
+                items["enum"] = self._picklist_items()
+            typedef["items"] = items
         return typedef
 
     def _jsonobject_field(self):
