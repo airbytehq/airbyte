@@ -23,17 +23,17 @@
       },
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset.",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating\">here</a>.",
         "title": "Project ID"
       },
       "dataset_id": {
         "type": "string",
-        "description": "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace.",
+        "description": "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>.",
         "title": "Default Dataset ID"
       },
       "dataset_location": {
         "type": "string",
-        "description": "The location of the dataset. Warning: Changes made after creation will not be applied.",
+        "description": "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
         "title": "Dataset Location",
         "default": "US",
         "enum": [
@@ -118,7 +118,7 @@
               "gcs_bucket_name": {
                 "title": "GCS Bucket Name",
                 "type": "string",
-                "description": "The name of the GCS bucket.",
+                "description": "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
                 "examples": ["airbyte_sync"]
               },
               "gcs_bucket_path": {
@@ -148,6 +148,7 @@
               },
               "credential": {
                 "title": "Credential",
+                "description": "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
                 "type": "object",
                 "oneOf": [
                   {
