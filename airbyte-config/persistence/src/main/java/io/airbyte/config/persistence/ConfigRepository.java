@@ -192,12 +192,16 @@ public class ConfigRepository {
     });
   }
 
-  public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+  public void setFeedback(final UUID workspaceId) throws ConfigNotFoundException, IOException {
+    final int rowsUpdated = database.transaction(ctx -> ctx.update(WORKSPACE)
+        .set(WORKSPACE.FEEDBACK_COMPLETE, true)
+        .where(WORKSPACE.ID.eq(workspaceId))).execute();
 
-    workspace.setFeedbackDone(true);
-
-    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+    // To match the legacy behavior of that function, throw ConfigNotFound if the workspaceId does
+    // not match any row
+    if (rowsUpdated == 0) {
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId);
+    }
   }
 
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
