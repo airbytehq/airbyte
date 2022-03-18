@@ -87,7 +87,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
   * API Token
     * Zendesk API Token 
     * Zendesk Email 
-  * OAuth2 (obtain access_token by authorising your Zendesk Account)
+  * OAuth2.0 (obtain access_token by authorising your Zendesk Account)
 
 ### Setup guide
 
@@ -96,7 +96,7 @@ Generate a API access token using the [Zendesk support](https://support.zendesk.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
-* OAuth2 (Only for Airbyte Cloud)
+* OAuth2.0 (Only for Airbyte Cloud)
 Simply proceed by pressing "Authenticate your Account" and complete the authentication with your Zendesk credentials.
 
 ### CHANGELOG
