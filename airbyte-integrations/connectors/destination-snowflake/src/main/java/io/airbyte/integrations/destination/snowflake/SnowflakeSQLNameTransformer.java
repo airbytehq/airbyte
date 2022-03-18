@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
@@ -17,8 +18,8 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
    * The first character can only be alphanumeric or an underscore.
    */
   @Override
-  public String getIdentifier(final String name) {
-    final String normalizedName = super.getIdentifier(name);
+  public String convertStreamName(final String input) {
+    final String normalizedName = super.convertStreamName(input);
     if (normalizedName.substring(0, 1).matches("[A-Za-z_]")) {
       return normalizedName;
     } else {
