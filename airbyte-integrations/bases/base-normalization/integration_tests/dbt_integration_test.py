@@ -422,6 +422,7 @@ class DbtIntegrationTest(object):
             "-i",
             normalization_image,
             command,
+            "--event-buffer-size=10000",
             "--profiles-dir=/workspace",
             "--project-dir=/workspace",
         ]
