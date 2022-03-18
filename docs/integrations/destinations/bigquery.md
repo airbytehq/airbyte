@@ -145,7 +145,9 @@ When you create a dataset in BigQuery, the dataset name must be unique for each 
 * Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
 * Dataset names cannot contain spaces or special characters such as -, &, @, or %.
 
-Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
+Therefore, Airbyte BigQuery destination will convert any invalid characters into `_` characters when writing data.
+
+Since datasets that begin with `_` will be hidden from the BigQuery Explorer panel. To avoid creating such datasets, the destination will prepend the namespace with `n` if the converted namespace 
 
 ## CHANGELOG
 

@@ -38,6 +38,7 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
     }
   }
 
+  @Override
   public String getNamespace(final String input) {
     if (input == null) {
       return null;
