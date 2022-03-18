@@ -1,6 +1,6 @@
 {
-  "transactional_message_id": 6,
-  "from": "Airbyte Notification <no-reply@airbyte.io>",
+  "transactional_message_id": "%s",
+  "from": "%s",
   "subject": "Connection Auto-Disabled",
   "to": "%s",
   "identifiers": {
