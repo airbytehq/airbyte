@@ -13,7 +13,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_intercom.source import Companies, ConversationParts, Conversations, SourceIntercom, VersionApiAuthenticator
+from source_intercom.source import Companies, ConversationParts, SourceIntercom, VersionApiAuthenticator
 
 LOGGER = AirbyteLogger()
 # from unittest.mock import Mock
@@ -76,6 +76,7 @@ def test_supported_versions(stream_attributes, version, not_supported_streams, c
                     list(records)
                 else:
                     next(records, None)
+
 
 def test_companies_scroll(stream_attributes):
     authenticator = VersionApiAuthenticator(token=stream_attributes["access_token"])
