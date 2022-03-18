@@ -58,6 +58,7 @@ import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.SelectConditionStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,12 +82,19 @@ public class ConfigRepository {
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
-
-    if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
-      return workspace;
+    final Result<Record> result = database.query(ctx -> {
+      SelectConditionStep<Record> selectStatement = ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE)
+          .where(WORKSPACE.ID.eq(workspaceId));
+      if (!includeTombstone) {
+        selectStatement = selectStatement.andNot(WORKSPACE.TOMBSTONE);
+      }
+      return selectStatement;
+    }).fetch();
+    if (result.size() == 0) {
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
     }
-    throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
+    return DbConverter.buildStandardWorkspace(result.get(0));
   }
 
   public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone)
