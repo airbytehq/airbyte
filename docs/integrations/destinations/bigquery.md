@@ -74,7 +74,57 @@ Note that queries written in BigQuery can only reference Datasets in the same ph
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User" and "BigQuery Data Editor" roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). 
+We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions: 
+``` 
+bigquery.bireservations.get
+bigquery.capacityCommitments.get
+bigquery.capacityCommitments.list
+bigquery.config.get
+bigquery.datasets.create
+bigquery.datasets.get
+bigquery.datasets.getIamPolicy
+bigquery.jobs.create
+bigquery.jobs.list
+bigquery.models.list
+bigquery.readsessions.*
+bigquery.reservationAssignments.list
+bigquery.reservationAssignments.search
+bigquery.reservations.get
+bigquery.reservations.list
+bigquery.routines.list
+bigquery.savedqueries.get
+bigquery.savedqueries.list
+bigquery.tables.list
+bigquery.transfers.get
+resourcemanager.projects.get
+resourcemanager.projects.list
+```
+
+"BigQuery Data Editor"(roles/bigquery.dataEditor) role permissions:
+```
+bigquery.config.get
+bigquery.datasets.create
+bigquery.datasets.get
+bigquery.datasets.getIamPolicy
+bigquery.datasets.updateTag
+bigquery.models.*
+bigquery.routines.*
+bigquery.tables.create
+bigquery.tables.createSnapshot
+bigquery.tables.delete
+bigquery.tables.export
+bigquery.tables.get
+bigquery.tables.getData
+bigquery.tables.getIamPolicy
+bigquery.tables.list
+bigquery.tables.restoreSnapshot
+bigquery.tables.update
+bigquery.tables.updateData
+bigquery.tables.updateTag
+resourcemanager.projects.get
+resourcemanager.projects.list
+```
 
 The easiest way to create a Service Account is to follow GCP's guide for [Creating a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Once you've created the Service Account, make sure to keep its ID handy as you will need to reference it when granting roles. Service Account IDs typically take the form `<account-name>@<project-name>.iam.gserviceaccount.com`
 
