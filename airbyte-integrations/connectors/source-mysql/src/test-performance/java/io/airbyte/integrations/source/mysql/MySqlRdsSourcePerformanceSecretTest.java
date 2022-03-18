@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
@@ -72,4 +71,5 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         Arguments.of("t25_c8_r50k_s10kb", "t25_c8_r50k_s10kb", 50000, 8, 25),
         Arguments.of("t1000_c8_r10k_s500b", "t1000_c8_r10k_s500b", 10000, 8, 1000));
   }
+
 }

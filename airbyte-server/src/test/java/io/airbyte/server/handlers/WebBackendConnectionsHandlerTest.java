@@ -42,6 +42,7 @@ import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SyncMode;
@@ -196,7 +197,9 @@ class WebBackendConnectionsHandlerTest {
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
 
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody)).thenReturn(
+    final SourceDiscoverSchemaRequestBody sourceDiscoverSchema = new SourceDiscoverSchemaRequestBody();
+    sourceDiscoverSchema.setSourceId(connectionRead.getSourceId());
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchema)).thenReturn(
         new SourceDiscoverSchemaRead()
             .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
@@ -380,6 +383,7 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
+        .name(standardSync.getName())
         .syncCatalog(catalog)
         .withRefreshedCatalog(false);
 
@@ -393,6 +397,7 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(operationIds)
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
+        .name(standardSync.getName())
         .syncCatalog(catalog);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
@@ -423,7 +428,7 @@ class WebBackendConnectionsHandlerTest {
   public void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "resourceRequirements");
+            "resourceRequirements", "name");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)

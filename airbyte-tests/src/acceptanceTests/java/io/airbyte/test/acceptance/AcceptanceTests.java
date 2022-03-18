@@ -65,6 +65,7 @@ import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
+import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
@@ -288,20 +289,22 @@ public class AcceptanceTests {
       destinationPsql.stop();
     }
 
-    for (final UUID sourceId : sourceIds) {
-      deleteSource(sourceId);
+    for (final UUID operationId : operationIds) {
+      deleteOperation(operationId);
     }
 
     for (final UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
 
+    for (final UUID sourceId : sourceIds) {
+      deleteSource(sourceId);
+    }
+
     for (final UUID destinationId : destinationIds) {
       deleteDestination(destinationId);
     }
-    for (final UUID operationId : operationIds) {
-      deleteOperation(operationId);
-    }
+
   }
 
   @Test
@@ -1145,7 +1148,7 @@ public class AcceptanceTests {
   }
 
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
-    return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
+    return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
   private void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
