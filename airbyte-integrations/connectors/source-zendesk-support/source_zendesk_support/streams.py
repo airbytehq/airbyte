@@ -369,6 +369,63 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
+class ZendeskSupportTicektEventsExportStream(SourceZendeskSupportCursorPaginationStream):
+    """Incremental Export from TicketEvents stream:
+    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
+    
+    @ param response_list_name: the main nested entity to look at inside of response, defualt = "ticket_events"
+    @ param responce_target_entity: nested property inside of `response_list_name`, default = "child_events"
+    @ param list_entities_from_event : the list of nested child_events entities to include from parent record
+    @ param sideload_param : parameter variable to include various information to child_events property
+        more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
+    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
+    """
+    
+    response_list_name: str = "ticket_events"
+    responce_target_entity: str = "child_events"
+    list_entities_from_event: List[str] = None
+    sideload_param: str = None
+    event_type: str = None
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Returns next_page_token based on `end_of_stream` parameter inside of response
+        """
+        next_page_token = super().next_page_token(response)
+        end_of_stream = response.json().get(END_OF_STREAM_KEY, False)
+        return None if end_of_stream else next_page_token
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, next_page_token, **kwargs)
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        return params
+    
+    def update_event_props(self, record: dict = None, event: dict = None, props: list = None) -> MutableMapping[str, Any]:
+        """Update the event mapping with the specified fields from record entity"""
+        if self.list_entities_from_event and len(self.list_entities_from_event) > 0:
+            for prop in props:
+                target_prop = record.get(prop)
+                event[prop] = target_prop if target_prop else None
+        return event
+    
+    def filter_by_state(self, event: dict = None, stream_state: dict = None) -> Iterable[Mapping]:
+        current_state = stream_state.get(self.cursor_field, {})
+        updated_state = event.get(self.cursor_field, {})
+        if not current_state or updated_state > current_state:
+            yield event
+            
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = response.json().get(self.response_list_name) or []
+        for record in records:
+            for event in record.get(self.responce_target_entity):
+                if event.get("event_type") == self.event_type:
+                    event = self.update_event_props(record, event, self.list_entities_from_event)
+                    yield from self.filter_by_state(event, stream_state)
+
+
 class Users(SourceZendeskSupportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
@@ -392,56 +449,18 @@ class Tickets(SourceZendeskSupportStream):
         return params
 
 
-class TicketComments(SourceZendeskSupportCursorPaginationStream):
-    """Incremental TicketComments from TicketEvent Export stream:
-    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
+class TicketComments(ZendeskSupportTicektEventsExportStream):
+    """
+    Fetch the TicketComments incrementaly from TicketEvents Export stream
     """
 
     cursor_field = "created_at"
-    response_list_name = "ticket_events"
-    # nested property inside of `response_list_name`
-    responce_target_entity = "child_events"
-    # list of nested entities to include in event from record
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
+    sideload_param = "comment_events"
+    event_type = "Comment"
 
     def path(self, **kwargs) -> str:
         return "incremental/ticket_events"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
-        """
-        next_page_token = super().next_page_token(response)
-        end_of_stream = response.json().get(END_OF_STREAM_KEY, False)
-        return None if end_of_stream else next_page_token
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
-        # we need to sideload the comments body, to include them into response
-        # https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
-        params["include"] = "comment_events"
-        return params
-
-    def update_event_props(self, record: dict = None, event: dict = None, props: list = None) -> MutableMapping[str, Any]:
-        """Update the event mapping with the specified fields from record entity"""
-        for prop in props:
-            target_prop = record.get(prop)
-            event[prop] = target_prop if target_prop else None
-        return event
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.response_list_name) or []
-        current_state = stream_state.get(self.cursor_field, {})
-        for record in records:
-            for event in record.get(self.responce_target_entity):
-                if event.get("event_type") == "Comment":
-                    updated_state = event.get(self.cursor_field)
-                    # update event with record entities
-                    event = self.update_event_props(record, event, self.list_entities_from_event)
-                    if not current_state or updated_state > current_state:
-                        yield event
 
 
 class Groups(SourceZendeskSupportStream):
