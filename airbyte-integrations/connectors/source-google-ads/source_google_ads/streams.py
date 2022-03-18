@@ -252,12 +252,34 @@ class AdGroups(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "segments.date"]
 
 
+class AdGroupLabels(GoogleAdsStream):
+    """
+    Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_label
+    """
+
+    def __init__(self, api):
+        super().__init__(api)
+
+    primary_key = ["ad_group_label.resource_name"]
+
+
 class AdGroupAds(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
     """
 
     primary_key = ["ad_group_ad.ad.id", "segments.date"]
+
+
+class AdGroupAdLabels(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label
+    """
+
+    def __init__(self, api):
+        super().__init__(api)
+
+    primary_key = ["ad_group_ad_label.resource_name"]
 
 
 class AccountPerformanceReport(IncrementalGoogleAdsStream):
