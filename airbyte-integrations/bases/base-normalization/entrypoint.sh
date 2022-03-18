@@ -115,7 +115,7 @@ function main() {
     trap 'closessh' EXIT
     set +e # allow script to continue running even if next commands fail to run properly
     # Run dbt to compile and execute the generated normalization models
-    dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+    dbt run --event-buffer-size 10000 --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     DBT_EXIT_CODE=$?
     if [ ${DBT_EXIT_CODE} -ne 0 ]; then
       echo -e "\nDiagnosing dbt debug to check if destination is available for dbt and well configured (${DBT_EXIT_CODE}):\n"
