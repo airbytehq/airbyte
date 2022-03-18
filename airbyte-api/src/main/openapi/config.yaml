@@ -235,7 +235,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Notification"
+              $ref: "#/components/schemas/NotificationLegacy"
         required: true
       responses:
         "200":
@@ -260,6 +260,28 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/NotificationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+  /v1/notifications/add_connection:
+    post:
+      tags:
+        - notifications
+      summary: >
+        Create a link between a connection and a notification
+      operationId: createNotificationConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationConnectionCreate"
         required: true
       responses:
         "200":
@@ -1962,10 +1984,61 @@ components:
         notifications:
           type: array
           items:
-            $ref: "#/components/schemas/Notification"
+            $ref: "#/components/schemas/NotificationLegacy"
         displaySetupWizard:
           type: boolean
-    Notification:
+    NotificationCreate:
+      type: object
+      required:
+        - workspaceId
+        - name
+        - webhookUrl
+        - notificationType
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        webhookUrl:
+          type: string
+        defaultNotification:
+          type: boolean
+          default: false
+        notificationType:
+          $ref: "#/components/schemas/NotificationType"
+        tombstone:
+          type: boolean
+          default: false
+    NotificationConnectionCreate:
+      type: object
+      required:
+        - workspaceId
+        - notificationId
+        - connectionId
+        - sendOnSuccess
+        - sendOnFailure
+        - tombstone
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        notificationId:
+          type: string
+          format: uuid
+        connectionId:
+          type: string
+          format: uuid
+        sendOnSuccess:
+          type: boolean
+          default: false
+        sendOnFailure:
+          type: boolean
+          default: true
+        tombstone:
+          type: boolean
+          default: false
+    NotificationLegacy:
       type: object
       required:
         - notificationType
@@ -2009,27 +2082,6 @@ components:
             - failed
         message:
           type: string
-    NotificationCreate:
-      type: object
-      required:
-        - name
-        - webhook
-        - notificationType
-        - defaultNotification
-        - tombstone
-      properties:
-        name:
-          type: string
-        webhook:
-          type: string
-        defaultNotification:
-          type: boolean
-          default: false
-        notificationType:
-          $ref: "#/components/schemas/SlackNotificationConfiguration"
-        tombstone:
-          type: boolean
-          default: false
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -2079,7 +2131,7 @@ components:
         notifications:
           type: array
           items:
-            $ref: "#/components/schemas/Notification"
+            $ref: "#/components/schemas/NotificationLegacy"
         firstCompletedSync:
           type: boolean
         feedbackDone:
@@ -2121,7 +2173,7 @@ components:
         notifications:
           type: array
           items:
-            $ref: "#/components/schemas/Notification"
+            $ref: "#/components/schemas/NotificationLegacy"
     WorkspaceGiveFeedback:
       type: object
       required:

@@ -289,10 +289,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaces = new ArrayList<>();
     for (final Record record : result) {
-      final List<Notification> notificationList = new ArrayList<>();
+      final List<NotificationLegacy> notificationList = new ArrayList<>();
       final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
       for (final Object notification : fetchedNotifications) {
-        notificationList.add(Jsons.convertValue(notification, Notification.class));
+        notificationList.add(Jsons.convertValue(notification, NotificationLegacy.class));
       }
       final StandardWorkspace workspace = buildStandardWorkspace(record, notificationList);
       standardWorkspaces.add(new ConfigWithMetadata<>(
@@ -305,7 +305,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return standardWorkspaces;
   }
 
-  private StandardWorkspace buildStandardWorkspace(final Record record, final List<Notification> notificationList) {
+  private StandardWorkspace buildStandardWorkspace(final Record record, final List<NotificationLegacy> notificationList) {
     return new StandardWorkspace()
         .withWorkspaceId(record.get(WORKSPACE.ID))
         .withName(record.get(WORKSPACE.NAME))
@@ -758,19 +758,44 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
-  private void writeStandardNotification(final List<StandardNotification> configs) throws IOException {
+  private void writeNotification(final List<Notification> configs) throws IOException {
     database.transaction(ctx -> {
-      writeStandardNotification(configs, ctx);
+      writeNotification(configs, ctx);
       return null;
     });
   }
 
-  private void writeStandardNotification(final List<StandardNotification> configs, final DSLContext ctx) {
-    configs.forEach((standardNotification) -> {
+  private void writeNotificationConnection(final List<NotificationConnection> configs) throws IOException {
+    database.transaction(ctx -> {
+      writeNotificationConnection(configs, ctx);
+      return null;
+    });
+  }
+
+  private void writeNotification(final List<Notification> configs, final DSLContext ctx) {
+    configs.forEach((Notification) -> {
       ctx.insertInto(NOTIFICATION_CONFIG)
-          .set(NOTIFICATION_CONFIG.ID, standardNotification.getNotificationId())
-          .set(NOTIFICATION_CONFIG.NAME, standardNotification.getName())
-          .set(NOTIFICATION_CONFIG.WEBHOOK, standardNotification.getWebhook())
+          .set(NOTIFICATION_CONFIG.ID, Notification.getNotificationId())
+          .set(NOTIFICATION_CONFIG.WORKSPACE_ID, Notification.getWorkspaceId())
+          .set(NOTIFICATION_CONFIG.NAME, Notification.getName())
+          .set(NOTIFICATION_CONFIG.WEBHOOK_URL, Notification.getWebhookUrl())
+          .set(NOTIFICATION_CONFIG.DEFAULT_NOTIFICATION, Notification.getDefaultNotification())
+          .set(NOTIFICATION_CONFIG.NOTIFICATION_TYPE, Notification.getNotificationType().value())
+          .set(NOTIFICATION_CONFIG.TOMBSTONE, Notification.getTombstone())
+          .execute();
+    });
+  }
+
+  private void writeNotificationConnection(final List<NotificationConnection> configs, final DSLContext ctx) {
+    configs.forEach((NotificationConnection) -> {
+      ctx.insertInto(NOTIFICATION_CONNECTION)
+          .set(NOTIFICATION_CONNECTION.NOTIFICATION_CONNECTION_ID, NotificationConnection.getNotificationConnectionId())
+          .set(NOTIFICATION_CONNECTION.WORKSPACE_ID, NotificationConnection.getWorkspaceId())
+          .set(NOTIFICATION_CONNECTION.NOTIFICATION_ID, NotificationConnection.getNotificationId())
+          .set(NOTIFICATION_CONNECTION.CONNECTION_ID, NotificationConnection.getConnectionId())
+          .set(NOTIFICATION_CONNECTION.SEND_ON_SUCCESS, NotificationConnection.getSendOnSuccess())
+          .set(NOTIFICATION_CONNECTION.SEND_ON_FAILURE, NotificationConnection.getSendOnFailure())
+          .set(NOTIFICATION_CONNECTION.TOMBSTONE, NotificationConnection.getTombstone())
           .execute();
     });
   }
@@ -1377,8 +1402,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(configs.values().stream().map(c -> (ActorCatalog) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(configs.values().stream().map(c -> (ActorCatalogFetchEvent) c).collect(Collectors.toList()));
-    } else if (configType == ConfigSchema.STANDARD_NOTIFICATION) {
-      writeStandardNotification(configs.values().stream().map(c -> (StandardNotification) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.NOTIFICATION) {
+      writeNotification(configs.values().stream().map(c -> (Notification) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.NOTIFICATION_CONNECTION) {
+      writeNotificationConnection(configs.values().stream().map(c -> (NotificationConnection) c).collect(Collectors.toList()));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }

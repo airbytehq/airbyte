@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.Notification;
+import io.airbyte.config.NotificationLegacy;
 import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
@@ -38,7 +38,7 @@ public class SlackNotificationClient extends NotificationClient {
       .build();
   private final SlackNotificationConfiguration config;
 
-  public SlackNotificationClient(final Notification notification) {
+  public SlackNotificationClient(final NotificationLegacy notification) {
     super(notification);
     this.config = notification.getSlackConfiguration();
   }

@@ -202,7 +202,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public NotificationRead tryNotificationConfig(final Notification notification) {
+  public NotificationRead tryNotificationConfig(final NotificationLegacy notification) {
     return execute(() -> workspacesHandler.tryNotification(notification));
   }
 
@@ -210,6 +210,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public NotificationRead createNotification(final NotificationCreate notification) {
     return execute(() -> workspacesHandler.createNotification(notification));
+  }
+
+  // NOTIFICATION
+  @Override
+  public NotificationRead createNotificationConnection(final NotificationConnectionCreate notificationConnection) {
+    return execute(() -> workspacesHandler.createNotificationConnection(notificationConnection));
   }
 
   // SOURCE

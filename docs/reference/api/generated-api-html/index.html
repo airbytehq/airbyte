@@ -288,6 +288,7 @@ font-style: italic;
   <h4><a href="#Notifications">Notifications</a></h4>
   <ul>
   <li><a href="#createNotification"><code><span class="http-method">post</span> /v1/notifications/create</code></a></li>
+  <li><a href="#createNotificationConnection"><code><span class="http-method">post</span> /v1/notifications/add_connection</code></a></li>
   <li><a href="#tryNotificationConfig"><code><span class="http-method">post</span> /v1/notifications/try</code></a></li>
   </ul>
   <h4><a href="#Oauth">Oauth</a></h4>
@@ -4126,6 +4127,62 @@ font-style: italic;
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="createNotificationConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/notifications/add_connection</code></pre></div>
+    <div class="method-summary">Create a link between a connection and a notification (<span class="nickname">createNotificationConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">NotificationConnectionCreate <a href="#NotificationConnectionCreate">NotificationConnectionCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#NotificationRead">NotificationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "message" : "message",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#NotificationRead">NotificationRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="tryNotificationConfig"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4142,7 +4199,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">Notification <a href="#Notification">Notification</a> (required)</div>
+      <div class="param">NotificationLegacy <a href="#NotificationLegacy">NotificationLegacy</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -8405,8 +8462,9 @@ font-style: italic;
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
-    <li><a href="#Notification"><code>Notification</code> - </a></li>
+    <li><a href="#NotificationConnectionCreate"><code>NotificationConnectionCreate</code> - </a></li>
     <li><a href="#NotificationCreate"><code>NotificationCreate</code> - </a></li>
+    <li><a href="#NotificationLegacy"><code>NotificationLegacy</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#OAuth2Specification"><code>OAuth2Specification</code> - </a></li>
@@ -9146,24 +9204,37 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="Notification"><code>Notification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="NotificationConnectionCreate"><code>NotificationConnectionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">notificationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">sendOnSuccess </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">sendOnFailure </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">slackConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
+<div class="param">tombstone </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="NotificationCreate"><code>NotificationCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">webhook </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">defaultNotification </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
-<div class="param">tombstone </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">webhookUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">defaultNotification (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
+<div class="param">tombstone (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NotificationLegacy"><code>NotificationLegacy</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
+<div class="param">sendOnSuccess </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">sendOnFailure </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">slackConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -9624,7 +9695,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#NotificationLegacy">array[NotificationLegacy]</a></span>  </div>
 <div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -9656,7 +9727,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">anonymousDataCollection (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#NotificationLegacy">array[NotificationLegacy]</a></span>  </div>
 <div class="param">firstCompletedSync (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">feedbackDone (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
@@ -9679,7 +9750,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">anonymousDataCollection </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#NotificationLegacy">array[NotificationLegacy]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

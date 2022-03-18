@@ -9,11 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.config.Notification;
+import io.airbyte.config.*;
 import io.airbyte.config.Notification.NotificationType;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
@@ -78,7 +75,7 @@ public class JobNotifier {
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-      for (final Notification notification : workspace.getNotifications()) {
+      for (final NotificationLegacy notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
@@ -121,7 +118,7 @@ public class JobNotifier {
     notifyJob(null, SUCCESS_NOTIFICATION, job);
   }
 
-  protected NotificationClient getNotificationClient(final Notification notification) {
+  protected NotificationClient getNotificationClient(final NotificationLegacy notification) {
     return NotificationClient.createNotificationClient(notification);
   }
 

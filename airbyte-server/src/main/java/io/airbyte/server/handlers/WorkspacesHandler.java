@@ -7,9 +7,26 @@ package io.airbyte.server.handlers;
 import com.github.slugify.Slugify;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.*;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.NotificationConnectionCreate;
+import io.airbyte.api.model.NotificationCreate;
+import io.airbyte.api.model.NotificationLegacy;
+import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.NotificationRead.StatusEnum;
-import io.airbyte.config.StandardNotification;
+import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceReadList;
+import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.WorkspaceUpdateName;
+import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.NotificationConnection;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -174,22 +191,52 @@ public class WorkspacesHandler {
 
   public NotificationRead createNotification(final NotificationCreate notification) throws JsonValidationException, IOException {
     final String name = notification.getName();
-    final String webhook = notification.getWebhook();
+    final String webhookUrl = notification.getWebhookUrl();
+    final UUID workspaceId = notification.getWorkspaceId();
     final Boolean defaultNotification = notification.getDefaultNotification();
+    final Boolean tombstone = notification.getTombstone();
+    final NotificationType notificationType =
+        Enums.convertTo(notification.getNotificationType(), io.airbyte.config.Notification.NotificationType.class);
 
-    final StandardNotification newNotification = new StandardNotification()
+    final Notification newNotification = new Notification()
         .withNotificationId(uuidSupplier.get())
+        .withWorkspaceId(workspaceId)
         .withName(name)
-        .withWebhook(webhook)
-        .withDefaultNotification(defaultNotification);
+        .withWebhookUrl(webhookUrl)
+        .withDefaultNotification(defaultNotification)
+        .withNotificationType(notificationType)
+        .withTombstone(tombstone);
 
-    configRepository.writeStandardNotification(newNotification);
+    configRepository.writeNotification(newNotification);
 
     // if (defaultNotification) {
-    // final StandardNotificationConnection workspaceNotification = new
-    // StandardNotificationConnection();
-    // configRepository.writeStandardNotificationConnection(workspaceNotification);
+    // final NotificationConnection workspaceNotification = new
+    // NotificationConnection();
+    // configRepository.writeNotificationConnection(workspaceNotification);
     // }
+
+    return new NotificationRead().status(StatusEnum.SUCCEEDED);
+  }
+
+  public NotificationRead createNotificationConnection(final NotificationConnectionCreate notificationConnection)
+      throws JsonValidationException, IOException {
+    final UUID workspaceId = notificationConnection.getWorkspaceId();
+    final UUID connectionId = notificationConnection.getConnectionId();
+    final UUID notificationId = notificationConnection.getNotificationId();
+    final Boolean sendOnSuccess = notificationConnection.getSendOnSuccess();
+    final Boolean sendOnFailure = notificationConnection.getSendOnFailure();
+    final Boolean tombstone = notificationConnection.getTombstone();
+
+    final NotificationConnection newNotificationConnection = new NotificationConnection()
+        .withNotificationConnectionId(uuidSupplier.get())
+        .withWorkspaceId(workspaceId)
+        .withConnectionId(connectionId)
+        .withNotificationId(notificationId)
+        .withSendOnSuccess(sendOnSuccess)
+        .withSendOnFailure(sendOnFailure)
+        .withTombstone(tombstone);
+
+    configRepository.writeNotificationConnection(newNotificationConnection);
 
     return new NotificationRead().status(StatusEnum.SUCCEEDED);
   }
@@ -197,17 +244,17 @@ public class WorkspacesHandler {
   // public void deleteNotification(final NotificationIdRequestBody notificationIdRequestBody)
   // throws JsonValidationException, IOException, ConfigNotFoundException {
   // // get existing implementation
-  // final StandardNotification persistedNotification =
-  // configRepository.getStandardNotification(notificationIdRequestBody.getNotificationId(), false);
+  // final Notification persistedNotification =
+  // configRepository.getNotification(notificationIdRequestBody.getNotificationId(), false);
   //
   // // need to implement a list of all connections with that connection
   // // tombstone them too
   //
   // persistedNotification.withTombstone(true);
-  // configRepository.writeStandardNotification(persistedNotification);
+  // configRepository.writeNotification(persistedNotification);
   // }
 
-  public NotificationRead tryNotification(final Notification notification) {
+  public NotificationRead tryNotification(final NotificationLegacy notification) {
     try {
       final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
       final String messageFormat = "Hello World! This is a test from Airbyte to try %s notification settings for sync %s";

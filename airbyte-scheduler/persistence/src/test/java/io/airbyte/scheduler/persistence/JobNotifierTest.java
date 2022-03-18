@@ -14,14 +14,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.config.JobConfig;
+import io.airbyte.config.*;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
-import io.airbyte.config.SlackNotificationConfiguration;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
@@ -127,8 +122,8 @@ class JobNotifierTest {
         NOW.getEpochSecond() + 123456L);
   }
 
-  private static Notification getSlackNotification() {
-    return new Notification()
+  private static NotificationLegacy getSlackNotification() {
+    return new NotificationLegacy()
         .withNotificationType(NotificationType.SLACK)
         .withSlackConfiguration(new SlackNotificationConfiguration()
             .withWebhook("http://random.webhook.url/hooks.slack.com/"));

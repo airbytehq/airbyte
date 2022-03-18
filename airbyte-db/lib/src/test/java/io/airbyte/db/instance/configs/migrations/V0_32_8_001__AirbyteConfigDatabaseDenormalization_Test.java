@@ -15,22 +15,7 @@ import static org.jooq.impl.DSL.table;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.Notification;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.Schedule;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StandardSyncState;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.State;
+import io.airbyte.config.*;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.ActorType;
@@ -103,10 +88,10 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
 
     final Record workspace = workspaces.get(0);
 
-    final List<Notification> notificationList = new ArrayList<>();
+    final List<NotificationLegacy> notificationList = new ArrayList<>();
     final List fetchedNotifications = Jsons.deserialize(workspace.get(notifications).data(), List.class);
     for (Object notification : fetchedNotifications) {
-      notificationList.add(Jsons.convertValue(notification, Notification.class));
+      notificationList.add(Jsons.convertValue(notification, NotificationLegacy.class));
     }
     final StandardWorkspace workspaceFromNewTable = new StandardWorkspace()
         .withWorkspaceId(workspace.get(id))

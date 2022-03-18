@@ -4,8 +4,8 @@
 
 package io.airbyte.notification;
 
-import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.NotificationLegacy;
 import java.io.IOException;
 
 public abstract class NotificationClient {
@@ -13,7 +13,7 @@ public abstract class NotificationClient {
   protected boolean sendOnSuccess;
   protected boolean sendOnFailure;
 
-  public NotificationClient(final Notification notification) {
+  public NotificationClient(final NotificationLegacy notification) {
     this.sendOnSuccess = notification.getSendOnSuccess();
     this.sendOnFailure = notification.getSendOnFailure();
   }
@@ -36,7 +36,7 @@ public abstract class NotificationClient {
 
   public abstract boolean notifyFailure(String message) throws IOException, InterruptedException;
 
-  public static NotificationClient createNotificationClient(final Notification notification) {
+  public static NotificationClient createNotificationClient(final NotificationLegacy notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {
       return new SlackNotificationClient(notification);
     } else {

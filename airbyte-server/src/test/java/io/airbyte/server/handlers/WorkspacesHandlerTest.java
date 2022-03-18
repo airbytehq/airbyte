@@ -19,6 +19,8 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.NotificationCreate;
+import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
@@ -32,6 +34,7 @@ import io.airbyte.api.model.WorkspaceUpdateName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.NotificationLegacy;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -59,6 +62,7 @@ class WorkspacesHandlerTest {
   private Supplier<UUID> uuidSupplier;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
+  private Notification notification;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -70,6 +74,7 @@ class WorkspacesHandlerTest {
     uuidSupplier = mock(Supplier.class);
     workspace = generateWorkspace();
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
+    notification = generateNotificationNew();
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -88,18 +93,49 @@ class WorkspacesHandlerTest {
         .withNotifications(List.of(generateNotification()));
   }
 
-  private Notification generateNotification() {
+  private Notification generateNotificationNew() {
     return new Notification()
+        .withNotificationId(UUID.randomUUID())
+        .withWorkspaceId(UUID.randomUUID())
+        .withName("test notification")
+        .withWebhookUrl("webhook-test")
+        .withDefaultNotification(false)
+        .withTombstone(false);
+  }
+
+  private NotificationLegacy generateNotification() {
+    return new NotificationLegacy()
         .withNotificationType(NotificationType.SLACK)
         .withSlackConfiguration(new SlackNotificationConfiguration()
             .withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
-  private io.airbyte.api.model.Notification generateApiNotification() {
-    return new io.airbyte.api.model.Notification()
+  private io.airbyte.api.model.NotificationLegacy generateApiNotification() {
+    return new io.airbyte.api.model.NotificationLegacy()
         .notificationType(io.airbyte.api.model.NotificationType.SLACK)
         .slackConfiguration(new io.airbyte.api.model.SlackNotificationConfiguration()
             .webhook(FAILURE_NOTIFICATION_WEBHOOK));
+  }
+
+  @Test
+  void testCreateNotification() throws JsonValidationException, IOException {
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
+
+    configRepository.writeNotification(notification);
+
+    final NotificationCreate notificationCreate = new NotificationCreate()
+        .name("new notification")
+        .webhookUrl("webhook test")
+        .defaultNotification(false)
+        .tombstone(false);
+
+    final NotificationRead actualRead = workspacesHandler.createNotification(notificationCreate);
+    final NotificationRead expectedRead = new NotificationRead()
+        .status(NotificationRead.StatusEnum.SUCCEEDED);
+
+    assertEquals(expectedRead, actualRead);
   }
 
   @Test
@@ -293,7 +329,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final io.airbyte.api.model.Notification apiNotification = generateApiNotification();
+    final io.airbyte.api.model.NotificationLegacy apiNotification = generateApiNotification();
     apiNotification.getSlackConfiguration().webhook("updated");
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
         .workspaceId(workspace.getWorkspaceId())
@@ -304,7 +340,7 @@ class WorkspacesHandlerTest {
         .displaySetupWizard(false)
         .notifications(List.of(apiNotification));
 
-    final Notification expectedNotification = generateNotification();
+    final NotificationLegacy expectedNotification = generateNotification();
     expectedNotification.getSlackConfiguration().withWebhook("updated");
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
@@ -326,7 +362,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
-    final io.airbyte.api.model.Notification expectedNotificationRead = generateApiNotification();
+    final io.airbyte.api.model.NotificationLegacy expectedNotificationRead = generateApiNotification();
     expectedNotificationRead.getSlackConfiguration().webhook("updated");
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())

@@ -10,32 +10,14 @@ import static org.jooq.impl.DSL.table;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.*;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
-import io.airbyte.config.SlackNotificationConfiguration;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncState;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
 import io.airbyte.protocol.models.AuthSpecification.AuthType;
@@ -155,7 +137,7 @@ public class SetupForNormalizedTablesTest {
   }
 
   public static StandardWorkspace standardWorkspace() {
-    final Notification notification = new Notification()
+    final NotificationLegacy notification = new NotificationLegacy()
         .withNotificationType(NotificationType.SLACK)
         .withSendOnFailure(true)
         .withSendOnSuccess(true)

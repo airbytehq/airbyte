@@ -1,26 +1,32 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardNotificationConnection.yaml
-title: StandardNotificationConnection
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/NotificationConnection.yaml
+title: NotificationConnection
 description: notification connection link
 type: object
 required:
+  - workspaceId
   - notificationId
-  - connectionId
-  - onSuccess
-  - onFailure
+  - sendOnSuccess
+  - sendOnFailure
   - tombstone
 additionalProperties: false
 properties:
+  notificationConnectionId:
+    type: string
+    format: uuid
+  workspaceId:
+    type: string
+    format: uuid
   notificationId:
     type: string
     format: uuid
   connectionId:
     type: string
     format: uuid
-  onSuccess:
+  sendOnSuccess:
     type: boolean
-  onFailure:
+  sendOnFailure:
     type: boolean
   tombstone:
     description:

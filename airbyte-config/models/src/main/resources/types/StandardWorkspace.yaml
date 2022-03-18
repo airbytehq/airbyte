@@ -42,7 +42,7 @@ properties:
   notifications:
     type: array
     items:
-      "$ref": Notification.yaml
+      "$ref": NotificationLegacy.yaml
   firstCompletedSync:
     type: boolean
   feedbackDone:

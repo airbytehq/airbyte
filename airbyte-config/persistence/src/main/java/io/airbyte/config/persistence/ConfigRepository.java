@@ -120,12 +120,30 @@ public class ConfigRepository {
     return workspaces;
   }
 
+  public List<Notification> listNotifications(final boolean includeTombstone) throws JsonValidationException, IOException {
+
+    final List<Notification> notifications = new ArrayList<>();
+
+    for (final Notification notification : persistence.listConfigs(ConfigSchema.NOTIFICATION, Notification.class)) {
+      if (!MoreBooleans.isTruthy(notification.getTombstone()) || includeTombstone) {
+        notifications.add(notification);
+      }
+    }
+
+    return notifications;
+  }
+
   public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
-  public void writeStandardNotification(final StandardNotification notification) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_NOTIFICATION, notification.getNotificationId().toString(), notification);
+  public void writeNotification(final Notification notification) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.NOTIFICATION, notification.getNotificationId().toString(), notification);
+  }
+
+  public void writeNotificationConnection(final NotificationConnection notificationConnection) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.NOTIFICATION_CONNECTION, notificationConnection.getNotificationConnectionId().toString(),
+        notificationConnection);
   }
 
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {

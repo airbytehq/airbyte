@@ -34,28 +34,31 @@ public class V0_35_50_001__AddNotificationTable extends BaseJavaMigration {
   public static void createNotificationConfigTable(final DSLContext ctx) {
 
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> workspaceId = DSL.field("workspace_id", SQLDataType.UUID.nullable(false));
     final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
-    final Field<String> webhook = DSL.field("webhook", SQLDataType.VARCHAR(516).nullable(false));
+    final Field<String> webhookUrl = DSL.field("webhook_url", SQLDataType.VARCHAR(516).nullable(false));
     final Field<Boolean> defaultNotification = DSL.field("default_notification", SQLDataType.BOOLEAN.nullable(false));
     final Field<String> notificationType = DSL.field("notification_type", SQLDataType.VARCHAR(256).nullable(false));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false));
 
     ctx.createTableIfNotExists("notification_config")
-        .columns(id, name, webhook, defaultNotification, notificationType, tombstone)
+        .columns(id, workspaceId, name, webhookUrl, defaultNotification, notificationType, tombstone)
         .execute();
     LOGGER.info("notification config table created");
   }
 
   public static void createNotificationConnectionTable(final DSLContext ctx) {
 
+    final Field<UUID> notificationConnectionId = DSL.field("notification_connection_id", SQLDataType.UUID.nullable(false));
+    final Field<UUID> workspaceId = DSL.field("workspace_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> connectionId = DSL.field("connection_id", SQLDataType.UUID.nullable(true));
     final Field<UUID> notificationId = DSL.field("notification_id", SQLDataType.UUID.nullable(false));
-    final Field<Boolean> onSuccess = DSL.field("on_success", SQLDataType.BOOLEAN.nullable(false));
-    final Field<Boolean> onFailure = DSL.field("on_failure", SQLDataType.BOOLEAN.nullable(false));
+    final Field<Boolean> sendOnSuccess = DSL.field("send_on_success", SQLDataType.BOOLEAN.nullable(false));
+    final Field<Boolean> sendOnFailure = DSL.field("send_on_failure", SQLDataType.BOOLEAN.nullable(false));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false));
 
     ctx.createTableIfNotExists("notification_connection")
-        .columns(connectionId, notificationId, onSuccess, onFailure, tombstone)
+        .columns(notificationConnectionId, workspaceId, connectionId, notificationId, sendOnSuccess, sendOnFailure, tombstone)
         .execute();
     LOGGER.info("notification connection table created");
   }

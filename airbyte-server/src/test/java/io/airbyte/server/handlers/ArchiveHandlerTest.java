@@ -22,8 +22,8 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.NotificationLegacy;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -165,7 +165,7 @@ public class ArchiveHandlerTest {
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion)
         .withTombstone(false);
-    final Notification notification = new Notification()
+    final NotificationLegacy notification = new NotificationLegacy()
         .withNotificationType(NotificationType.SLACK)
         .withSendOnFailure(true)
         .withSendOnSuccess(true)
