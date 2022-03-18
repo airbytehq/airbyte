@@ -18,6 +18,10 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
    */
   @Override
   public String convertStreamName(final String input) {
+    if (input == null) {
+      return null;
+    }
+
     final String normalizedName = super.convertStreamName(input);
     if (normalizedName.substring(0, 1).matches("[A-Za-z_]")) {
       return normalizedName;
