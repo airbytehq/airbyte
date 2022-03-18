@@ -404,8 +404,8 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
     """
-    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record
+    Tests the engagements stream handles pagination correctly, for both
+    full_refresh and incremental sync modes.
     """
 
     # Mocking Request
@@ -473,3 +473,34 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 250
     assert test_stream.state["lastUpdated"] == 1641234595252
+
+
+def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
+    """
+    If there are more than 10,000 engagements that would be returned by the Hubspot recent engagements endpoint,
+    the Engagements instance should stop at the 10Kth record.
+    """
+
+    responses = [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                "hasMore": True,
+                "offset": x*100
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 102)
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Engagements(**common_params)
+    test_stream.state = {"lastUpdated": 1641234595251}
+
+    # Mocking Request
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
+    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    # The stream should not attempt to get more than 10K records.
+    # Instead, it should use the new state to start a new search query.
+    assert len(records) == 10000
+    assert test_stream.state["lastUpdated"] == +1641234595252
