@@ -10,7 +10,6 @@ import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Notification;
 import io.airbyte.config.NotificationLegacy;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;

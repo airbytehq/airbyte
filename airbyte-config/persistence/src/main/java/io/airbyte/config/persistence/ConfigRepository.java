@@ -307,12 +307,12 @@ public class ConfigRepository {
   }
 
   private <T> void deleteConnectorDefinitionAndAssociations(
-      final ConfigSchema definitionType,
-      final ConfigSchema connectorType,
-      final Class<T> connectorClass,
-      final Function<T, UUID> connectorIdGetter,
-      final Function<T, UUID> connectorDefinitionIdGetter,
-      final UUID definitionId)
+                                                            final ConfigSchema definitionType,
+                                                            final ConfigSchema connectorType,
+                                                            final Class<T> connectorClass,
+                                                            final Function<T, UUID> connectorIdGetter,
+                                                            final Function<T, UUID> connectorDefinitionIdGetter,
+                                                            final UUID definitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
         .stream()
@@ -490,7 +490,7 @@ public class ConfigRepository {
   }
 
   public Optional<DestinationOAuthParameter> getDestinationOAuthParamByDefinitionIdOptional(final UUID workspaceId,
-      final UUID destinationDefinitionId)
+                                                                                            final UUID destinationDefinitionId)
       throws JsonValidationException, IOException {
     for (final DestinationOAuthParameter oAuthParameter : listDestinationOAuthParam()) {
       if (destinationDefinitionId.equals(oAuthParameter.getDestinationDefinitionId()) &&
@@ -535,8 +535,8 @@ public class ConfigRepository {
   }
 
   public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
-      final String configurationHash,
-      final String connectorVersion)
+                                                 final String configurationHash,
+                                                 final String connectorVersion)
       throws JsonValidationException, IOException {
     for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
       if (event.getConnectorVersion().equals(connectorVersion)
@@ -617,7 +617,7 @@ public class ConfigRepository {
    * @return the db identifier for the cached catalog.
    */
   private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
-      final DSLContext context) {
+                                       final DSLContext context) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final HashFunction hashFunction = Hashing.murmur3_32_fixed();
     final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
@@ -641,8 +641,8 @@ public class ConfigRepository {
   }
 
   public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
-      final String actorVersion,
-      final String configHash)
+                                                  final String actorVersion,
+                                                  final String configHash)
       throws IOException {
     final Result<Record1<JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.CATALOG)
         .from(ACTOR_CATALOG).join(ACTOR_CATALOG_FETCH_EVENT)
@@ -678,9 +678,9 @@ public class ConfigRepository {
    * @throws IOException
    */
   public UUID writeActorCatalogFetchEvent(final AirbyteCatalog catalog,
-      final UUID actorId,
-      final String connectorVersion,
-      final String configurationHash)
+                                          final UUID actorId,
+                                          final String connectorVersion,
+                                          final String configurationHash)
       throws IOException {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();

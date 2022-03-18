@@ -11,11 +11,11 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.NOTIFICATION_CONFIG;
+import static io.airbyte.db.instance.configs.jooq.Tables.NOTIFICATION_CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
-import static io.airbyte.db.instance.configs.jooq.Tables.NOTIFICATION_CONFIG;
-import static io.airbyte.db.instance.configs.jooq.Tables.NOTIFICATION_CONNECTION;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -224,8 +224,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private <T> ConfigWithMetadata<T> validateAndReturn(final String configId,
-      final List<ConfigWithMetadata<T>> result,
-      final AirbyteConfig airbyteConfig)
+                                                      final List<ConfigWithMetadata<T>> result,
+                                                      final AirbyteConfig airbyteConfig)
       throws ConfigNotFoundException {
     validate(configId, result, airbyteConfig);
     return result.get(0);
@@ -1455,9 +1455,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private <T extends Record> void deleteConfig(final TableImpl<T> table,
-      final TableField<T, UUID> keyColumn,
-      final UUID configId,
-      final DSLContext ctx) {
+                                               final TableField<T, UUID> keyColumn,
+                                               final UUID configId,
+                                               final DSLContext ctx) {
     final boolean isExistingConfig = ctx.fetchExists(select()
         .from(table)
         .where(keyColumn.eq(configId)));
@@ -1836,10 +1836,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   @VisibleForTesting
   <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,
-      final AirbyteConfig configType,
-      final List<T> latestDefinitions,
-      final Set<String> connectorRepositoriesInUse,
-      final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+                                                  final AirbyteConfig configType,
+                                                  final List<T> latestDefinitions,
+                                                  final Set<String> connectorRepositoriesInUse,
+                                                  final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
       throws IOException {
     int newCount = 0;
     int updatedCount = 0;
@@ -1909,8 +1909,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private void writeOrUpdateStandardDefinition(final DSLContext ctx,
-      final AirbyteConfig configType,
-      final JsonNode definition) {
+                                               final AirbyteConfig configType,
+                                               final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
       writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
