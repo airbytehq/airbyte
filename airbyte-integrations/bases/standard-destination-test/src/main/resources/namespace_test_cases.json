@@ -3,13 +3,14 @@
     "id": "S1-1",
     "description": "namespace are converted to lowercase",
     "namespace": "NAMESPACE",
-    "enabled": true,
-    "normalized": "namespace"
+    "enabled": false,
+    "normalized": "namespace",
+    "comment": "this test case is disabled because it is not critical and we are not ready to change the behavior of existing destinations yet"
   },
   {
     "id": "S2-1",
     "description": "namespace allows alphabets, numbers, and underscore",
-    "namespace": "Dest_1001_Namespace",
+    "namespace": "dest_1001_namespace",
     "enabled": true,
     "normalized": "dest_1001_namespace"
   },
@@ -39,13 +40,15 @@
     "description": "long namespace (300 characters)",
     "namespace": "a_300_characters_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo_namespace",
     "enabled": false,
-    "normalized": ""
+    "normalized": "",
+    "comment": "this test case is disabled because it is for future testing only"
   },
   {
     "id": "S3C-1",
-    "description": "reserved word (for future testing)",
+    "description": "reserved word",
     "namespace": "select",
     "enabled": false,
-    "normalized": ""
+    "normalized": "",
+    "comment": "this test case is disabled because it is for future testing only"
   }
 ]
