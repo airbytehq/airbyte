@@ -75,7 +75,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getIdentifier(namespace))
+    return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
@@ -110,7 +110,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
-    final String schema = NAME_TRANSFORMER.getIdentifier(namespace);
+    final String schema = NAME_TRANSFORMER.getNamespace(namespace);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {

@@ -99,8 +99,8 @@ public class StagingConsumerFactory {
                                         final String defaultDestSchema,
                                         final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
-        ? namingResolver.getIdentifier(stream.getNamespace())
-        : namingResolver.getIdentifier(defaultDestSchema);
+        ? namingResolver.getNamespace(stream.getNamespace())
+        : namingResolver.getNamespace(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,

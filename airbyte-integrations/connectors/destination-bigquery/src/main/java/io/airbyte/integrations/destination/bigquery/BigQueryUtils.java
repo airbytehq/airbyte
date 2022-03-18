@@ -239,7 +239,7 @@ public class BigQueryUtils {
   public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
     final String srcNamespace = stream.getStream().getNamespace();
     final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
-    return NAME_TRANSFORMER.getIdentifier(schemaName);
+    return NAME_TRANSFORMER.getNamespace(schemaName);
   }
 
   public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {

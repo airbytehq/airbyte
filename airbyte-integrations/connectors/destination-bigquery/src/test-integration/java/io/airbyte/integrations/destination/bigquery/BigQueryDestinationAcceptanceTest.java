@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -101,6 +103,18 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+    if (testCaseId.equals("S3A-1")) {
+      assertEquals(expectedNormalizedNamespace.substring(1), actualNormalizedNamespace, message);
+    } else {
+      assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
+    }
   }
 
   @Override

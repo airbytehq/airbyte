@@ -23,8 +23,9 @@ class SnowflakeSqlNameTransformerTest {
     assertNull(INSTANCE.getIdentifier(null));
     assertNull(INSTANCE.convertStreamName(null));
     RAW_TO_NORMALIZED_IDENTIFIERS.forEach((raw, normalized) -> {
-      assertEquals(normalized, INSTANCE.getIdentifier(raw));
       assertEquals(normalized, INSTANCE.convertStreamName(raw));
+      assertEquals(normalized, INSTANCE.getIdentifier(raw));
+      assertEquals(normalized, INSTANCE.getNamespace(raw));
     });
   }
 

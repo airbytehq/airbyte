@@ -930,7 +930,7 @@ public abstract class DestinationAcceptanceTest {
   public void testNamespaces(final String testCaseId, final String namespace, final String normalizedNamespace) throws Exception {
     final Optional<NamingConventionTransformer> nameTransformer = getNameTransformer();
     nameTransformer.ifPresent(namingConventionTransformer -> assertNamespaceNormalization(testCaseId, normalizedNamespace,
-        namingConventionTransformer.getIdentifier(namespace)));
+        namingConventionTransformer.getNamespace(namespace)));
 
     if (!implementsNamespaces() || !supportNamespaceTest()) {
       return;
