@@ -16,7 +16,8 @@ public interface BlobStorageOperations {
   String getBucketObjectPath(final String prefix, String namespace, String streamName, DateTime writeDatetime);
 
   /**
-   * Create a storage object where to store data in the destination for a @param streamName using location of @param objectPath
+   * Create a storage object where to store data in the destination for a @param streamName using
+   * location of @param objectPath
    */
   void createBucketObjectIfNotExists(String streamName) throws Exception;
 

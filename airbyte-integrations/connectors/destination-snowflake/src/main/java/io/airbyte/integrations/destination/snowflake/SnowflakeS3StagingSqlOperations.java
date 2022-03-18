@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
-import javax.validation.constraints.Max;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +45,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)
-    ));
+        nameTransformer.convertStreamName(streamName)));
   }
 
   @Override
@@ -97,7 +95,11 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
-  protected String getCopyQuery(final String stageName, final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
+  protected String getCopyQuery(final String stageName,
+                                final String stagingPath,
+                                final List<String> stagedFiles,
+                                final String dstTableName,
+                                final String schemaName) {
     return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
         schemaName,
         dstTableName,

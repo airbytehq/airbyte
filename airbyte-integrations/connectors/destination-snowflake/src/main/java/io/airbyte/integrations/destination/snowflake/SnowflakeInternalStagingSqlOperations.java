@@ -4,22 +4,21 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
-
   private final NamingConventionTransformer nameTransformer;
 
   public SnowflakeInternalStagingSqlOperations(final NamingConventionTransformer nameTransformer) {
@@ -51,8 +49,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)
-    ));
+        nameTransformer.convertStreamName(streamName)));
   }
 
   @Override
@@ -97,7 +94,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoStage(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData) throws Exception {
+  private void loadDataIntoStage(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData)
+      throws Exception {
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
     database.execute(query);
@@ -111,10 +109,15 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return String.format(PUT_FILE_QUERY, filePath, stageName, stagingPath, Runtime.getRuntime().availableProcessors());
   }
 
-  private boolean checkStageObjectExists(final JdbcDatabase database, final String stageName, final String stagingPath, final String filename) throws SQLException {
+  private boolean checkStageObjectExists(final JdbcDatabase database, final String stageName, final String stagingPath, final String filename)
+      throws SQLException {
     final String query = getListQuery(stageName, stagingPath, filename);
     LOGGER.debug("Executing query: {}", query);
-    return database.query(query).findAny().isPresent();
+    final boolean result;
+    try (final Stream<JsonNode> stream = database.query(query)) {
+      result = stream.findAny().isPresent();
+    }
+    return result;
   }
 
   protected String getListQuery(final String stageName, final String stagingPath, final String filename) {
@@ -143,8 +146,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
                                         final String schemaName)
       throws SQLException {
     final String query = getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName);
-    // Print actual SQL query if user needs to manually force reload from staging
-    LOGGER.info("Executing query: {}", query);
+    LOGGER.debug("Executing query: {}", query);
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
         () -> database.execute(query),
         Map.of(
@@ -155,7 +157,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
             "table", dstTableName));
   }
 
-  protected String getCopyQuery(final String stageName, final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
+  protected String getCopyQuery(final String stageName,
+                                final String stagingPath,
+                                final List<String> stagedFiles,
+                                final String dstTableName,
+                                final String schemaName) {
     return String.format(COPY_QUERY + generateFilesList(stagedFiles), schemaName, dstTableName, stageName, stagingPath);
   }
 

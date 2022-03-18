@@ -142,10 +142,10 @@ public class StagingConsumerFactory {
   }
 
   private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
-                                                                                                                       final JdbcDatabase database,
-                                                                                                                       final StagingOperations stagingOperations,
-                                                                                                                       final List<WriteConfig> writeConfigs,
-                                                                                                                       final ConfiguredAirbyteCatalog catalog) {
+                                                                                                               final JdbcDatabase database,
+                                                                                                               final StagingOperations stagingOperations,
+                                                                                                               final List<WriteConfig> writeConfigs,
+                                                                                                               final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(
@@ -189,7 +189,8 @@ public class StagingConsumerFactory {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
           final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, streamName, writeConfig.getWriteDatetime());
           LOGGER.info("Copying stream {} of schema {} into tmp table {} to final table {} from stage path {} with {} file(s) [{}]",
-              streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(), String.join(",", writeConfig.getStagedFiles()));
+              streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
+              String.join(",", writeConfig.getStagedFiles()));
 
           try {
             stagingOperations.copyIntoTmpTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), srcTableName, schemaName);
