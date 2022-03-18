@@ -260,10 +260,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           connectionUpdaterInput.getJobId(),
           "Job failed after too many retries for connection " + connectionId));
 
-      final int attemptCreationVersion =
+      final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
 
-      if (attemptCreationVersion != Workflow.DEFAULT_VERSION) {
+      if (autoDisableConnectionVersion != Workflow.DEFAULT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
             new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
         runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
