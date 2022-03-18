@@ -44,6 +44,7 @@ class KyribaStream(HttpStream):
         super().__init__(self.client.login())
 
     primary_key = "uuid"
+    max_retries = 5
 
     @property
     def url_base(self) -> str:
@@ -66,7 +67,7 @@ class KyribaStream(HttpStream):
         if response.status_code == 401:
             self._authorization = self.client.login()
             return True
-        return response.status_code == 429 or 500 <= response.status_code < 600
+        return response.status_code in [429, 401] or 500 <= response.status_code < 600
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
         '''
@@ -288,10 +289,23 @@ class CashFlows(IncrementalKyribaStream):
     def path(self, **kwargs) -> str:
         return "cash-flows"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        # cash flow date range has to be less than a year
+        year_ago = (date.today() - timedelta(days=365))
+        start = date.fromisoformat(self.start_date)
+        slices = []
+        while start < year_ago:
+            end = start + timedelta(days=365)
+            slices.append({"startDate": start.isoformat(), "endDate": end.isoformat()})
+            start = end + timedelta(days=1)
+        # endDate will default to the current date
+        slices.append({"startDate": start.isoformat()})
+        return slices
+
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs) or {}
         params["dateType"] = "UPDATE"
-        params["startDate"] = self.start_date
+        params = {**params, **stream_slice}
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
