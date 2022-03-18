@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,12 +12,14 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   public static final String SCHEMA_NAME = "schemaName";
   public static final String STAGE_NAME = "stageName";
-  private final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
+  private final SnowflakeInternalStagingSqlOperations snowflakeStagingSqlOperations =
+      new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
 
   @Test
   void createStageIfNotExists() {
     String actualCreateStageQuery = snowflakeStagingSqlOperations.getCreateStageQuery(STAGE_NAME);
-    String expectedCreateStageQuery = "CREATE STAGE IF NOT EXISTS " + STAGE_NAME + " encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
+    String expectedCreateStageQuery =
+        "CREATE STAGE IF NOT EXISTS " + STAGE_NAME + " encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
     assertEquals(expectedCreateStageQuery, actualCreateStageQuery);
   }
 
