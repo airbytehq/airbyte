@@ -162,7 +162,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
-    return String.format(COPY_QUERY + generateFilesList(stagedFiles), schemaName, dstTableName, stageName, stagingPath);
+    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
   }
 
   private String generateFilesList(final List<String> files) {
