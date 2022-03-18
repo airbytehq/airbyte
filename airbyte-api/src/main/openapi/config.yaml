@@ -294,7 +294,7 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
+      summary: List all the sourceDefinitions the given workspace is configured to use
       operationId: listSourceDefinitions
       requestBody:
         content:
@@ -322,12 +322,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadList"
-  /v1/source_definitions/list_opt_in:
+  /v1/source_definitions/list_private:
     post:
       tags:
         - source_definition
-      summary: List all opt-in sourceDefinitions along with the current workspace's opt-in statuses
-      operationId: listSourceDefinitionOptIns
+      summary: List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition
+      operationId: listPrivateSourceDefinitions
       requestBody:
         content:
           application/json:
@@ -339,18 +339,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourceDefinitionOptInReadList"
+                $ref: "#/components/schemas/PrivateSourceDefinitionReadList"
   /v1/source_definitions/grant_definition:
     post:
       tags:
         - source_definition
-      summary: Opt in to a non-public, non-custom sourceDefinition
-      operationId: createSourceDefinitionOptIn
+      summary: grant a private, non-custom sourceDefinition to a given workspace
+      operationId: grantSourceDefinitionToWorkspace
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+              $ref: "#/components/schemas/SourceDefinitionGrantUpdate"
         required: true
       responses:
         "200":
@@ -358,7 +358,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourceDefinitionOptInRead"
+                $ref: "#/components/schemas/PrivateSourceDefinitionRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -367,13 +367,13 @@ paths:
     post:
       tags:
         - source_definition
-      summary: Opt out of a non-public, non-custom sourceDefinition
-      operationId: deleteSourceDefinitionOptIn
+      summary: revoke a grant to a private, non-custom sourceDefinition from a given workspace
+      operationId: revokeSourceDefinitionFromWorkspace
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionOptInUpdate"
+              $ref: "#/components/schemas/SourceDefinitionGrantUpdate"
         required: true
       responses:
         "204":
@@ -717,7 +717,7 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
+      summary: List all the destinationDefinitions the given workspace is configured to use
       operationId: listDestinationDefinitions
       requestBody:
         content:
@@ -745,12 +745,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadList"
-  /v1/destination_definitions/list_opt_in:
+  /v1/destination_definitions/list_private:
     post:
       tags:
         - destination_definition
-      summary: List all opt-in destinationDefinitions along with the current workspace's opt-in statuses
-      operationId: listDestinationDefinitionOptIns
+      summary:
+        List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the
+        definition
+      operationId: listPrivateDestinationDefinitions
       requestBody:
         content:
           application/json:
@@ -762,18 +764,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionOptInReadList"
+                $ref: "#/components/schemas/PrivateDestinationDefinitionReadList"
   /v1/destination_definitions/grant_definition:
     post:
       tags:
         - destination_definition
-      summary: Opt in to a non-public, non-custom destinationDefinition
-      operationId: createDestinationDefinitionOptIn
+      summary: grant a private, non-custom destinationDefinition to a given workspace
+      operationId: grantDestinationDefinitionToWorkspace
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionOptInUpdate"
+              $ref: "#/components/schemas/DestinationDefinitionGrantUpdate"
         required: true
       responses:
         "200":
@@ -781,7 +783,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionOptInRead"
+                $ref: "#/components/schemas/PrivateDestinationDefinitionRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -790,13 +792,13 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: Opt out of a non-public, non-custom destinationDefinition
-      operationId: deleteDestinationDefinitionOptIn
+      summary: revoke a grant to a private, non-custom destinationDefinition from a given workspace
+      operationId: revokeDestinationDefinitionFromWorkspace
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionOptInUpdate"
+              $ref: "#/components/schemas/DestinationDefinitionGrantUpdate"
         required: true
       responses:
         "204":
@@ -2310,26 +2312,26 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionRead"
-    SourceDefinitionOptInRead:
+    PrivateSourceDefinitionRead:
       type: object
       required:
         - sourceDefinition
-        - optIn
+        - granted
       properties:
         sourceDefinition:
           $ref: "#/components/schemas/SourceDefinitionRead"
-        optIn:
+        granted:
           type: boolean
-    SourceDefinitionOptInReadList:
+    PrivateSourceDefinitionReadList:
       type: object
       required:
-        - sourceDefinitionOptIns
+        - sourceDefinitionGrants
       properties:
-        sourceDefinitionOptIns:
+        sourceDefinitionGrants:
           type: array
           items:
-            $ref: "#/components/schemas/SourceDefinitionOptInRead"
-    SourceDefinitionOptInUpdate:
+            $ref: "#/components/schemas/PrivateSourceDefinitionRead"
+    SourceDefinitionGrantUpdate:
       type: object
       required:
         - sourceDefinitionId
@@ -2626,26 +2628,26 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationDefinitionRead"
-    DestinationDefinitionOptInRead:
+    PrivateDestinationDefinitionRead:
       type: object
       required:
         - destinationDefinition
-        - optIn
+        - granted
       properties:
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionRead"
-        optIn:
+        granted:
           type: boolean
-    DestinationDefinitionOptInReadList:
+    PrivateDestinationDefinitionReadList:
       type: object
       required:
-        - destinationDefinitionOptIns
+        - destinationDefinitionGrants
       properties:
-        destinationDefinitionOptIns:
+        destinationDefinitionGrants:
           type: array
           items:
-            $ref: "#/components/schemas/DestinationDefinitionOptInRead"
-    DestinationDefinitionOptInUpdate:
+            $ref: "#/components/schemas/PrivateDestinationDefinitionRead"
+    DestinationDefinitionGrantUpdate:
       type: object
       required:
         - destinationDefinitionId

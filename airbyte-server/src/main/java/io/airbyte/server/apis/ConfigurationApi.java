@@ -22,10 +22,8 @@ import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
+import io.airbyte.api.model.DestinationDefinitionGrantUpdate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionOptInRead;
-import io.airbyte.api.model.DestinationDefinitionOptInReadList;
-import io.airbyte.api.model.DestinationDefinitionOptInUpdate;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -54,16 +52,18 @@ import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
+import io.airbyte.api.model.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
+import io.airbyte.api.model.SourceDefinitionGrantUpdate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionOptInRead;
-import io.airbyte.api.model.SourceDefinitionOptInReadList;
-import io.airbyte.api.model.SourceDefinitionOptInUpdate;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -321,7 +321,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDefinitionOptInReadList listSourceDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return null;
   }
 
@@ -336,7 +336,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDefinitionOptInRead createSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionGrantUpdate sourceDefinitionGrantUpdate) {
     return null;
   }
 
@@ -354,7 +354,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void deleteSourceDefinitionOptIn(final SourceDefinitionOptInUpdate sourceDefinitionOptInUpdate) {
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionGrantUpdate sourceDefinitionOptInUpdate) {
 
   }
 
@@ -483,7 +483,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationDefinitionOptInReadList listDestinationDefinitionOptIns(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return null;
   }
 
@@ -498,7 +498,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationDefinitionOptInRead createDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
+  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
+                                                                                final DestinationDefinitionGrantUpdate destinationDefinitionOptInUpdate) {
     return null;
   }
 
@@ -516,7 +517,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void deleteDestinationDefinitionOptIn(final DestinationDefinitionOptInUpdate destinationDefinitionOptInUpdate) {
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionGrantUpdate destinationDefinitionOptInUpdate) {
 
   }
 
