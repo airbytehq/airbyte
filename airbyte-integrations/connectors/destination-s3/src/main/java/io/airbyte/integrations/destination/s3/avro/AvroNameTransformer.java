@@ -26,6 +26,8 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
   public String convertStreamName(final String input) {
     if (input == null) {
       return null;
+    } else if (input.isBlank()) {
+      return input;
     }
 
     final String normalizedName = super.convertStreamName(input);
