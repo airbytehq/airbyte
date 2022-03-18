@@ -82,7 +82,7 @@ class SnowflakeS3StreamCopierTest {
     copier.copyStagingFileToTemporaryTable();
     Set<String> stagingFiles = copier.getStagingFiles();
     // check the use of all files for staging
-    Assertions.assertTrue(stagingFiles.size()>1);
+    Assertions.assertTrue(stagingFiles.size() > 1);
 
     final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
     for (final List<String> files : partition) {
