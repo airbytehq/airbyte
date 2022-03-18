@@ -422,6 +422,7 @@ class Stream(HttpStream, ABC):
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_name.endswith("_id") else target_type
+            field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
             # do not cast empty strings, return None instead to be properly casted.
@@ -721,7 +722,6 @@ class IncrementalStream(Stream, ABC):
 
 
 class CRMSearchStream(IncrementalStream, ABC):
-
     limit = 100  # This value is used only when state is None.
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
@@ -943,6 +943,7 @@ class Campaigns(Stream):
     data_field = "campaigns"
     limit = 500
     updated_at_field = "lastUpdatedTime"
+    primary_key = "id"
 
     def read_records(
         self,
@@ -986,6 +987,7 @@ class ContactsListMemberships(Stream):
     data_field = "contacts"
     page_filter = "vidOffset"
     page_field = "vid-offset"
+    primary_key = "canonical-vid"
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1015,6 +1017,7 @@ class Deals(CRMSearchStream):
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies"]
+    primary_key = "id"
 
 
 class DealPipelines(Stream):
@@ -1026,6 +1029,7 @@ class DealPipelines(Stream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "pipelineId"
 
 
 class TicketPipelines(Stream):
@@ -1037,6 +1041,7 @@ class TicketPipelines(Stream):
     url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class EmailEvents(IncrementalStream):
@@ -1049,6 +1054,7 @@ class EmailEvents(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "created"
     created_at_field = "created"
+    primary_key = "id"
 
 
 class Engagements(IncrementalStream):
@@ -1062,6 +1068,7 @@ class Engagements(IncrementalStream):
     limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
+    primary_key = "id"
 
     @property
     def url(self):
@@ -1094,6 +1101,7 @@ class Forms(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class FormSubmissions(Stream):
@@ -1165,6 +1173,7 @@ class MarketingEmails(Stream):
     limit = 250
     updated_at_field = "updated"
     created_at_field = "created"
+    primary_key = "id"
 
 
 class Owners(Stream):
@@ -1175,6 +1184,7 @@ class Owners(Stream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    primary_key = "id"
 
 
 class PropertyHistory(IncrementalStream):
@@ -1241,67 +1251,80 @@ class Workflows(Stream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+    primary_key = "id"
 
 
 class Companies(CRMSearchStream):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
+    primary_key = "id"
 
 
 class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
+    primary_key = "id"
 
 
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "deal", "company"]
+    primary_key = "id"
 
 
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
+    primary_key = "id"
 
 
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
+    primary_key = "id"
 
 
 class Products(CRMObjectIncrementalStream):
     entity = "product"
+    primary_key = "id"
 
 
 class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
+    primary_key = "id"
 
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
+    primary_key = "id"
