@@ -15,7 +15,6 @@ import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -24,10 +23,9 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
-  private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
   private static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
       + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
-      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') ";
+      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
 
   private final NamingConventionTransformer nameTransformer;
   private final S3StorageOperations s3StorageOperations;
@@ -110,17 +108,6 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   private String generateBucketPath(final String stageName, final String stagingPath) {
     return "s3://" + s3Config.getBucketName() + "/" + stagingPath;
-  }
-
-  private String generateFilesList(final List<String> files) {
-    if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
-      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
-      final StringJoiner joiner = new StringJoiner(",");
-      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
-      return "files = (" + joiner + ") ";
-    } else {
-      return "";
-    }
   }
 
   @Override

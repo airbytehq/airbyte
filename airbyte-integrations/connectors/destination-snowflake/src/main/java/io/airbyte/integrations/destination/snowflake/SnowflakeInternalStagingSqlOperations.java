@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
-  private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
   private static final int UPLOAD_RETRY_LIMIT = 3;
 
   private static final String CREATE_STAGE_QUERY =
@@ -163,17 +161,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
                                 final String dstTableName,
                                 final String schemaName) {
     return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
-  }
-
-  private String generateFilesList(final List<String> files) {
-    if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
-      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
-      final StringJoiner joiner = new StringJoiner(",");
-      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
-      return " files = (" + joiner + ")";
-    } else {
-      return "";
-    }
   }
 
   @Override
