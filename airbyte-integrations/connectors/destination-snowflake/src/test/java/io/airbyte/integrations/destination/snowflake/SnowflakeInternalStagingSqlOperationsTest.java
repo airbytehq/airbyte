@@ -43,7 +43,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
 
   @Test
   void copyIntoTmpTableFromStage() {
-    final String expectedQuery = "COPY INTO schemaName.tableName FROM '@" +  STAGE_NAME + "/" +  STAGE_PATH + "' "
+    final String expectedQuery = "COPY INTO schemaName.tableName FROM '@" + STAGE_NAME + "/" + STAGE_PATH + "' "
         + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
         + "files = ('filename1','filename2');";
     final String actualCopyQuery =
@@ -58,11 +58,11 @@ class SnowflakeInternalStagingSqlOperationsTest {
     assertEquals(expectedQuery, actualDropQuery);
   }
 
-
   @Test
   void removeStage() {
     final String expectedQuery = "REMOVE @" + STAGE_NAME + ";";
     final String actualRemoveQuery = snowflakeStagingSqlOperations.getRemoveQuery(STAGE_NAME);
     assertEquals(expectedQuery, actualRemoveQuery);
   }
+
 }
