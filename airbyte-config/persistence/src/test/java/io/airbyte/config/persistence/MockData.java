@@ -54,6 +54,7 @@ public class MockData {
   private static final UUID WORKSPACE_ID_1 = UUID.randomUUID();
   private static final UUID WORKSPACE_ID_2 = UUID.randomUUID();
   private static final UUID WORKSPACE_ID_3 = UUID.randomUUID();
+  private static final UUID WORKSPACE_ID_4 = UUID.randomUUID();
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_2 = UUID.randomUUID();
@@ -122,7 +123,15 @@ public class MockData {
         .withInitialSetupComplete(true)
         .withTombstone(true);
 
-    return Arrays.asList(workspace1, workspace2, workspace3);
+    final StandardWorkspace workspace4 = new StandardWorkspace()
+        .withWorkspaceId(WORKSPACE_ID_4)
+        .withName("FeedbackNotDone")
+        .withSlug("feedback-to-do")
+        .withInitialSetupComplete(true)
+        .withTombstone(false)
+        .withFeedbackDone(false);
+
+    return Arrays.asList(workspace1, workspace2, workspace3, workspace4);
   }
 
   public static List<StandardSourceDefinition> standardSourceDefinitions() {

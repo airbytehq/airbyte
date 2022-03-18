@@ -227,4 +227,28 @@ public class ConfigRepositoryE2EReadWriteTest {
         Collectors.toList()));
   }
 
+  @Test
+  public void testUpdatedFeedback()
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID workspaceId1 = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID workspaceId2 = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final UUID workspaceId3 = MockData.standardWorkspaces().get(2).getWorkspaceId();
+    final UUID workspaceId4 = MockData.standardWorkspaces().get(3).getWorkspaceId();
+
+    assertTrue(configRepository.getStandardWorkspace(workspaceId1, false).getFeedbackDone());
+    configRepository.setFeedback(workspaceId1);
+    assertTrue(configRepository.getStandardWorkspace(workspaceId1, false).getFeedbackDone());
+
+    assertNull(configRepository.getStandardWorkspace(workspaceId2, false).getFeedbackDone());
+    configRepository.setFeedback(workspaceId2);
+    assertTrue(configRepository.getStandardWorkspace(workspaceId2, false).getFeedbackDone());
+
+    assertThrows(ConfigNotFoundException.class, () -> configRepository.setFeedback(workspaceId3));
+
+    assertFalse(configRepository.getStandardWorkspace(workspaceId4, false).getFeedbackDone());
+    configRepository.setFeedback(workspaceId4);
+    assertTrue(configRepository.getStandardWorkspace(workspaceId4, false).getFeedbackDone());
+
+  }
+
 }

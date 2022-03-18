@@ -5,7 +5,6 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -392,19 +391,6 @@ class ConfigRepositoryTest {
     configRepository.deleteStandardSyncDefinition(connectionId);
 
     verify(configPersistence).deleteConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString());
-  }
-
-  @Test
-  public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
-    doReturn(workspace)
-        .when(configRepository)
-        .getStandardWorkspace(WORKSPACE_ID, false);
-
-    configRepository.setFeedback(WORKSPACE_ID);
-
-    assertTrue(workspace.getFeedbackDone());
-    verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
 }
