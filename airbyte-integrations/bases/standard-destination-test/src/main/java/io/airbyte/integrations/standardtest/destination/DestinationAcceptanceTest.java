@@ -988,9 +988,9 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override this method if the normalized namespace is different from the default one. E.g. S3 does
-   * not allow a name starting with a number. So it should change the expected normalized namespace
-   * when testCaseId = "s3a-1". Find the testCaseId in "namespace_test_cases.json".
+   * Override this method if the normalized namespace is different from the default one. E.g. BigQuery
+   * does allow a name starting with a number. So it should change the expected normalized namespace
+   * when testCaseId = "S3A-1". Find the testCaseId in "namespace_test_cases.json".
    */
   protected void assertNamespaceNormalization(final String testCaseId,
                                               final String expectedNormalizedNamespace,
