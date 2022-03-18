@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
