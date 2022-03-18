@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -145,7 +146,7 @@ public class SlackNotificationClientTest {
         t.sendResponseHeaders(500, response.length());
       }
       final OutputStream os = t.getResponseBody();
-      os.write(response.getBytes());
+      os.write(response.getBytes(StandardCharsets.UTF_8));
       os.close();
     }
 

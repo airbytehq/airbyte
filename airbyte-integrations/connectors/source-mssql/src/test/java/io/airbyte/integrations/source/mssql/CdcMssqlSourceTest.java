@@ -316,7 +316,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             dbName),
         DRIVER_CLASS,
         new MssqlJdbcStreamingQueryConfiguration(),
-        null,
+        Map.of(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
