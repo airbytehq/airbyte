@@ -33,7 +33,7 @@
     "description": "namespace starting with a number",
     "namespace": "99namespace",
     "enabled": true,
-    "normalized": "99namespace"
+    "normalized": "_99namespace"
   },
   {
     "id": "S3B-1",
