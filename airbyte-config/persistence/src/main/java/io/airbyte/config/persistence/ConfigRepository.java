@@ -59,6 +59,7 @@ import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
+import org.jooq.SelectJoinStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,14 +122,21 @@ public class ConfigRepository {
     return getWorkspaceBySlugOptional(slug, includeTombstone).orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug));
   }
 
-  public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone) throws JsonValidationException, IOException {
+  public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone) throws IOException {
 
     final List<StandardWorkspace> workspaces = new ArrayList<>();
 
-    for (final StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
-      if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
-        workspaces.add(workspace);
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> selectStatement = ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE);
+      if (includeTombstone) {
+        return selectStatement;
       }
+      return selectStatement.where(WORKSPACE.TOMBSTONE.eq(false));
+    }).fetch();
+
+    for (final Record record : result) {
+      workspaces.add(DbConverter.buildStandardWorkspace(record));
     }
 
     return workspaces;

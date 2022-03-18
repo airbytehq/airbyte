@@ -60,27 +60,6 @@ class ConfigRepositoryTest {
     reset(configPersistence);
   }
 
-  @Test
-  void testWorkspaceWithNullTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID));
-  }
-
-  @Test
-  void testWorkspaceWithFalseTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false));
-  }
-
-  @Test
-  void testWorkspaceWithTrueTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
-    assertReturnsWorkspace(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(true));
-  }
-
-  void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
-
-    assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
-  }
-
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testWorkspaceByConnectionId(final boolean isTombstone) throws ConfigNotFoundException, IOException, JsonValidationException {

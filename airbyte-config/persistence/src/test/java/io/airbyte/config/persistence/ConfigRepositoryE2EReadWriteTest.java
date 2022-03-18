@@ -217,4 +217,14 @@ public class ConfigRepositoryE2EReadWriteTest {
         .fetchSet(CONNECTION_OPERATION.OPERATION_ID));
   }
 
+  @Test
+  public void testListStandardWorkspaces() throws IOException {
+    final List<StandardWorkspace> allWorkspaces = configRepository.listStandardWorkspaces(true);
+    assertThat(allWorkspaces).hasSameElementsAs(MockData.standardWorkspaces());
+
+    final List<StandardWorkspace> nonTombstonedWorkspaces = configRepository.listStandardWorkspaces(false);
+    assertThat(nonTombstonedWorkspaces).hasSameElementsAs(MockData.standardWorkspaces().stream().filter(w -> !w.getTombstone()).collect(
+        Collectors.toList()));
+  }
+
 }
