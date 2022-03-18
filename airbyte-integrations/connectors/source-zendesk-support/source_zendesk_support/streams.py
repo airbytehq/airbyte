@@ -410,20 +410,13 @@ class ZendeskSupportTicektEventsExportStream(SourceZendeskSupportCursorPaginatio
                 target_prop = record.get(prop)
                 event[prop] = target_prop if target_prop else None
         return event
-    
-    def filter_by_state(self, event: dict = None, stream_state: dict = None) -> Iterable[Mapping]:
-        current_state = stream_state.get(self.cursor_field, {})
-        updated_state = event.get(self.cursor_field, {})
-        if not current_state or updated_state > current_state:
-            yield event
             
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         records = response.json().get(self.response_list_name) or []
         for record in records:
             for event in record.get(self.responce_target_entity):
                 if event.get("event_type") == self.event_type:
-                    event = self.update_event_props(record, event, self.list_entities_from_event)
-                    yield from self.filter_by_state(event, stream_state)
+                    yield self.update_event_props(record, event, self.list_entities_from_event)
 
 
 class Users(SourceZendeskSupportStream):
