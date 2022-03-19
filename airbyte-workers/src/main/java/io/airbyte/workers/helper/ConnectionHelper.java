@@ -70,6 +70,11 @@ public class ConnectionHelper {
         .withCatalog(update.getCatalog())
         .withStatus(update.getStatus());
 
+    // update name
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
+
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {
       newConnection.withResourceRequirements(Jsons.clone(update.getResourceRequirements()));
