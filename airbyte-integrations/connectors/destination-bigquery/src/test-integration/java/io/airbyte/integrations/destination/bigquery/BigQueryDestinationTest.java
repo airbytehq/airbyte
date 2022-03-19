@@ -397,7 +397,7 @@ class BigQueryDestinationTest {
     return false;
   }
 
-  private static class DatasetIdResetter {
+  protected static class DatasetIdResetter {
 
     private final Consumer<JsonNode> consumer;
 
