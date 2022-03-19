@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.BigQueryDestinationAcceptanceTest.CONFIG_TRANSFORMATION_PRIORITY;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -119,6 +118,7 @@ class BigQueryGcsDestinationTest {
     final JsonNode credentialsGcsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.GCS_CONFIG);
 
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
         .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
     bigquery = BigQueryOptions.newBuilder()

@@ -175,6 +175,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
@@ -182,6 +183,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJson.toString())
         .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     setupBigQuery(credentialsJson);

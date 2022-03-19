@@ -31,6 +31,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
 
     final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
+
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
     final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
