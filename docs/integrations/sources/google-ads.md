@@ -34,6 +34,7 @@ This source is capable of syncing the following tables and their data:
 * [display\_keyword\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 * [display\_topics\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 * [shopping\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+* [user_location_report](https://developers.google.com/google-ads/api/fields/v8/user_location_view)
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
