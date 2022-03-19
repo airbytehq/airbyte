@@ -17,7 +17,7 @@ If you don't already have a developer token from Google Ads, make sure you follo
 
 This source is capable of syncing the following tables and their data:
 
-#### Main Tables
+### Main Tables
 
 * [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
 * [ad\_group\_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
@@ -27,8 +27,7 @@ This source is capable of syncing the following tables and their data:
 * [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
 * [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
 
-
-#### Report Tables
+### Report Tables
 
 * [account\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 * [ad\_group\_ad\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
@@ -38,7 +37,7 @@ This source is capable of syncing the following tables and their data:
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
-**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account. 
+**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
 
 **Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
@@ -52,7 +51,7 @@ This source is capable of syncing the following tables and their data:
 
 ## Getting Started \(Airbyte Open-Source\)
 
-#### Requirements
+### Requirements
 
 Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
@@ -64,7 +63,7 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * customer\_id
 * login\_customer\_id \(you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)\)
 
-#### Setup guide
+### Setup guide
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
@@ -128,4 +127,3 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 | `0.1.3`  | 2021-07-23 | [\#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
 | `0.1.2`  | 2021-07-06 | [\#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                              |
 | `0.1.1`  | 2021-06-23 | [\#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters`                                              |
-
