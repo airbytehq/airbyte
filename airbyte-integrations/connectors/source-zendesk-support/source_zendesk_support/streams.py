@@ -115,6 +115,12 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         dt = datetime.strptime(str_dt, DATETIME_FORMAT)
         return calendar.timegm(dt.utctimetuple())
 
+    @staticmethod
+    def _parse_next_page_number(response: requests.Response) -> Optional[int]:
+        """Parses a response and tries to find next page number"""
+        next_page = response.json().get("next_page")
+        return dict(parse_qsl(urlparse(next_page).query)).get("page") if next_page else None
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """try to select relevant data only"""
 
@@ -149,6 +155,16 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         self._session = SourceZendeskSupportFuturesSession()
         self._session.auth = authenticator
         self.future_requests = deque()
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self._subdomain}.zendesk.com/api/v2/"
+
+    def path(self, **kwargs):
+        return self.name
+
+    def next_page_token(self, *args, **kwargs):
+        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
@@ -271,24 +287,6 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             else:
                 yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
-    @property
-    def url_base(self) -> str:
-        return f"https://{self._subdomain}.zendesk.com/api/v2/"
-
-    @staticmethod
-    def _parse_next_page_number(response: requests.Response) -> Optional[int]:
-        """Parses a response and tries to find next page number"""
-        next_page = response.json().get("next_page")
-        if next_page:
-            return dict(parse_qsl(urlparse(next_page).query)).get("page")
-        return None
-
-    def path(self, **kwargs):
-        return self.name
-
-    def next_page_token(self, *args, **kwargs):
-        return None
-
 
 class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
     """
@@ -305,14 +303,6 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
 
     def path(self, **kwargs):
         return self.name
-
-    @staticmethod
-    def _parse_next_page_number(response: requests.Response) -> Optional[int]:
-        """Parses a response and tries to find next page number"""
-        next_page = response.json().get("next_page")
-        if next_page:
-            return dict(parse_qsl(urlparse(next_page).query)).get("page")
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = self._parse_next_page_number(response)
@@ -369,32 +359,39 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class ZendeskSupportTicektEventsExportStream(SourceZendeskSupportCursorPaginationStream):
+class ZendeskSupportTicketEventsExportStream(SourceZendeskSupportCursorPaginationStream):
     """Incremental Export from TicketEvents stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
-    
+
     @ param response_list_name: the main nested entity to look at inside of response, defualt = "ticket_events"
-    @ param responce_target_entity: nested property inside of `response_list_name`, default = "child_events"
+    @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
     @ param sideload_param : parameter variable to include various information to child_events property
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
     """
-    
+
     response_list_name: str = "ticket_events"
-    responce_target_entity: str = "child_events"
+    response_target_entity: str = "child_events"
     list_entities_from_event: List[str] = None
     sideload_param: str = None
     event_type: str = None
-    
+
+    @property
+    def update_event_from_record(self) -> bool:
+        """Returns True/False based on list_entities_from_event property"""
+        return True if len(self.list_entities_from_event) > 0 else False
+
+    def path(self, **kwargs) -> str:
+        return "incremental/ticket_events"
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         next_page_token = super().next_page_token(response)
-        end_of_stream = response.json().get(END_OF_STREAM_KEY, False)
-        return None if end_of_stream else next_page_token
-    
+        return None if response.json().get(END_OF_STREAM_KEY, False) else next_page_token
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -402,21 +399,15 @@ class ZendeskSupportTicektEventsExportStream(SourceZendeskSupportCursorPaginatio
         if self.sideload_param:
             params["include"] = self.sideload_param
         return params
-    
-    def update_event_props(self, record: dict = None, event: dict = None, props: list = None) -> MutableMapping[str, Any]:
-        """Update the event mapping with the specified fields from record entity"""
-        if self.list_entities_from_event and len(self.list_entities_from_event) > 0:
-            for prop in props:
-                target_prop = record.get(prop)
-                event[prop] = target_prop if target_prop else None
-        return event
-            
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.response_list_name) or []
-        for record in records:
-            for event in record.get(self.responce_target_entity):
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in response.json().get(self.response_list_name, []):
+            for event in record.get(self.response_target_entity, []):
                 if event.get("event_type") == self.event_type:
-                    yield self.update_event_props(record, event, self.list_entities_from_event)
+                    if self.update_event_from_record:
+                        for prop in self.list_entities_from_event:
+                            event[prop] = record.get(prop)
+                    yield event
 
 
 class Users(SourceZendeskSupportStream):
@@ -442,7 +433,7 @@ class Tickets(SourceZendeskSupportStream):
         return params
 
 
-class TicketComments(ZendeskSupportTicektEventsExportStream):
+class TicketComments(ZendeskSupportTicketEventsExportStream):
     """
     Fetch the TicketComments incrementaly from TicketEvents Export stream
     """
@@ -451,9 +442,6 @@ class TicketComments(ZendeskSupportTicektEventsExportStream):
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
     sideload_param = "comment_events"
     event_type = "Comment"
-
-    def path(self, **kwargs) -> str:
-        return "incremental/ticket_events"
 
 
 class Groups(SourceZendeskSupportStream):

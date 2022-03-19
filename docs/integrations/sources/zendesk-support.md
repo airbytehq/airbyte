@@ -10,27 +10,26 @@ This source can sync data for the [Zendesk Support API](https://developer.zendes
 
 This Source is capable of syncing the following core Streams:
 
-* [Tickets](https://developer.zendesk.com/rest_api/docs/support/tickets)
+* [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
+* [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
 * [Groups](https://developer.zendesk.com/rest_api/docs/support/groups)
-* [Users](https://developer.zendesk.com/rest_api/docs/support/users)
+* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
+* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
 * [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations)
+* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
+* [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
+* [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
+* [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
+* [Tickets](https://developer.zendesk.com/rest_api/docs/support/tickets)
 * [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits)
 * [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)
 * [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
 * [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
 * [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
 * [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
-* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
-* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
-* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
-* [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-* [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
-* [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-* [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
-* [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
+* [Users](https://developer.zendesk.com/rest_api/docs/support/users)
 
-
-There are a lot of space for future work, the next streams could be added in the future:
+The streams below are not implemented. Please open a Github issue or request it through Airbyte Cloud's support box if you are interested in them.
 
 **Tickets**
 
@@ -67,10 +66,10 @@ There are a lot of space for future work, the next streams could be added in the
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | Yes | ... |
-| Incremental - Append Sync | Yes | ... |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
 | Incremental - Debuped + History Sync | Yes | Enabled according to type of destination |
-| Namespaces | No | ... |
+| Namespaces | No |  |
 
 ### Performance considerations
 
