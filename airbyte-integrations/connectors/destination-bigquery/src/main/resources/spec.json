@@ -73,7 +73,7 @@
       "credentials_json": {
         "type": "string",
         "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
-        "title": "Credentials JSON",
+        "title": "Credentials JSON (Optional)",
         "airbyte_secret": true
       },
       "transformation_priority": {
