@@ -8,8 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id", "big_query_client_buffer_size_mb", "dataset_location",
-      "transformation_priority"],
+    "required": ["project_id", "dataset_id"],
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
@@ -86,7 +85,7 @@
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br><b>Standard Inserts</b> - Direct uploading using streams. <br><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for large production workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
+        "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br><b>Standard Inserts</b> - Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging. <br><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for most workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
         "oneOf": [
           {
             "title": "Standard Inserts",
@@ -106,7 +105,6 @@
               "method",
               "gcs_bucket_name",
               "gcs_bucket_path",
-              "part_size_mb",
               "keep_files_in_gcs-bucket",
               "credential"
             ],
