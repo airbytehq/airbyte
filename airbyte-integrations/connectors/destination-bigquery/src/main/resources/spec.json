@@ -105,7 +105,6 @@
               "method",
               "gcs_bucket_name",
               "gcs_bucket_path",
-              "keep_files_in_gcs-bucket",
               "credential"
             ],
             "properties": {
