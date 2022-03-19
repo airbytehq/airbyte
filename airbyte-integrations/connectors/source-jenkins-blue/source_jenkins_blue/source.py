@@ -7,7 +7,6 @@ import fnmatch
 import logging
 import itertools
 import re
-import sys
 import threading
 from abc import ABC, abstractmethod
 from functools import lru_cache
@@ -46,6 +45,8 @@ logger = logging.getLogger("airbyte")
 #   - "io.jenkins.blueocean.service.embedded.rest.PipelineFolderImpl"
 #   - "io.jenkins.blueocean.rest.impl.pipeline.MultiBranchPipelineImpl"
 BASE_FOLDER_CLASS = "com.cloudbees.hudson.plugins.folder.AbstractFolder"
+
+MULTIBRANCH_CLASS = {"jenkins.branch.MultiBranchProject", "io.jenkins.blueocean.rest.model.BlueBranch"}
 
 # TODO: Should this be "org.jenkinsci.plugins.workflow.job.WorkflowJob" instead?
 JOB_CLASS = "hudson.model.Job"
@@ -179,6 +180,8 @@ class Organizations(JenkinsStream):
 
 
 class ParentStreamMixin(IncrementalMixin):
+    cache_records = False
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = {}
@@ -209,7 +212,9 @@ class ParentStreamMixin(IncrementalMixin):
 
     def read_records_from_initial_state(self, sync_mode: SyncMode):
         # Should not adjust the state variable at all.
-        if sync_mode not in self._cache_by_sync_mode:
+        if not self.cache_records:
+            return self._read_records_from_initial_state(sync_mode)
+        if self.cache_records and sync_mode not in self._cache_by_sync_mode:
             # TODO: move CachingIterable to a decorator
             self._cache_by_sync_mode[sync_mode] = CachingIterable(self._read_records_from_initial_state(sync_mode))
         return self._cache_by_sync_mode[sync_mode]
@@ -231,6 +236,7 @@ class Pipelines(ParentStreamMixin, JenkinsStream):
         self,
         organizations: Iterable[str],
         pipelines: Iterable[str],
+        exclude_multibranch: bool,
         sync_mode: SyncMode,
         *args,
         **kwargs,
@@ -239,6 +245,7 @@ class Pipelines(ParentStreamMixin, JenkinsStream):
         self._organizations = organizations
         self._pipelines = [re.compile(fnmatch.translate(p)) for p in pipelines]
         self.sync_mode = sync_mode
+        self._exclude_multibranch = exclude_multibranch
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -273,6 +280,9 @@ class Pipelines(ParentStreamMixin, JenkinsStream):
     def read_records(self, sync_mode: SyncMode, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, *args, **kwargs):
             full_name = record["fullName"]
+            pipeline_class = record["_class"]
+            if self._exclude_multibranch and any(c in MULTIBRANCH_CLASS for c in self.resolve_classes(pipeline_class)):
+                continue
             if any(p.match(full_name) for p in self._pipelines):
                 yield record
 
@@ -411,9 +421,10 @@ class Nodes(ParentStreamMixin, CachingSubStream):
     # parent stream. Incremental on nodes alone would be expensive to perform.
     cursor_field = "id"
 
-    def __init__(self, parent: Runs, sync_mode: SyncMode, **kwargs) -> None:
+    def __init__(self, parent: Runs, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
         self.sync_mode = sync_mode
+        self._start_date = normalize_date_string(start_date or "1970-01-01T00:00:00Z")
 
     def path(
         self,
@@ -435,13 +446,31 @@ class Nodes(ParentStreamMixin, CachingSubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        state_field = "startTime"
+        start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(state_field) or self._start_date)
+        max_state = start_date
+
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            # Set the pipelineFullName as an FK to the pipelines relation.
-            record = cast(Dict[str, Any], record)
-            record["organization"] = stream_slice["parent"]["organization"]
-            record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
-            record["runId"] = stream_slice["parent"]["id"]
-            yield record
+            start_time = normalize_date_string(record.get(state_field) or self._start_date)
+            if start_time > start_date:
+                # Set the pipelineFullName as an FK to the pipelines relation.
+                record = cast(Dict[str, Any], record)
+                record["organization"] = stream_slice["parent"]["organization"]
+                record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
+                record["runId"] = stream_slice["parent"]["id"]
+                yield record
+
+            current_state = start_time or max_state
+            max_state = max(current_state, max_state)
+        self.state[self._state_key(stream_slice)] = {state_field: max_state}
+
+    @staticmethod
+    def _state_key(stream_slice: Mapping[str, Any]) -> str:
+        if stream_slice is None:
+            raise ValueError("Invalid slice")
+        # TODO: Add organization?
+        pipeline = stream_slice["parent"]["pipelineFullName"]
+        return pipeline
 
 
 class Steps(IncrementalMixin, CachingSubStream):
@@ -456,9 +485,10 @@ class Steps(IncrementalMixin, CachingSubStream):
     cursor_field = "id"
     state = {}
 
-    def __init__(self, parent: Nodes, sync_mode: SyncMode, **kwargs) -> None:
+    def __init__(self, parent: Nodes, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
         self.sync_mode = sync_mode
+        self._start_date = normalize_date_string(start_date or "1970-01-01T00:00:00Z")
 
     def path(
         self,
@@ -481,14 +511,32 @@ class Steps(IncrementalMixin, CachingSubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        state_field = "startTime"
+        start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(state_field) or self._start_date)
+        max_state = start_date
+
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            # Set the pipelineFullName as an FK to the pipelines relation.
-            record = cast(Dict[str, Any], record)
-            record["organization"] = stream_slice["parent"]["organization"]
-            record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
-            record["runId"] = stream_slice["parent"]["runId"]
-            record["nodeId"] = stream_slice["parent"]["id"]
-            yield record
+            start_time = normalize_date_string(record.get(state_field) or self._start_date)
+            if start_time > start_date:
+                # Set the pipelineFullName as an FK to the pipelines relation.
+                record = cast(Dict[str, Any], record)
+                record["organization"] = stream_slice["parent"]["organization"]
+                record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
+                record["runId"] = stream_slice["parent"]["runId"]
+                record["nodeId"] = stream_slice["parent"]["id"]
+                yield record
+
+            current_state = start_time or max_state
+            max_state = max(current_state, max_state)
+        self.state[self._state_key(stream_slice)] = {state_field: max_state}
+
+    @staticmethod
+    def _state_key(stream_slice: Mapping[str, Any]) -> str:
+        if stream_slice is None:
+            raise ValueError("Invalid slice")
+        # TODO: Add organization?
+        pipeline = stream_slice["parent"]["pipelineFullName"]
+        return pipeline
 
 
 # Source
@@ -570,6 +618,7 @@ class SourceJenkinsBlue(AbstractSource):
         api_token = config.get("api_token")
         start_date = config.get("start_date").replace("Z", ".000+0000")  # Match the Jenkins date format.
         pipelines = (config.get("pipelines") or "*").split()
+        exclude_multibranch = config.get("exclude_multibranch", True)
         authenticator = HTTPBasicAuth(username=username, password=api_token)
 
         common_args = {"url_base": url_base, "authenticator": authenticator}
@@ -579,6 +628,7 @@ class SourceJenkinsBlue(AbstractSource):
         pipelines_stream = Pipelines(
             organizations=org_names,
             pipelines=pipelines,
+            exclude_multibranch=exclude_multibranch,
             sync_mode=sync_modes.get("pipelines", SyncMode.full_refresh),
             **common_args,
         )
@@ -590,6 +640,7 @@ class SourceJenkinsBlue(AbstractSource):
         )
         nodes_stream = Nodes(
             parent=runs_stream,
+            start_date=start_date,
             sync_mode=sync_modes.get("nodes", SyncMode.full_refresh),
             **common_args,
         )
@@ -601,6 +652,7 @@ class SourceJenkinsBlue(AbstractSource):
             nodes_stream,
             Steps(
                 parent=nodes_stream,
+                start_date=start_date,
                 sync_mode=sync_modes.get("steps", SyncMode.full_refresh),
                 **common_args,
             )
