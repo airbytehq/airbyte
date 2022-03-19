@@ -51,7 +51,7 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        
+
         # old authentication flow support
         auth_old = config.get("auth_method")
         if auth_old:
