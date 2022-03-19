@@ -125,14 +125,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
     return database.bufferedResultSetQuery(
         connection -> {
-          final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));
-          assertTrue(tableInfo.next());
-          // check that we're creating permanent tables. DBT defaults to transient tables, which have
-          // `TRANSIENT` as the value for the `kind` column.
-          assertEquals("TABLE", tableInfo.getString("kind"));
-          return connection.createStatement()
-              .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          try (final ResultSet tableInfo = connection.createStatement()
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));) {
+            assertTrue(tableInfo.next());
+            // check that we're creating permanent tables. DBT defaults to transient tables, which have
+            // `TRANSIENT` as the value for the `kind` column.
+            assertEquals("TABLE", tableInfo.getString("kind"));
+            return connection.createStatement()
+                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          }
         },
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
   }
