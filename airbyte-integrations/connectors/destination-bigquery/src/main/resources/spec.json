@@ -9,7 +9,7 @@
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id", "big_query_client_buffer_size_mb", "dataset_location",
-      "transformation_priority", "loading_method"],
+      "transformation_priority"],
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {

@@ -31,6 +31,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
 
     final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
+    final String transformationPriority = Jsons.deserialize(fullConfigFromSecretFileAsString).get(CONFIG_TRANSFORMATION_PRIORITY).asText();
+    final Integer bigQueryClientBufferSize = Jsons.deserialize(fullConfigFromSecretFileAsString).get(CONFIG_BIG_QUERY_CLIENT_BUFFER_SIZE).asInt();
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
@@ -55,6 +57,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
         .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
+        .put(CONFIG_TRANSFORMATION_PRIORITY, transformationPriority)
+        .put(CONFIG_BIG_QUERY_CLIENT_BUFFER_SIZE, bigQueryClientBufferSize)
         .build());
 
     setupBigQuery(bigqueryConfigFromSecretFile);

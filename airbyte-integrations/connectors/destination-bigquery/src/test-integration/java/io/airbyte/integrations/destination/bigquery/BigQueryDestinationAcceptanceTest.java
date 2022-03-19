@@ -52,6 +52,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   protected static final String CONFIG_PROJECT_ID = "project_id";
   protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
   protected static final String CONFIG_CREDS = "credentials_json";
+  protected static final String CONFIG_TRANSFORMATION_PRIORITY = "transformation_priority";
+  protected static final String CONFIG_BIG_QUERY_CLIENT_BUFFER_SIZE = "big_query_client_buffer_size_mb";
 
   protected BigQuery bigquery;
   protected Dataset dataset;
@@ -175,7 +177,9 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
+    final String datasetLocation = Jsons.deserialize(fullConfigAsString).get(CONFIG_DATASET_LOCATION).asText();
+    final String transformationPriority = Jsons.deserialize(fullConfigAsString).get(CONFIG_TRANSFORMATION_PRIORITY).asText();
+    final Integer bigQueryClientBufferSize = Jsons.deserialize(fullConfigAsString).get(CONFIG_BIG_QUERY_CLIENT_BUFFER_SIZE).asInt();
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
@@ -184,6 +188,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_CREDS, credentialsJson.toString())
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(CONFIG_TRANSFORMATION_PRIORITY, transformationPriority)
+        .put(CONFIG_BIG_QUERY_CLIENT_BUFFER_SIZE, bigQueryClientBufferSize)
         .build());
 
     setupBigQuery(credentialsJson);
