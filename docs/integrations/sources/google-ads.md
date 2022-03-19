@@ -56,6 +56,7 @@ This source is capable of syncing the following tables and their data:
 
 Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
+You'll need to find these values. See the [setup guide](#setup-guide) for instructions.
 * developer\_token
 * client\_id
 * client\_secret
@@ -88,11 +89,9 @@ When you apply for a token, you need to mention:
 * That you have full access to the code base \(because we're open source\)
 * That you have full access to the server running the code \(because you're self-hosting Airbyte\)
 
-If for any reason the request gets denied, let us know and we will be able to unblock you.
-
 #### Understanding Google Ads Query Language
 
-The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
+The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview).
 
 ## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
