@@ -111,6 +111,9 @@ commit;
 
 You should now have all the requirements needed to configure Snowflake as a destination in the UI. You'll need the following information to configure the Snowflake destination:
 
+#### There are 2 way ways of oauth supported: login\pass and oauth2.
+
+### Login and Password
 * **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in: 
    * Example - us-west-1: `xy12345.snowflakecomputing.com`
    * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
@@ -121,6 +124,19 @@ You should now have all the requirements needed to configure Snowflake as a dest
 * **Username** : The username you created to allow Airbyte to access the database. Example - `AIRBYTE_USER`
 * **Password** : The password associated with the username.
 * **[JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html)** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). 
+
+### OAuth 2.0
+* **[Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)** : The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Be sure to use the correct [account identifier format](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#account-identifier-formats-by-cloud-platform-and-region) based on the region you are in:
+    * Example - us-west-1: `xy12345.snowflakecomputing.com`
+    * Example - us-east-2: `xy12345.us-east-2.aws.snowflakecomputing.com`
+* **[Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)** : The role you created for Airbyte to access Snowflake. Example - `AIRBYTE_ROLE`
+* **[Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)** : The warehouse you created for Airbyte to sync data into. Example - `AIRBYTE_WAREHOUSE`
+* **[Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The database you created for Airbyte to sync data into. Example - `AIRBYTE_DATABASE`
+* **[Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)** : The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. Schema name would be transformed to allowed by Snowflake if it not follow [Snowflake Naming Conventions](https://docs.airbyte.io/integrations/destinations/snowflake#notes-about-snowflake-naming-conventions).
+* **Username** : The username you created to allow Airbyte to access the database. Example - `AIRBYTE_USER`
+* **OAuth2** : The Login name and password to obtain auth token.
+* **[JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html)** (Optional) : Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).
+
 
 ## Notes about Snowflake Naming Conventions
 

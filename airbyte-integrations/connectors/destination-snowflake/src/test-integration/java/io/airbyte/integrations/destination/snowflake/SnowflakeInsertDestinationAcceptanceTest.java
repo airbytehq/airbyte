@@ -160,7 +160,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Test
-  public void testBackwardCompatibilityAfterAddingOauth(){
+  public void testBackwardCompatibilityAfterAddingOauth() {
     final JsonNode deprecatedStyleConfig = Jsons.clone(config);
     final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
 

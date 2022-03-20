@@ -225,7 +225,7 @@ class TransformConfig:
         }
 
         credentials = config.get("credentials", {})
-        if credentials.get("auth_type") == "Client":
+        if credentials.get("auth_type") == "OAuth2.0":
             dbt_config["authenticator"] = "oauth"
             dbt_config["oauth_client_id"] = credentials["client_id"]
             dbt_config["oauth_client_secret"] = credentials["client_secret"]

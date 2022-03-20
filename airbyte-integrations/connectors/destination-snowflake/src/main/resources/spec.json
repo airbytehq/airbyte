@@ -8,14 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snowflake Destination Spec",
     "type": "object",
-    "required": [
-      "host",
-      "role",
-      "warehouse",
-      "database",
-      "schema",
-      "username"
-    ],
+    "required": ["host", "role", "warehouse", "database", "schema", "username"],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -71,13 +64,16 @@
             "type": "object",
             "title": "OAuth2.0",
             "order": 0,
-            "required": ["client_id", "client_secret"],
+            "required": [
+              "access_token",
+              "refresh_token"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
+                "const": "OAuth2.0",
+                "enum": ["OAuth2.0"],
+                "default": "OAuth2.0",
                 "order": 0
               },
               "client_id": {
@@ -349,7 +345,7 @@
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_type"],
-    "predicate_value": "Client",
+    "predicate_value": "OAuth2.0",
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
         "type": "object",

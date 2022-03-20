@@ -60,7 +60,7 @@ public class SnowflakeDatabase {
     final Properties properties = new Properties();
 
     final JsonNode credentials = config.get("credentials");
-    if (credentials != null && credentials.has("auth_type") && "Client".equals(
+    if (credentials != null && credentials.has("auth_type") && "OAuth2.0".equals(
         credentials.get("auth_type").asText())) {
       LOGGER.info("OAuth login mode is used");
       // OAuth login option is selected on UI
@@ -82,7 +82,7 @@ public class SnowflakeDatabase {
       properties.put("token", accessToken);
       // the username is required for DBT normalization in OAuth connection
       properties.put("username", username);
-      SnowflakeDestination.isAlive = true; //is used to enable another thread to refresh oauth token
+      SnowflakeDestination.isAlive = true; // is used to enable another thread to refresh oauth token
 
     } else if (credentials != null && credentials.has("password")) {
       LOGGER.info("User/password login mode is used");
@@ -128,9 +128,9 @@ public class SnowflakeDatabase {
   }
 
   private static String getAccessTokenUsingRefreshToken(final String hostName,
-      final String clientId,
-      final String clientSecret,
-      final String refreshCode)
+                                                        final String clientId,
+                                                        final String clientSecret,
+                                                        final String refreshCode)
       throws IOException {
     final var refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName);
     final Map<String, String> requestBody = new HashMap<>();
@@ -203,7 +203,8 @@ public class SnowflakeDatabase {
           }
         }
 
-        // made some pause to do not use much resources, but if set it higher - then some processes will fail by timeout errors
+        // made some pause to do not use much resources, but if set it higher - then some processes will
+        // fail by timeout errors
         try {
           TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException e) {

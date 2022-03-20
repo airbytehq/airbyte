@@ -310,7 +310,7 @@ class TestTransformConfig:
             "schema": "AIRBYTE_SCHEMA",
             "username": "AIRBYTE_USER",
             "credentials": {
-                "auth_type": "Client",
+                "auth_type": "OAuth2.0",
                 "client_id": "AIRBYTE_CLIENT_ID",
                 "access_token": "AIRBYTE_ACCESS_TOKEN",
                 "client_secret": "AIRBYTE_CLIENT_SECRET",

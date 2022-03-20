@@ -12,7 +12,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   public static boolean isAlive; // used for refresh Oauth token thread
 
-
   enum DestinationType {
     COPY_S3,
     COPY_GCS,
