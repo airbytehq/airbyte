@@ -46,6 +46,7 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
   private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -162,6 +163,9 @@ public class BigQueryUtils {
     return gcsJsonNode;
   }
 
+  /**
+   * @return a default schema name based on the config.
+   */
   public static String getDatasetId(final JsonNode config) {
     String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
 
@@ -233,12 +237,9 @@ public class BigQueryUtils {
   }
 
   public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String defaultSchema = getDatasetId(config);
     final String srcNamespace = stream.getStream().getNamespace();
-    if (srcNamespace == null) {
-      return defaultSchema;
-    }
-    return srcNamespace;
+    final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
+    return NAME_TRANSFORMER.getNamespace(schemaName);
   }
 
   public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
