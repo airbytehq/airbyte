@@ -1562,5 +1562,48 @@
       "array_field": ["1234", "true", "false", "0.001"],
       "_airbyte_additional_properties": null
     }
+  },
+  {
+    "schemaName": "namespace_with_special_characters",
+    "namespace": "namespace_with:spécial:characters",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "namespace_with_special_characters",
+      "namespace": "namespace_with_special_characters",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
   }
 ]
