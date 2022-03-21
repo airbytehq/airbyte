@@ -11,6 +11,6 @@ public abstract class SqlDatabase extends AbstractDatabase {
 
   public abstract void execute(String sql) throws Exception;
 
-  public abstract Stream<JsonNode> query(String sql, String... params) throws Exception;
+  public abstract Stream<JsonNode> unsafeQuery(String sql, String... params) throws Exception;
 
 }
