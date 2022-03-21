@@ -36,7 +36,7 @@ class TestMyFacebookAdsApi:
                 pendulum.duration(minutes=1),
                 93,
                 pendulum.duration(minutes=4),
-                pendulum.duration(minutes=1),
+                pendulum.duration(minutes=4),
             ),
         ],
     )
