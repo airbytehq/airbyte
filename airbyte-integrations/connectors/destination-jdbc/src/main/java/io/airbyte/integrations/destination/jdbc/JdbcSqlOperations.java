@@ -16,10 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -32,6 +34,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   // this adapter modifies record message before inserting them to the destination
   protected final Optional<DataAdapter> dataAdapter;
+  private final Set<String> schemaSet = new HashSet<>();
 
   protected JdbcSqlOperations() {
     this.dataAdapter = Optional.empty();
@@ -43,10 +46,11 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
-    if (!isSchemaExists(database, schemaName)) {
+    if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
       AirbyteSentry.executeWithTracing("CreateSchema",
           () -> database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName)),
           Map.of("schema", schemaName));
+      schemaSet.add(schemaName);
     }
   }
 

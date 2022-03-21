@@ -47,7 +47,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
-        Flattening.fromValue(formatConfig.get("flattening").asText()),
+        Flattening.fromValue(formatConfig.has("flattening") ? formatConfig.get("flattening").asText() : Flattening.NO.value),
         formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null);
   }
 
