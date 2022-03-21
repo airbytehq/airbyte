@@ -67,6 +67,11 @@ To run your integration tests with acceptance tests, from the connector root, ru
 docker build . --no-cache -t airbyte/source-instagram:dev \
 && python -m pytest -p source_acceptance_test.plugin
 ```
+or
+```
+./acceptance-test-docker.sh 
+```
+
 To run your integration tests with docker
 
 ### Locally running the connector docker image
