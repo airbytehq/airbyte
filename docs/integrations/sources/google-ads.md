@@ -54,7 +54,7 @@ This source is capable of syncing the following tables and their data:
 
 ### Requirements
 
-Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
+Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
 
 You'll need to find these values. See the [setup guide](#setup-guide) for instructions.
 * developer\_token
