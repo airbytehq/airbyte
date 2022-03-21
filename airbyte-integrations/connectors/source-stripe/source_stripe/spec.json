@@ -33,7 +33,7 @@
         "title": "Lookback Window (in days)",
         "default": 0,
         "minimum": 0,
-        "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation. More info: <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\">here</a>",
+        "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\">here</a>",
         "order": 3
       }
     }
