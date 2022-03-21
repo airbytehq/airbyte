@@ -1,10 +1,6 @@
 import React, { Suspense, useMemo } from "react";
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffectOnce } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -37,6 +33,7 @@ import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
+import { storeUtmFromQuery } from "utils/utmStorage";
 
 export const CloudRoutes = {
   Root: "/",
@@ -152,6 +149,12 @@ export const Routing: React.FC = () => {
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
+  const { search } = useLocation();
+
+  useEffectOnce(() => {
+    storeUtmFromQuery(search);
+  });
+
   const analyticsContext = useMemo(
     () =>
       user
@@ -169,32 +172,28 @@ export const Routing: React.FC = () => {
   }
 
   return (
-    <Router>
-      <WorkspaceServiceProvider>
-        <TrackPageAnalytics />
-        <Suspense fallback={<LoadingPage />}>
-          {!user && <Auth />}
-          {user && emailVerified && <MainViewRoutes />}
-          {user && !emailVerified && (
-            <Routes>
-              <Route
-                path={CloudRoutes.FirebaseAction}
-                element={<VerifyEmailAction />}
-              />
-              <Route
-                path={CloudRoutes.ConfirmVerifyEmail}
-                element={<ConfirmEmailPage />}
-              />
-              <Route
-                path="*"
-                element={
-                  <Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />
-                }
-              />
-            </Routes>
-          )}
-        </Suspense>
-      </WorkspaceServiceProvider>
-    </Router>
+    <WorkspaceServiceProvider>
+      <TrackPageAnalytics />
+      <Suspense fallback={<LoadingPage />}>
+        {!user && <Auth />}
+        {user && emailVerified && <MainViewRoutes />}
+        {user && !emailVerified && (
+          <Routes>
+            <Route
+              path={CloudRoutes.FirebaseAction}
+              element={<VerifyEmailAction />}
+            />
+            <Route
+              path={CloudRoutes.ConfirmVerifyEmail}
+              element={<ConfirmEmailPage />}
+            />
+            <Route
+              path="*"
+              element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />}
+            />
+          </Routes>
+        )}
+      </Suspense>
+    </WorkspaceServiceProvider>
   );
 };

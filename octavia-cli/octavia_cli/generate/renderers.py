@@ -13,7 +13,7 @@ from octavia_cli.apply import resources
 from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
 
-JINJA_ENV = Environment(loader=PackageLoader("octavia_cli"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
+JINJA_ENV = Environment(loader=PackageLoader(__package__), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
 
 
 class FieldToRender:
@@ -93,7 +93,7 @@ class FieldToRender:
         return self.type if self.type else None
 
     def _get_secret_comment(self) -> str:
-        return "SECRET" if self.airbyte_secret else None
+        return "SECRET (please store in environment variables)" if self.airbyte_secret else None
 
     def _get_description_comment(self) -> str:
         return self.description if self.description else None
@@ -113,6 +113,8 @@ class FieldToRender:
     def _get_default(self) -> str:
         if self.const:
             return self.const
+        if self.airbyte_secret:
+            return f"${{{self.name.upper()}}}"
         return self.default
 
     @staticmethod

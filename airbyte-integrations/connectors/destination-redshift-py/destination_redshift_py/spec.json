@@ -1,0 +1,129 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift-py",
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supportsIncremental": true,
+  "supportsDBT": false,
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Redshift Python",
+    "type": "object",
+    "required": ["host", "port","username", "password", "database", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "iam_role_arn"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
+        "type": "string",
+        "title": "Host",
+        "order": 1
+      },
+      "port": {
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 5439,
+        "examples": ["5439"],
+        "title": "Port",
+        "order": 2
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "title": "Username",
+        "order": 3
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "title": "Password",
+        "order": 4
+      },
+      "database": {
+        "description": "Name of the database.",
+        "type": "string",
+        "title": "Database",
+        "order": 5
+      },
+      "s3_bucket_name": {
+        "title": "S3 Bucket Name",
+        "type": "string",
+        "description": "The name of the staging S3 bucket to use if utilising a COPY strategy. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html\">AWS docs</a> for more details.",
+        "examples": ["airbyte.staging"],
+        "order": 6
+      },
+      "s3_bucket_path": {
+        "title": "S3 Bucket Path",
+        "type": "string",
+        "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory.",
+        "examples": ["data_sync/test"],
+        "order": 7
+      },
+      "s3_bucket_region": {
+        "title": "S3 Bucket Region",
+        "type": "string",
+        "default": "",
+        "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+        "enum": [
+          "",
+          "us-east-1",
+          "us-east-2",
+          "us-west-1",
+          "us-west-2",
+          "af-south-1",
+          "ap-east-1",
+          "ap-south-1",
+          "ap-northeast-1",
+          "ap-northeast-2",
+          "ap-northeast-3",
+          "ap-southeast-1",
+          "ap-southeast-2",
+          "ca-central-1",
+          "cn-north-1",
+          "cn-northwest-1",
+          "eu-central-1",
+          "eu-north-1",
+          "eu-south-1",
+          "eu-west-1",
+          "eu-west-2",
+          "eu-west-3",
+          "sa-east-1",
+          "me-south-1"
+        ],
+        "order": 8
+      },
+      "access_key_id": {
+        "type": "string",
+        "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "title": "S3 Key Id",
+        "airbyte_secret": true,
+        "order": 9
+      },
+      "secret_access_key": {
+        "type": "string",
+        "description": "The corresponding secret to the above access key id.",
+        "title": "S3 Access Key",
+        "airbyte_secret": true,
+        "order": 10
+      },
+      "iam_role_arn": {
+        "type": "string",
+        "description": "The IAM role ARN used to copy files from S3 to Redshift",
+        "examples": ["arn:aws:iam::<aws-account-id>:role/<role-name>"],
+        "title": "IAM Role Name",
+        "order": 11
+      },
+      "max_connections": {
+        "description": "Maximum number of connections in the connection pool",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10,
+        "examples": ["5"],
+        "title": "Maximum Connections",
+        "order": 12
+      }
+    }
+  }
+}

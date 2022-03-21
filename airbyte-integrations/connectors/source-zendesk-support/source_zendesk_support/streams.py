@@ -290,6 +290,11 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
 
 class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
+    """
+    # endpoints don't provide the updated_at/created_at fields
+    # thus we can't implement an incremental logic for them
+    """
+
     primary_key = "id"
     response_list_name: str = None
 
@@ -327,6 +332,10 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
 
 
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
+    """
+    # endpoints provide a cursor pagination and sorting mechanism
+    """
+
     next_page_field = "next_page"
     prev_start_time = None
 
@@ -463,9 +472,6 @@ class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
-# endpoints provide a cursor pagination and sorting mechanism
-
-
 class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
@@ -488,10 +494,6 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return response.json().get("before_cursor")
-
-
-# endpoints don't provide the updated_at/created_at fields
-# thus we can't implement an incremental logic for them
 
 
 class Tags(SourceZendeskSupportFullRefreshStream):

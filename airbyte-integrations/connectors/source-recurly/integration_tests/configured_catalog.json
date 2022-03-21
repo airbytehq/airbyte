@@ -95,6 +95,15 @@
     },
     {
       "stream": {
+        "name": "export_dates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "invoices",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

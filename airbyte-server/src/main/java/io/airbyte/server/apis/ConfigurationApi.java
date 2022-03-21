@@ -63,6 +63,7 @@ import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
@@ -91,6 +92,8 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -153,6 +156,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
+                          final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final FileTtlManager archiveTtlManager,
@@ -184,6 +189,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,
@@ -198,10 +205,20 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         eventRunner,
         featureFlags,
         workerConfigs);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, connectionsHandler);
+    sourceHandler = new SourceHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, connectionsHandler);
+    destinationHandler = new DestinationHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient, destinationHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
@@ -220,6 +237,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         jobPersistence,
         seed,
         workspaceHelper,
@@ -414,8 +433,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
+  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody) {
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaRequestBody));
   }
 
   // DB MIGRATION
