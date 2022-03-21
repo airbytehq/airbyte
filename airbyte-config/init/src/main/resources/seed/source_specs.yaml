@@ -8114,7 +8114,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.29"
+- dockerImage: "airbyte/source-stripe:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -8135,7 +8135,7 @@
           order: 0
         client_secret:
           type: "string"
-          title: "Client Secret"
+          title: "Secret Key"
           description: "Stripe API key (usually starts with 'sk_live_'; find yours\
             \ <a href=\"https://dashboard.stripe.com/apikeys\">here</a>)."
           airbyte_secret: true
@@ -8156,7 +8156,8 @@
           minimum: 0
           description: "When set, the connector will always reload data from the past\
             \ N days, where N is the value set here. This is useful if your data is\
-            \ updated after creation."
+            \ updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\"\
+            >here</a>"
           order: 3
     supportsNormalization: false
     supportsDBT: false
