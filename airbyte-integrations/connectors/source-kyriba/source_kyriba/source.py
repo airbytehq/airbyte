@@ -86,7 +86,7 @@ class KyribaStream(HttpStream):
             # does not evaluate to true
             response.status_code = 571
             return True
-        return response.status_code in [429, 401] or 500 <= response.status_code < 600
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
         """
