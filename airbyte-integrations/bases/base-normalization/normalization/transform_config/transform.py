@@ -230,7 +230,7 @@ class TransformConfig:
             dbt_config["oauth_client_id"] = credentials["client_id"]
             dbt_config["oauth_client_secret"] = credentials["client_secret"]
             dbt_config["token"] = credentials["refresh_token"]
-        elif credentials:
+        elif credentials.get("password"):
             dbt_config["password"] = credentials["password"]
         else:
             dbt_config["password"] = config["password"]
