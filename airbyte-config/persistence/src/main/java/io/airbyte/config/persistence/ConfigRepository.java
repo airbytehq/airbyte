@@ -736,8 +736,8 @@ public class ConfigRepository {
   }
 
   /**
-   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit metrics without
-   * exposing the underlying database connection.
+   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
+   * metrics without exposing the underlying database connection.
    */
 
   public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
