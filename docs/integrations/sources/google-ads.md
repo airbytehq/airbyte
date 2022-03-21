@@ -91,7 +91,7 @@ When you apply for a token, you need to mention:
 
 #### Understanding Google Ads Query Language
 
-The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview).
+The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
 ## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
