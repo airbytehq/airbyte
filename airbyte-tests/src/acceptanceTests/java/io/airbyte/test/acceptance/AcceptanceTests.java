@@ -69,7 +69,6 @@ import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
-import io.airbyte.api.client.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -783,7 +782,7 @@ public class AcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (final Exception e) {}
+    } catch (Exception e) {}
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -1307,8 +1306,7 @@ public class AcceptanceTests {
   }
 
   private UUID getDestinationDefId() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions(
-        new WorkspaceIdRequestBody().workspaceId(workspaceId)).getDestinationDefinitions()
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
         .findFirst()
@@ -1407,8 +1405,7 @@ public class AcceptanceTests {
         .name("E2E Test Source")
         .dockerRepository("airbyte/source-e2e-test")
         .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com"))
-        .workspaceId(workspaceId));
+        .documentationUrl(URI.create("https://example.com")));
   }
 
   private DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
@@ -1416,8 +1413,7 @@ public class AcceptanceTests {
         .name("E2E Test Destination")
         .dockerRepository("airbyte/destination-e2e-test")
         .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com"))
-        .workspaceId(workspaceId));
+        .documentationUrl(URI.create("https://example.com")));
   }
 
   private SourceRead createPostgresSource() throws ApiException {
@@ -1440,8 +1436,7 @@ public class AcceptanceTests {
   }
 
   private UUID getPostgresSourceDefinitionId() throws ApiException {
-    return apiClient.getSourceDefinitionApi().listSourceDefinitions(
-        new WorkspaceIdRequestBody().workspaceId(workspaceId)).getSourceDefinitions()
+    return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
         .stream()
         .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
         .findFirst()

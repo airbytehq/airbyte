@@ -190,15 +190,14 @@ public class MigrationAcceptanceTest {
 
   private static void assertDataFromApi(final ApiClient apiClient) throws ApiException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
-    assertSourceDefinitionInformation(apiClient, workspaceIdRequestBody);
-    assertDestinationDefinitionInformation(apiClient, workspaceIdRequestBody);
+    assertSourceDefinitionInformation(apiClient);
+    assertDestinationDefinitionInformation(apiClient);
     assertConnectionInformation(apiClient, workspaceIdRequestBody);
   }
 
-  private static void assertSourceDefinitionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ApiException {
+  private static void assertSourceDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final SourceDefinitionApi sourceDefinitionApi = new SourceDefinitionApi(apiClient);
-    final List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions(workspaceIdRequestBody).getSourceDefinitions();
+    final List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions().getSourceDefinitions();
     assertTrue(sourceDefinitions.size() >= 58);
     boolean foundMysqlSourceDefinition = false;
     boolean foundPostgresSourceDefinition = false;
@@ -225,11 +224,9 @@ public class MigrationAcceptanceTest {
     assertTrue(foundPostgresSourceDefinition);
   }
 
-  private static void assertDestinationDefinitionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ApiException {
+  private static void assertDestinationDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final DestinationDefinitionApi destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
-    final List<DestinationDefinitionRead> destinationDefinitions =
-        destinationDefinitionApi.listDestinationDefinitions(workspaceIdRequestBody).getDestinationDefinitions();
+    final List<DestinationDefinitionRead> destinationDefinitions = destinationDefinitionApi.listDestinationDefinitions().getDestinationDefinitions();
     assertTrue(destinationDefinitions.size() >= 10);
     boolean foundPostgresDestinationDefinition = false;
     boolean foundLocalCSVDestinationDefinition = false;
