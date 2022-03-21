@@ -22,6 +22,11 @@ jobs:
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
+    # The filtering action does not deal with well scheduled events so skip to avoid errors.
+    # See https://github.com/dorny/paths-filter/issues/100 for more info.
+    # This is okay this workflow is only scheduled on master, where we want to build everything
+    # so filtering is not required. Use always() in each start block to force the start task.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -39,14 +44,16 @@ jobs:
           # Note, the following glob expression within a filters are ORs.
           filters: |
             backend:
-              - 'airbyte-!(integrations|webapp|webapp-e2e-tests)/**'
+              - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
             cli:
-              - 'airbyte-cli/**'
+              - 'airbyte-api/**'
+              - 'octavia-cli/**'
             connectors:
+              - 'airbyte-cdk/**'
               - 'airbyte-integrations/**'
             db:
               - 'airbyte-db/**'
@@ -68,7 +75,8 @@ jobs:
   octavia-cli-build:
     needs: changes
     runs-on: ubuntu-latest
-    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
@@ -139,9 +147,10 @@ jobs:
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
     needs: changes
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true'
-      || github.ref == 'refs/heads/master'
+      || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -263,9 +272,10 @@ jobs:
   start-frontend-test-runner:
     name: "Frontend: Start Test EC2 Runner"
     needs: changes
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
-      || needs.changes.outputs.backend == 'true'
+      || (always() && needs.changes.outputs.backend == 'true')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -357,7 +367,8 @@ jobs:
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -495,7 +506,8 @@ jobs:
   start-platform-new-scheduler-acceptance-runner:
     name: "Platform: Start Docker w/ Scheduler v2 Test Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -619,7 +631,8 @@ jobs:
   start-kube-acceptance-test-runner:
     name: "Platform: Start Kube Acceptance Test EC2 Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -784,7 +797,8 @@ jobs:
   start-kube-acceptance-test-runner-v2:
     name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
