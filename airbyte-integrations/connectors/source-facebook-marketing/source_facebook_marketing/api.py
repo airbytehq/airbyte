@@ -87,34 +87,39 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         return usage, pause_interval
 
-    def compute_pause_interval(self, usage, pause_interval):
+    def _compute_pause_interval(self, usage, pause_interval):
         """The sleep time will be calculated based on usage consumed."""
         if usage >= self.MAX_RATE:
             return max(self.MAX_PAUSE_INTERVAL, pause_interval)
         return self.MIN_PAUSE_INTERVAL
 
-    def handle_call_rate_limit(self, response, params):
+    def _get_max_usage_pause_interval_from_batch(self, records):
         usage = 0
         pause_interval = self.MIN_PAUSE_INTERVAL
 
+        for record in records:
+            # there are two types of failures:
+            # 1. no response (we execute batch until all inner requests has response)
+            # 2. response with error (we crash loudly)
+            # in case it is failed inner request the headers might not be present
+            if "headers" not in record:
+                continue
+            headers = {header["name"].lower(): header["value"] for header in record["headers"]}
+            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+            usage = max(usage, usage_from_response)
+            pause_interval = max(pause_interval_from_response, pause_interval)
+        return usage, pause_interval
+
+    def _handle_call_rate_limit(self, response, params):
         if "batch" in params:
-            for record in response.json():
-                # there are two types of failures:
-                # 1. no response (we execute batch until all inner requests has response)
-                # 2. response with error (we crash loudly)
-                # in case it is failed inner request the headers might not be present
-                if "headers" not in record:
-                    continue
-                headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-                usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
-                usage = max(usage, usage_from_response)
-                pause_interval = max(pause_interval_from_response, pause_interval)
+            records = response.json()
+            usage, pause_interval = self._get_max_usage_pause_interval_from_batch(records)
         else:
             headers = response.headers()
             usage, pause_interval = self._parse_call_rate_header(headers)
 
         if usage >= self.MIN_RATE:
-            sleep_time = self.compute_pause_interval(usage=usage, pause_interval=pause_interval)
+            sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
             logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
             sleep(sleep_time.total_seconds())
 
@@ -147,7 +152,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self._update_insights_throttle_limit(response)
-        self.handle_call_rate_limit(response, params)
+        self._handle_call_rate_limit(response, params)
         return response
 
 
