@@ -2,14 +2,14 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "label.resource_name": {
+    "campaign.resource_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_label.resource_name": {
       "type": ["null", "string"]
     },
     "label.name": {
       "type": ["null", "integer"]
-    },
-    "campaign_label.resource_name": {
-      "type": ["null", "string"]
     }
   }
 }
