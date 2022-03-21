@@ -20,7 +20,6 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: update migration description in the class name
 public class V0_35_58_001__Create_Staging_Configuration_Table extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_58_001__Create_Staging_Configuration_Table.class);

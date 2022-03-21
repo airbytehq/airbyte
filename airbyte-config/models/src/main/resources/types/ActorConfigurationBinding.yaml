@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StagingConfiguration.yaml
-title: StagingConfiguration
-description: information required for staging.
+title: ActorConfigurationBinding
+description: The class represents the extra information required by an actor for other purposes such as mutation in cloud
 type: object
 required:
   - actorDefinitionId

@@ -295,8 +295,8 @@ public class SecretsRepositoryWriter {
               actorConfigurationBinding.getActorDefinitionId(),
               UUID::randomUUID,
               optionalActorConfigurationBinding.map(ActorConfigurationBinding::getConfiguration).orElse(null));
-      longLivedSecretPersistence.get().write(secretCoordinateToPayload.getSecretCoordinate(), secretCoordinateToPayload.getPayload());
-      return Jsons.clone(actorConfigurationBinding).withConfiguration(secretCoordinateToPayload.getSecretCoordinateForDB());
+      longLivedSecretPersistence.get().write(secretCoordinateToPayload.secretCoordinate(), secretCoordinateToPayload.payload());
+      return Jsons.clone(actorConfigurationBinding).withConfiguration(secretCoordinateToPayload.secretCoordinateForDB());
     }
     return actorConfigurationBinding;
   }

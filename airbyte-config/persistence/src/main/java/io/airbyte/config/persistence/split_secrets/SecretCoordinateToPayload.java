@@ -10,16 +10,4 @@ public record SecretCoordinateToPayload(SecretCoordinate secretCoordinate,
                                         String payload,
                                         JsonNode secretCoordinateForDB) {
 
-  public JsonNode getSecretCoordinateForDB() {
-    return secretCoordinateForDB;
-  }
-
-  public SecretCoordinate getSecretCoordinate() {
-    return secretCoordinate;
-  }
-
-  public String getPayload() {
-    return payload;
-  }
-
 }

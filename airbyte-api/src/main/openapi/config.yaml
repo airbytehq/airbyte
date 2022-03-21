@@ -2588,7 +2588,7 @@ components:
         destinationName:
           type: string
     ActorConfigurationBindingConfig:
-      description: The values required to configure the staging bucket.
+      description: The actual secret to be written in the cloud DB
       example: { user: "charles" }
     ActorConfigurationBindingCreate:
       type: object

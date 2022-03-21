@@ -4,8 +4,15 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
@@ -18,8 +25,13 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -111,7 +123,7 @@ public class SecretsHelpersTest {
     final var inputUpdateConfigCopy = inputUpdateConfig.deepCopy();
     final var secretPersistence = new MemorySecretPersistence();
 
-    for (final Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
+    for (final Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -173,7 +185,7 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
 
-    for (final Map.Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
+    for (final Entry<SecretCoordinate, String> entry : splitConfig.getCoordinateToPayload().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -188,7 +200,7 @@ public class SecretsHelpersTest {
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate1(), updatedSplit1.getCoordinateToPayload());
 
-    for (final Map.Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
+    for (final Entry<SecretCoordinate, String> entry : updatedSplit1.getCoordinateToPayload().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
 
@@ -202,6 +214,62 @@ public class SecretsHelpersTest {
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
+  }
+
+  @Test
+  public void testActorConfigBindingToSecretForNewSecret() {
+    final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
+    final ReadOnlySecretPersistence readOnlySecretPersistence = mock(ReadOnlySecretPersistence.class);
+
+    final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+    final Supplier<UUID> uuidSupplier = () -> UUID.fromString("067a62fc-d007-44dd-a8f6-0fd10823713d");
+    final SecretCoordinateToPayload secretCoordinateToPayload = SecretsHelpers.convertActorConfigBindingToSecret(secretPayload.toString(),
+        readOnlySecretPersistence, destinationDefinitionId, uuidSupplier, null);
+    final SecretCoordinate expectedFullCoordinate = new SecretCoordinate(
+        "actor_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_067a62fc-d007-44dd-a8f6-0fd10823713d", 1);
+    assertEquals(expectedFullCoordinate.getFullCoordinate(), secretCoordinateToPayload.secretCoordinate().getFullCoordinate());
+    assertEquals(secretPayload.toString(), secretCoordinateToPayload.payload());
+    assertEquals(Jsons.jsonNode(Map.of("_secret", expectedFullCoordinate.getFullCoordinate())), secretCoordinateToPayload.secretCoordinateForDB());
+  }
+
+  @Test
+  public void testActorConfigBindingToSecretForExistingSecret() {
+    final JsonNode newSecretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
+    final JsonNode oldSecretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "28", "car", "tesla")));
+    final ReadOnlySecretPersistence readOnlySecretPersistence = mock(ReadOnlySecretPersistence.class);
+    final SecretCoordinate oldFullCoordinate = new SecretCoordinate(
+        "actor_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_067a62fc-d007-44dd-a8f6-0fd10823713d", 1);
+
+    doReturn(Optional.of(oldSecretPayload.toString())).when(readOnlySecretPersistence).read(oldFullCoordinate);
+
+    final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
+    final Supplier<UUID> uuidSupplier = () -> UUID.fromString("067a62fc-d007-44dd-a8f6-0fd10823713d");
+    final SecretCoordinateToPayload secretCoordinateToPayload = SecretsHelpers.convertActorConfigBindingToSecret(newSecretPayload.toString(),
+        readOnlySecretPersistence, destinationDefinitionId, uuidSupplier, Jsons.jsonNode(Map.of("_secret", oldFullCoordinate.getFullCoordinate())));
+
+    final SecretCoordinate expectedNewFullCoordinate = new SecretCoordinate(
+        "actor_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_067a62fc-d007-44dd-a8f6-0fd10823713d", 2);
+    assertEquals(expectedNewFullCoordinate.getFullCoordinate(), secretCoordinateToPayload.secretCoordinate().getFullCoordinate());
+    assertEquals(newSecretPayload.toString(), secretCoordinateToPayload.payload());
+    assertEquals(Jsons.jsonNode(Map.of("_secret", expectedNewFullCoordinate.getFullCoordinate())), secretCoordinateToPayload.secretCoordinateForDB());
+  }
+
+  @Test
+  public void testReadingActorConfigBindingFromSecretStore() {
+    final JsonNode payload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "28", "car", "tesla")));
+    final ReadOnlySecretPersistence readOnlySecretPersistence = mock(ReadOnlySecretPersistence.class);
+    final SecretCoordinate secretCoordinate = new SecretCoordinate(
+        "actor_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_067a62fc-d007-44dd-a8f6-0fd10823713d", 1);
+    doReturn(Optional.of(payload.toString())).when(readOnlySecretPersistence).read(secretCoordinate);
+    final JsonNode actual = SecretsHelpers.hydrateActorConfigurationBinding(Jsons.jsonNode(Map.of("_secret", secretCoordinate.getFullCoordinate())),
+        readOnlySecretPersistence);
+
+    assertEquals(payload, actual);
+  }
+
+  private Map<String, String> sortMap(Map<String, String> originalMap) {
+    return originalMap.entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
 }
