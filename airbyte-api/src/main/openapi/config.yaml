@@ -363,7 +363,9 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition
+      summary:
+        List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used
+        by admins to view and modify a given workspace's grants.
       operationId: listPrivateSourceDefinitions
       requestBody:
         content:
@@ -862,7 +864,7 @@ paths:
         - destination_definition
       summary:
         List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the
-        definition
+        definition. Used by admins to view and modify a given workspace's grants.
       operationId: listPrivateDestinationDefinitions
       requestBody:
         content:
@@ -2500,9 +2502,9 @@ components:
     PrivateSourceDefinitionReadList:
       type: object
       required:
-        - sourceDefinitionGrants
+        - sourceDefinitions
       properties:
-        sourceDefinitionGrants:
+        sourceDefinitions:
           type: array
           items:
             $ref: "#/components/schemas/PrivateSourceDefinitionRead"
@@ -2843,9 +2845,9 @@ components:
     PrivateDestinationDefinitionReadList:
       type: object
       required:
-        - destinationDefinitionGrants
+        - destinationDefinitions
       properties:
-        destinationDefinitionGrants:
+        destinationDefinitions:
           type: array
           items:
             $ref: "#/components/schemas/PrivateDestinationDefinitionRead"

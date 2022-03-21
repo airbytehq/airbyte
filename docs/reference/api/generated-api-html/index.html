@@ -3347,7 +3347,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_private</code></pre></div>
-    <div class="method-summary">List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the definition (<span class="nickname">listPrivateDestinationDefinitions</span>)</div>
+    <div class="method-summary">List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants. (<span class="nickname">listPrivateDestinationDefinitions</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -3379,7 +3379,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "destinationDefinitionGrants" : [ {
+  "destinationDefinitions" : [ {
     "destinationDefinition" : {
       "resourceRequirements" : {
         "default" : {
@@ -6959,7 +6959,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_private</code></pre></div>
-    <div class="method-summary">List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition (<span class="nickname">listPrivateSourceDefinitions</span>)</div>
+    <div class="method-summary">List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants. (<span class="nickname">listPrivateSourceDefinitions</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -6991,7 +6991,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "sourceDefinitionGrants" : [ {
+  "sourceDefinitions" : [ {
     "sourceDefinition" : {
       "resourceRequirements" : {
         "default" : {
@@ -10503,7 +10503,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">destinationDefinitionGrants </div><div class="param-desc"><span class="param-type"><a href="#PrivateDestinationDefinitionRead">array[PrivateDestinationDefinitionRead]</a></span>  </div>
+      <div class="param">destinationDefinitions </div><div class="param-desc"><span class="param-type"><a href="#PrivateDestinationDefinitionRead">array[PrivateDestinationDefinitionRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10518,7 +10518,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="PrivateSourceDefinitionReadList"><code>PrivateSourceDefinitionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">sourceDefinitionGrants </div><div class="param-desc"><span class="param-type"><a href="#PrivateSourceDefinitionRead">array[PrivateSourceDefinitionRead]</a></span>  </div>
+      <div class="param">sourceDefinitions </div><div class="param-desc"><span class="param-type"><a href="#PrivateSourceDefinitionRead">array[PrivateSourceDefinitionRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
