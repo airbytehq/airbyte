@@ -14,6 +14,7 @@ import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
@@ -434,6 +435,44 @@ public class ConfigRepository {
 
   public List<StandardSyncOperation> listStandardSyncOperations() throws IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
+  }
+
+  /**
+   * Updates {@link io.airbyte.db.instance.configs.jooq.tables.ConnectionOperation} records for the
+   * given {@code connectionId}.
+   *
+   * @param connectionId ID of the associated connection to update operations for
+   * @param newOperationIds Set of all operationIds that should be associated to the connection
+   * @throws IOException
+   */
+  public void updateConnectionOperationIds(final UUID connectionId, final Set<UUID> newOperationIds) throws IOException {
+    database.transaction(ctx -> {
+      final Set<UUID> existingOperationIds = ctx
+          .selectFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .fetchSet(CONNECTION_OPERATION.OPERATION_ID);
+
+      final Set<UUID> existingOperationIdsToKeep = Sets.intersection(existingOperationIds, newOperationIds);
+
+      // DELETE existing connection_operation records that aren't in the input list
+      final Set<UUID> operationIdsToDelete = Sets.difference(existingOperationIds, existingOperationIdsToKeep);
+
+      ctx.deleteFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .and(CONNECTION_OPERATION.OPERATION_ID.in(operationIdsToDelete))
+          .execute();
+
+      // INSERT connection_operation records that are in the input list and don't yet exist
+      final Set<UUID> operationIdsToAdd = Sets.difference(newOperationIds, existingOperationIdsToKeep);
+
+      operationIdsToAdd.forEach(operationId -> ctx
+          .insertInto(CONNECTION_OPERATION)
+          .columns(CONNECTION_OPERATION.ID, CONNECTION_OPERATION.CONNECTION_ID, CONNECTION_OPERATION.OPERATION_ID)
+          .values(UUID.randomUUID(), connectionId, operationId)
+          .execute());
+
+      return null;
+    });
   }
 
   public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)

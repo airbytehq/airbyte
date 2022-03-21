@@ -30,6 +30,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -193,15 +194,17 @@ class OperationsHandlerTest {
 
   @Test
   void testDeleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID syncConnectionId = UUID.randomUUID();
+    final UUID otherConnectionId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
     final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
     final StandardSync sync = new StandardSync()
-        .withConnectionId(UUID.randomUUID())
+        .withConnectionId(syncConnectionId)
         .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
     when(configRepository.listStandardSyncs()).thenReturn(List.of(
         sync,
         new StandardSync()
-            .withConnectionId(UUID.randomUUID())
+            .withConnectionId(otherConnectionId)
             .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
     final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
@@ -210,6 +213,7 @@ class OperationsHandlerTest {
     operationsHandler.deleteOperationsForConnection(sync, toDelete);
 
     verify(configRepository).writeStandardSyncOperation(operation.withTombstone(true));
+    verify(configRepository).updateConnectionOperationIds(syncConnectionId, Collections.emptySet());
   }
 
   @Test
