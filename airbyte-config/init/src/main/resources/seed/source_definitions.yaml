@@ -242,6 +242,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshservice
   icon: freshdesk.svg
   sourceType: api
+- name: Gas Prices
+  sourceDefinitionId: 6701612c-47c4-4ca3-b6cf-b40d41af8189
+  dockerRepository: airbyte/source-gas-prices
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/gas-prices
+  icon: gas.svg
+  sourceType: api
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github

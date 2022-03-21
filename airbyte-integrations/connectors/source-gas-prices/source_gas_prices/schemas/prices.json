@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "success": { 
+          "type": ["null", "boolean"] 
+        },
+      "result": {
+        "type": ["null","object"],
+        "properties": {
+          "state": {
+            "type": ["null", "object"],
+            "properties": {
+              "name": { 
+                  "type": ["null", "string"] 
+                },
+              "regular": { 
+                  "type": ["null", "string"] 
+                },
+              "midGrade": { 
+                  "type": ["null", "string"] 
+                },
+              "premium": { 
+                  "type": ["null", "string"] 
+                },
+              "diesel": { 
+                  "type": ["null", "string"] 
+                }
+            }
+          },
+          "cities": {
+            "type": ["null", "object"],
+            "properties": {
+              "regular": { 
+                  "type": ["null", "string"] 
+                },
+              "midGrade": { 
+                  "type": ["null", "string"] 
+                },
+              "premium": { 
+                  "type": ["null", "string"] 
+                },
+              "diesel": { 
+                  "type": ["null", "string"] 
+                },
+              "name": { 
+                  "type": ["null", "string"] 
+                }
+            }
+          }
+        }
+      }
+    }
+  }
