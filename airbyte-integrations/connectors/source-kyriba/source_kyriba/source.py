@@ -11,7 +11,7 @@ from datetime import timedelta, date
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.models import SyncMode
 
 class KyribaClient:
@@ -65,7 +65,7 @@ class KyribaStream(HttpStream):
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires
         if response.status_code == 401:
-            self._authorization = self.client.login()
+            self._session.auth = self.client.login()
             # change the response status code to 429, so should_give_up in rate_limiting.py
             # does not evaluate to true
             response.status_code = 429
