@@ -59,8 +59,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Map records returned in a result set. It is an "unsafe" stream because the stream
-   * must be manually closed. Otherwise, there will be a database connection leak.
+   * Map records returned in a result set. It is an "unsafe" stream because the stream must be
+   * manually closed. Otherwise, there will be a database connection leak.
    *
    * @param resultSet the result set
    * @param mapper function to make each record of the result set
@@ -129,9 +129,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
    * Use a connection to create a {@link PreparedStatement} and map it into a stream. You CANNOT
    * assume that data will be returned from this method before the entire {@link ResultSet} is
    * buffered in memory. Review the implementation of the database's JDBC driver or use the
-   * StreamingJdbcDriver if you need this guarantee. It is "unsafe" because the caller should
-   * close the returned stream to release the database connection. Otherwise, there will be a
-   * connection leak.
+   * StreamingJdbcDriver if you need this guarantee. It is "unsafe" because the caller should close
+   * the returned stream to release the database connection. Otherwise, there will be a connection
+   * leak.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
@@ -162,8 +162,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * It is "unsafe" because the caller must manually close the returned stream. Otherwise,
-   * there will be a database connection leak.
+   * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there will
+   * be a database connection leak.
    */
   @MustBeClosed
   @Override
