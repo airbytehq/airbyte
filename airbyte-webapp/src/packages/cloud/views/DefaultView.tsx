@@ -7,13 +7,14 @@ export const DefaultView: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
 
   // Only show the workspace creation list if there is more than one workspace
-  if (workspaces.length > 1) {
-    return <Navigate to={`/${CloudRoutes.SelectWorkspace}`} replace />;
-  }
-
+  // otherwise redirect to the single workspace
   return (
     <Navigate
-      to={`/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}`}
+      to={
+        workspaces.length > 1
+          ? `/${CloudRoutes.SelectWorkspace}`
+          : `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}`
+      }
       replace
     />
   );
