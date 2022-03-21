@@ -12,7 +12,7 @@
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
-        "title": "Google BigQuery Client Chunk Size",
+        "title": "Google BigQuery Client Chunk Size (Optional)",
         "description": "Google BigQuery client's chunk (buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MB value is used if not set explicitly. Read more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>.",
         "type": "integer",
         "minimum": 1,
@@ -32,8 +32,8 @@
       },
       "dataset_location": {
         "type": "string",
-        "description": "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
-        "title": "Dataset Location",
+        "description": "The location of the dataset. Warning: Changes made after creation will not be applied. The default \"US\" value is used if not set explicitly. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
+        "title": "Dataset Location (Optional)",
         "default": "US",
         "enum": [
           "US",
@@ -77,8 +77,8 @@
       },
       "transformation_priority": {
         "type": "string",
-        "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>.",
-        "title": "Transformation Query Run Type",
+        "description": "Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\">here</a>. The default \"interactive\" value is used if not set explicitly.",
+        "title": "Transformation Query Run Type (Optional)",
         "default": "interactive",
         "enum": ["interactive", "batch"]
       },
@@ -125,7 +125,7 @@
                 "examples": ["data_sync/test"]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for GCS Multipart Upload",
+                "title": "Block Size (MB) for GCS Multipart Upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -135,8 +135,8 @@
               },
               "keep_files_in_gcs-bucket": {
                 "type": "string",
-                "description": "This upload method is supposed to temporary store records in GCS bucket. What do you want to do with data in GCS bucket when migration has finished?",
-                "title": "GCS Tmp Files Afterward Processing",
+                "description": "This upload method is supposed to temporary store records in GCS bucket. What do you want to do with data in GCS bucket when migration has finished? The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
+                "title": "GCS Tmp Files Afterward Processing (Optional)",
                 "default": "Delete all tmp files from GCS",
                 "enum": [
                   "Delete all tmp files from GCS",
