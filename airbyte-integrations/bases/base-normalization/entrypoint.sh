@@ -113,9 +113,21 @@ function main() {
     . /airbyte/sshtunneling.sh
     openssh "${PROJECT_DIR}/ssh.json"
     trap 'closessh' EXIT
+
+    # We don't run dbt 1.0.x on all destinations (because their plugins don't support it yet)
+    # So we need to only pass `--event-buffer-size` if we have DBT 1.0.0
+    # For some reason, `dbt --version` outputs to stderr, so we need to redirect it to stdout
+    dbt --version 2>&1 | grep -q 'installed version: 1.0.0'
+    if [ $? -eq 0 ]; then
+      echo -e "\nDBT 1.0.0 detected; using 10K event buffer size\n"
+      dbt_additional_args="--event-buffer-size=10000"
+    else
+      dbt_additional_args=""
+    fi
+
     set +e # allow script to continue running even if next commands fail to run properly
     # Run dbt to compile and execute the generated normalization models
-    dbt run --event-buffer-size 10000 --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
+    dbt ${dbt_additional_args} run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     DBT_EXIT_CODE=$?
     if [ ${DBT_EXIT_CODE} -ne 0 ]; then
       echo -e "\nDiagnosing dbt debug to check if destination is available for dbt and well configured (${DBT_EXIT_CODE}):\n"
