@@ -66,8 +66,11 @@ class KyribaStream(HttpStream):
         # There is no refresh token, so users need to log in again when the token expires
         if response.status_code == 401:
             self._authorization = self.client.login()
+            # change the response status code to 429, so should_give_up in rate_limiting.py
+            # does not evaluate to true
+            response.status_code = 429
             return True
-        return response.status_code in [429, 401] or 500 <= response.status_code < 600
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
         '''
