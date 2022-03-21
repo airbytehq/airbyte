@@ -260,7 +260,6 @@ public class TemporalClient {
       log.info("Create new workflow and sent delete signal", e); // todo make better logging message
       final ConnectionManagerWorkflow connectionManagerWorkflow =
           getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
-      final BatchRequest signalRequest = client.newSignalWithStartRequest();
       final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
           .connectionId(connectionId)
           .jobId(null)
@@ -272,6 +271,7 @@ public class TemporalClient {
           .fromJobResetFailure(false)
           .build();
 
+      final BatchRequest signalRequest = client.newSignalWithStartRequest();
       signalRequest.add(connectionManagerWorkflow::run, input);
       signalRequest.add(connectionManagerWorkflow::deleteConnection);
       final WorkflowExecution workflowExecution = client.signalWithStart(signalRequest);
