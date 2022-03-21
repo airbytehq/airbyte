@@ -5,7 +5,6 @@
 import time
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -72,7 +71,7 @@ class GithubStream(HttpStream, ABC):
         elif response.headers.get("Retry-After"):
             time_delay = int(response.headers["Retry-After"])
             self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
-            sleep(time_delay)
+            time.sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
@@ -103,7 +102,9 @@ class GithubStream(HttpStream, ABC):
             if e.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+                    error_msg = (
+                        f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+                    )
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
@@ -213,13 +214,13 @@ class SemiIncrementalGithubStream(GithubStream):
         current_stream_state[current_repository] = {self.cursor_field: state_value}
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str) -> str:
-        start_point = self._start_date
-
-        if stream_state and stream_state.get(repository, {}).get(self.cursor_field):
-            start_point = max(start_point, stream_state[repository][self.cursor_field])
-
-        return start_point
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            repository = stream_slice["repository"]
+            stream_state_value = stream_state.get(repository, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
+        return self._start_date
 
     def read_records(
         self,
@@ -228,7 +229,7 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
@@ -241,7 +242,7 @@ class SemiIncrementalGithubStream(GithubStream):
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        since_params = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        since_params = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         if since_params:
             params["since"] = since_params
         return params
@@ -274,7 +275,7 @@ class Branches(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-branches
     """
 
-    primary_key = None
+    primary_key = ["repository", "name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
@@ -340,7 +341,7 @@ class Tags(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
     """
 
-    primary_key = None
+    primary_key = ["repository", "name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/tags"
@@ -559,9 +560,7 @@ class Commits(IncrementalGithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(
-            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
-        )
+        params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         params["sha"] = stream_slice["branch"]
         return params
 
@@ -605,31 +604,16 @@ class Commits(IncrementalGithubStream):
         current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
         return current_stream_state
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str) -> str:
-        start_point = self._start_date
-        if stream_state and stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field):
-            return max(start_point, stream_state[repository][branch][self.cursor_field])
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        repository = stream_slice["repository"]
+        branch = stream_slice["branch"]
+        if stream_state:
+            stream_state_value = stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
         if branch == self.default_branches[repository]:
-            return super().get_starting_point(stream_state=stream_state, repository=repository)
-        return start_point
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(
-            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
-        )
-        for record in super(SemiIncrementalGithubStream, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if record[self.cursor_field] > start_point:
-                yield record
-            elif self.is_sorted_descending and record[self.cursor_field] < start_point:
-                break
+            return super().get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        return self._start_date
 
 
 class Issues(IncrementalGithubStream):
