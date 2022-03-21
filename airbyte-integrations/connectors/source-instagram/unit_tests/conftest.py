@@ -25,7 +25,7 @@ def account_id_fixture():
 def config_fixture():
     config = {
         "access_token": "TOKEN",
-        "start_date": "2019-10-10T00:00:00",
+        "start_date": "2022-03-20T00:00:00",
     }
 
     return config
@@ -71,3 +71,55 @@ def api_fixture(some_config, requests_mock, fb_account_response):
                                [fb_account_response])
 
     return api
+
+
+@fixture(name="user_data")
+def user_data_fixture():
+    return {
+        "biography": "Dino data crunching app",
+        "id": "17841405822304914",
+        "username": "metricsaurus",
+        "website": "http://www.metricsaurus.com/"
+    }
+
+
+@fixture(name="user_insight_data")
+def user_insight_data_fixture():
+    return {
+        "name": "impressions",
+        "period": "day",
+        "values": [
+            {
+                "value": 4,
+                "end_time": "2020-05-04T07:00:00+0000"
+            },
+            {
+                "value": 66,
+                "end_time": "2020-05-05T07:00:00+0000"
+            }
+        ],
+        "title": "Impressions",
+        "description": "Total number of times this profile has been seen",
+        "id": "17841400008460056/insights/impressions/day"
+    }
+
+
+@fixture(name="user_stories_data")
+def user_stories_data_fixture():
+    return {"id": "test_id"}
+
+
+@fixture(name="user_media_insights_data")
+def user_media_insights_data_fixture():
+    return {
+        "name": "impressions",
+        "period": "lifetime",
+        "values": [
+            {
+                "value": 264
+            }
+        ],
+        "title": "Impressions",
+        "description": "Total number of times the media object has been seen",
+        "id": "17855590849148465/insights/impressions/lifetime"
+    }

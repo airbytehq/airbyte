@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+
 from source_instagram.common import remove_params_from_url, retry_pattern
 
 

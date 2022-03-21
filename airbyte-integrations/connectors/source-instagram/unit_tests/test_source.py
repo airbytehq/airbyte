@@ -3,11 +3,11 @@
 #
 
 
-import pytest
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
 from source_instagram.source import SourceInstagram, ConnectorConfig
 import logging
 from facebook_business import FacebookAdsApi, FacebookSession
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -37,9 +37,9 @@ def test_check_connection_invalid_config(api, some_config):
     assert error_msg
 
 
-def test_check_connection_exception(api, some_config):
+def test_check_connection_exception(api, config):
     api.side_effect = RuntimeError("Something went wrong!")
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
+    ok, error_msg = SourceInstagram().check_connection(logger, config=config)
 
     assert not ok
     assert error_msg
@@ -55,3 +55,17 @@ def test_spec():
     spec = SourceInstagram().spec()
 
     assert isinstance(spec, ConnectorSpecification)
+
+
+def test_read(config):
+    source = SourceInstagram()
+    catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name="users", json_schema={}),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+            ]
+        )
+    assert source.read(logger, config, catalog)

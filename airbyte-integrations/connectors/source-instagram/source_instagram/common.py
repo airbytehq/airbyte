@@ -40,9 +40,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if exc.http_status() == status_codes.TOO_MANY_REQUESTS:
             return True
 
-        # FIXME: add type and http_status
-        if exc.api_error_code() == 10 and exc.api_error_message() == "(#10) Not enough viewers for the media to show insights":
-            return False  # expected error
+        if exc.api_error_type() == "OAuthException" and exc.api_error_code() == 10 and exc.api_error_message() == "(#10) Not enough viewers for the media to show insights":
+            return True
 
         # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code
         if exc.http_status() == status_codes.BAD_REQUEST and exc.api_error_code() == 100 and exc.api_error_subcode() == 33:
@@ -51,9 +50,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if exc.api_transient_error():
             return True
 
-        # FIXME: add type, code and http_status
-        if exc.api_error_subcode() == 2108006:
-            return False
+        # The media was posted before the most recent time that the user's account
+        # was converted to a business account from a personal account.
+        if exc.api_error_type() == "OAuthException" and exc.api_error_code() == 100 and exc.api_error_subcode() == 2108006:
+            return True
 
         return False
 
