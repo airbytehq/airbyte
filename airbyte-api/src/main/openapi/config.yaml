@@ -294,13 +294,8 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all the sourceDefinitions the given workspace is configured to use
+      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation
@@ -340,6 +335,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrivateSourceDefinitionReadList"
+  /v1/source_definitions/list_for_workspace:
+    post:
+      tags:
+        - source_definition
+      summary: List all the sourceDefinitions the given workspace is configured to use
+      operationId: listSourceDefinitionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/create_custom:
+    post:
+      tags:
+        - source_definition
+      summary: Creates a custom sourceDefinition for the given workspace
+      operationId: createCustomSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomSourceDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/grant_definition:
     post:
       tags:
@@ -2240,14 +2273,11 @@ components:
     SourceDefinitionCreate:
       type: object
       required:
-        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
@@ -2312,6 +2342,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionRead"
+    CustomSourceDefinitionCreate:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionCreate"
     PrivateSourceDefinitionRead:
       type: object
       required:

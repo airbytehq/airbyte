@@ -16,6 +16,7 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.CustomSourceDefinitionCreate;
 import io.airbyte.api.model.DbMigrationExecutionRead;
 import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
@@ -311,8 +312,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // SOURCE
 
   @Override
-  public SourceDefinitionReadList listSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public SourceDefinitionReadList listSourceDefinitions() {
     return execute(sourceDefinitionsHandler::listSourceDefinitions);
+  }
+
+  @Override
+  public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return null;
   }
 
   @Override
@@ -333,6 +339,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
     return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(sourceDefinitionCreate));
+  }
+
+  @Override
+  public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
+    return null;
   }
 
   @Override
