@@ -17,7 +17,11 @@ import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.CustomDestinationDefinitionCreate;
+import io.airbyte.api.model.CustomDestinationDefinitionDelete;
+import io.airbyte.api.model.CustomDestinationDefinitionUpdate;
 import io.airbyte.api.model.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.CustomSourceDefinitionDelete;
+import io.airbyte.api.model.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.DbMigrationExecutionRead;
 import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
@@ -358,11 +362,21 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
+    return null;
+  }
+
+  @Override
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     execute(() -> {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
       return null;
     });
+  }
+
+  @Override
+  public void deleteCustomSourceDefinition(final CustomSourceDefinitionDelete customSourceDefinitionDelete) {
+
   }
 
   @Override
@@ -531,11 +545,21 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
+    return null;
+  }
+
+  @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     execute(() -> {
       destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
       return null;
     });
+  }
+
+  @Override
+  public void deleteCustomDestinationDefinition(final CustomDestinationDefinitionDelete customDestinationDefinitionDelete) {
+
   }
 
   @Override

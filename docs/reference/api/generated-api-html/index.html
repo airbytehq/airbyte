@@ -261,6 +261,7 @@ font-style: italic;
   <ul>
   <li><a href="#createCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create_custom</code></a></li>
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
+  <li><a href="#deleteCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete_custom</code></a></li>
   <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
   <li><a href="#grantDestinationDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/grant_definition</code></a></li>
@@ -269,6 +270,7 @@ font-style: italic;
   <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
   <li><a href="#listPrivateDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_private</code></a></li>
   <li><a href="#revokeDestinationDefinitionFromWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/revoke_definition</code></a></li>
+  <li><a href="#updateCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update_custom</code></a></li>
   <li><a href="#updateDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update</code></a></li>
   </ul>
   <h4><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h4>
@@ -339,6 +341,7 @@ font-style: italic;
   <ul>
   <li><a href="#createCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create_custom</code></a></li>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
+  <li><a href="#deleteCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete_custom</code></a></li>
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#grantSourceDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></a></li>
@@ -347,6 +350,7 @@ font-style: italic;
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
   <li><a href="#listSourceDefinitionsForWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/list_for_workspace</code></a></li>
   <li><a href="#revokeSourceDefinitionFromWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/revoke_definition</code></a></li>
+  <li><a href="#updateCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update_custom</code></a></li>
   <li><a href="#updateSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update</code></a></li>
   </ul>
   <h4><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></h4>
@@ -2748,6 +2752,54 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="deleteCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/delete_custom</code></pre></div>
+    <div class="method-summary">Delete a custom destination definition for the given workspace (<span class="nickname">deleteCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomDestinationDefinitionDelete <a href="#CustomDestinationDefinitionDelete">CustomDestinationDefinitionDelete</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The redestination was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="deleteDestinationDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -3451,6 +3503,93 @@ font-style: italic;
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/update_custom</code></pre></div>
+    <div class="method-summary">Update a custom destinationDefinition for the given workspace (<span class="nickname">updateCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomDestinationDefinitionUpdate <a href="#CustomDestinationDefinitionUpdate">CustomDestinationDefinitionUpdate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -6441,6 +6580,54 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="deleteCustomSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/delete_custom</code></pre></div>
+    <div class="method-summary">Delete a custom source definition for the given workspace (<span class="nickname">deleteCustomSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomSourceDefinitionDelete <a href="#CustomSourceDefinitionDelete">CustomSourceDefinitionDelete</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="deleteSourceDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -7144,6 +7331,93 @@ font-style: italic;
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateCustomSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/update_custom</code></pre></div>
+    <div class="method-summary">Update a custom sourceDefinition for the given workspace (<span class="nickname">updateCustomSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomSourceDefinitionUpdate <a href="#CustomSourceDefinitionUpdate">CustomSourceDefinitionUpdate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -9227,7 +9501,11 @@ font-style: italic;
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
+    <li><a href="#CustomDestinationDefinitionDelete"><code>CustomDestinationDefinitionDelete</code> - </a></li>
+    <li><a href="#CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
+    <li><a href="#CustomSourceDefinitionDelete"><code>CustomSourceDefinitionDelete</code> - </a></li>
+    <li><a href="#CustomSourceDefinitionUpdate"><code>CustomSourceDefinitionUpdate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
     <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
     <li><a href="#DbMigrationRead"><code>DbMigrationRead</code> - </a></li>
@@ -9643,11 +9921,43 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="CustomDestinationDefinitionDelete"><code>CustomDestinationDefinitionDelete</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionUpdate">DestinationDefinitionUpdate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionCreate">SourceDefinitionCreate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomSourceDefinitionDelete"><code>CustomSourceDefinitionDelete</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="CustomSourceDefinitionUpdate"><code>CustomSourceDefinitionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionUpdate">SourceDefinitionUpdate</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
