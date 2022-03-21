@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -23,7 +24,6 @@ import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -442,12 +442,12 @@ public class MockData {
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
-  public static List<StagingConfiguration> stagingConfiguration() {
-    final StagingConfiguration stagingConfiguration1 = new StagingConfiguration()
-        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
+  public static List<ActorConfigurationBinding> actorConfigurationBindings() {
+    final ActorConfigurationBinding stagingConfiguration1 = new ActorConfigurationBinding()
+        .withActorDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "30", "car", "tesla")));
-    final StagingConfiguration stagingConfiguration2 = new StagingConfiguration()
-        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
+    final ActorConfigurationBinding stagingConfiguration2 = new ActorConfigurationBinding()
+        .withActorDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withConfiguration(Jsons.jsonNode(Map.of("name", "John", "age", "32", "car", "audi")));
     return Arrays.asList(stagingConfiguration1, stagingConfiguration2);
   }

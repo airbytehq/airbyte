@@ -20,13 +20,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -740,14 +740,15 @@ public class ConfigRepository {
     persistence.loadData(seedPersistenceWithoutSecrets);
   }
 
-  public StagingConfiguration getStagingConfigurationNoSecrets(final UUID destinationDefinitionId)
+  public ActorConfigurationBinding getActorConfigurationBindingNoSecrets(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString(), StagingConfiguration.class);
+    return persistence.getConfig(ConfigSchema.ACTOR_CONFIGURATION_BINDING, destinationDefinitionId.toString(), ActorConfigurationBinding.class);
   }
 
-  public void writeStagingConfigurationNoSecrets(final StagingConfiguration stagingConfiguration)
+  public void writeActorConfigurationBindingNoSecrets(final ActorConfigurationBinding actorConfigurationBinding)
       throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(), stagingConfiguration);
+    persistence.writeConfig(ConfigSchema.ACTOR_CONFIGURATION_BINDING, actorConfigurationBinding.getActorDefinitionId().toString(),
+        actorConfigurationBinding);
   }
 
 }

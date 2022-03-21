@@ -14,12 +14,6 @@ public record SecretCoordinateToPayload(SecretCoordinate secretCoordinate,
     return secretCoordinateForDB;
   }
 
-  public SecretCoordinateToPayload(SecretCoordinate secretCoordinate, String payload, JsonNode secretCoordinateForDB) {
-    this.secretCoordinate = secretCoordinate;
-    this.payload = payload;
-    this.secretCoordinateForDB = secretCoordinateForDB.deepCopy();
-  }
-
   public SecretCoordinate getSecretCoordinate() {
     return secretCoordinate;
   }

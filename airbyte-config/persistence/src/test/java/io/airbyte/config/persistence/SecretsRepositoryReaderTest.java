@@ -12,10 +12,10 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
@@ -137,13 +137,13 @@ class SecretsRepositoryReaderTest {
     final SecretCoordinate secretCoordinate = new SecretCoordinate(
         "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
-    doReturn(new StagingConfiguration().withDestinationDefinitionId(destinationDefinitionId).withConfiguration(Jsons.jsonNode(
+    doReturn(new ActorConfigurationBinding().withActorDefinitionId(destinationDefinitionId).withConfiguration(Jsons.jsonNode(
         Map.of("_secret", secretCoordinate.getFullCoordinate()))))
-            .when(configRepository).getStagingConfigurationNoSecrets(destinationDefinitionId);
+            .when(configRepository).getActorConfigurationBindingNoSecrets(destinationDefinitionId);
     doReturn(Optional.of(secretPayload.toString())).when(secretPersistence).read(secretCoordinate);
 
-    final StagingConfiguration actual = secretsRepositoryReader.getStagingConfigurationWithSecrets(destinationDefinitionId);
-    final StagingConfiguration expected = new StagingConfiguration().withDestinationDefinitionId(destinationDefinitionId)
+    final ActorConfigurationBinding actual = secretsRepositoryReader.getActorConfigurationBindingWithSecrets(destinationDefinitionId);
+    final ActorConfigurationBinding expected = new ActorConfigurationBinding().withActorDefinitionId(destinationDefinitionId)
         .withConfiguration(secretPayload);
     assertEquals(expected, actual);
   }

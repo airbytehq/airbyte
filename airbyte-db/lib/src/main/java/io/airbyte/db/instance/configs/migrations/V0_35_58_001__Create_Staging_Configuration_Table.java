@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_35_47_001__Create_Staging_Configuration_Table extends BaseJavaMigration {
+public class V0_35_58_001__Create_Staging_Configuration_Table extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_47_001__Create_Staging_Configuration_Table.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_58_001__Create_Staging_Configuration_Table.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
@@ -34,10 +34,10 @@ public class V0_35_47_001__Create_Staging_Configuration_Table extends BaseJavaMi
     // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
 
-    createStagingConfigTable(ctx);
+    createTable(ctx);
   }
 
-  protected static void createStagingConfigTable(final DSLContext ctx) {
+  protected static void createTable(final DSLContext ctx) {
     final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));
     final Field<JSONB> config = DSL.field("config", SQLDataType.JSONB.nullable(true));
     final Field<OffsetDateTime> createdAt =
@@ -45,7 +45,7 @@ public class V0_35_47_001__Create_Staging_Configuration_Table extends BaseJavaMi
     final Field<OffsetDateTime> updatedAt =
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
-    ctx.createTableIfNotExists("staging_configuration")
+    ctx.createTableIfNotExists("actor_config_binding")
         .columns(actorDefinitionId,
             config,
             createdAt,
@@ -53,7 +53,7 @@ public class V0_35_47_001__Create_Staging_Configuration_Table extends BaseJavaMi
         .constraints(primaryKey(actorDefinitionId),
             foreignKey(actorDefinitionId).references("actor_definition", "id").onDeleteCascade())
         .execute();
-    LOGGER.info("staging_configuration table created");
+    LOGGER.info("actor_config_binding table created");
   }
 
 }

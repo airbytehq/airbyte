@@ -7,12 +7,12 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CONFIG_BINDING;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
-import static io.airbyte.db.instance.configs.jooq.Tables.STAGING_CONFIGURATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
@@ -28,6 +28,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -38,7 +39,6 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -119,8 +119,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (T) getActorCatalog(configId);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (T) getActorCatalogFetchEvent(configId);
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      return (T) getStagingConfiguration(configId);
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      return (T) geActorConfigurationBinding(configId);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -200,9 +200,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return result.get(0).getConfig();
   }
 
-  private StagingConfiguration getStagingConfiguration(final String configId) throws IOException, ConfigNotFoundException {
-    final List<ConfigWithMetadata<StagingConfiguration>> result = listStagingConfigurationWithMetadata(Optional.of(UUID.fromString(configId)));
-    validate(configId, result, ConfigSchema.STAGING_CONFIGURATION);
+  private ActorConfigurationBinding geActorConfigurationBinding(final String configId) throws IOException, ConfigNotFoundException {
+    final List<ConfigWithMetadata<ActorConfigurationBinding>> result = listActorConfigBindingsWithMetadata(Optional.of(UUID.fromString(configId)));
+    validate(configId, result, ConfigSchema.ACTOR_CONFIGURATION_BINDING);
     return result.get(0).getConfig();
   }
 
@@ -272,8 +272,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogFetchEventWithMetadata(configIdOpt), configType);
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      return (ConfigWithMetadata<T>) validateAndReturn(configId, listStagingConfigurationWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorConfigBindingsWithMetadata(configIdOpt), configType);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -306,8 +306,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       listActorCatalogWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       listActorCatalogFetchEventWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      listStagingConfigurationWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      listActorConfigBindingsWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -738,35 +738,35 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withActorId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID));
   }
 
-  private List<ConfigWithMetadata<StagingConfiguration>> listStagingConfigurationWithMetadata() throws IOException {
-    return listStagingConfigurationWithMetadata(Optional.empty());
+  private List<ConfigWithMetadata<ActorConfigurationBinding>> listActorConfigBindingsWithMetadata() throws IOException {
+    return listActorConfigBindingsWithMetadata(Optional.empty());
   }
 
-  private List<ConfigWithMetadata<StagingConfiguration>> listStagingConfigurationWithMetadata(final Optional<UUID> configId) throws IOException {
+  private List<ConfigWithMetadata<ActorConfigurationBinding>> listActorConfigBindingsWithMetadata(final Optional<UUID> configId) throws IOException {
     final Result<Record> result = database.query(ctx -> {
-      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(STAGING_CONFIGURATION);
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_CONFIG_BINDING);
       if (configId.isPresent()) {
-        return query.where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(configId.get())).fetch();
+        return query.where(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID.eq(configId.get())).fetch();
       }
       return query.fetch();
     });
-    final List<ConfigWithMetadata<StagingConfiguration>> stagingConfigurations = new ArrayList<>();
+    final List<ConfigWithMetadata<ActorConfigurationBinding>> actorConfigsBindings = new ArrayList<>();
     for (final Record record : result) {
-      final StagingConfiguration stagingConfiguration = buildStagingConfiguration(record);
-      stagingConfigurations.add(new ConfigWithMetadata<>(
-          record.get(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID).toString(),
-          ConfigSchema.STAGING_CONFIGURATION.name(),
-          record.get(STAGING_CONFIGURATION.CREATED_AT).toInstant(),
-          record.get(STAGING_CONFIGURATION.UPDATED_AT).toInstant(),
-          stagingConfiguration));
+      final ActorConfigurationBinding actorConfigurationBinding = buildActorConfigBinding(record);
+      actorConfigsBindings.add(new ConfigWithMetadata<>(
+          record.get(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID).toString(),
+          ConfigSchema.ACTOR_CONFIGURATION_BINDING.name(),
+          record.get(ACTOR_CONFIG_BINDING.CREATED_AT).toInstant(),
+          record.get(ACTOR_CONFIG_BINDING.UPDATED_AT).toInstant(),
+          actorConfigurationBinding));
     }
-    return stagingConfigurations;
+    return actorConfigsBindings;
   }
 
-  private StagingConfiguration buildStagingConfiguration(final Record record) {
-    return new StagingConfiguration()
-        .withDestinationDefinitionId(record.get(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID))
-        .withConfiguration(Jsons.deserialize(record.get(STAGING_CONFIGURATION.CONFIG).data()));
+  private ActorConfigurationBinding buildActorConfigBinding(final Record record) {
+    return new ActorConfigurationBinding()
+        .withActorDefinitionId(record.get(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_CONFIG_BINDING.CONFIG).data()));
   }
 
   @Override
@@ -795,8 +795,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(Collections.singletonList((ActorCatalog) config));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(Collections.singletonList((ActorCatalogFetchEvent) config));
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      writeStagingConfiguration(Collections.singletonList((StagingConfiguration) config));
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      writeActorConfigurationBinding(Collections.singletonList((ActorConfigurationBinding) config));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1315,32 +1315,32 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
-  private void writeStagingConfiguration(final List<StagingConfiguration> configs) throws IOException {
+  private void writeActorConfigurationBinding(final List<ActorConfigurationBinding> configs) throws IOException {
     database.transaction(ctx -> {
-      writeStagingConfiguration(configs, ctx);
+      writeActorConfigurationBinding(configs, ctx);
       return null;
     });
   }
 
-  private void writeStagingConfiguration(final List<StagingConfiguration> configs, final DSLContext ctx) {
+  private void writeActorConfigurationBinding(final List<ActorConfigurationBinding> configs, final DSLContext ctx) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
-    configs.forEach((stagingConfiguration) -> {
+    configs.forEach((actorConfigurationBinding) -> {
       final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(STAGING_CONFIGURATION)
-          .where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(stagingConfiguration.getDestinationDefinitionId())));
+          .from(ACTOR_CONFIG_BINDING)
+          .where(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID.eq(actorConfigurationBinding.getActorDefinitionId())));
 
       if (isExistingConfig) {
-        ctx.update(STAGING_CONFIGURATION)
-            .set(STAGING_CONFIGURATION.CONFIG, JSONB.valueOf(Jsons.serialize(stagingConfiguration.getConfiguration())))
-            .set(STAGING_CONFIGURATION.UPDATED_AT, timestamp)
-            .where(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID.eq(stagingConfiguration.getDestinationDefinitionId()))
+        ctx.update(ACTOR_CONFIG_BINDING)
+            .set(ACTOR_CONFIG_BINDING.CONFIG, JSONB.valueOf(Jsons.serialize(actorConfigurationBinding.getConfiguration())))
+            .set(ACTOR_CONFIG_BINDING.UPDATED_AT, timestamp)
+            .where(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID.eq(actorConfigurationBinding.getActorDefinitionId()))
             .execute();
       } else {
-        ctx.insertInto(STAGING_CONFIGURATION)
-            .set(STAGING_CONFIGURATION.ACTOR_DEFINITION_ID, stagingConfiguration.getDestinationDefinitionId())
-            .set(STAGING_CONFIGURATION.CONFIG, JSONB.valueOf(Jsons.serialize(stagingConfiguration.getConfiguration())))
-            .set(STAGING_CONFIGURATION.CREATED_AT, timestamp)
-            .set(STAGING_CONFIGURATION.UPDATED_AT, timestamp)
+        ctx.insertInto(ACTOR_CONFIG_BINDING)
+            .set(ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID, actorConfigurationBinding.getActorDefinitionId())
+            .set(ACTOR_CONFIG_BINDING.CONFIG, JSONB.valueOf(Jsons.serialize(actorConfigurationBinding.getConfiguration())))
+            .set(ACTOR_CONFIG_BINDING.CREATED_AT, timestamp)
+            .set(ACTOR_CONFIG_BINDING.UPDATED_AT, timestamp)
             .execute();
       }
     });
@@ -1442,8 +1442,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(configs.values().stream().map(c -> (ActorCatalog) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(configs.values().stream().map(c -> (ActorCatalogFetchEvent) c).collect(Collectors.toList()));
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      writeStagingConfiguration(configs.values().stream().map(c -> (StagingConfiguration) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      writeActorConfigurationBinding(configs.values().stream().map(c -> (ActorConfigurationBinding) c).collect(Collectors.toList()));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1475,8 +1475,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       deleteConfig(ACTOR_CATALOG, ACTOR_CATALOG.ID, UUID.fromString(configId));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       deleteConfig(ACTOR_CATALOG_FETCH_EVENT, ACTOR_CATALOG_FETCH_EVENT.ID, UUID.fromString(configId));
-    } else if (configType == ConfigSchema.STAGING_CONFIGURATION) {
-      deleteConfig(STAGING_CONFIGURATION, STAGING_CONFIGURATION.ACTOR_DEFINITION_ID, UUID.fromString(configId));
+    } else if (configType == ConfigSchema.ACTOR_CONFIGURATION_BINDING) {
+      deleteConfig(ACTOR_CONFIG_BINDING, ACTOR_CONFIG_BINDING.ACTOR_DEFINITION_ID, UUID.fromString(configId));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1534,7 +1534,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(STATE).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG_FETCH_EVENT).restartIdentity().cascade().execute();
-      ctx.truncate(STAGING_CONFIGURATION).restartIdentity().cascade().execute();
+      ctx.truncate(ACTOR_CONFIG_BINDING).restartIdentity().cascade().execute();
 
       if (configs.containsKey(ConfigSchema.STANDARD_WORKSPACE)) {
         configs.get(ConfigSchema.STANDARD_WORKSPACE).map(c -> (StandardWorkspace) c)
@@ -1630,12 +1630,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + " not found");
       }
 
-      if (configs.containsKey(ConfigSchema.STAGING_CONFIGURATION)) {
-        configs.get(ConfigSchema.STAGING_CONFIGURATION).map(c -> (StagingConfiguration) c)
-            .forEach(c -> writeStagingConfiguration(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STAGING_CONFIGURATION);
+      if (configs.containsKey(ConfigSchema.ACTOR_CONFIGURATION_BINDING)) {
+        configs.get(ConfigSchema.ACTOR_CONFIGURATION_BINDING).map(c -> (ActorConfigurationBinding) c)
+            .forEach(c -> writeActorConfigurationBinding(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.ACTOR_CONFIGURATION_BINDING);
       } else {
-        LOGGER.warn(ConfigSchema.STAGING_CONFIGURATION + " not found");
+        LOGGER.warn(ConfigSchema.ACTOR_CONFIGURATION_BINDING + " not found");
       }
 
       if (!originalConfigs.isEmpty()) {
@@ -1751,10 +1751,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
               .map(Jsons::jsonNode));
     }
 
-    final List<ConfigWithMetadata<StagingConfiguration>> stagingConfigurationWithMetadata = listStagingConfigurationWithMetadata();
-    if (!stagingConfigurationWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.STAGING_CONFIGURATION.name(),
-          stagingConfigurationWithMetadata
+    final List<ConfigWithMetadata<ActorConfigurationBinding>> actorConfigurationBindingWithMetadata = listActorConfigBindingsWithMetadata();
+    if (!actorConfigurationBindingWithMetadata.isEmpty()) {
+      result.put(ConfigSchema.ACTOR_CONFIGURATION_BINDING.name(),
+          actorConfigurationBindingWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));

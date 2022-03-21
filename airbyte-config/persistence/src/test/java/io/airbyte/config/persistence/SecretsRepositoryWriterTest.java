@@ -19,11 +19,11 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
@@ -221,21 +221,21 @@ class SecretsRepositoryWriterTest {
     final UUID destinationDefinitionId = UUID.randomUUID();
     final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "tesla")));
     assertEquals("{\"age\":\"30\",\"car\":\"tesla\",\"name\":\"John\"}", secretPayload.toString());
-    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
-        .withDestinationDefinitionId(destinationDefinitionId)
+    final ActorConfigurationBinding actorConfigurationBinding = new ActorConfigurationBinding()
+        .withActorDefinitionId(destinationDefinitionId)
         .withConfiguration(secretPayload);
 
-    doThrow(new ConfigNotFoundException(ConfigSchema.STAGING_CONFIGURATION, destinationDefinitionId.toString()))
-        .when(configRepository).getStagingConfigurationNoSecrets(destinationDefinitionId);
-    secretsRepositoryWriter.writeStagingConfiguration(stagingConfiguration);
+    doThrow(new ConfigNotFoundException(ConfigSchema.ACTOR_CONFIGURATION_BINDING, destinationDefinitionId.toString()))
+        .when(configRepository).getActorConfigurationBindingNoSecrets(destinationDefinitionId);
+    secretsRepositoryWriter.writeActorConfigurationBinding(actorConfigurationBinding);
 
     assertEquals(1, longLivedSecretPersistence.getMap().size());
     final String payloadSavedInPersistence = longLivedSecretPersistence.getMap().values().stream().toList().get(0);
     assertEquals(secretPayload.toString(), payloadSavedInPersistence);
     final SecretCoordinate secretCoordinate = longLivedSecretPersistence.getMap().keySet().stream().toList().get(0);
 
-    verify(configRepository).writeStagingConfigurationNoSecrets(
-        Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(Map.of("_secret", secretCoordinate.getFullCoordinate())))));
+    verify(configRepository).writeActorConfigurationBindingNoSecrets(
+        Jsons.clone(actorConfigurationBinding.withConfiguration(Jsons.jsonNode(Map.of("_secret", secretCoordinate.getFullCoordinate())))));
   }
 
   @Test
@@ -248,21 +248,21 @@ class SecretsRepositoryWriterTest {
     final UUID destinationDefinitionId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
     final JsonNode secretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "null")));
     assertEquals("{\"age\":\"30\",\"car\":\"null\",\"name\":\"John\"}", secretPayload.toString());
-    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
-        .withDestinationDefinitionId(destinationDefinitionId)
+    final ActorConfigurationBinding actorConfigurationBinding = new ActorConfigurationBinding()
+        .withActorDefinitionId(destinationDefinitionId)
         .withConfiguration(secretPayload);
     final SecretCoordinate secretCoordinate = new SecretCoordinate(
         "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
-    doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
+    doReturn(Jsons.clone(actorConfigurationBinding).withConfiguration(Jsons.jsonNode(
         Map.of("_secret", secretCoordinate.getFullCoordinate()))))
-            .when(configRepository).getStagingConfigurationNoSecrets(destinationDefinitionId);
+            .when(configRepository).getActorConfigurationBindingNoSecrets(destinationDefinitionId);
 
     doReturn(Optional.of(secretPayload.toString())).when(secretPersistence).read(secretCoordinate);
-    secretsRepositoryWriter.writeStagingConfiguration(stagingConfiguration);
+    secretsRepositoryWriter.writeActorConfigurationBinding(actorConfigurationBinding);
 
     verify(secretPersistence).write(secretCoordinate, secretPayload.toString());
-    verify(configRepository).writeStagingConfigurationNoSecrets(Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(
+    verify(configRepository).writeActorConfigurationBindingNoSecrets(Jsons.clone(actorConfigurationBinding.withConfiguration(Jsons.jsonNode(
         Map.of("_secret", secretCoordinate.getFullCoordinate())))));
   }
 
@@ -278,24 +278,24 @@ class SecretsRepositoryWriterTest {
     assertEquals("{\"age\":\"30\",\"car\":\"null\",\"name\":\"John\"}", oldSecretPayload.toString());
     final JsonNode newSecretPayload = Jsons.jsonNode(sortMap(Map.of("name", "John", "age", "30", "car", "abcd")));
     assertEquals("{\"age\":\"30\",\"car\":\"abcd\",\"name\":\"John\"}", newSecretPayload.toString());
-    final StagingConfiguration stagingConfiguration = new StagingConfiguration()
-        .withDestinationDefinitionId(destinationDefinitionId)
+    final ActorConfigurationBinding actorConfigurationBinding = new ActorConfigurationBinding()
+        .withActorDefinitionId(destinationDefinitionId)
         .withConfiguration(newSecretPayload);
 
     final SecretCoordinate oldSecretCoordinate = new SecretCoordinate(
         "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
-    doReturn(Jsons.clone(stagingConfiguration).withConfiguration(Jsons.jsonNode(
+    doReturn(Jsons.clone(actorConfigurationBinding).withConfiguration(Jsons.jsonNode(
         Map.of("_secret", oldSecretCoordinate.getFullCoordinate()))))
-            .when(configRepository).getStagingConfigurationNoSecrets(destinationDefinitionId);
+            .when(configRepository).getActorConfigurationBindingNoSecrets(destinationDefinitionId);
 
     final SecretCoordinate newSecretCoordinate = new SecretCoordinate(
         "destination_definition_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 2);
     doReturn(Optional.of(oldSecretPayload.toString())).when(secretPersistence).read(oldSecretCoordinate);
-    secretsRepositoryWriter.writeStagingConfiguration(stagingConfiguration);
+    secretsRepositoryWriter.writeActorConfigurationBinding(actorConfigurationBinding);
 
     verify(secretPersistence).write(newSecretCoordinate, newSecretPayload.toString());
-    verify(configRepository).writeStagingConfigurationNoSecrets(Jsons.clone(stagingConfiguration.withConfiguration(Jsons.jsonNode(
+    verify(configRepository).writeActorConfigurationBindingNoSecrets(Jsons.clone(actorConfigurationBinding.withConfiguration(Jsons.jsonNode(
         Map.of("_secret", newSecretCoordinate.getFullCoordinate())))));
   }
 

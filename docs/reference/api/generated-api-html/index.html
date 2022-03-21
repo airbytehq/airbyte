@@ -219,6 +219,10 @@ font-style: italic;
 
   <h3>Table of Contents </h3>
   <div class="method-summary"></div>
+  <h4><a href="#ActorConfigurationBinding">ActorConfigurationBinding</a></h4>
+  <ul>
+  <li><a href="#createActorConfigurationBinding"><code><span class="http-method">post</span> /v1/actor_configuration_binding/create</code></a></li>
+  </ul>
   <h4><a href="#Connection">Connection</a></h4>
   <ul>
   <li><a href="#createConnection"><code><span class="http-method">post</span> /v1/connections/create</code></a></li>
@@ -343,10 +347,6 @@ font-style: italic;
   <ul>
   <li><a href="#getSourceDefinitionSpecification"><code><span class="http-method">post</span> /v1/source_definition_specifications/get</code></a></li>
   </ul>
-  <h4><a href="#Staging">Staging</a></h4>
-  <ul>
-  <li><a href="#createStagingConfiguration"><code><span class="http-method">post</span> /v1/staging_configuration/create</code></a></li>
-  </ul>
   <h4><a href="#WebBackend">WebBackend</a></h4>
   <ul>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
@@ -368,6 +368,55 @@ font-style: italic;
   <li><a href="#updateWorkspaceName"><code><span class="http-method">post</span> /v1/workspaces/update_name</code></a></li>
   </ul>
 
+  <h1><a name="ActorConfigurationBinding">ActorConfigurationBinding</a></h1>
+  <div class="method"><a name="createActorConfigurationBinding"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/actor_configuration_binding/create</code></pre></div>
+    <div class="method-summary">If you have to store a secret required to mutate a connector in cloud, use this endpoint to create that secret in cloud DB (<span class="nickname">createActorConfigurationBinding</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ActorConfigurationBindingCreate <a href="#ActorConfigurationBindingCreate">ActorConfigurationBindingCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Use this when the endpoint doesn't need to return a response
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Connection">Connection</a></h1>
   <div class="method"><a name="createConnection"/>
     <div class="method-path">
@@ -6410,65 +6459,6 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="Staging">Staging</a></h1>
-  <div class="method"><a name="createStagingConfiguration"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/staging_configuration/create</code></pre></div>
-    <div class="method-summary">Create staging configuration (<span class="nickname">createStagingConfiguration</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">StagingConfigurationCreate <a href="#StagingConfigurationCreate">StagingConfigurationCreate</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#StagingConfigurationRead">StagingConfigurationRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#StagingConfigurationRead">StagingConfigurationRead</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
   <h1><a name="WebBackend">WebBackend</a></h1>
   <div class="method"><a name="webBackendCreateConnection"/>
     <div class="method-path">
@@ -8338,6 +8328,7 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
+    <li><a href="#ActorConfigurationBindingCreate"><code>ActorConfigurationBindingCreate</code> - </a></li>
     <li><a href="#ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a></li>
     <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
@@ -8449,8 +8440,6 @@ font-style: italic;
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
-    <li><a href="#StagingConfigurationCreate"><code>StagingConfigurationCreate</code> - </a></li>
-    <li><a href="#StagingConfigurationRead"><code>StagingConfigurationRead</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
     <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
@@ -8470,6 +8459,14 @@ font-style: italic;
     <li><a href="#WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a></li>
   </ol>
 
+  <div class="model">
+    <h3><a name="ActorConfigurationBindingCreate"><code>ActorConfigurationBindingCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">actorDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">configuration </div><div class="param-desc"><span class="param-type"><a href="#ActorConfigurationBindingConfig">ActorConfigurationBindingConfig</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3><a name="ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.</div>
@@ -9489,21 +9486,6 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="StagingConfigurationCreate"><code>StagingConfigurationCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">stagingConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#StagingConfiguration">StagingConfiguration</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="StagingConfigurationRead"><code>StagingConfigurationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

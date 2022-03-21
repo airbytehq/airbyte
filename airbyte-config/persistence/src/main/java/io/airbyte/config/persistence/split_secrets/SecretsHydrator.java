@@ -5,7 +5,6 @@
 package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Optional;
 
 /**
  * Adds secrets to a partial config.
@@ -20,8 +19,13 @@ public interface SecretsHydrator {
    */
   JsonNode hydrate(final JsonNode partialConfig);
 
-  Optional<String> read(final SecretCoordinate secretCoordinate);
-
-  boolean isReadAllowed();
+  /**
+   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store without
+   * any special transformations
+   *
+   * @param secretCoordinate The co-ordinate of the secret in the store in JSON format
+   * @return original secret value
+   */
+  JsonNode simpleHydrate(final JsonNode secretCoordinate);
 
 }

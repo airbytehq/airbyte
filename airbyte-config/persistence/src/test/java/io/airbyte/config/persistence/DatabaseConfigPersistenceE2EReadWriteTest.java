@@ -12,12 +12,12 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorConfigurationBinding;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StagingConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -87,7 +87,7 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
-    assertFalse(configPersistence.listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class).isEmpty());
+    assertFalse(configPersistence.listConfigs(ConfigSchema.ACTOR_CONFIGURATION_BINDING, ActorConfigurationBinding.class).isEmpty());
 
     for (final SourceOAuthParameter sourceOAuthParameter : MockData.sourceOauthParameters()) {
       configPersistence.deleteConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString());
@@ -99,10 +99,10 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
 
-    for (final StagingConfiguration stagingConfiguration : MockData.stagingConfiguration()) {
-      configPersistence.deleteConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString());
+    for (final ActorConfigurationBinding actorConfigurationBinding : MockData.actorConfigurationBindings()) {
+      configPersistence.deleteConfig(ConfigSchema.ACTOR_CONFIGURATION_BINDING, actorConfigurationBinding.getActorDefinitionId().toString());
     }
-    assertTrue(configPersistence.listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class).isEmpty());
+    assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CONFIGURATION_BINDING, ActorConfigurationBinding.class).isEmpty());
 
     for (final StandardSourceDefinition standardSourceDefinition : MockData.standardSourceDefinitions()) {
       configPersistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, standardSourceDefinition.getSourceDefinitionId().toString());
@@ -309,17 +309,17 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   public void stagingConfiguration() throws JsonValidationException, IOException, ConfigNotFoundException {
-    for (final StagingConfiguration stagingConfiguration : MockData.stagingConfiguration()) {
-      configPersistence.writeConfig(ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(),
-          stagingConfiguration);
-      final StagingConfiguration retrievedStagingConfig = configPersistence.getConfig(
-          ConfigSchema.STAGING_CONFIGURATION, stagingConfiguration.getDestinationDefinitionId().toString(), StagingConfiguration.class);
-      assertEquals(stagingConfiguration, retrievedStagingConfig);
+    for (final ActorConfigurationBinding expected : MockData.actorConfigurationBindings()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CONFIGURATION_BINDING, expected.getActorDefinitionId().toString(),
+          expected);
+      final ActorConfigurationBinding actual = configPersistence.getConfig(
+          ConfigSchema.ACTOR_CONFIGURATION_BINDING, expected.getActorDefinitionId().toString(), ActorConfigurationBinding.class);
+      assertEquals(expected, actual);
     }
-    final List<StagingConfiguration> stagingConfigurations = configPersistence
-        .listConfigs(ConfigSchema.STAGING_CONFIGURATION, StagingConfiguration.class);
-    assertEquals(MockData.stagingConfiguration().size(), stagingConfigurations.size());
-    assertThat(MockData.stagingConfiguration()).hasSameElementsAs(stagingConfigurations);
+    final List<ActorConfigurationBinding> actorConfigurationBindings = configPersistence
+        .listConfigs(ConfigSchema.ACTOR_CONFIGURATION_BINDING, ActorConfigurationBinding.class);
+    assertEquals(MockData.actorConfigurationBindings().size(), actorConfigurationBindings.size());
+    assertThat(MockData.actorConfigurationBindings()).hasSameElementsAs(actorConfigurationBindings);
   }
 
 }

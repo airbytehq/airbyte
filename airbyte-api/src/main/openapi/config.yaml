@@ -938,25 +938,22 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/staging_configuration/create:
+  /v1/actor_configuration_binding/create:
     post:
       tags:
-        - staging
-      summary: Create staging configuration
-      operationId: createStagingConfiguration
+        - actor_configuration_binding
+      summary: If you have to store a secret required to mutate a connector in cloud, use this endpoint to create that secret in cloud DB
+      operationId: createActorConfigurationBinding
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StagingConfigurationCreate"
+              $ref: "#/components/schemas/ActorConfigurationBindingCreate"
         required: true
       responses:
         "200":
           description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StagingConfigurationRead"
+          $ref: "#/components/responses/EmptyResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2590,26 +2587,19 @@ components:
           type: string
         destinationName:
           type: string
-    StagingConfigurationRead:
-      type: object
-      required:
-        - destinationDefinitionId
-      properties:
-        destinationDefinitionId:
-          $ref: "#/components/schemas/DestinationDefinitionId"
-    StagingConfiguration:
+    ActorConfigurationBindingConfig:
       description: The values required to configure the staging bucket.
       example: { user: "charles" }
-    StagingConfigurationCreate:
+    ActorConfigurationBindingCreate:
       type: object
       required:
-        - destinationDefinitionId
+        - actorDefinitionId
         - configuration
       properties:
-        destinationDefinitionId:
+        actorDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
-        stagingConfiguration:
-          $ref: "#/components/schemas/StagingConfiguration"
+        configuration:
+          $ref: "#/components/schemas/ActorConfigurationBindingConfig"
     DestinationReadList:
       type: object
       required:
@@ -4072,5 +4062,7 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/KnownExceptionInfo"
+    EmptyResponse:
+      description: Use this when the endpoint doesn't need to return a response
 security:
   - {}

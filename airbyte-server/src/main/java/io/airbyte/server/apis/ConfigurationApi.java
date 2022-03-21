@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.model.ActorConfigurationBindingCreate;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
@@ -70,8 +71,6 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.StagingConfigurationCreate;
-import io.airbyte.api.model.StagingConfigurationRead;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
@@ -106,6 +105,7 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.handlers.ActorConfigurationBindingHandler;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -120,7 +120,6 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.StagingConfigurationHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -155,7 +154,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
-  private final StagingConfigurationHandler stagingConfigurationHandler;
+  private final ActorConfigurationBindingHandler actorConfigurationBindingHandler;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -251,7 +250,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
-    stagingConfigurationHandler = new StagingConfigurationHandler(secretsRepositoryWriter);
+    actorConfigurationBindingHandler = new ActorConfigurationBindingHandler(secretsRepositoryWriter);
   }
 
   // WORKSPACE
@@ -330,8 +329,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public StagingConfigurationRead createStagingConfiguration(final StagingConfigurationCreate stagingConfigurationCreate) {
-    return execute(() -> stagingConfigurationHandler.createStagingConfiguration(stagingConfigurationCreate));
+  public void createActorConfigurationBinding(ActorConfigurationBindingCreate actorConfigurationBindingCreate) {
+    execute(() -> {
+      actorConfigurationBindingHandler.createActorConfigurationBinding(actorConfigurationBindingCreate);
+      return null;
+    });
   }
 
   @Override

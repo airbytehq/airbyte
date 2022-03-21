@@ -57,7 +57,7 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static void truncateAllTables() throws SQLException {
     database.query(ctx -> ctx
         .execute(
-            "TRUNCATE TABLE staging_configuration, state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+            "TRUNCATE TABLE actor_config_binding, state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
   }
 
   protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()

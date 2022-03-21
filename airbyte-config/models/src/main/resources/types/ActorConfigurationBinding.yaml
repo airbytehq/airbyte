@@ -5,10 +5,10 @@ title: StagingConfiguration
 description: information required for staging.
 type: object
 required:
-  - destinationDefinitionId
+  - actorDefinitionId
 additionalProperties: false
 properties:
-  destinationDefinitionId:
+  actorDefinitionId:
     type: string
     format: uuid
   configuration:

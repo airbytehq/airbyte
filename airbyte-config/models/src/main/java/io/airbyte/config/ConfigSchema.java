@@ -72,8 +72,8 @@ public enum ConfigSchema implements AirbyteConfig {
   STATE("State.yaml", State.class),
 
   // staging
-  STAGING_CONFIGURATION("StagingConfiguration.yaml", StagingConfiguration.class,
-      stagingConfiguration -> stagingConfiguration.getDestinationDefinitionId().toString(), "destinationDefinitionId");
+  ACTOR_CONFIGURATION_BINDING("ActorConfigurationBinding.yaml", ActorConfigurationBinding.class,
+      actorConfigurationBinding -> actorConfigurationBinding.getActorDefinitionId().toString(), "actorDefinitionId");
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
 
